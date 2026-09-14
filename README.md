@@ -1,6 +1,8 @@
 # Gridline
 
-Weekly individual player stats tracker for JUCO, NCAA Division II, and NCAA FCS football.
+Weekly individual player stats tracker for JUCO, NCAA Division II, and NCAA FCS football (NAIA
+planned — see Status below). Front-end is branded "Central Michigan Stat Tracker" per the owner's
+preference; the repo/project name stays Gridline.
 
 See [docs/project-brief.md](docs/project-brief.md) for the full project brief: scope, confirmed
 data sources, known technical findings (bot detection, JS-rendered names, etc.), and the
@@ -65,11 +67,16 @@ suggested architecture.
 - [x] Full D2 conference mapping (159 teams, cross-referenced against Wikipedia)
 - [x] Defense category merges tackles/TFL/PBU/interceptions/sacks; Sacks and Interceptions
       each keep their own leader callout
-- [ ] One JUCO conference scraped end-to-end (ICCAC or NJCAA Region 5)
-- [ ] Scraper generalized to remaining PrestoSports conferences
+- [x] Positions normalized to a fixed 9-value set (ATH/QB/RB/WR/OL/DL/LB/CB/SAF)
+- [x] NAIA investigated (owner wants it added, shown first among divisions) — confirmed feasible,
+      same PrestoSports platform as JUCO, needs a Playwright scraper (none built yet) — see
+      `scraper/README.md` for full findings
+- [ ] Build a Playwright scraper — NAIA or JUCO, whichever comes first (NAIA is one national site
+      vs. JUCO's five, and its defense stats already come pre-merged, so may be the easier start)
+- [ ] Scraper generalized to remaining PrestoSports JUCO conferences
 - [ ] Database (Supabase) set up
 - [ ] Front-end reads from a database instead of a static JSON snapshot
-- [ ] Weekly GitHub Actions job (auto re-run the scraper + JUCO pipeline)
+- [ ] Weekly GitHub Actions job (auto re-run the scraper + JUCO/NAIA pipelines)
 
 ## Running the front-end
 
