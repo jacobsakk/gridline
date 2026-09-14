@@ -26,6 +26,13 @@ suggested architecture.
 
 ## Known limitations (D2/FCS data)
 
+- **It's a "leaders" list, not a full roster.** The NCAA's own stat pages (ncaa.com itself, not
+  just our copy of it) only list top performers nationally per category — e.g. FCS receiving
+  currently stops at ~150 players total. A player with just 1-2 catches on the season won't show
+  up at all, in a smaller conference or otherwise — confirmed by checking ncaa.com directly, not
+  a bug in our scraper. Getting every player on every roster would mean scraping every team's
+  individual box score page (~430 teams) instead of one national leaderboard call — a much bigger
+  job, intentionally not taken on for now.
 - **D2 conference tags are incomplete.** The NCAA API's D2 conference-standings scraper is
   broken (confirmed — returns an error). FCS conferences are 100% accurate (pulled live); D2
   currently uses a partial hand-typed list of ~30 schools, and every other D2 team shows as
@@ -36,11 +43,19 @@ suggested architecture.
   shows solo/assisted/yards/total sacks instead.
 - **Data doesn't auto-update yet.** Re-run `python3 scraper/build_data.py` to refresh it; the
   weekly automation (below) isn't set up.
+- **Real single-week numbers need two runs.** The NCAA only reports season-to-date totals, so a
+  genuine "just this week" number comes from subtracting two snapshots (see
+  `scraper/snapshots/`, `build_weekly_delta_rows` in `scraper/ncaa_api.py`). The very first
+  snapshot for a division has nothing to diff against yet — the Week filter will only offer
+  "Total (season)" until the script has run at least twice.
 
 ## Status
 
 - [x] Front-end prototype
 - [x] D2/FCS wired to real, live NCAA data (all conferences, all 5 stat categories)
+- [x] Games-played (G) column
+- [x] Real week-by-week filtering, built and verified — starts showing actual weeks once
+      `build_data.py` has run more than once
 - [ ] Fill in the full D2 conference mapping (currently partial, see above)
 - [ ] One JUCO conference scraped end-to-end (ICCAC or NJCAA Region 5)
 - [ ] Scraper generalized to remaining PrestoSports conferences
