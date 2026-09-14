@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "gridline-frontend",
+      "runtimeExecutable": "/Users/sakk1j/.nvm/versions/node/v24.21.0/bin/npm",
+      "runtimeArgs": ["--prefix", "frontend", "run", "dev"],
+      "port": 5173
+    }
+  ]
+}
