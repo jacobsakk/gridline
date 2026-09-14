@@ -16,10 +16,12 @@ suggested architecture.
   Currently a manually-run snapshot, not yet auto-refreshed (see "Weekly GitHub Actions job" below).
 - `scraper/` —
   - `ncaa_api.py` / `build_data.py` — **done.** Fetches all individual stat leaders
-    (passing/rushing/receiving/defense/sacks) for D2 and FCS from
+    (passing/rushing/receiving/defense) for D2 and FCS from
     [henrygd/ncaa-api](https://github.com/henrygd/ncaa-api) and writes
     `frontend/src/data/real-stats.json`. Run manually with `python3 scraper/build_data.py`.
-    The Defense category merges 4 leaderboards (tackles, TFL, passes defended, interceptions).
+    Defense merges 5 leaderboards into one table: tackles, TFL, passes defended,
+    interceptions, and sacks. Sacks and Interceptions each still get their own leader
+    callout at the top even though both live inside the Defense table.
   - Not yet built: a Playwright scraper for JUCO. Five PrestoSports conferences (CCCAA, KJCCC,
     ICCAC, MACCC, NJCAA Region 5) share one URL structure but need bot-evasion and JS rendering;
     Scenic West is a separate, paywalled platform, best-effort only.
@@ -41,11 +43,10 @@ suggested architecture.
   verified where ambiguous (e.g. Seton Hill's football is PSAC even though the school's other
   sports differ). FCS conferences are pulled live and need no such workaround. If conference
   realignment happens, this list needs a manual update.
-- **Sacks and Defense columns differ from the original mock.** The real "Sacks" leaderboard
-  doesn't include forced fumbles/recoveries per player, and "Defense" merges 4 separate
-  leaderboards (tackles/TFL/passes defended/interceptions) — a player who's on one but not
-  another shows 0 for that stat rather than an unknown/blank value. Same best-effort tradeoff
-  in both cases: real numbers where the source has them, not a guess where it doesn't.
+- **Defense columns differ from the original mock.** "Defense" merges 5 separate real
+  leaderboards (tackles/TFL/passes defended/interceptions/sacks) into one row per player — a
+  player who's on one but not another shows 0 for that stat rather than an unknown/blank value.
+  Best-effort tradeoff: real numbers where the source has them, not a guess where it doesn't.
 - **Data doesn't auto-update yet.** Re-run `python3 scraper/build_data.py` to refresh it; the
   weekly automation (below) isn't set up.
 - **Real single-week numbers need two runs.** The NCAA only reports season-to-date totals, so a
@@ -57,11 +58,13 @@ suggested architecture.
 ## Status
 
 - [x] Front-end prototype
-- [x] D2/FCS wired to real, live NCAA data (all conferences, all 5 stat categories)
+- [x] D2/FCS wired to real, live NCAA data (all conferences, 4 stat-category tabs)
 - [x] Games-played (G) column
 - [x] Real week-by-week filtering, built and verified — starts showing actual weeks once
       `build_data.py` has run more than once
-- [ ] Fill in the full D2 conference mapping (currently partial, see above)
+- [x] Full D2 conference mapping (159 teams, cross-referenced against Wikipedia)
+- [x] Defense category merges tackles/TFL/PBU/interceptions/sacks; Sacks and Interceptions
+      each keep their own leader callout
 - [ ] One JUCO conference scraped end-to-end (ICCAC or NJCAA Region 5)
 - [ ] Scraper generalized to remaining PrestoSports conferences
 - [ ] Database (Supabase) set up
