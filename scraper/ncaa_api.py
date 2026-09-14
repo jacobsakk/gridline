@@ -40,9 +40,9 @@ STAT_IDS = {
                    # so no need to merge it with the plain "Passing Yards" id
     "rushing": 469,
     "receiving": 455,
-    "sacksTfl": 36,
-    # "tackling" is not in this list -- it's built separately by merging
-    # four leaderboards together (see build_defense_rows / STAT_IDS_DEFENSE_MERGE)
+    # "tackling" (Defense) is not in this list -- it's built separately by
+    # merging five leaderboards together, sacks included (see
+    # build_defense_rows / STAT_IDS_DEFENSE_MERGE)
 }
 
 STAT_IDS_DEFENSE_MERGE = {
@@ -50,6 +50,7 @@ STAT_IDS_DEFENSE_MERGE = {
     "tfl": 39,       # Tackles For Loss
     "pbu": 38,       # Passes Defended
     "int": 14,       # Interceptions Per Game (has the raw INT count too)
+    "sacks": 36,     # Sacks -- merged into Defense rather than its own category
 }
 
 # See module docstring for how this was built.
@@ -300,17 +301,6 @@ def transform_row(division, category, conference_lookup, raw, row_id):
         rec = _to_int(raw.get("Rec"))
         yards = _to_int(raw.get("Rec Yds"))
         base.update({"rec": rec, "yards": yards, "avg": _avg(yards, rec), "td": _to_int(raw.get("Rec TD"))})
-    elif category == "sacksTfl":
-        # The real "Sacks" leaderboard doesn't include forced fumbles/
-        # recoveries per player (those are separate leaderboards covering
-        # a different set of players), so this category's columns are
-        # adapted to what one source actually reports cleanly.
-        base.update({
-            "soloSacks": _to_int(raw.get("Solo Sack")),
-            "astSacks": _to_int(raw.get("Asst Sack")),
-            "sackYds": _to_int(raw.get("Sack Yds")),
-            "sacks": raw.get("Tot Sack", "0"),
-        })
 
     return base
 
@@ -409,24 +399,17 @@ def build_delta_row(current, previous, week_label):
             d_tfl = float(current["tfl"]) - float(previous["tfl"])
             d_pbu = current["pbu"] - previous["pbu"]
             d_int = current["int"] - previous["int"]
-            if min(d_solo, d_ast, d_tfl, d_pbu, d_int) < 0:
+            d_soloSacks = current["soloSacks"] - previous["soloSacks"]
+            d_astSacks = current["astSacks"] - previous["astSacks"]
+            d_sackYds = current["sackYds"] - previous["sackYds"]
+            if min(d_solo, d_ast, d_tfl, d_pbu, d_int, d_soloSacks, d_astSacks, d_sackYds) < 0:
                 return None
             row.update({
                 "solo": d_solo, "ast": d_ast, "total": d_solo + d_ast,
                 "tfl": f"{d_tfl:.1f}" if d_tfl % 1 else str(int(d_tfl)),
                 "pbu": d_pbu, "int": d_int,
-            })
-        elif category == "sacksTfl":
-            d_solo = current["soloSacks"] - previous["soloSacks"]
-            d_ast = current["astSacks"] - previous["astSacks"]
-            d_yds = current["sackYds"] - previous["sackYds"]
-            if min(d_solo, d_ast, d_yds) < 0:
-                return None
-            row.update({
-                "soloSacks": d_solo,
-                "astSacks": d_ast,
-                "sackYds": d_yds,
-                "sacks": f"{d_solo + 0.5 * d_ast:.1f}",
+                "soloSacks": d_soloSacks, "astSacks": d_astSacks, "sackYds": d_sackYds,
+                "sacks": f"{d_soloSacks + 0.5 * d_astSacks:.1f}",
             })
     except (KeyError, ValueError, ZeroDivisionError):
         return None
@@ -448,12 +431,12 @@ def build_weekly_delta_rows(current_rows, previous_rows, week_label):
 
 
 def build_defense_rows(division_slug, division_label, conference_lookup):
-    """The "tackling" (Defense) category merges four separate NCAA
-    leaderboards -- Total Tackles, Tackles For Loss, Passes Defended, and
-    Interceptions -- into one row per player, keyed by (player, team). Any
-    player who appears on *any* of the four gets a row; fields from a
-    leaderboard they don't appear on default to 0 (same "best effort,
-    not exhaustive" tradeoff as the Sacks category's columns)."""
+    """The "tackling" (Defense) category merges five separate NCAA
+    leaderboards -- Total Tackles, Tackles For Loss, Passes Defended,
+    Interceptions, and Sacks -- into one row per player, keyed by
+    (player, team). Any player who appears on *any* of the five gets a
+    row; fields from a leaderboard they don't appear on default to 0
+    (a "best effort, not exhaustive" tradeoff -- explained in README.md)."""
     merged = {}  # (player, team) -> row dict
 
     def get_or_create(raw):
@@ -472,6 +455,7 @@ def build_defense_rows(division_slug, division_label, conference_lookup):
                 "games": _to_int(raw.get("G")),
                 "sample": False,
                 "solo": 0, "ast": 0, "total": 0, "tfl": 0, "pbu": 0, "int": 0,
+                "soloSacks": 0, "astSacks": 0, "sackYds": 0, "sacks": "0.0",
             }
         return merged[key]
 
@@ -497,6 +481,15 @@ def build_defense_rows(division_slug, division_label, conference_lookup):
     for raw in fetch_all_pages(division_slug, STAT_IDS_DEFENSE_MERGE["int"]):
         row = get_or_create(raw)
         row["int"] = _to_int(raw.get("Int"))
+        row["games"] = max(row["games"], _to_int(raw.get("G")))
+    time.sleep(REQUEST_PAUSE_SECONDS)
+
+    for raw in fetch_all_pages(division_slug, STAT_IDS_DEFENSE_MERGE["sacks"]):
+        row = get_or_create(raw)
+        row["soloSacks"] = _to_int(raw.get("Solo Sack"))
+        row["astSacks"] = _to_int(raw.get("Asst Sack"))
+        row["sackYds"] = _to_int(raw.get("Sack Yds"))
+        row["sacks"] = raw.get("Tot Sack", "0")
         row["games"] = max(row["games"], _to_int(raw.get("G")))
     time.sleep(REQUEST_PAUSE_SECONDS)
 

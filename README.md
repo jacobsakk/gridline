@@ -16,9 +16,10 @@ suggested architecture.
   Currently a manually-run snapshot, not yet auto-refreshed (see "Weekly GitHub Actions job" below).
 - `scraper/` —
   - `ncaa_api.py` / `build_data.py` — **done.** Fetches all individual stat leaders
-    (passing/rushing/receiving/tackling/sacks) for D2 and FCS from
+    (passing/rushing/receiving/defense/sacks) for D2 and FCS from
     [henrygd/ncaa-api](https://github.com/henrygd/ncaa-api) and writes
     `frontend/src/data/real-stats.json`. Run manually with `python3 scraper/build_data.py`.
+    The Defense category merges 4 leaderboards (tackles, TFL, passes defended, interceptions).
   - Not yet built: a Playwright scraper for JUCO. Five PrestoSports conferences (CCCAA, KJCCC,
     ICCAC, MACCC, NJCAA Region 5) share one URL structure but need bot-evasion and JS rendering;
     Scenic West is a separate, paywalled platform, best-effort only.
@@ -33,14 +34,18 @@ suggested architecture.
   a bug in our scraper. Getting every player on every roster would mean scraping every team's
   individual box score page (~430 teams) instead of one national leaderboard call — a much bigger
   job, intentionally not taken on for now.
-- **D2 conference tags are incomplete.** The NCAA API's D2 conference-standings scraper is
-  broken (confirmed — returns an error). FCS conferences are 100% accurate (pulled live); D2
-  currently uses a partial hand-typed list of ~30 schools, and every other D2 team shows as
-  "Independent" even though it really has a conference. Worth fixing by building a full mapping
-  (e.g. from Wikipedia) — flagged in code at `scraper/ncaa_api.py`.
-- **Sacks columns differ from the original mock.** The real "Sacks" leaderboard doesn't include
-  forced fumbles/recoveries per player — those are separate leaderboards. So that category now
-  shows solo/assisted/yards/total sacks instead.
+- **D2 conference tags: fixed, but hand-built.** The NCAA API's D2 conference-standings scraper
+  is broken (confirmed — returns an error), so D2 conference tagging comes from a hand-built
+  mapping in `scraper/ncaa_api.py` (`D2_KNOWN_CONFERENCES`) — all 159 teams that actually appear
+  in our data, cross-referenced against each conference's own Wikipedia roster and individually
+  verified where ambiguous (e.g. Seton Hill's football is PSAC even though the school's other
+  sports differ). FCS conferences are pulled live and need no such workaround. If conference
+  realignment happens, this list needs a manual update.
+- **Sacks and Defense columns differ from the original mock.** The real "Sacks" leaderboard
+  doesn't include forced fumbles/recoveries per player, and "Defense" merges 4 separate
+  leaderboards (tackles/TFL/passes defended/interceptions) — a player who's on one but not
+  another shows 0 for that stat rather than an unknown/blank value. Same best-effort tradeoff
+  in both cases: real numbers where the source has them, not a guess where it doesn't.
 - **Data doesn't auto-update yet.** Re-run `python3 scraper/build_data.py` to refresh it; the
   weekly automation (below) isn't set up.
 - **Real single-week numbers need two runs.** The NCAA only reports season-to-date totals, so a

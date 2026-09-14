@@ -114,11 +114,11 @@ const CATEGORIES = {
       return { rec, yards, avg: (yards / rec).toFixed(1), td: ri(0, 3) };
     },
   },
-  // "Defense" merges four separate real leaderboards (total tackles, TFL,
-  // passes defended, interceptions) into one row per player -- see
+  // "Defense" merges five separate real leaderboards (total tackles, TFL,
+  // passes defended, interceptions, sacks) into one row per player -- see
   // build_defense_rows() in scraper/ncaa_api.py. A player who's on one
-  // leaderboard but not another shows 0 for that stat, same best-effort
-  // tradeoff as the Sacks category.
+  // leaderboard but not another shows 0 for that stat rather than an
+  // unknown/blank value -- a best-effort tradeoff, not a guess.
   tackling: {
     label: "Defense",
     positions: ["LB", "DB", "DL"],
@@ -131,36 +131,36 @@ const CATEGORIES = {
       { key: "tfl", label: "TFL" },
       { key: "pbu", label: "PBU" },
       { key: "int", label: "INT" },
+      { key: "sacks", label: "SACK" },
+      { key: "sackYds", label: "SACK YDS" },
     ],
     gen: () => {
       const solo = ri(2, 11);
       const ast = ri(0, 6);
-      return { solo, ast, total: solo + ast, tfl: (ri(0, 15) / 10).toFixed(1), pbu: ri(0, 3), int: ri(0, 2) };
-    },
-  },
-  // Columns here match what the real "Sacks" leaderboard actually reports
-  // per player. Forced fumbles/recoveries live on separate NCAA leaderboards
-  // covering a different set of players, so they're not included here --
-  // merging them in would mean guessing 0 for anyone not also on those
-  // other lists, which would look precise but not be trustworthy.
-  sacksTfl: {
-    label: "Sacks",
-    positions: ["DL", "LB"],
-    leaderKey: "sacks",
-    columns: [
-      { key: "games", label: "G" },
-      { key: "soloSacks", label: "SOLO" },
-      { key: "astSacks", label: "AST" },
-      { key: "sackYds", label: "YDS" },
-      { key: "sacks", label: "SACK" },
-    ],
-    gen: () => {
-      const soloSacks = ri(0, 6);
-      const astSacks = ri(0, 3);
-      return { soloSacks, astSacks, sackYds: ri(0, 22), sacks: ((soloSacks + astSacks * 0.5)).toFixed(1) };
+      const soloSacks = ri(0, 3);
+      const astSacks = ri(0, 2);
+      return {
+        solo, ast, total: solo + ast,
+        tfl: (ri(0, 15) / 10).toFixed(1), pbu: ri(0, 3), int: ri(0, 2),
+        soloSacks, astSacks, sackYds: ri(0, 22),
+        sacks: (soloSacks + astSacks * 0.5).toFixed(1),
+      };
     },
   },
 };
+
+// Extra "leader of the season" callouts shown at the top, beyond the one
+// per stat category above -- each points at a category but ranks by a
+// different column (e.g. Sacks and Interceptions both live inside the
+// Defense table, but are common enough to deserve their own spotlight).
+const LEADER_BOARDS = [
+  { key: "passing", categoryKey: "passing", label: "Passing", sortKey: "yards" },
+  { key: "rushing", categoryKey: "rushing", label: "Rushing", sortKey: "yards" },
+  { key: "receiving", categoryKey: "receiving", label: "Receiving", sortKey: "yards" },
+  { key: "tackling", categoryKey: "tackling", label: "Defense", sortKey: "total" },
+  { key: "sacks", categoryKey: "tackling", label: "Sacks", sortKey: "sacks" },
+  { key: "interceptions", categoryKey: "tackling", label: "Interceptions", sortKey: "int" },
+];
 
 // Aggregates a player's weekly sample stat lines into a season "total" row.
 // Recomputes rate stats (avg, rating) from the summed components rather
@@ -189,18 +189,18 @@ function aggregateCategory(catKey, weeklyStats) {
     const td = sum((s) => s.td);
     return { rec, yards, avg: rec ? (yards / rec).toFixed(1) : "0.0", td };
   }
-  if (catKey === "tackling") {
-    const solo = sum((s) => s.solo);
-    const ast = sum((s) => s.ast);
-    const tfl = sum((s) => parseFloat(s.tfl));
-    return { solo, ast, total: solo + ast, tfl: tfl.toFixed(1), pbu: sum((s) => s.pbu), int: sum((s) => s.int) };
-  }
-  // sacksTfl
+  // tackling (Defense, sacks included)
+  const solo = sum((s) => s.solo);
+  const ast = sum((s) => s.ast);
+  const tfl = sum((s) => parseFloat(s.tfl));
   const soloSacks = sum((s) => s.soloSacks);
   const astSacks = sum((s) => s.astSacks);
-  const sackYds = sum((s) => s.sackYds);
-  const sacks = (soloSacks + astSacks * 0.5).toFixed(1);
-  return { soloSacks, astSacks, sackYds, sacks };
+  return {
+    solo, ast, total: solo + ast,
+    tfl: tfl.toFixed(1), pbu: sum((s) => s.pbu), int: sum((s) => s.int),
+    soloSacks, astSacks, sackYds: sum((s) => s.sackYds),
+    sacks: (soloSacks + astSacks * 0.5).toFixed(1),
+  };
 }
 
 // Sample data for JUCO only -- D2 and FCS come from real-stats.json.
@@ -309,13 +309,16 @@ export default function Gridline() {
     return filtered;
   }, [division, category, week, position, conference, sortKey, sortDir]);
 
-  // Weekly leaders: top row per category for this division/conference, ignoring position filter
+  // Leader callouts at the top: one per LEADER_BOARDS entry, ranked by that
+  // board's own sortKey (several boards share the Defense category but
+  // rank by a different column -- Sacks, Interceptions, etc.)
   const weeklyLeaders = useMemo(() => {
-    return Object.entries(CATEGORIES).map(([key, c]) => {
-      let catRows = DATA.filter((r) => r.division === division && r.category === key && r.week === week);
+    return LEADER_BOARDS.map((board) => {
+      let catRows = DATA.filter((r) => r.division === division && r.category === board.categoryKey && r.week === week);
       if (conference !== "All") catRows = catRows.filter((r) => r.conference === conference);
-      const sorted = [...catRows].sort((a, b) => (parseFloat(b[c.leaderKey]) || 0) - (parseFloat(a[c.leaderKey]) || 0));
-      return { key, cat: c, leader: sorted[0] };
+      const sorted = [...catRows].sort((a, b) => (parseFloat(b[board.sortKey]) || 0) - (parseFloat(a[board.sortKey]) || 0));
+      const col = CATEGORIES[board.categoryKey].columns.find((c) => c.key === board.sortKey);
+      return { board, leader: sorted[0], statLabel: col?.label || "" };
     });
   }, [division, week, conference]);
 
@@ -338,6 +341,13 @@ export default function Gridline() {
     setCategory(key);
     setPosition("All");
     setSortKey(CATEGORIES[key].leaderKey);
+    setSortDir("desc");
+  }
+
+  function handleLeaderBoardClick(board) {
+    setCategory(board.categoryKey);
+    setPosition("All");
+    setSortKey(board.sortKey);
     setSortDir("desc");
   }
 
@@ -435,17 +445,19 @@ export default function Gridline() {
             {weekLabel(week)} leaders — {conference === "All" ? DIVISION_LABEL[division] : conference}
           </span>
           <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-            {weeklyLeaders.map(({ key, cat: c, leader }) => (
+            {weeklyLeaders.map(({ board, leader, statLabel }) => {
+              const active = category === board.categoryKey && sortKey === board.sortKey;
+              return (
               <button
-                key={key}
-                onClick={() => handleCategoryChange(key)}
+                key={board.key}
+                onClick={() => handleLeaderBoardClick(board)}
                 style={{
                   display: "flex",
                   flexDirection: "column",
                   alignItems: "flex-start",
                   gap: 2,
-                  background: category === key ? "#20281F" : "#1A2126",
-                  border: category === key ? "1px solid #C89B3C" : "1px solid #2A333A",
+                  background: active ? "#20281F" : "#1A2126",
+                  border: active ? "1px solid #C89B3C" : "1px solid #2A333A",
                   borderRadius: 5,
                   padding: "8px 14px",
                   cursor: "pointer",
@@ -454,20 +466,21 @@ export default function Gridline() {
                 }}
               >
                 <span className="oswald" style={{ fontSize: 11, color: "#8B959C", fontWeight: 500 }}>
-                  {c.label}
+                  {board.label}
                 </span>
                 {leader ? (
                   <>
                     <span style={{ fontSize: 13.5, fontWeight: 600, color: "#EDEAE0" }}>{leader.player}</span>
                     <span className="tabular" style={{ fontSize: 12.5, color: "#C89B3C" }}>
-                      {leader[c.leaderKey]} {c.columns.find((col) => col.key === c.leaderKey)?.label || ""}
+                      {leader[board.sortKey]} {statLabel}
                     </span>
                   </>
                 ) : (
                   <span style={{ fontSize: 13, color: "#5D666C" }}>No data</span>
                 )}
               </button>
-            ))}
+              );
+            })}
           </div>
         </div>
 
