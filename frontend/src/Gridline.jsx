@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { ChevronUp, ChevronDown, ChevronsUpDown, Crown, BadgeCheck, FlaskConical } from "lucide-react";
 import realStats from "./data/real-stats.json";
+import cmuHelmet from "./assets/cmu-helmet.png";
 
 // ---------- Mock data generation (seeded, stable across renders) ----------
 // Used only for JUCO, which doesn't have a live source connected yet.
@@ -371,11 +372,14 @@ export default function Gridline() {
       {/* Header */}
       <div style={{ borderBottom: "1px solid #2A333A", padding: "28px 32px 22px" }}>
         <div style={{ maxWidth: 1100, margin: "0 auto" }}>
-          <div style={{ display: "flex", alignItems: "baseline", gap: 14 }}>
-            <h1 className="oswald" style={{ fontSize: 34, fontWeight: 700, margin: 0, letterSpacing: "0.01em" }}>
-              Gridline
-            </h1>
-            <span style={{ color: "#8B959C", fontSize: 15 }}>weekly stats — JUCO · D2 · FCS</span>
+          <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+            <img src={cmuHelmet} alt="Central Michigan Chippewas helmet" style={{ height: 44, width: "auto" }} />
+            <div style={{ display: "flex", alignItems: "baseline", gap: 14 }}>
+              <h1 className="oswald" style={{ fontSize: 34, fontWeight: 700, margin: 0, letterSpacing: "0.01em" }}>
+                Central Michigan Stat Tracker
+              </h1>
+              <span style={{ color: "#8B959C", fontSize: 15 }}>weekly stats — JUCO · D2 · FCS</span>
+            </div>
           </div>
           <p style={{ margin: "6px 0 0", color: "#8B959C", fontSize: 14, maxWidth: 620, lineHeight: 1.5 }}>
             D2 and FCS are live data, pulled directly from the NCAA's own stats feed (season
