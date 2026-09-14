@@ -1,8 +1,9 @@
 import { useState, useMemo } from "react";
 import { ChevronUp, ChevronDown, ChevronsUpDown, Crown, BadgeCheck, FlaskConical } from "lucide-react";
+import realStats from "./data/real-stats.json";
 
 // ---------- Mock data generation (seeded, stable across renders) ----------
-// Used for divisions/conferences we do NOT yet have a live source for.
+// Used only for JUCO, which doesn't have a live source connected yet.
 
 function mulberry32(seed) {
   return function () {
@@ -19,14 +20,13 @@ const pick = (arr) => arr[Math.floor(rand() * arr.length)];
 
 const DIVISIONS = ["JUCO", "D2", "FCS"];
 const WEEKS = [1, 2, 3, 4];
-// "total" aggregates weeks 1-4 for sample data. Real data (Big Sky) only
-// ever has a "total" row, since the live source reports season-to-date
-// totals rather than isolated per-week lines.
+// "total" is a season-to-date aggregate. Real data (D2/FCS, from the NCAA's
+// own stats feed) only ever has a "total" row -- the source reports
+// season-to-date, not isolated per-week lines, same as any stats site would.
 const WEEK_OPTIONS = ["total", 1, 2, 3, 4];
 const weekLabel = (w) => (w === "total" ? "Total (season)" : `Week ${w}`);
 
-// Teams tagged with a real conference. FCS Big Sky teams are the real
-// conference roster; everything else here is placeholder for sample data.
+// Sample-only roster, JUCO only -- D2 and FCS now come from real-stats.json.
 const TEAMS = {
   JUCO: [
     { team: "Butler CC", conference: "KJCCC" },
@@ -39,87 +39,6 @@ const TEAMS = {
     { team: "Jones College", conference: "MACJC" },
     { team: "College of San Mateo", conference: "CCCAA" },
     { team: "Riverside City College", conference: "CCCAA" },
-  ],
-  // All 16 current D2 football conferences. GLIAC/RMAC/GSC/PSAC/NSIC carried
-  // over from the original prototype; the rest added so every conference is
-  // selectable. All D2 rows are sample data — no live source connected yet.
-  D2: [
-    { team: "Ferris State", conference: "GLIAC" },
-    { team: "Grand Valley State", conference: "GLIAC" },
-    { team: "Colorado Mines", conference: "RMAC" },
-    { team: "CSU Pueblo", conference: "RMAC" },
-    { team: "Valdosta State", conference: "GSC" },
-    { team: "Delta State", conference: "GSC" },
-    { team: "Slippery Rock", conference: "PSAC" },
-    { team: "California (PA)", conference: "PSAC" },
-    { team: "Minnesota State", conference: "NSIC" },
-    { team: "Sioux Falls", conference: "NSIC" },
-    { team: "Barton", conference: "Conference Carolinas" },
-    { team: "Emory & Henry", conference: "Conference Carolinas" },
-    { team: "Virginia Union", conference: "CIAA" },
-    { team: "Winston-Salem State", conference: "CIAA" },
-    { team: "Harding", conference: "GAC" },
-    { team: "Southern Arkansas", conference: "GAC" },
-    { team: "Indianapolis", conference: "GLVC" },
-    { team: "Lindenwood", conference: "GLVC" },
-    { team: "Ohio Dominican", conference: "G-MAC" },
-    { team: "Tiffin", conference: "G-MAC" },
-    { team: "Angelo State", conference: "LSC" },
-    { team: "West Texas A&M", conference: "LSC" },
-    { team: "Glenville State", conference: "MEC" },
-    { team: "West Liberty", conference: "MEC" },
-    { team: "Central Missouri", conference: "MIAA" },
-    { team: "Pittsburg State", conference: "MIAA" },
-    { team: "Bentley", conference: "NE-10" },
-    { team: "American International", conference: "NE-10" },
-    { team: "Newberry", conference: "SAC" },
-    { team: "Wingate", conference: "SAC" },
-    { team: "Miles", conference: "SIAC" },
-    { team: "Tuskegee", conference: "SIAC" },
-  ],
-  // All 13 current FCS football conferences. Big Sky is real, live data;
-  // every other conference here is sample data so the filter is complete.
-  FCS: [
-    // Real Big Sky Conference roster (live data source)
-    { team: "Idaho State", conference: "Big Sky" },
-    { team: "Montana", conference: "Big Sky" },
-    { team: "Montana State", conference: "Big Sky" },
-    { team: "Eastern Washington", conference: "Big Sky" },
-    { team: "Idaho", conference: "Big Sky" },
-    { team: "Cal Poly", conference: "Big Sky" },
-    { team: "UC Davis", conference: "Big Sky" },
-    { team: "Southern Utah", conference: "Big Sky" },
-    { team: "Northern Colorado", conference: "Big Sky" },
-    { team: "Weber State", conference: "Big Sky" },
-    { team: "Northern Arizona", conference: "Big Sky" },
-    { team: "Portland State", conference: "Big Sky" },
-    { team: "Utah Tech", conference: "Big Sky" },
-    { team: "Sacramento State", conference: "Big Sky" },
-    // Sample-only conferences (not yet connected to a live source)
-    { team: "South Dakota State", conference: "MVFC" },
-    { team: "North Dakota State", conference: "MVFC" },
-    { team: "Elon", conference: "CAA" },
-    { team: "New Hampshire", conference: "CAA" },
-    { team: "Incarnate Word", conference: "Southland" },
-    { team: "McNeese", conference: "Southland" },
-    { team: "Harvard", conference: "Ivy League" },
-    { team: "Yale", conference: "Ivy League" },
-    { team: "Norfolk State", conference: "MEAC" },
-    { team: "South Carolina State", conference: "MEAC" },
-    { team: "Duquesne", conference: "NEC" },
-    { team: "LIU", conference: "NEC" },
-    { team: "Southeast Missouri", conference: "OVC" },
-    { team: "Tennessee State", conference: "OVC" },
-    { team: "Lehigh", conference: "Patriot" },
-    { team: "Colgate", conference: "Patriot" },
-    { team: "Dayton", conference: "Pioneer" },
-    { team: "Drake", conference: "Pioneer" },
-    { team: "Chattanooga", conference: "SoCon" },
-    { team: "Samford", conference: "SoCon" },
-    { team: "Jackson State", conference: "SWAC" },
-    { team: "Southern", conference: "SWAC" },
-    { team: "West Florida", conference: "UAC" },
-    { team: "Central Arkansas", conference: "UAC" },
   ],
 };
 
@@ -200,106 +119,34 @@ const CATEGORIES = {
       return { solo, ast, total: solo + ast };
     },
   },
+  // Columns here match what the real "Sacks" leaderboard actually reports
+  // per player. Forced fumbles/recoveries live on separate NCAA leaderboards
+  // covering a different set of players, so they're not included here --
+  // merging them in would mean guessing 0 for anyone not also on those
+  // other lists, which would look precise but not be trustworthy.
   sacksTfl: {
     label: "Sacks",
     positions: ["DL", "LB"],
     leaderKey: "sacks",
     columns: [
-      { key: "sacks", label: "SACK" },
+      { key: "soloSacks", label: "SOLO" },
+      { key: "astSacks", label: "AST" },
       { key: "sackYds", label: "YDS" },
-      { key: "ff", label: "FF" },
-      { key: "fr", label: "FR" },
+      { key: "sacks", label: "SACK" },
     ],
-    gen: () => ({
-      sacks: (ri(0, 30) / 10).toFixed(1),
-      sackYds: ri(0, 22),
-      ff: ri(0, 1),
-      fr: ri(0, 1),
-    }),
+    gen: () => {
+      const soloSacks = ri(0, 6);
+      const astSacks = ri(0, 3);
+      return { soloSacks, astSacks, sackYds: ri(0, 22), sacks: ((soloSacks + astSacks * 0.5)).toFixed(1) };
+    },
   },
 };
 
-// ---------- Real data: Big Sky Conference (FCS), through games Sept 12-14, 2026 ----------
-// Source: foxsports.com/college-football/big-sky/stats, fetched live.
-
-const realRow = (division, conference, category, position, player, team, stats) => ({
-  id: `real-${division}-${conference}-${category}-${player}`,
-  division,
-  conference,
-  week: "total", // real source reports season-to-date, not isolated single-week lines
-  category,
-  position,
-  player,
-  team,
-  sample: false,
-  ...stats,
-});
-
-const BIG_SKY_REAL = [
-  // Passing
-  realRow("FCS", "Big Sky", "passing", "QB", "Jordan Cooke", "Idaho State", { compAtt: "51/88", att: 88, yards: 808, td: 8, int: 4, rating: "162.8" }),
-  realRow("FCS", "Big Sky", "passing", "QB", "Keali'i Ah Yat", "Montana", { compAtt: "67/103", att: 103, yards: 793, td: 5, int: 2, rating: "143.8" }),
-  realRow("FCS", "Big Sky", "passing", "QB", "Nate Bell", "Eastern Washington", { compAtt: "74/116", att: 116, yards: 781, td: 6, int: 7, rating: "134.0" }),
-  realRow("FCS", "Big Sky", "passing", "QB", "Anthony Grigsby Jr.", "Cal Poly", { compAtt: "65/102", att: 102, yards: 772, td: 8, int: 5, rating: "149.3" }),
-  realRow("FCS", "Big Sky", "passing", "QB", "Joshua Wood", "Idaho", { compAtt: "47/92", att: 92, yards: 679, td: 2, int: 7, rating: "118.1" }),
-  realRow("FCS", "Big Sky", "passing", "QB", "Justin Lamson", "Montana State", { compAtt: "52/73", att: 73, yards: 678, td: 5, int: 5, rating: "171.9" }),
-  realRow("FCS", "Big Sky", "passing", "QB", "Treynor Cleeland", "UC Davis", { compAtt: "55/96", att: 96, yards: 664, td: 7, int: 2, rating: "133.2" }),
-  realRow("FCS", "Big Sky", "passing", "QB", "Will Burns", "Southern Utah", { compAtt: "46/75", att: 75, yards: 630, td: 5, int: 4, rating: "143.2" }),
-  realRow("FCS", "Big Sky", "passing", "QB", "Kenny Lueth", "Northern Colorado", { compAtt: "52/85", att: 85, yards: 629, td: 3, int: 6, rating: "130.3" }),
-  realRow("FCS", "Big Sky", "passing", "QB", "Nate Dahle", "Weber State", { compAtt: "47/100", att: 100, yards: 580, td: 5, int: 5, rating: "108.2" }),
-
-  // Rushing
-  realRow("FCS", "Big Sky", "rushing", "RB", "Floyd Chalk", "Southern Utah", { att: 66, yards: 427, avg: "6.5", td: 6 }),
-  realRow("FCS", "Big Sky", "rushing", "RB", "Eli Gillman", "Montana", { att: 49, yards: 328, avg: "6.7", td: 7 }),
-  realRow("FCS", "Big Sky", "rushing", "RB", "Will Burns", "Southern Utah", { att: 36, yards: 276, avg: "7.7", td: 2 }),
-  realRow("FCS", "Big Sky", "rushing", "RB", "Quran Gossett", "Northern Arizona", { att: 49, yards: 228, avg: "4.7", td: 2 }),
-  realRow("FCS", "Big Sky", "rushing", "RB", "Jaden Green", "Cal Poly", { att: 38, yards: 217, avg: "5.7", td: 0 }),
-  realRow("FCS", "Big Sky", "rushing", "RB", "Adam Jones", "Montana State", { att: 49, yards: 198, avg: "4.0", td: 3 }),
-  realRow("FCS", "Big Sky", "rushing", "RB", "Delon Thompson", "Portland State", { att: 49, yards: 186, avg: "3.8", td: 0 }),
-  realRow("FCS", "Big Sky", "rushing", "RB", "Mathias Price", "Northern Colorado", { att: 32, yards: 168, avg: "5.3", td: 1 }),
-  realRow("FCS", "Big Sky", "rushing", "RB", "Spencer Ferguson", "Weber State", { att: 28, yards: 165, avg: "5.9", td: 2 }),
-  realRow("FCS", "Big Sky", "rushing", "RB", "Justin Guin", "Northern Colorado", { att: 34, yards: 163, avg: "4.8", td: 1 }),
-
-  // Receiving
-  realRow("FCS", "Big Sky", "receiving", "WR", "Noah Kjar", "Weber State", { rec: 22, yards: 385, avg: "17.5", td: 6 }),
-  realRow("FCS", "Big Sky", "receiving", "WR", "Brooks Davis", "Montana", { rec: 24, yards: 311, avg: "13.0", td: 1 }),
-  realRow("FCS", "Big Sky", "receiving", "WR", "Samuel Gbatu Jr.", "UC Davis", { rec: 22, yards: 296, avg: "13.5", td: 3 }),
-  realRow("FCS", "Big Sky", "receiving", "WR", "Zedekiah Anahu-Ambrosio", "Idaho State", { rec: 5, yards: 281, avg: "56.2", td: 3 }),
-  realRow("FCS", "Big Sky", "receiving", "WR", "Dane Steel", "Montana State", { rec: 13, yards: 264, avg: "20.3", td: 3 }),
-  realRow("FCS", "Big Sky", "receiving", "WR", "Tayvion McCoy", "Cal Poly", { rec: 20, yards: 249, avg: "12.4", td: 1 }),
-  realRow("FCS", "Big Sky", "receiving", "WR", "Wesley Garrett", "Eastern Washington", { rec: 18, yards: 235, avg: "13.1", td: 2 }),
-  realRow("FCS", "Big Sky", "receiving", "WR", "Tony Harste", "Idaho", { rec: 13, yards: 233, avg: "17.9", td: 2 }),
-  realRow("FCS", "Big Sky", "receiving", "WR", "Terence Loville", "Portland State", { rec: 15, yards: 221, avg: "14.7", td: 1 }),
-  realRow("FCS", "Big Sky", "receiving", "WR", "Fidel Pitts", "Cal Poly", { rec: 14, yards: 212, avg: "15.1", td: 2 }),
-
-  // Tackling
-  realRow("FCS", "Big Sky", "tackling", "LB", "Nathan Reynolds", "Idaho State", { solo: 6, ast: 9, total: 15 }),
-  realRow("FCS", "Big Sky", "tackling", "LB", "Jaiden Letua", "Northern Arizona", { solo: 4, ast: 5, total: 9 }),
-  realRow("FCS", "Big Sky", "tackling", "LB", "Ryder Bordner", "Idaho", { solo: 2, ast: 7, total: 9 }),
-  realRow("FCS", "Big Sky", "tackling", "LB", "Logan Lisherness", "Portland State", { solo: 5, ast: 4, total: 9 }),
-  realRow("FCS", "Big Sky", "tackling", "LB", "Shoes Brinkley", "Northern Arizona", { solo: 3, ast: 5, total: 8 }),
-  realRow("FCS", "Big Sky", "tackling", "DB", "Jacob Perez", "Idaho State", { solo: 3, ast: 5, total: 8 }),
-  realRow("FCS", "Big Sky", "tackling", "DB", "Khaled Rawls", "Idaho", { solo: 6, ast: 2, total: 8 }),
-  realRow("FCS", "Big Sky", "tackling", "DB", "Nikko Speer", "Idaho", { solo: 4, ast: 4, total: 8 }),
-  realRow("FCS", "Big Sky", "tackling", "LB", "Luca Moore", "Idaho", { solo: 3, ast: 5, total: 8 }),
-  realRow("FCS", "Big Sky", "tackling", "DB", "Brevin Czosnyka", "Utah Tech", { solo: 6, ast: 1, total: 7 }),
-
-  // Sacks
-  realRow("FCS", "Big Sky", "sacksTfl", "DL", "Myles Amey", "Southern Utah", { sacks: "2.5", sackYds: 16, ff: 1, fr: 0 }),
-  realRow("FCS", "Big Sky", "sacksTfl", "DL", "Trehsyn Fesili", "Idaho State", { sacks: "2.5", sackYds: 12, ff: 1, fr: 0 }),
-  realRow("FCS", "Big Sky", "sacksTfl", "DL", "Will Alovao", "Utah Tech", { sacks: "2.0", sackYds: 7, ff: 0, fr: 0 }),
-  realRow("FCS", "Big Sky", "sacksTfl", "LB", "Tyler King", "Montana", { sacks: "2.0", sackYds: 10, ff: 0, fr: 0 }),
-  realRow("FCS", "Big Sky", "sacksTfl", "DL", "Gauge Larsen", "Eastern Washington", { sacks: "2.0", sackYds: 22, ff: 0, fr: 0 }),
-  realRow("FCS", "Big Sky", "sacksTfl", "DL", "Jaden Radke", "Eastern Washington", { sacks: "1.5", sackYds: 6, ff: 0, fr: 0 }),
-  realRow("FCS", "Big Sky", "sacksTfl", "LB", "Aiden Hall", "Southern Utah", { sacks: "1.5", sackYds: 9, ff: 0, fr: 0 }),
-  realRow("FCS", "Big Sky", "sacksTfl", "DL", "Porter Connors", "UC Davis", { sacks: "1.0", sackYds: 2, ff: 0, fr: 0 }),
-  realRow("FCS", "Big Sky", "sacksTfl", "LB", "Tanner Huff", "Montana", { sacks: "1.0", sackYds: 7, ff: 0, fr: 0 }),
-  realRow("FCS", "Big Sky", "sacksTfl", "LB", "Ezra Ekuban", "Northern Colorado", { sacks: "1.0", sackYds: 9, ff: 1, fr: 0 }),
-];
-
-// Aggregates a player's weekly stat lines into a season "total" row.
+// Aggregates a player's weekly sample stat lines into a season "total" row.
 // Recomputes rate stats (avg, rating) from the summed components rather
 // than averaging the per-week rates, same as a real stat site would.
+// (Only needed for JUCO's generated sample data -- real D2/FCS rows already
+// come from the NCAA API as season-to-date totals.)
 function aggregateCategory(catKey, weeklyStats) {
   const sum = (fn) => weeklyStats.reduce((acc, s) => acc + fn(s), 0);
   if (catKey === "passing") {
@@ -328,80 +175,75 @@ function aggregateCategory(catKey, weeklyStats) {
     return { solo, ast, total: solo + ast };
   }
   // sacksTfl
-  const sacks = sum((s) => parseFloat(s.sacks)).toFixed(1);
+  const soloSacks = sum((s) => s.soloSacks);
+  const astSacks = sum((s) => s.astSacks);
   const sackYds = sum((s) => s.sackYds);
-  const ff = sum((s) => s.ff);
-  const fr = sum((s) => s.fr);
-  return { sacks, sackYds, ff, fr };
+  const sacks = (soloSacks + astSacks * 0.5).toFixed(1);
+  return { soloSacks, astSacks, sackYds, sacks };
 }
 
+// Sample data for JUCO only -- D2 and FCS come from real-stats.json.
 function buildSampleDataset() {
   const rows = [];
   let id = 0;
-  DIVISIONS.forEach((division) => {
-    Object.entries(CATEGORIES).forEach(([catKey, cat]) => {
-      // A fixed roster per division+category so weekly lines belong to the
-      // same player and can be summed into a meaningful season total.
-      const rosterSize = ri(6, 9);
-      const roster = [];
-      for (let i = 0; i < rosterSize; i++) {
-        let teamPick = pickTeam(division);
-        // Avoid mixing sample rows into the real Big Sky conference
-        while (division === "FCS" && teamPick.conference === "Big Sky") {
-          teamPick = pickTeam(division);
-        }
-        roster.push({ player: name(), team: teamPick.team, conference: teamPick.conference, position: pick(cat.positions) });
-      }
+  Object.entries(CATEGORIES).forEach(([catKey, cat]) => {
+    // A fixed roster per category so weekly lines belong to the same
+    // player and can be summed into a meaningful season total.
+    const rosterSize = ri(6, 9);
+    const roster = [];
+    for (let i = 0; i < rosterSize; i++) {
+      const { team, conference } = pickTeam("JUCO");
+      roster.push({ player: name(), team, conference, position: pick(cat.positions) });
+    }
 
-      const weeklyStatsByPlayer = roster.map(() => []);
-      WEEKS.forEach((week) => {
-        roster.forEach((p, idx) => {
-          const stats = cat.gen();
-          weeklyStatsByPlayer[idx].push(stats);
-          rows.push({
-            id: `sample-${id++}`,
-            division,
-            week,
-            category: catKey,
-            position: p.position,
-            player: p.player,
-            team: p.team,
-            conference: p.conference,
-            sample: true,
-            ...stats,
-          });
-        });
-      });
-
+    const weeklyStatsByPlayer = roster.map(() => []);
+    WEEKS.forEach((week) => {
       roster.forEach((p, idx) => {
+        const stats = cat.gen();
+        weeklyStatsByPlayer[idx].push(stats);
         rows.push({
           id: `sample-${id++}`,
-          division,
-          week: "total",
+          division: "JUCO",
+          week,
           category: catKey,
           position: p.position,
           player: p.player,
           team: p.team,
           conference: p.conference,
           sample: true,
-          ...aggregateCategory(catKey, weeklyStatsByPlayer[idx]),
+          ...stats,
         });
+      });
+    });
+
+    roster.forEach((p, idx) => {
+      rows.push({
+        id: `sample-${id++}`,
+        division: "JUCO",
+        week: "total",
+        category: catKey,
+        position: p.position,
+        player: p.player,
+        team: p.team,
+        conference: p.conference,
+        sample: true,
+        ...aggregateCategory(catKey, weeklyStatsByPlayer[idx]),
       });
     });
   });
   return rows;
 }
 
-const DATA = [...BIG_SKY_REAL, ...buildSampleDataset()];
+const DATA = [...realStats, ...buildSampleDataset()];
 const DIVISION_LABEL = { JUCO: "Junior College", D2: "NCAA Division II", FCS: "FCS" };
+const LIVE_DIVISIONS = new Set(["D2", "FCS"]); // whole division, real NCAA API data
 
 function conferencesFor(division) {
-  return [...new Set(TEAMS[division].map((t) => t.conference))];
+  return [...new Set(DATA.filter((r) => r.division === division).map((r) => r.conference))].sort();
 }
 
-// The only conference currently backed by a live source.
-function isLiveViewFor(division, conference) {
-  return division === "FCS" && conference === "Big Sky";
+function positionsFor(division, category) {
+  return [...new Set(DATA.filter((r) => r.division === division && r.category === category).map((r) => r.position))].sort();
 }
 
 // ---------- Component ----------
@@ -411,16 +253,17 @@ export default function Gridline() {
   const [category, setCategory] = useState("passing");
   const [week, setWeek] = useState("total");
   const [position, setPosition] = useState("All");
-  const [conference, setConference] = useState("Big Sky");
+  const [conference, setConference] = useState("All");
   const [sortKey, setSortKey] = useState("yards");
   const [sortDir, setSortDir] = useState("desc");
 
   const cat = CATEGORIES[category];
-  const positions = useMemo(() => ["All", ...cat.positions], [category]);
+  const isLiveView = LIVE_DIVISIONS.has(division);
+  const positions = useMemo(() => ["All", ...positionsFor(division, category)], [division, category]);
   const conferences = useMemo(() => ["All", ...conferencesFor(division)], [division]);
 
   const rows = useMemo(() => {
-    const effectiveWeek = isLiveViewFor(division, conference) ? "total" : week;
+    const effectiveWeek = isLiveView ? "total" : week;
     let filtered = DATA.filter((r) => r.division === division && r.category === category && r.week === effectiveWeek);
     if (position !== "All") filtered = filtered.filter((r) => r.position === position);
     if (conference !== "All") filtered = filtered.filter((r) => r.conference === conference);
@@ -431,9 +274,7 @@ export default function Gridline() {
       return sortDir === "desc" ? bv - av : av - bv;
     });
     return filtered;
-  }, [division, category, week, position, conference, sortKey, sortDir]);
-
-  const isLiveView = isLiveViewFor(division, conference);
+  }, [division, category, week, position, conference, sortKey, sortDir, isLiveView]);
 
   // Weekly leaders: top row per category for this division/conference, ignoring position filter
   const weeklyLeaders = useMemo(() => {
@@ -458,11 +299,7 @@ export default function Gridline() {
   function handleDivisionChange(d) {
     setDivision(d);
     setConference("All");
-  }
-
-  function handleConferenceChange(c) {
-    setConference(c);
-    if (isLiveViewFor(division, c)) setWeek("total");
+    if (LIVE_DIVISIONS.has(d)) setWeek("total");
   }
 
   function handleCategoryChange(key) {
@@ -499,8 +336,9 @@ export default function Gridline() {
             <span style={{ color: "#8B959C", fontSize: 15 }}>weekly stats — JUCO · D2 · FCS</span>
           </div>
           <p style={{ margin: "6px 0 0", color: "#8B959C", fontSize: 14, maxWidth: 620, lineHeight: 1.5 }}>
-            FCS · Big Sky is live data, pulled from Fox Sports through this week's games (Sept 12–14, 2026).
-            Everything else is still sample data — those data sources are blocked or not yet connected.
+            D2 and FCS are live data, pulled directly from the NCAA's own stats feed (season
+            totals to date). JUCO is still sample data — those sources are harder to scrape and
+            aren't connected yet.
           </p>
         </div>
       </div>
@@ -549,12 +387,12 @@ export default function Gridline() {
           {isLiveView ? (
             <>
               <BadgeCheck size={15} />
-              <span>Live data — Big Sky Conference, season totals through games played Sept 12–14, 2026 (source: Fox Sports)</span>
+              <span>Live data — {DIVISION_LABEL[division]}, season totals to date (source: NCAA)</span>
             </>
           ) : (
             <>
               <FlaskConical size={15} />
-              <span>Sample data — this division/conference isn't connected to a live source yet</span>
+              <span>Sample data — this division isn't connected to a live source yet</span>
             </>
           )}
         </div>
@@ -624,7 +462,7 @@ export default function Gridline() {
           </FilterGroup>
 
           <FilterGroup label="Conference">
-            <select value={conference} onChange={(e) => handleConferenceChange(e.target.value)} style={selectStyle}>
+            <select value={conference} onChange={(e) => setConference(e.target.value)} style={selectStyle}>
               {conferences.map((c) => (
                 <option key={c} value={c}>
                   {c}
