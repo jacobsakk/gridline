@@ -10,10 +10,15 @@ more than once a week, so being polite costs us nothing.
 
 Known limitation: the wrapper's conference-standings scraper works for
 FCS but currently errors (HTTP 500) for D2/D3 -- confirmed by hand, not
-an assumption. So D2 conference tagging falls back to a small hardcoded
-list of known team->conference pairs (see D2_KNOWN_CONFERENCES below);
-anything not in that list is tagged "Independent" until a full mapping
-is built (e.g. from Wikipedia's D2 conference-by-conference rosters).
+an assumption. So D2 conference tagging falls back to a hand-built
+team->conference mapping (see D2_KNOWN_CONFERENCES below), built by
+cross-referencing each D2 football conference's own Wikipedia "current
+members" list against the ~160 team names that actually appear in our
+fetched stats (rather than guessed from memory -- a handful of these,
+e.g. Seton Hill's football being PSAC and not G-MAC, were verified
+directly against Wikipedia edit history/sourcing since the school's
+other sports and its football can genuinely sit in different
+conferences). Anything not in this list is tagged "Independent".
 """
 
 import glob
@@ -35,31 +40,179 @@ STAT_IDS = {
                    # so no need to merge it with the plain "Passing Yards" id
     "rushing": 469,
     "receiving": 455,
-    "tackling": 34,
     "sacksTfl": 36,
+    # "tackling" is not in this list -- it's built separately by merging
+    # four leaderboards together (see build_defense_rows / STAT_IDS_DEFENSE_MERGE)
 }
 
-# A partial, hand-maintained team -> conference mapping for D2, since the
-# API's D2 standings scraper is broken. Carried over from the original
-# prototype's sample TEAMS.D2 list (these are real D2 programs/conferences,
-# just not an exhaustive list of all ~300 D2 football schools).
+STAT_IDS_DEFENSE_MERGE = {
+    "tackles": 34,  # Total Tackles -- primary source, highest coverage
+    "tfl": 39,       # Tackles For Loss
+    "pbu": 38,       # Passes Defended
+    "int": 14,       # Interceptions Per Game (has the raw INT count too)
+}
+
+# See module docstring for how this was built.
 D2_KNOWN_CONFERENCES = {
-    "Ferris St.": "GLIAC", "Grand Valley St.": "GLIAC",
-    "Colorado Mines": "RMAC", "CSU Pueblo": "RMAC",
-    "Valdosta St.": "GSC", "Delta St.": "GSC",
-    "Slippery Rock": "PSAC", "California (PA)": "PSAC", "Cal (PA)": "PSAC",
-    "Minn. St.": "NSIC", "Sioux Falls": "NSIC",
-    "Barton": "Conference Carolinas", "Emory & Henry": "Conference Carolinas",
-    "Virginia Union": "CIAA", "Winston-Salem": "CIAA",
-    "Harding": "GAC", "Southern Ark.": "GAC",
-    "Indianapolis": "GLVC", "Lindenwood": "GLVC",
-    "Ohio Dominican": "G-MAC", "Tiffin": "G-MAC",
-    "Angelo St.": "LSC", "West Texas A&M": "LSC",
-    "Glenville St.": "MEC", "West Liberty": "MEC",
-    "Central Mo.": "MIAA", "Pittsburg St.": "MIAA",
-    "Bentley": "NE-10", "American Int'l": "NE-10",
-    "Newberry": "SAC", "Wingate": "SAC",
-    "Miles": "SIAC", "Tuskegee": "SIAC",
+    'Adams St.': 'RMAC',
+    'Albany St. (GA)': 'SIAC',
+    'Allen': 'SIAC',
+    "American Int'l": 'NE-10',
+    'Anderson (SC)': 'SAC',
+    'Angelo St.': 'LSC',
+    'Ark.-Monticello': 'GAC',
+    'Arkansas Tech': 'GAC',
+    'Ashland': 'G-MAC',
+    'Assumption': 'NE-10',
+    'Augustana (SD)': 'NSIC',
+    'Barton': 'Conference Carolinas',
+    'Bemidji St.': 'NSIC',
+    'Benedict': 'SIAC',
+    'Bentley': 'NE-10',
+    'Black Hills St.': 'RMAC',
+    'Bloomsburg': 'PSAC',
+    'Bluefield St.': 'CIAA',
+    'Bowie St.': 'CIAA',
+    'CSU Pueblo': 'RMAC',
+    'California (PA)': 'PSAC',
+    'Carson-Newman': 'SAC',
+    'Catawba': 'SAC',
+    'Central Mo.': 'MIAA',
+    'Central Okla.': 'MIAA',
+    'Central St. (OH)': 'SIAC',
+    'Central Wash.': 'LSC',
+    'Chadron St.': 'RMAC',
+    'Charleston (WV)': 'MEC',
+    'Chowan': 'Conference Carolinas',
+    'Clarion': 'PSAC',
+    'Clark Atlanta': 'SIAC',
+    'Colo. Sch. of Mines': 'RMAC',
+    'Colorado Mesa': 'RMAC',
+    'Concord': 'MEC',
+    'Concordia-St. Paul': 'NSIC',
+    'Davenport': 'GLIAC',
+    'Delta St.': 'GSC',
+    'East Central': 'GAC',
+    'East Stroudsburg': 'PSAC',
+    'Eastern N.M.': 'LSC',
+    'Edinboro': 'PSAC',
+    'Edward Waters': 'SIAC',
+    'Elizabeth City St.': 'CIAA',
+    'Emory & Henry': 'Conference Carolinas',
+    'Emporia St.': 'MIAA',
+    'Erskine': 'Conference Carolinas',
+    'Fairmont St.': 'MEC',
+    'Fayetteville St.': 'CIAA',
+    'Ferris St.': 'GLIAC',
+    'Findlay': 'G-MAC',
+    'Fort Hays St.': 'MIAA',
+    'Fort Lewis': 'RMAC',
+    'Fort Valley St.': 'SIAC',
+    'Franklin Pierce': 'NE-10',
+    'Frostburg St.': 'MEC',
+    'Gannon': 'PSAC',
+    'Glenville St.': 'MEC',
+    'Grand Valley St.': 'GLIAC',
+    'Harding': 'GAC',
+    'Henderson St.': 'GAC',
+    'Hillsdale': 'G-MAC',
+    'Indiana (PA)': 'PSAC',
+    'Jamestown': 'NSIC',
+    'Johnson C. Smith': 'CIAA',
+    'Kentucky St.': 'SIAC',
+    'Kutztown': 'PSAC',
+    'Ky. Wesleyan': 'G-MAC',
+    'Lake Erie': 'G-MAC',
+    'Lane': 'SIAC',
+    'Lenoir-Rhyne': 'SAC',
+    'Lincoln (MO)': 'GLVC',
+    'Lincoln (PA)': 'CIAA',
+    'Livingstone': 'CIAA',
+    'Lock Haven': 'PSAC',
+    'MSU Moorhead': 'NSIC',
+    'Mars Hill': 'SAC',
+    'Mary': 'NSIC',
+    'McKendree': 'GLVC',
+    'Michigan Tech': 'GLIAC',
+    'Midwestern St.': 'LSC',
+    'Miles': 'SIAC',
+    'Millersville': 'PSAC',
+    'Minn. Duluth': 'NSIC',
+    'Minnesota St.': 'NSIC',
+    'Minot St.': 'NSIC',
+    'Missouri S&T': 'GLVC',
+    'Missouri Western': 'MIAA',
+    'Mo. Southern St.': 'MIAA',
+    'Morehouse': 'SIAC',
+    'N.M. Highlands': 'RMAC',
+    'Neb.-Kearney': 'MIAA',
+    'Newberry': 'SAC',
+    'North Greenville': 'Conference Carolinas',
+    'Northeastern St.': 'MIAA',
+    'Northern Mich.': 'GLIAC',
+    'Northern St.': 'NSIC',
+    'Northwest Mo. St.': 'MIAA',
+    'Northwestern Okla.': 'GAC',
+    'Northwood': 'G-MAC',
+    'Ohio Dominican': 'G-MAC',
+    'Okla. Baptist': 'GAC',
+    'Ouachita Baptist': 'GAC',
+    'Pace': 'NE-10',
+    'Pittsburg St.': 'MIAA',
+    'Post': 'NE-10',
+    'Quincy': 'GLVC',
+    'Roosevelt': 'GLIAC',
+    'Saginaw Valley': 'GLIAC',
+    'Saint Anselm': 'NE-10',
+    'Savannah St.': 'SIAC',
+    'Seton Hill': 'PSAC',
+    'Shaw': 'CIAA',
+    'Shepherd': 'PSAC',
+    'Shippensburg': 'PSAC',
+    'Shorter': 'Conference Carolinas',
+    'Sioux Falls': 'NSIC',
+    'Slippery Rock': 'PSAC',
+    'South Dakota Mines': 'RMAC',
+    'Southeastern Okla.': 'GAC',
+    'Southern Ark.': 'GAC',
+    'Southern Conn. St.': 'NE-10',
+    'Southern Nazarene': 'GAC',
+    'Southwest Baptist': 'GLVC',
+    'Southwest Minn. St.': 'NSIC',
+    'Southwestern Okla.': 'GAC',
+    'Sul Ross St.': 'LSC',
+    'Tex. A&M-Kingsville': 'LSC',
+    'Thomas More': 'G-MAC',
+    'Tiffin': 'G-MAC',
+    'Truman St.': 'GLVC',
+    'Tusculum': 'SAC',
+    'Tuskegee': 'SIAC',
+    'UIndy': 'GLVC',
+    'UNC Pembroke': 'Conference Carolinas',
+    'UT Permian Basin': 'LSC',
+    'UVA Wise': 'SAC',
+    'Upper Iowa': 'GLVC',
+    'Valdosta St.': 'GSC',
+    'Virginia St.': 'CIAA',
+    'Virginia Union': 'CIAA',
+    'Walsh': 'G-MAC',
+    'Washburn': 'MIAA',
+    'Wayne St. (MI)': 'GLIAC',
+    'Wayne St. (NE)': 'NSIC',
+    'West Ala.': 'GSC',
+    'West Chester': 'PSAC',
+    'West Liberty': 'MEC',
+    'West Tex. A&M': 'LSC',
+    'West Va. Wesleyan': 'MEC',
+    'West Virginia St.': 'MEC',
+    'Western Colo.': 'RMAC',
+    'Western N.M.': 'LSC',
+    'Western Ore.': 'LSC',
+    'Wheeling': 'MEC',
+    'William Jewell': 'GLVC',
+    'Wingate': 'SAC',
+    'Winona St.': 'NSIC',
+    'Winston-Salem': 'CIAA',
 }
 
 
@@ -147,12 +300,6 @@ def transform_row(division, category, conference_lookup, raw, row_id):
         rec = _to_int(raw.get("Rec"))
         yards = _to_int(raw.get("Rec Yds"))
         base.update({"rec": rec, "yards": yards, "avg": _avg(yards, rec), "td": _to_int(raw.get("Rec TD"))})
-    elif category == "tackling":
-        base.update({
-            "solo": _to_int(raw.get("Solo Tack")),
-            "ast": _to_int(raw.get("Asst Tack")),
-            "total": _to_int(raw.get("TT")),
-        })
     elif category == "sacksTfl":
         # The real "Sacks" leaderboard doesn't include forced fumbles/
         # recoveries per player (those are separate leaderboards covering
@@ -259,9 +406,16 @@ def build_delta_row(current, previous, week_label):
         elif category == "tackling":
             d_solo = current["solo"] - previous["solo"]
             d_ast = current["ast"] - previous["ast"]
-            if min(d_solo, d_ast) < 0:
+            d_tfl = float(current["tfl"]) - float(previous["tfl"])
+            d_pbu = current["pbu"] - previous["pbu"]
+            d_int = current["int"] - previous["int"]
+            if min(d_solo, d_ast, d_tfl, d_pbu, d_int) < 0:
                 return None
-            row.update({"solo": d_solo, "ast": d_ast, "total": d_solo + d_ast})
+            row.update({
+                "solo": d_solo, "ast": d_ast, "total": d_solo + d_ast,
+                "tfl": f"{d_tfl:.1f}" if d_tfl % 1 else str(int(d_tfl)),
+                "pbu": d_pbu, "int": d_int,
+            })
         elif category == "sacksTfl":
             d_solo = current["soloSacks"] - previous["soloSacks"]
             d_ast = current["astSacks"] - previous["astSacks"]
@@ -293,6 +447,62 @@ def build_weekly_delta_rows(current_rows, previous_rows, week_label):
     return weekly
 
 
+def build_defense_rows(division_slug, division_label, conference_lookup):
+    """The "tackling" (Defense) category merges four separate NCAA
+    leaderboards -- Total Tackles, Tackles For Loss, Passes Defended, and
+    Interceptions -- into one row per player, keyed by (player, team). Any
+    player who appears on *any* of the four gets a row; fields from a
+    leaderboard they don't appear on default to 0 (same "best effort,
+    not exhaustive" tradeoff as the Sacks category's columns)."""
+    merged = {}  # (player, team) -> row dict
+
+    def get_or_create(raw):
+        key = (raw["Name"], raw["Team"])
+        if key not in merged:
+            position = raw.get("Position") or "ATH"
+            merged[key] = {
+                "id": f"real-{division_slug}-tackling-{len(merged)}",
+                "division": division_label,
+                "week": "total",
+                "category": "tackling",
+                "position": position,
+                "player": raw["Name"],
+                "team": raw["Team"],
+                "conference": conference_lookup(raw["Team"]),
+                "games": _to_int(raw.get("G")),
+                "sample": False,
+                "solo": 0, "ast": 0, "total": 0, "tfl": 0, "pbu": 0, "int": 0,
+            }
+        return merged[key]
+
+    for raw in fetch_all_pages(division_slug, STAT_IDS_DEFENSE_MERGE["tackles"]):
+        row = get_or_create(raw)
+        row["solo"] = _to_int(raw.get("Solo Tack"))
+        row["ast"] = _to_int(raw.get("Asst Tack"))
+        row["total"] = _to_int(raw.get("TT"))
+    time.sleep(REQUEST_PAUSE_SECONDS)
+
+    for raw in fetch_all_pages(division_slug, STAT_IDS_DEFENSE_MERGE["tfl"]):
+        row = get_or_create(raw)
+        row["tfl"] = raw.get("TTFL", "0")  # e.g. "8.5" -- half-TFLs are real (split between two players)
+        row["games"] = max(row["games"], _to_int(raw.get("G")))
+    time.sleep(REQUEST_PAUSE_SECONDS)
+
+    for raw in fetch_all_pages(division_slug, STAT_IDS_DEFENSE_MERGE["pbu"]):
+        row = get_or_create(raw)
+        row["pbu"] = _to_int(raw.get("PBU"))
+        row["games"] = max(row["games"], _to_int(raw.get("G")))
+    time.sleep(REQUEST_PAUSE_SECONDS)
+
+    for raw in fetch_all_pages(division_slug, STAT_IDS_DEFENSE_MERGE["int"]):
+        row = get_or_create(raw)
+        row["int"] = _to_int(raw.get("Int"))
+        row["games"] = max(row["games"], _to_int(raw.get("G")))
+    time.sleep(REQUEST_PAUSE_SECONDS)
+
+    return list(merged.values())
+
+
 def build_division_rows(division_slug, division_label, conference_lookup):
     """division_slug is the NCAA API's URL path segment (e.g. "fcs", "d2");
     division_label is what Gridline's front-end expects (e.g. "FCS", "D2")."""
@@ -303,4 +513,5 @@ def build_division_rows(division_slug, division_label, conference_lookup):
             row_id = f"real-{division_slug}-{category}-{i}"
             rows.append(transform_row(division_label, category, conference_lookup, raw, row_id))
         time.sleep(REQUEST_PAUSE_SECONDS)
+    rows.extend(build_defense_rows(division_slug, division_label, conference_lookup))
     return rows

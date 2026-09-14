@@ -114,8 +114,13 @@ const CATEGORIES = {
       return { rec, yards, avg: (yards / rec).toFixed(1), td: ri(0, 3) };
     },
   },
+  // "Defense" merges four separate real leaderboards (total tackles, TFL,
+  // passes defended, interceptions) into one row per player -- see
+  // build_defense_rows() in scraper/ncaa_api.py. A player who's on one
+  // leaderboard but not another shows 0 for that stat, same best-effort
+  // tradeoff as the Sacks category.
   tackling: {
-    label: "Tackling",
+    label: "Defense",
     positions: ["LB", "DB", "DL"],
     leaderKey: "total",
     columns: [
@@ -123,11 +128,14 @@ const CATEGORIES = {
       { key: "solo", label: "SOLO" },
       { key: "ast", label: "AST" },
       { key: "total", label: "TOT" },
+      { key: "tfl", label: "TFL" },
+      { key: "pbu", label: "PBU" },
+      { key: "int", label: "INT" },
     ],
     gen: () => {
       const solo = ri(2, 11);
       const ast = ri(0, 6);
-      return { solo, ast, total: solo + ast };
+      return { solo, ast, total: solo + ast, tfl: (ri(0, 15) / 10).toFixed(1), pbu: ri(0, 3), int: ri(0, 2) };
     },
   },
   // Columns here match what the real "Sacks" leaderboard actually reports
@@ -184,7 +192,8 @@ function aggregateCategory(catKey, weeklyStats) {
   if (catKey === "tackling") {
     const solo = sum((s) => s.solo);
     const ast = sum((s) => s.ast);
-    return { solo, ast, total: solo + ast };
+    const tfl = sum((s) => parseFloat(s.tfl));
+    return { solo, ast, total: solo + ast, tfl: tfl.toFixed(1), pbu: sum((s) => s.pbu), int: sum((s) => s.int) };
   }
   // sacksTfl
   const soloSacks = sum((s) => s.soloSacks);
