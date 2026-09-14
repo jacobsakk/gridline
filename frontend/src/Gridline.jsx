@@ -57,6 +57,7 @@ const CATEGORIES = {
     positions: ["QB"],
     leaderKey: "yards",
     columns: [
+      { key: "games", label: "G" },
       { key: "compAtt", label: "C/ATT", sortKey: "att" },
       { key: "yards", label: "YDS" },
       { key: "td", label: "TD" },
@@ -77,6 +78,7 @@ const CATEGORIES = {
     positions: ["RB", "QB"],
     leaderKey: "yards",
     columns: [
+      { key: "games", label: "G" },
       { key: "att", label: "ATT" },
       { key: "yards", label: "YDS" },
       { key: "avg", label: "AVG" },
@@ -93,6 +95,7 @@ const CATEGORIES = {
     positions: ["WR", "TE", "RB"],
     leaderKey: "yards",
     columns: [
+      { key: "games", label: "G" },
       { key: "rec", label: "REC" },
       { key: "yards", label: "YDS" },
       { key: "avg", label: "AVG" },
@@ -109,6 +112,7 @@ const CATEGORIES = {
     positions: ["LB", "DB", "DL"],
     leaderKey: "total",
     columns: [
+      { key: "games", label: "G" },
       { key: "solo", label: "SOLO" },
       { key: "ast", label: "AST" },
       { key: "total", label: "TOT" },
@@ -129,6 +133,7 @@ const CATEGORIES = {
     positions: ["DL", "LB"],
     leaderKey: "sacks",
     columns: [
+      { key: "games", label: "G" },
       { key: "soloSacks", label: "SOLO" },
       { key: "astSacks", label: "AST" },
       { key: "sackYds", label: "YDS" },
@@ -210,6 +215,7 @@ function buildSampleDataset() {
           player: p.player,
           team: p.team,
           conference: p.conference,
+          games: 1,
           sample: true,
           ...stats,
         });
@@ -226,6 +232,7 @@ function buildSampleDataset() {
         player: p.player,
         team: p.team,
         conference: p.conference,
+        games: WEEKS.length,
         sample: true,
         ...aggregateCategory(catKey, weeklyStatsByPlayer[idx]),
       });

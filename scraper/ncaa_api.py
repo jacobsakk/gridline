@@ -122,6 +122,7 @@ def transform_row(division, category, conference_lookup, raw, row_id):
         "player": raw["Name"],
         "team": raw["Team"],
         "conference": conference_lookup(raw["Team"]),
+        "games": _to_int(raw.get("G")),
         "sample": False,
     }
 
