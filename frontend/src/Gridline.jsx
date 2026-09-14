@@ -99,7 +99,7 @@ const CATEGORIES = {
   },
   receiving: {
     label: "Receiving",
-    positions: ["WR", "TE", "RB"],
+    positions: ["WR", "RB"],
     leaderKey: "yards",
     columns: [
       { key: "games", label: "G" },
@@ -121,7 +121,7 @@ const CATEGORIES = {
   // unknown/blank value -- a best-effort tradeoff, not a guess.
   tackling: {
     label: "Defense",
-    positions: ["LB", "DB", "DL"],
+    positions: ["LB", "CB", "SAF", "DL"],
     leaderKey: "total",
     columns: [
       { key: "games", label: "G" },

@@ -267,8 +267,29 @@ def _avg(yards, count):
     return f"{(yards / count):.1f}" if count else "0.0"
 
 
+# The NCAA's raw position labels are finer-grained and inconsistent (DE/DT
+# vs DL, DB vs S vs CB, offense's own TE bucket, etc.) than we want exposed
+# as filter options. Collapsed to one canonical set of 9 the front-end
+# filters against.
+POSITION_MAP = {
+    "QB": "QB",
+    "RB": "RB", "FB": "RB",
+    "WR": "WR", "TE": "WR",
+    "OL": "OL", "LS": "OL",
+    "DL": "DL", "DE": "DL", "DT": "DL",
+    "LB": "LB",
+    "CB": "CB",
+    "S": "SAF", "SAF": "SAF", "DB": "SAF",
+    "ATH": "ATH",
+}
+
+
+def normalize_position(raw_position):
+    return POSITION_MAP.get(raw_position, "ATH")
+
+
 def transform_row(division, category, conference_lookup, raw, row_id):
-    position = raw.get("Position") or "ATH"
+    position = normalize_position(raw.get("Position"))
     base = {
         "id": row_id,
         "division": division,
@@ -442,7 +463,7 @@ def build_defense_rows(division_slug, division_label, conference_lookup):
     def get_or_create(raw):
         key = (raw["Name"], raw["Team"])
         if key not in merged:
-            position = raw.get("Position") or "ATH"
+            position = normalize_position(raw.get("Position"))
             merged[key] = {
                 "id": f"real-{division_slug}-tackling-{len(merged)}",
                 "division": division_label,
