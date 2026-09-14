@@ -6,34 +6,66 @@ Run manually for now:
 
     python3 scraper/build_data.py
 
-Later this becomes the payload of the weekly GitHub Actions job -- for
-now it just regenerates a static JSON file the front-end imports, which
-is enough to replace the mock D2/FCS data with real numbers.
+Also saves a dated snapshot of each division's season-to-date totals
+under scraper/snapshots/. From the *second* time this runs onward, it
+diffs the new snapshot against the most recent previous one to produce
+real single-week rows (the NCAA's API only ever reports season-to-date
+totals, so a real "just this week" number only exists once we have two
+checkpoints to subtract). The very first run for a division has nothing
+to diff against yet, so it only produces season-total rows.
+
+Later this becomes the payload of the weekly GitHub Actions job.
 """
 
+import datetime
 import json
 import os
 import sys
 
-from ncaa_api import build_division_rows, fetch_fcs_conference_map, d2_conference_for
+from ncaa_api import (
+    build_division_rows,
+    build_weekly_delta_rows,
+    d2_conference_for,
+    fetch_fcs_conference_map,
+    load_previous_snapshot,
+    save_snapshot,
+)
 
 OUTPUT_PATH = os.path.join(
     os.path.dirname(__file__), "..", "frontend", "src", "data", "real-stats.json"
 )
 
 
+def build_division(division_slug, division_label, conference_lookup, run_date):
+    print(f"Fetching {division_label} stat leaders (passing/rushing/receiving/tackling/sacks)...")
+    total_rows = build_division_rows(division_slug, division_label, conference_lookup)
+    print(f"  {len(total_rows)} {division_label} rows (season totals)")
+
+    previous_date, previous_rows = load_previous_snapshot(division_slug, run_date)
+    save_snapshot(division_slug, run_date, total_rows)
+
+    if previous_rows is None:
+        print(f"  No earlier {division_label} snapshot to diff against yet -- "
+              f"real per-week rows for {division_label} start next time this runs.")
+        weekly_rows = []
+    else:
+        weekly_rows = build_weekly_delta_rows(total_rows, previous_rows, week_label=run_date)
+        print(f"  {len(weekly_rows)} {division_label} rows for the week since {previous_date}")
+
+    return total_rows + weekly_rows
+
+
 def main():
+    run_date = datetime.date.today().isoformat()
+
     print("Fetching FCS conference map...")
     fcs_conferences = fetch_fcs_conference_map()
     print(f"  {len(fcs_conferences)} FCS teams mapped to conferences")
 
-    print("Fetching FCS stat leaders (passing/rushing/receiving/tackling/sacks)...")
-    fcs_rows = build_division_rows("fcs", "FCS", lambda team: fcs_conferences.get(team, "Independent"))
-    print(f"  {len(fcs_rows)} FCS rows")
-
-    print("Fetching D2 stat leaders...")
-    d2_rows = build_division_rows("d2", "D2", d2_conference_for)
-    print(f"  {len(d2_rows)} D2 rows")
+    fcs_rows = build_division(
+        "fcs", "FCS", lambda team: fcs_conferences.get(team, "Independent"), run_date
+    )
+    d2_rows = build_division("d2", "D2", d2_conference_for, run_date)
 
     unmapped_d2_teams = sorted({r["team"] for r in d2_rows if r["conference"] == "Independent"})
     if unmapped_d2_teams:

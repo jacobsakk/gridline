@@ -16,7 +16,9 @@ anything not in that list is tagged "Independent" until a full mapping
 is built (e.g. from Wikipedia's D2 conference-by-conference rosters).
 """
 
+import glob
 import json
+import os
 import time
 import urllib.error
 import urllib.request
@@ -164,6 +166,131 @@ def transform_row(division, category, conference_lookup, raw, row_id):
         })
 
     return base
+
+
+SNAPSHOT_DIR = os.path.join(os.path.dirname(__file__), "snapshots")
+
+
+def passing_efficiency(yards, td, comp, ints, att):
+    """The NCAA's own passer-rating formula. Verified against real data,
+    not guessed: reproduces Fall 2026 FCS leaders' published ratings
+    (e.g. 66 att/46 comp/1 int/727 yds/11 td -> 214.19) exactly."""
+    if att <= 0:
+        return "0.0"
+    return f"{(8.4 * yards + 330 * td + 100 * comp - 200 * ints) / att:.2f}"
+
+
+def _row_key(row):
+    """Identifies "the same player's line in this category" across two
+    snapshots. Not globally unique across a transfer/name collision, but
+    good enough for a weekly diff."""
+    return (row["category"], row["player"], row["team"])
+
+
+def snapshot_path(division_slug, run_date):
+    return os.path.join(SNAPSHOT_DIR, f"{division_slug}-{run_date}.json")
+
+
+def save_snapshot(division_slug, run_date, rows):
+    os.makedirs(SNAPSHOT_DIR, exist_ok=True)
+    with open(snapshot_path(division_slug, run_date), "w") as f:
+        json.dump(rows, f, indent=2)
+
+
+def load_previous_snapshot(division_slug, run_date):
+    """Returns (previous_run_date, rows) for the most recent snapshot
+    strictly before run_date, or (None, None) if this is the first one."""
+    pattern = os.path.join(SNAPSHOT_DIR, f"{division_slug}-*.json")
+    candidates = []
+    for path in glob.glob(pattern):
+        date_part = os.path.basename(path)[len(division_slug) + 1 : -len(".json")]
+        if date_part < run_date:
+            candidates.append(date_part)
+    if not candidates:
+        return None, None
+    latest = max(candidates)
+    with open(snapshot_path(division_slug, latest)) as f:
+        return latest, json.load(f)
+
+
+def build_delta_row(current, previous, week_label):
+    """Given the same player's "season to date" row from two snapshots,
+    returns a row representing just the stats added in between -- or None
+    if it can't be computed cleanly (no new game played, or a data
+    correction made a number go down, which happens occasionally on the
+    NCAA's end)."""
+    d_games = current["games"] - previous["games"]
+    if d_games <= 0:
+        return None
+
+    row = {
+        **current,
+        "id": f"{current['id']}-wk-{week_label}",
+        "week": week_label,
+        "games": d_games,
+    }
+
+    category = current["category"]
+    try:
+        if category == "passing":
+            d_att = current["att"] - previous["att"]
+            d_comp = int(current["compAtt"].split("/")[0]) - int(previous["compAtt"].split("/")[0])
+            d_yards = current["yards"] - previous["yards"]
+            d_td = current["td"] - previous["td"]
+            d_int = current["int"] - previous["int"]
+            if min(d_att, d_comp, d_yards, d_td, d_int) < 0:
+                return None
+            row.update({
+                "compAtt": f"{d_comp}/{d_att}",
+                "att": d_att,
+                "yards": d_yards,
+                "td": d_td,
+                "int": d_int,
+                "rating": passing_efficiency(d_yards, d_td, d_comp, d_int, d_att),
+            })
+        elif category in ("rushing", "receiving"):
+            count_key = "att" if category == "rushing" else "rec"
+            d_count = current[count_key] - previous[count_key]
+            d_yards = current["yards"] - previous["yards"]
+            d_td = current["td"] - previous["td"]
+            if min(d_count, d_yards, d_td) < 0:
+                return None
+            row.update({count_key: d_count, "yards": d_yards, "avg": _avg(d_yards, d_count), "td": d_td})
+        elif category == "tackling":
+            d_solo = current["solo"] - previous["solo"]
+            d_ast = current["ast"] - previous["ast"]
+            if min(d_solo, d_ast) < 0:
+                return None
+            row.update({"solo": d_solo, "ast": d_ast, "total": d_solo + d_ast})
+        elif category == "sacksTfl":
+            d_solo = current["soloSacks"] - previous["soloSacks"]
+            d_ast = current["astSacks"] - previous["astSacks"]
+            d_yds = current["sackYds"] - previous["sackYds"]
+            if min(d_solo, d_ast, d_yds) < 0:
+                return None
+            row.update({
+                "soloSacks": d_solo,
+                "astSacks": d_ast,
+                "sackYds": d_yds,
+                "sacks": f"{d_solo + 0.5 * d_ast:.1f}",
+            })
+    except (KeyError, ValueError, ZeroDivisionError):
+        return None
+
+    return row
+
+
+def build_weekly_delta_rows(current_rows, previous_rows, week_label):
+    previous_by_key = {_row_key(r): r for r in previous_rows}
+    weekly = []
+    for row in current_rows:
+        previous = previous_by_key.get(_row_key(row))
+        if previous is None:
+            continue  # player wasn't in the prior snapshot -- can't diff, skip
+        delta = build_delta_row(row, previous, week_label)
+        if delta is not None:
+            weekly.append(delta)
+    return weekly
 
 
 def build_division_rows(division_slug, division_label, conference_lookup):

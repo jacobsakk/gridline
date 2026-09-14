@@ -19,12 +19,19 @@ const ri = (a, b) => Math.floor(rand() * (b - a + 1)) + a;
 const pick = (arr) => arr[Math.floor(rand() * arr.length)];
 
 const DIVISIONS = ["JUCO", "D2", "FCS"];
-const WEEKS = [1, 2, 3, 4];
-// "total" is a season-to-date aggregate. Real data (D2/FCS, from the NCAA's
-// own stats feed) only ever has a "total" row -- the source reports
-// season-to-date, not isolated per-week lines, same as any stats site would.
-const WEEK_OPTIONS = ["total", 1, 2, 3, 4];
-const weekLabel = (w) => (w === "total" ? "Total (season)" : `Week ${w}`);
+const WEEKS = [1, 2, 3, 4]; // JUCO sample data only
+
+// "total" = season-to-date. For D2/FCS, single-week rows (if any exist yet)
+// are keyed by the ISO date the snapshot was taken -- see
+// scraper/build_data.py. A real single week only appears once the scraper
+// has run at least twice, so the dropdown may just show "Total (season)"
+// for a while; that's expected, not a bug.
+function weekLabel(w) {
+  if (w === "total") return "Total (season)";
+  if (typeof w === "number") return `Week ${w}`;
+  const d = new Date(`${w}T00:00:00`);
+  return Number.isNaN(d.getTime()) ? String(w) : `Week of ${d.toLocaleDateString(undefined, { month: "short", day: "numeric" })}`;
+}
 
 // Sample-only roster, JUCO only -- D2 and FCS now come from real-stats.json.
 const TEAMS = {
@@ -253,6 +260,16 @@ function positionsFor(division, category) {
   return [...new Set(DATA.filter((r) => r.division === division && r.category === category).map((r) => r.position))].sort();
 }
 
+// Which weeks actually have data for this division. JUCO's sample data
+// always has weeks 1-4; D2/FCS only gain a real single-week entry once the
+// scraper has run at least twice (see scraper/build_data.py) -- until then
+// this returns just ["total"], which is expected, not a bug.
+function weeksFor(division) {
+  const real = [...new Set(DATA.filter((r) => r.division === division && r.week !== "total").map((r) => r.week))];
+  real.sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
+  return ["total", ...real];
+}
+
 // ---------- Component ----------
 
 export default function Gridline() {
@@ -268,10 +285,10 @@ export default function Gridline() {
   const isLiveView = LIVE_DIVISIONS.has(division);
   const positions = useMemo(() => ["All", ...positionsFor(division, category)], [division, category]);
   const conferences = useMemo(() => ["All", ...conferencesFor(division)], [division]);
+  const weekOptions = useMemo(() => weeksFor(division), [division]);
 
   const rows = useMemo(() => {
-    const effectiveWeek = isLiveView ? "total" : week;
-    let filtered = DATA.filter((r) => r.division === division && r.category === category && r.week === effectiveWeek);
+    let filtered = DATA.filter((r) => r.division === division && r.category === category && r.week === week);
     if (position !== "All") filtered = filtered.filter((r) => r.position === position);
     if (conference !== "All") filtered = filtered.filter((r) => r.conference === conference);
 
@@ -281,18 +298,17 @@ export default function Gridline() {
       return sortDir === "desc" ? bv - av : av - bv;
     });
     return filtered;
-  }, [division, category, week, position, conference, sortKey, sortDir, isLiveView]);
+  }, [division, category, week, position, conference, sortKey, sortDir]);
 
   // Weekly leaders: top row per category for this division/conference, ignoring position filter
   const weeklyLeaders = useMemo(() => {
-    const effectiveWeek = isLiveView ? "total" : week;
     return Object.entries(CATEGORIES).map(([key, c]) => {
-      let catRows = DATA.filter((r) => r.division === division && r.category === key && r.week === effectiveWeek);
+      let catRows = DATA.filter((r) => r.division === division && r.category === key && r.week === week);
       if (conference !== "All") catRows = catRows.filter((r) => r.conference === conference);
       const sorted = [...catRows].sort((a, b) => (parseFloat(b[c.leaderKey]) || 0) - (parseFloat(a[c.leaderKey]) || 0));
       return { key, cat: c, leader: sorted[0] };
     });
-  }, [division, week, conference, isLiveView]);
+  }, [division, week, conference]);
 
   function handleSort(key) {
     if (key === sortKey) {
@@ -306,7 +322,7 @@ export default function Gridline() {
   function handleDivisionChange(d) {
     setDivision(d);
     setConference("All");
-    if (LIVE_DIVISIONS.has(d)) setWeek("total");
+    setWeek("total"); // each division has its own set of real weeks, if any
   }
 
   function handleCategoryChange(key) {
@@ -407,7 +423,7 @@ export default function Gridline() {
         {/* Weekly leaders strip */}
         <div style={{ marginBottom: 24 }}>
           <span style={{ fontSize: 11, color: "#5D666C", letterSpacing: "0.03em", display: "block", marginBottom: 8 }}>
-            {weekLabel(isLiveView ? "total" : week)} leaders — {conference === "All" ? DIVISION_LABEL[division] : conference}
+            {weekLabel(week)} leaders — {conference === "All" ? DIVISION_LABEL[division] : conference}
           </span>
           <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
             {weeklyLeaders.map(({ key, cat: c, leader }) => (
@@ -480,13 +496,12 @@ export default function Gridline() {
 
           <FilterGroup label="Week">
             <select
-              value={isLiveView ? "total" : week}
-              onChange={(e) => setWeek(e.target.value === "total" ? "total" : Number(e.target.value))}
+              value={week}
+              onChange={(e) => setWeek(weekOptions.find((w) => String(w) === e.target.value) ?? "total")}
               style={selectStyle}
-              disabled={isLiveView}
-              title={isLiveView ? "Live source only reports season totals, not per-week splits" : undefined}
+              title={weekOptions.length === 1 ? "No single-week data yet for this division -- check back after the next weekly update" : undefined}
             >
-              {WEEK_OPTIONS.map((w) => (
+              {weekOptions.map((w) => (
                 <option key={w} value={w}>
                   {weekLabel(w)}
                 </option>
