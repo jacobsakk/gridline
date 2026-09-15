@@ -193,7 +193,6 @@ const pillStyle = (active) => ({
   cursor: "pointer",
 });
 
-const fieldLabelStyle = { display: "block", fontSize: 10.5, color: "#5D666C", letterSpacing: "0.03em", margin: "10px 0 4px" };
 const fieldInputStyle = {
   width: "100%",
   background: "#12171A",
@@ -204,22 +203,61 @@ const fieldInputStyle = {
   color: "#EDEAE0",
   fontFamily: "inherit",
 };
+// Compact variant for an input sitting inside a table cell (watch list grid).
+const cellInputStyle = { ...fieldInputStyle, padding: "4px 6px", fontSize: 12.5, background: "#12171A" };
 
-function WatchListCard({ p, onRemove, onUpdate }) {
+// One editable row of the watch list grid. Each text field keeps local
+// state so keystrokes don't round-trip to the db on every character --
+// it only commits (onUpdate) on blur, same pattern as the main scraped
+// table's cells are read-only render of committed data.
+function WatchListRow({ p, onRemove, onUpdate, style }) {
   const [notes, setNotes] = useState(p.notes || "");
   const [hometown, setHometown] = useState(p.hometown || "");
   const [eligibility, setEligibility] = useState(p.eligibility || "");
 
   return (
-    <div style={{ background: "#1A2126", border: "1px solid #2A333A", borderRadius: 6, padding: 12 }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
-        <div>
-          <div style={{ fontWeight: 600, color: "#EDEAE0", fontSize: 14 }}>{p.player}</div>
-          <div style={{ fontSize: 12, color: "#8B959C" }}>
-            {p.team || "—"}
-            {p.division ? ` · ${p.division}` : ""}
-          </div>
+    <tr style={style}>
+      <td style={{ ...tdStyle, fontWeight: 600, color: "#EDEAE0" }}>{p.player}</td>
+      <td style={{ ...tdStyle, color: "#8B959C" }}>{p.team || "—"}</td>
+      <td style={{ ...tdStyle, color: "#8B959C", fontSize: 12.5 }}>{p.division || "—"}</td>
+      <td style={tdStyle}>
+        <div style={{ display: "flex", gap: 6 }}>
+          <button style={pillStyle(p.pipelined === true)} onClick={() => onUpdate("pipelined", true)}>
+            Yes
+          </button>
+          <button style={pillStyle(p.pipelined === false)} onClick={() => onUpdate("pipelined", false)}>
+            No
+          </button>
         </div>
+      </td>
+      <td style={tdStyle}>
+        <input
+          value={hometown}
+          onChange={(e) => setHometown(e.target.value)}
+          onBlur={() => onUpdate("hometown", hometown)}
+          placeholder="—"
+          style={cellInputStyle}
+        />
+      </td>
+      <td style={tdStyle}>
+        <input
+          value={eligibility}
+          onChange={(e) => setEligibility(e.target.value)}
+          onBlur={() => onUpdate("eligibility", eligibility)}
+          placeholder="e.g. 2 years remaining"
+          style={cellInputStyle}
+        />
+      </td>
+      <td style={tdStyle}>
+        <input
+          value={notes}
+          onChange={(e) => setNotes(e.target.value)}
+          onBlur={() => onUpdate("notes", notes)}
+          placeholder="Notes…"
+          style={cellInputStyle}
+        />
+      </td>
+      <td style={{ ...tdStyle, textAlign: "center" }}>
         <button
           onClick={onRemove}
           title="Remove from watch list"
@@ -227,48 +265,16 @@ function WatchListCard({ p, onRemove, onUpdate }) {
         >
           <X size={15} />
         </button>
-      </div>
-
-      <div style={{ marginTop: 10, display: "flex", alignItems: "center", gap: 8 }}>
-        <span style={{ fontSize: 11, color: "#5D666C", letterSpacing: "0.03em" }}>Pipelined?</span>
-        <button style={pillStyle(p.pipelined === true)} onClick={() => onUpdate("pipelined", true)}>
-          Yes
-        </button>
-        <button style={pillStyle(p.pipelined === false)} onClick={() => onUpdate("pipelined", false)}>
-          No
-        </button>
-      </div>
-
-      <label style={fieldLabelStyle}>Hometown</label>
-      <input
-        value={hometown}
-        onChange={(e) => setHometown(e.target.value)}
-        onBlur={() => onUpdate("hometown", hometown)}
-        placeholder="—"
-        style={fieldInputStyle}
-      />
-
-      <label style={fieldLabelStyle}>Eligibility</label>
-      <input
-        value={eligibility}
-        onChange={(e) => setEligibility(e.target.value)}
-        onBlur={() => onUpdate("eligibility", eligibility)}
-        placeholder="e.g. 2 years remaining"
-        style={fieldInputStyle}
-      />
-
-      <label style={fieldLabelStyle}>Notes</label>
-      <textarea
-        value={notes}
-        onChange={(e) => setNotes(e.target.value)}
-        onBlur={() => onUpdate("notes", notes)}
-        placeholder="Notes…"
-        style={{ ...fieldInputStyle, minHeight: 64, resize: "vertical" }}
-      />
-    </div>
+      </td>
+    </tr>
   );
 }
 
+const WATCHLIST_COLUMNS = ["Player", "Team", "Division", "Pipelined?", "Hometown", "Eligibility", "Notes", ""];
+
+// Full-screen overlay -- same spreadsheet grid language as the main stats
+// table (sticky header, gridlines) instead of a narrow sidebar, so editing
+// a dozen watched players' notes/hometown/eligibility doesn't feel cramped.
 function WatchListPanel({ watchlist, onClose }) {
   const [name, setName] = useState("");
   const [team, setTeam] = useState("");
@@ -290,72 +296,97 @@ function WatchListPanel({ watchlist, onClose }) {
     <div
       style={{
         position: "fixed",
-        top: 0,
-        right: 0,
-        bottom: 0,
-        width: 380,
-        maxWidth: "100vw",
-        background: "#151B1F",
-        borderLeft: "1px solid #2A333A",
-        boxShadow: "-12px 0 32px rgba(0,0,0,0.45)",
+        inset: 0,
+        background: "#12171A",
         zIndex: 50,
         display: "flex",
         flexDirection: "column",
       }}
     >
-      <div style={{ padding: "16px 18px", borderBottom: "1px solid #2A333A", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <h2 className="oswald" style={{ fontSize: 17, margin: 0, fontWeight: 700 }}>
+      <div
+        style={{
+          flexShrink: 0,
+          padding: "16px 32px",
+          borderBottom: "1px solid #2A333A",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 16,
+          flexWrap: "wrap",
+        }}
+      >
+        <h2 className="oswald" style={{ fontSize: 22, margin: 0, fontWeight: 700, color: "#EDEAE0" }}>
           Watch List
         </h2>
-        <button onClick={onClose} style={{ background: "none", border: "none", color: "#8B959C", cursor: "pointer", padding: 4, lineHeight: 0 }}>
-          <X size={18} />
-        </button>
-      </div>
 
-      {!watchlist.available ? (
-        <div style={{ padding: 18, color: "#8B959C", fontSize: 13, lineHeight: 1.5 }}>
-          {watchlist.checkedAvailability
-            ? "The watch list only works on the published page, not this local preview."
-            : "Loading…"}
-        </div>
-      ) : (
-        <>
-          <form onSubmit={handleAdd} style={{ padding: 16, borderBottom: "1px solid #2A333A", display: "flex", flexDirection: "column", gap: 8 }}>
+        {watchlist.available && (
+          <form onSubmit={handleAdd} style={{ display: "flex", alignItems: "center", gap: 8, flex: 1, maxWidth: 520 }}>
             <input
               ref={nameInputRef}
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Player name"
-              style={fieldInputStyle}
+              style={{ ...fieldInputStyle, width: "auto", flex: 2 }}
             />
-            <input value={team} onChange={(e) => setTeam(e.target.value)} placeholder="Team (optional)" style={fieldInputStyle} />
+            <input
+              value={team}
+              onChange={(e) => setTeam(e.target.value)}
+              placeholder="Team (optional)"
+              style={{ ...fieldInputStyle, width: "auto", flex: 1 }}
+            />
             <button
               type="submit"
               style={{
-                display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+                display: "flex", alignItems: "center", justifyContent: "center", gap: 6, flexShrink: 0,
                 background: "#20281F", border: "1px solid #C89B3C", color: "#C89B3C",
-                borderRadius: 4, padding: "7px 10px", fontSize: 13, fontWeight: 600, cursor: "pointer",
+                borderRadius: 4, padding: "7px 12px", fontSize: 13, fontWeight: 600, cursor: "pointer",
               }}
             >
-              <Plus size={14} /> Add to watch list
+              <Plus size={14} /> Add
             </button>
           </form>
+        )}
 
-          <div style={{ flex: 1, overflowY: "auto", padding: 16, display: "flex", flexDirection: "column", gap: 10 }}>
-            {watchlist.players.length === 0 ? (
-              <div style={{ color: "#5D666C", fontSize: 13 }}>No players on the watch list yet.</div>
-            ) : (
-              watchlist.players.map((p) => (
-                <WatchListCard
-                  key={p.id}
-                  p={p}
-                  onRemove={() => watchlist.removePlayer(p.id)}
-                  onUpdate={(field, value) => watchlist.updateField(p.id, field, value)}
-                />
-              ))
-            )}
-          </div>
-        </>
+        <button onClick={onClose} style={{ background: "none", border: "none", color: "#8B959C", cursor: "pointer", padding: 4, lineHeight: 0 }}>
+          <X size={22} />
+        </button>
+      </div>
+
+      {!watchlist.available ? (
+        <div style={{ padding: 20, color: "#8B959C", fontSize: 13, lineHeight: 1.5 }}>
+          {watchlist.checkedAvailability
+            ? "The watch list only works on the published page, not this local preview."
+            : "Loading…"}
+        </div>
+      ) : (
+        <div style={{ flex: 1, minHeight: 0, padding: "16px 32px 32px", display: "flex", flexDirection: "column" }}>
+          {watchlist.players.length === 0 ? (
+            <div style={{ color: "#5D666C", fontSize: 13 }}>No players on the watch list yet.</div>
+          ) : (
+            <div style={{ flex: 1, minHeight: 0, border: "1px solid #2A333A", borderRadius: 6, overflow: "auto" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                <thead>
+                  <tr style={{ background: "#1A2126" }}>
+                    {WATCHLIST_COLUMNS.map((label) => (
+                      <Th key={label} label={label} sticky />
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {watchlist.players.map((p, i) => (
+                    <WatchListRow
+                      key={p.id}
+                      p={p}
+                      style={{ background: i % 2 === 0 ? "#151B1F" : "#12171A", borderTop: "1px solid #212A2F" }}
+                      onRemove={() => watchlist.removePlayer(p.id)}
+                      onUpdate={(field, value) => watchlist.updateField(p.id, field, value)}
+                    />
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
       )}
     </div>
   );
