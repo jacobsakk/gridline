@@ -2,6 +2,8 @@ import { useState, useMemo, useEffect, useRef } from "react";
 import { ChevronUp, ChevronDown, ChevronsUpDown, Crown, BadgeCheck, FlaskConical, Star, X, Plus, ExternalLink } from "lucide-react";
 import { collection, doc, addDoc, updateDoc, deleteDoc, onSnapshot, query, orderBy } from "firebase/firestore";
 import { db } from "./firebase";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
 import realStats from "./data/real-stats.json";
 import cmuHelmet from "./assets/cmu-helmet.png";
 
@@ -256,13 +258,150 @@ const notesInputStyle = {
   minHeight: 26,
 };
 
+const hometownDropdownStyle = {
+  position: "absolute",
+  zIndex: 30,
+  top: "calc(100% + 4px)",
+  left: 0,
+  width: 260,
+  background: "#1A2126",
+  border: "1px solid #2A333A",
+  borderRadius: 6,
+  overflow: "hidden",
+  boxShadow: "0 12px 32px rgba(0,0,0,0.5)",
+};
+const hometownSuggestionStyle = {
+  padding: "8px 10px",
+  fontSize: 12.5,
+  color: "#C7CDD1",
+  cursor: "pointer",
+  borderBottom: "1px solid #212A2F",
+};
+
+// Type-ahead hometown search against OpenStreetMap's free Nominatim API --
+// no API key or account needed anywhere. Debounced well past their 1
+// req/sec usage-policy limit, and aborts a stale in-flight request rather
+// than letting an old response overwrite a newer one.
+function HometownPicker({ value, onCommit }) {
+  const [text, setText] = useState(value || "");
+  const [suggestions, setSuggestions] = useState([]);
+  const [open, setOpen] = useState(false);
+  const [preview, setPreview] = useState(null); // {lat, lon}
+  const mapContainerRef = useRef(null);
+  const mapRef = useRef(null);
+  const markerRef = useRef(null);
+  const abortRef = useRef(null);
+  const debounceRef = useRef(null);
+
+  useEffect(() => setText(value || ""), [value]);
+
+  useEffect(() => {
+    if (!open) return undefined;
+    clearTimeout(debounceRef.current);
+    if (!text.trim()) {
+      setSuggestions([]);
+      return undefined;
+    }
+    debounceRef.current = setTimeout(() => {
+      if (abortRef.current) abortRef.current.abort();
+      const controller = new AbortController();
+      abortRef.current = controller;
+      const url = `https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&limit=5&q=${encodeURIComponent(text)}`;
+      fetch(url, { signal: controller.signal })
+        .then((r) => r.json())
+        .then((data) => setSuggestions(Array.isArray(data) ? data : []))
+        .catch(() => {});
+    }, 600);
+    return () => clearTimeout(debounceRef.current);
+  }, [text, open]);
+
+  // Preview the top result automatically so the map isn't blank until the
+  // user happens to hover one, then follow whichever they hover instead.
+  useEffect(() => {
+    if (suggestions.length) setPreview({ lat: parseFloat(suggestions[0].lat), lon: parseFloat(suggestions[0].lon) });
+  }, [suggestions]);
+
+  useEffect(() => {
+    if (!preview || !mapContainerRef.current) return;
+    if (!mapRef.current) {
+      mapRef.current = L.map(mapContainerRef.current, { zoomControl: false, attributionControl: false }).setView(
+        [preview.lat, preview.lon],
+        9
+      );
+      L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 12 }).addTo(mapRef.current);
+      markerRef.current = L.circleMarker([preview.lat, preview.lon], {
+        radius: 6,
+        color: "#C89B3C",
+        weight: 2,
+        fillColor: "#C89B3C",
+        fillOpacity: 1,
+      }).addTo(mapRef.current);
+    } else {
+      mapRef.current.setView([preview.lat, preview.lon], 9);
+      markerRef.current.setLatLng([preview.lat, preview.lon]);
+    }
+  }, [preview]);
+
+  useEffect(() => {
+    return () => {
+      if (mapRef.current) mapRef.current.remove();
+    };
+  }, []);
+
+  function placeLabel(s) {
+    const a = s.address || {};
+    const city = a.city || a.town || a.village || a.hamlet || a.county;
+    return city && a.state ? `${city}, ${a.state}` : s.display_name;
+  }
+
+  function commit(s) {
+    const val = placeLabel(s);
+    setText(val);
+    onCommit(val);
+    setOpen(false);
+    setSuggestions([]);
+  }
+
+  return (
+    <div style={{ position: "relative" }}>
+      <input
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        onFocus={() => setOpen(true)}
+        onBlur={() => {
+          // Let a suggestion's onClick land before the list unmounts.
+          setTimeout(() => setOpen(false), 150);
+          if (text !== (value || "")) onCommit(text);
+        }}
+        placeholder="Search a city…"
+        style={cellInputStyle}
+      />
+      {open && suggestions.length > 0 && (
+        <div style={hometownDropdownStyle}>
+          {suggestions.map((s) => (
+            <div
+              key={s.place_id}
+              onMouseDown={(e) => e.preventDefault()}
+              onMouseEnter={() => setPreview({ lat: parseFloat(s.lat), lon: parseFloat(s.lon) })}
+              onClick={() => commit(s)}
+              style={hometownSuggestionStyle}
+            >
+              {placeLabel(s)}
+            </div>
+          ))}
+          <div ref={mapContainerRef} style={{ height: 110 }} />
+        </div>
+      )}
+    </div>
+  );
+}
+
 // One editable row of the watch list grid. Each text field keeps local
 // state so keystrokes don't round-trip to the db on every character --
 // it only commits (onUpdate) on blur, same pattern as the main scraped
 // table's cells are read-only render of committed data.
 function WatchListRow({ p, onRemove, onUpdate, onSelect, style }) {
   const [notes, setNotes] = useState(p.notes || "");
-  const [hometown, setHometown] = useState(p.hometown || "");
   const [snapCount, setSnapCount] = useState(p.snapCount || "");
   const notesRef = useRef(null);
 
@@ -313,14 +452,8 @@ function WatchListRow({ p, onRemove, onUpdate, onSelect, style }) {
           </button>
         </div>
       </td>
-      <td style={tdStyle}>
-        <input
-          value={hometown}
-          onChange={(e) => setHometown(e.target.value)}
-          onBlur={() => onUpdate("hometown", hometown)}
-          placeholder="—"
-          style={cellInputStyle}
-        />
+      <td style={{ ...tdStyle, position: "relative" }}>
+        <HometownPicker value={p.hometown} onCommit={(val) => onUpdate("hometown", val)} />
       </td>
       <td style={tdStyle}>
         <input
