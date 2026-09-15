@@ -596,7 +596,7 @@ function PlayerDetailModal({ sel, onClose, watchlist }) {
                 title={watched ? "Remove from watch list" : "Add to watch list"}
                 style={watchToggleButtonStyle}
               >
-                {watched ? <X size={16} color="#C89B3C" /> : <Plus size={16} color="#C89B3C" />}
+                {watched ? <X size={18} color="#C89B3C" /> : <Plus size={18} color="#C89B3C" />}
               </button>
               <a
                 href={playerSearchUrl(sel.player, sel.team, first?.position || sel.position)}
@@ -1020,7 +1020,7 @@ export default function Gridline() {
                           title={watchlist.isWatched(r.player, r.team) ? "Remove from watch list" : "Add to watch list"}
                           style={watchToggleButtonStyle}
                         >
-                          {watchlist.isWatched(r.player, r.team) ? <X size={14} color="#C89B3C" /> : <Plus size={14} color="#C89B3C" />}
+                          {watchlist.isWatched(r.player, r.team) ? <X size={16} color="#C89B3C" /> : <Plus size={16} color="#C89B3C" />}
                         </button>
                         <a
                           className="player-name"
