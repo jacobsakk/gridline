@@ -1,0 +1,52 @@
+name: Deploy to GitHub Pages
+
+# Builds the front-end and publishes it to GitHub Pages on every push to
+# main -- including the commits the weekly-data-refresh job itself makes,
+# so a fresh scrape flows all the way to the live site with no manual
+# rebuild/republish step (that used to mean rebuilding, then republishing
+# a Claude Artifact by hand, whose share link also turned out to pin to
+# whatever version it was last manually re-shared at).
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Only one deploy at a time; a newer push wins over a stale one still
+# building rather than racing it.
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm install
+      - name: Build
+        working-directory: frontend
+        run: npm run build
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: frontend/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
