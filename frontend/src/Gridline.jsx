@@ -185,6 +185,7 @@ function useWatchlist() {
       notes: "",
       hometown: "",
       eligibility: "",
+      snapCount: "",
       addedAt: new Date().toISOString(),
     });
   }
@@ -238,7 +239,7 @@ const cellInputStyle = { ...fieldInputStyle, padding: "4px 6px", fontSize: 12.5,
 function WatchListRow({ p, onRemove, onUpdate, onSelect, style }) {
   const [notes, setNotes] = useState(p.notes || "");
   const [hometown, setHometown] = useState(p.hometown || "");
-  const [eligibility, setEligibility] = useState(p.eligibility || "");
+  const [snapCount, setSnapCount] = useState(p.snapCount || "");
 
   return (
     <tr style={style}>
@@ -272,11 +273,25 @@ function WatchListRow({ p, onRemove, onUpdate, onSelect, style }) {
         />
       </td>
       <td style={tdStyle}>
+        <select
+          value={p.eligibility || ""}
+          onChange={(e) => onUpdate("eligibility", e.target.value)}
+          style={{ ...cellInputStyle, cursor: "pointer" }}
+        >
+          <option value="">—</option>
+          {[1, 2, 3, 4, 5].map((n) => (
+            <option key={n} value={n}>
+              {n} {n === 1 ? "year" : "years"}
+            </option>
+          ))}
+        </select>
+      </td>
+      <td style={tdStyle}>
         <input
-          value={eligibility}
-          onChange={(e) => setEligibility(e.target.value)}
-          onBlur={() => onUpdate("eligibility", eligibility)}
-          placeholder="e.g. 2 years remaining"
+          value={snapCount}
+          onChange={(e) => setSnapCount(e.target.value)}
+          onBlur={() => onUpdate("snapCount", snapCount)}
+          placeholder="e.g. 512 (PFF)"
           style={cellInputStyle}
         />
       </td>
@@ -302,7 +317,7 @@ function WatchListRow({ p, onRemove, onUpdate, onSelect, style }) {
   );
 }
 
-const WATCHLIST_COLUMNS = ["Player", "Team", "Division", "Pos", "Pipelined?", "Hometown", "Eligibility", "Notes", ""];
+const WATCHLIST_COLUMNS = ["Player", "Team", "Division", "Pos", "Pipelined?", "Hometown", "Eligibility", "Snap Count", "Notes", ""];
 
 // Full-screen overlay -- same spreadsheet grid language as the main stats
 // table (sticky header, gridlines) instead of a narrow sidebar, so editing
