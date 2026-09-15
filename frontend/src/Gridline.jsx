@@ -254,6 +254,20 @@ function WatchListRow({ p, onRemove, onUpdate, onSelect, style }) {
         {p.position || "—"}
       </td>
       <td style={tdStyle}>
+        <select
+          value={p.eligibility || ""}
+          onChange={(e) => onUpdate("eligibility", e.target.value)}
+          style={{ ...cellInputStyle, cursor: "pointer" }}
+        >
+          <option value="">—</option>
+          {[1, 2, 3, 4, 5].map((n) => (
+            <option key={n} value={n}>
+              {n} {n === 1 ? "year" : "years"}
+            </option>
+          ))}
+        </select>
+      </td>
+      <td style={tdStyle}>
         <div style={{ display: "flex", gap: 6 }}>
           <button style={pillStyle(p.pipelined === true)} onClick={() => onUpdate("pipelined", true)}>
             Yes
@@ -271,20 +285,6 @@ function WatchListRow({ p, onRemove, onUpdate, onSelect, style }) {
           placeholder="—"
           style={cellInputStyle}
         />
-      </td>
-      <td style={tdStyle}>
-        <select
-          value={p.eligibility || ""}
-          onChange={(e) => onUpdate("eligibility", e.target.value)}
-          style={{ ...cellInputStyle, cursor: "pointer" }}
-        >
-          <option value="">—</option>
-          {[1, 2, 3, 4, 5].map((n) => (
-            <option key={n} value={n}>
-              {n} {n === 1 ? "year" : "years"}
-            </option>
-          ))}
-        </select>
       </td>
       <td style={tdStyle}>
         <input
@@ -317,7 +317,7 @@ function WatchListRow({ p, onRemove, onUpdate, onSelect, style }) {
   );
 }
 
-const WATCHLIST_COLUMNS = ["Player", "Team", "Division", "Pos", "Pipelined?", "Hometown", "Eligibility", "Snap Count", "Notes", ""];
+const WATCHLIST_COLUMNS = ["Player", "Team", "Division", "Pos", "Eligibility", "Pipelined?", "Hometown", "Snap Count", "Notes", ""];
 
 // Full-screen overlay -- same spreadsheet grid language as the main stats
 // table (sticky header, gridlines) instead of a narrow sidebar, so editing
