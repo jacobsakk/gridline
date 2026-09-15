@@ -85,24 +85,39 @@ def build_ncaa_api_divisions(run_date):
     return fcs_rows + d2_rows
 
 
-def build_naia_division(run_date):
+def _run_with_browser(build_fn):
+    """build_fn(page) -> rows, run inside one shared headless browser page."""
     from playwright.sync_api import sync_playwright
-    from naia import CONFERENCE_PATHS, USER_AGENT, build_naia_rows
+
+    with sync_playwright() as p:
+        browser = p.chromium.launch(headless=True)
+        page = browser.new_page(user_agent=(
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
+            "(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+        ))
+        try:
+            return build_fn(page)
+        finally:
+            browser.close()
+
+
+def build_naia_division(run_date):
+    from naia import CONFERENCE_PATHS, build_naia_rows
 
     print(f"Fetching NAIA stat leaders across {len(CONFERENCE_PATHS)} conferences "
           f"(this uses a real browser, so it's slower than the NCAA API calls)...")
 
-    def fetch_total_rows():
-        with sync_playwright() as p:
-            browser = p.chromium.launch(headless=True)
-            page = browser.new_page(user_agent=USER_AGENT)
-            try:
-                rows = build_naia_rows(page)
-            finally:
-                browser.close()
-        return rows
+    return build_division("naia", "NAIA", run_date, lambda: _run_with_browser(build_naia_rows))
 
-    return build_division("naia", "NAIA", run_date, fetch_total_rows)
+
+def build_juco_division(run_date):
+    from juco import CONFERENCES, build_juco_rows
+
+    print(f"Fetching JUCO stat leaders across {len(CONFERENCES)} conferences "
+          f"(also uses a real browser -- these sites challenge plain HTTP requests "
+          f"under load, confirmed directly)...")
+
+    return build_division("juco", "JUCO", run_date, lambda: _run_with_browser(build_juco_rows))
 
 
 def main():
@@ -110,6 +125,7 @@ def main():
 
     all_rows = build_ncaa_api_divisions(run_date)
     all_rows += build_naia_division(run_date)
+    all_rows += build_juco_division(run_date)
 
     os.makedirs(os.path.dirname(OUTPUT_PATH), exist_ok=True)
     with open(OUTPUT_PATH, "w") as f:

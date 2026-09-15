@@ -3,60 +3,18 @@ import { ChevronUp, ChevronDown, ChevronsUpDown, Crown, BadgeCheck, FlaskConical
 import realStats from "./data/real-stats.json";
 import cmuHelmet from "./assets/cmu-helmet.png";
 
-// ---------- Mock data generation (seeded, stable across renders) ----------
-// Used only for JUCO, which doesn't have a live source connected yet.
-
-function mulberry32(seed) {
-  return function () {
-    seed |= 0;
-    seed = (seed + 0x6d2b79f5) | 0;
-    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
-const rand = mulberry32(88);
-const ri = (a, b) => Math.floor(rand() * (b - a + 1)) + a;
-const pick = (arr) => arr[Math.floor(rand() * arr.length)];
-
 const DIVISIONS = ["NAIA", "JUCO", "D2", "FCS"];
-const WEEKS = [1, 2, 3, 4]; // JUCO sample data only
 
-// "total" = season-to-date. For D2/FCS, single-week rows (if any exist yet)
-// are keyed by the ISO date the snapshot was taken -- see
-// scraper/build_data.py. A real single week only appears once the scraper
-// has run at least twice, so the dropdown may just show "Total (season)"
-// for a while; that's expected, not a bug.
+// "total" = season-to-date. Single-week rows (if any exist yet) are keyed
+// by the ISO date the snapshot was taken -- see scraper/build_data.py. A
+// real single week only appears once a division's scraper has run at
+// least twice, so the dropdown may just show "Total (season)" for a
+// while; that's expected, not a bug.
 function weekLabel(w) {
   if (w === "total") return "Total (season)";
-  if (typeof w === "number") return `Week ${w}`;
   const d = new Date(`${w}T00:00:00`);
   return Number.isNaN(d.getTime()) ? String(w) : `Week of ${d.toLocaleDateString(undefined, { month: "short", day: "numeric" })}`;
 }
-
-// Sample-only roster, JUCO only -- D2 and FCS now come from real-stats.json.
-const TEAMS = {
-  JUCO: [
-    { team: "Butler CC", conference: "KJCCC" },
-    { team: "Garden City CC", conference: "KJCCC" },
-    { team: "Hutchinson CC", conference: "KJCCC" },
-    { team: "Iowa Western CC", conference: "ICCAC" },
-    { team: "Ellsworth CC", conference: "ICCAC" },
-    { team: "Snow College", conference: "Scenic West" },
-    { team: "East Mississippi CC", conference: "MACJC" },
-    { team: "Jones College", conference: "MACJC" },
-    { team: "College of San Mateo", conference: "CCCAA" },
-    { team: "Riverside City College", conference: "CCCAA" },
-  ],
-};
-
-function pickTeam(division) {
-  return pick(TEAMS[division]);
-}
-
-const FIRST = ["Marcus", "Jalen", "Tyler", "DeShawn", "Cole", "Malik", "Aiden", "Trey", "Isaiah", "Bryce", "Jordan", "Dante", "Wyatt", "Kamari", "Gunnar", "Xavier"];
-const LAST = ["Boone", "Whitfield", "Reyes", "Sarver", "McKay", "Osei", "Lindqvist", "Pruitt", "Castellano", "Nakamura", "Duren", "Halstrom", "Iheanacho", "Brogan"];
-const name = () => `${pick(FIRST)} ${pick(LAST)}`;
 
 // leaderKey = the stat used to rank "leader" for this category
 const CATEGORIES = {
@@ -72,14 +30,6 @@ const CATEGORIES = {
       { key: "int", label: "INT" },
       { key: "rating", label: "RTG" },
     ],
-    gen: () => {
-      const att = ri(18, 42);
-      const comp = ri(Math.floor(att * 0.45), Math.floor(att * 0.75));
-      const yards = ri(comp * 6, comp * 13);
-      const td = ri(0, 5);
-      const int = ri(0, 3);
-      return { compAtt: `${comp}/${att}`, att, yards, td, int, rating: (100 + td * 20 - int * 15 + yards / 5).toFixed(1) };
-    },
   },
   rushing: {
     label: "Rushing",
@@ -92,11 +42,6 @@ const CATEGORIES = {
       { key: "avg", label: "AVG" },
       { key: "td", label: "TD" },
     ],
-    gen: () => {
-      const att = ri(8, 28);
-      const yards = ri(att * 2, att * 9);
-      return { att, yards, avg: (yards / att).toFixed(1), td: ri(0, 4) };
-    },
   },
   receiving: {
     label: "Receiving",
@@ -109,11 +54,6 @@ const CATEGORIES = {
       { key: "avg", label: "AVG" },
       { key: "td", label: "TD" },
     ],
-    gen: () => {
-      const rec = ri(2, 12);
-      const yards = ri(rec * 6, rec * 22);
-      return { rec, yards, avg: (yards / rec).toFixed(1), td: ri(0, 3) };
-    },
   },
   // "Defense" merges five separate real leaderboards (total tackles, TFL,
   // passes defended, interceptions, sacks) into one row per player -- see
@@ -135,18 +75,6 @@ const CATEGORIES = {
       { key: "sacks", label: "SACK" },
       { key: "sackYds", label: "SACK YDS" },
     ],
-    gen: () => {
-      const solo = ri(2, 11);
-      const ast = ri(0, 6);
-      const soloSacks = ri(0, 3);
-      const astSacks = ri(0, 2);
-      return {
-        solo, ast, total: solo + ast,
-        tfl: (ri(0, 15) / 10).toFixed(1), pbu: ri(0, 3), int: ri(0, 2),
-        soloSacks, astSacks, sackYds: ri(0, 22),
-        sacks: (soloSacks + astSacks * 0.5).toFixed(1),
-      };
-    },
   },
 };
 
@@ -163,104 +91,9 @@ const LEADER_BOARDS = [
   { key: "interceptions", categoryKey: "tackling", label: "Interceptions", sortKey: "int" },
 ];
 
-// Aggregates a player's weekly sample stat lines into a season "total" row.
-// Recomputes rate stats (avg, rating) from the summed components rather
-// than averaging the per-week rates, same as a real stat site would.
-// (Only needed for JUCO's generated sample data -- real D2/FCS rows already
-// come from the NCAA API as season-to-date totals.)
-function aggregateCategory(catKey, weeklyStats) {
-  const sum = (fn) => weeklyStats.reduce((acc, s) => acc + fn(s), 0);
-  if (catKey === "passing") {
-    const att = sum((s) => s.att);
-    const comp = sum((s) => parseInt(s.compAtt.split("/")[0], 10));
-    const yards = sum((s) => s.yards);
-    const td = sum((s) => s.td);
-    const int = sum((s) => s.int);
-    return { compAtt: `${comp}/${att}`, att, yards, td, int, rating: (100 + td * 20 - int * 15 + yards / 5).toFixed(1) };
-  }
-  if (catKey === "rushing") {
-    const att = sum((s) => s.att);
-    const yards = sum((s) => s.yards);
-    const td = sum((s) => s.td);
-    return { att, yards, avg: att ? (yards / att).toFixed(1) : "0.0", td };
-  }
-  if (catKey === "receiving") {
-    const rec = sum((s) => s.rec);
-    const yards = sum((s) => s.yards);
-    const td = sum((s) => s.td);
-    return { rec, yards, avg: rec ? (yards / rec).toFixed(1) : "0.0", td };
-  }
-  // tackling (Defense, sacks included)
-  const solo = sum((s) => s.solo);
-  const ast = sum((s) => s.ast);
-  const tfl = sum((s) => parseFloat(s.tfl));
-  const soloSacks = sum((s) => s.soloSacks);
-  const astSacks = sum((s) => s.astSacks);
-  return {
-    solo, ast, total: solo + ast,
-    tfl: tfl.toFixed(1), pbu: sum((s) => s.pbu), int: sum((s) => s.int),
-    soloSacks, astSacks, sackYds: sum((s) => s.sackYds),
-    sacks: (soloSacks + astSacks * 0.5).toFixed(1),
-  };
-}
-
-// Sample data for JUCO only -- D2 and FCS come from real-stats.json.
-function buildSampleDataset() {
-  const rows = [];
-  let id = 0;
-  Object.entries(CATEGORIES).forEach(([catKey, cat]) => {
-    // A fixed roster per category so weekly lines belong to the same
-    // player and can be summed into a meaningful season total.
-    const rosterSize = ri(6, 9);
-    const roster = [];
-    for (let i = 0; i < rosterSize; i++) {
-      const { team, conference } = pickTeam("JUCO");
-      roster.push({ player: name(), team, conference, position: pick(cat.positions) });
-    }
-
-    const weeklyStatsByPlayer = roster.map(() => []);
-    WEEKS.forEach((week) => {
-      roster.forEach((p, idx) => {
-        const stats = cat.gen();
-        weeklyStatsByPlayer[idx].push(stats);
-        rows.push({
-          id: `sample-${id++}`,
-          division: "JUCO",
-          week,
-          category: catKey,
-          position: p.position,
-          player: p.player,
-          team: p.team,
-          conference: p.conference,
-          games: 1,
-          sample: true,
-          ...stats,
-        });
-      });
-    });
-
-    roster.forEach((p, idx) => {
-      rows.push({
-        id: `sample-${id++}`,
-        division: "JUCO",
-        week: "total",
-        category: catKey,
-        position: p.position,
-        player: p.player,
-        team: p.team,
-        conference: p.conference,
-        games: WEEKS.length,
-        sample: true,
-        ...aggregateCategory(catKey, weeklyStatsByPlayer[idx]),
-      });
-    });
-  });
-  return rows;
-}
-
-const DATA = [...realStats, ...buildSampleDataset()];
+const DATA = realStats;
 const DIVISION_LABEL = { NAIA: "NAIA", JUCO: "Junior College", D2: "NCAA Division II", FCS: "FCS" };
-const LIVE_DIVISIONS = new Set(["NAIA", "D2", "FCS"]); // whole division, real scraped/API data
+const LIVE_DIVISIONS = new Set(["NAIA", "JUCO", "D2", "FCS"]); // all four are real data now
 
 function conferencesFor(division) {
   return [...new Set(DATA.filter((r) => r.division === division).map((r) => r.conference))].sort();
@@ -382,8 +215,8 @@ export default function Gridline() {
             </div>
           </div>
           <p style={{ margin: "6px 0 0", color: "#8B959C", fontSize: 14, maxWidth: 620, lineHeight: 1.5 }}>
-            NAIA, D2, and FCS are live data (season totals to date). JUCO is still sample data —
-            that source is harder to scrape and isn't connected yet.
+            NAIA, JUCO, D2, and FCS are all live data (season totals to date), pulled directly
+            from each division's own stats feed.
           </p>
         </div>
       </div>
@@ -432,7 +265,7 @@ export default function Gridline() {
           {isLiveView ? (
             <>
               <BadgeCheck size={15} />
-              <span>Live data — {DIVISION_LABEL[division]}, season totals to date (source: {division === "NAIA" ? "NAIA" : "NCAA"})</span>
+              <span>Live data — {DIVISION_LABEL[division]}, season totals to date (source: {{ NAIA: "NAIA", JUCO: "conference sites" }[division] || "NCAA"})</span>
             </>
           ) : (
             <>

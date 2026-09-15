@@ -92,11 +92,11 @@ def fetch_conference_players(page, conf_path):
     """Navigates to one conference's Players page and returns every player
     object, unioned by playerId across the tables in TABLE_IDS."""
     url = f"{BASE_URL}{conf_path}"
-    page.goto(url, timeout=45000, wait_until="domcontentloaded")
 
     ready = False
-    for _ in range(3):
+    for attempt in range(4):
         try:
+            page.goto(url, timeout=45000, wait_until="domcontentloaded")
             page.wait_for_function(
                 "window.jQuery && window.jQuery.fn.DataTable && "
                 f"window.jQuery.fn.DataTable.isDataTable('#{TABLE_IDS[0]}')",
@@ -105,7 +105,7 @@ def fetch_conference_players(page, conf_path):
             ready = True
             break
         except Exception:
-            page.wait_for_timeout(2000)
+            page.wait_for_timeout(3000 * (attempt + 1))
     if not ready:
         raise RuntimeError(f"NAIA DataTable never became ready for {conf_path}")
 

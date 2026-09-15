@@ -40,18 +40,34 @@ platform as the JUCO conferences, but one national site with a conference filter
 - Setup: `pip install -r requirements.txt && playwright install chromium` (one-time, downloads a
   browser binary — only needs to happen once per machine).
 
-## JUCO — Playwright scraper — not yet built
+## JUCO — Playwright scraper — **done for 4 of 6 target conferences**
 
-Five of six target conferences (CCCAA, KJCCC, ICCAC, MACCC, NJCAA Region 5) run on PrestoSports
-with a near-identical URL structure — one adapter, parameterized by domain, should cover all
-five. Known blockers: bot detection on some pages (need a real headless browser, realistic
-pacing, no aggressive concurrency), and player/team names populated by client-side JS or requiring
-a second lookup request to resolve abbreviated names to full ones.
+`juco.py` + `build_data.py` (`build_juco_division()`) cover ICCAC, KJCCC, MACCC, and NJCAA
+Region 5 — all run on PrestoSports, each its own domain.
 
-Build and fully verify **one** conference end-to-end before generalizing — recommended starting
-point is ICCAC or NJCAA Region 5 (both confirmed to return real data during manual
-investigation).
+- These pages are plain server-rendered HTML (no client-side DataTables store like NAIA), but
+  still needs a real browser: a plain HTTP request that worked fine minutes into testing started
+  getting an **AWS WAF JS challenge** (HTTP 202, empty body) once enough rapid requests had been
+  made — confirmed directly, not assumed. A real browser clears it the same way Playwright clears
+  Cloudflare's for NAIA; matches the original brief's own finding that these sites need realistic
+  pacing and a real headless browser.
+- Full names resolve directly server-side (no separate name-lookup step) — better than the
+  original brief found on some of these pages, though abbreviated names ("M. Smith") do still
+  show up on some listing views; the per-team `view=lineup` endpoint used here gives full names.
+- Defense comes pre-merged per player (tackles/TFL/sacks/PBU/INT all in one table), same as NAIA.
+  JUCO only reports one combined sack total (no solo/assisted split) — stored in `soloSacks` with
+  `astSacks` pinned to 0 so the shared weekly-delta math still comes out exactly right.
+- Conference tagging is trivial here — unlike NAIA/D2, each JUCO conference is its own domain, so
+  there's no team → conference mapping problem at all.
+- **NJCAA Region 5's own site currently only has 2 of its ~8 member teams set up** (Cisco
+  College, New Mexico Military Institute) — confirmed by checking its teams page directly, not a
+  scraping bug.
 
-Scenic West (SIDEARM Sports, paywalled conference network) is out of scope beyond
-best-effort/partial — don't sink time into it before the other five work.
+**Not yet built:**
+- **CCCAA** (3c2asports.org) — confirmed it needs different handling: its canonical domain
+  resolves to `cccaa.prestosports.com` and its team-stats page has no server-rendered team links
+  at all (0 matches, vs. real data on the other 4 conferences' identical page shape). Worth a
+  fresh look with the NAIA-style DataTables approach.
+- **Scenic West** (SIDEARM Sports, paywalled conference network) — deprioritized per the project
+  brief; best-effort/partial only, don't sink time into it before other things.
 
