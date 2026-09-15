@@ -2,10 +2,10 @@
 
 See [../docs/project-brief.md](../docs/project-brief.md) for full background.
 
-## D2 / FCS — NCAA API — **done**
+## FBS / D2 / FCS — NCAA API — **done**
 
 `ncaa_api.py` + `build_data.py` fetch every individual stat leader (passing/rushing/receiving/
-defense) for D2 and FCS from [henrygd/ncaa-api](https://github.com/henrygd/ncaa-api), which
+defense) for FBS, D2, and FCS from [henrygd/ncaa-api](https://github.com/henrygd/ncaa-api), which
 re-serves ncaa.com's backend as clean JSON, one division at a time (no headless browser, no
 per-conference requests). Run with `python3 build_data.py`.
 
@@ -14,7 +14,14 @@ per-conference requests). Run with `python3 build_data.py`.
 - Defense merges 5 separate leaderboards (tackles/TFL/passes defended/interceptions/sacks) into
   one row per player, keyed by (player, team) — see `build_defense_rows()`.
 - D2 conference tagging is a hand-built mapping (`D2_KNOWN_CONFERENCES`) since the API's own D2
-  standings endpoint is broken (confirmed, HTTP 500). FCS conferences come live from the API.
+  standings endpoint is broken (confirmed, HTTP 500). FBS and FCS conferences both come live from
+  the API's standings endpoint via the shared `fetch_conference_map()` — FBS was added later but
+  needed zero new scraping technique, just the same call with a different division slug.
+- The standings feed labels true independents "FBS Independent"/"FCS Independent"
+  (`fetch_conference_map()` collapses both to plain "Independent", matching D2's own fallback
+  value) and can lag real-world realignment — `CONFERENCE_CORRECTIONS` overrides known-stale
+  entries (currently just Chicago St., who the feed still lists as independent after joining the
+  NEC).
 - Positions are normalized to a fixed 9-value set (`POSITION_MAP`) — see module docstring.
 - Real single-week numbers require two runs (snapshot + diff) — see `scraper/snapshots/`.
 

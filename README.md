@@ -1,6 +1,6 @@
 # Gridline
 
-Weekly individual player stats tracker for NAIA, JUCO, NCAA Division II, and NCAA FCS football.
+Weekly individual player stats tracker for NAIA, JUCO, NCAA Division II, NCAA FCS, and NCAA FBS football.
 Front-end is branded "Central Michigan Pre-Portal Tracker" per the owner's preference; the repo/project
 name stays Gridline.
 
@@ -86,7 +86,7 @@ suggested architecture.
 ## Status
 
 - [x] Front-end prototype
-- [x] D2/FCS wired to real, live NCAA data (all conferences, 4 stat-category tabs)
+- [x] FBS/D2/FCS wired to real, live NCAA data (all conferences, 4 stat-category tabs)
 - [x] Games-played (G) column
 - [x] Real week-by-week filtering, built and verified — starts showing actual weeks once
       `build_data.py` has run more than once
@@ -102,6 +102,13 @@ suggested architecture.
 - [x] Weekly GitHub Actions job — re-runs the scraper every Sunday, commits fresh data to the
       repo (`.github/workflows/weekly-data-refresh.yml`). Rebuilding the frontend and republishing
       the live Artifact link from that fresh data is still a manual follow-up step.
+- [x] Watch list — a shared, editable list of players (top-right, full-screen grid), backed by
+      the Claude Artifact `db` capability. Add/remove a player from any row's star icon or the
+      panel's own form; each entry tracks Pipelined (yes/no), Hometown, Eligibility, and Notes.
+- [x] Passing completion % (PCT) column, derived client-side from each row's comp/att.
+- [x] Player name in the main grid links straight to a Google search (name + team + position);
+      the watch list's name click instead opens a stats detail modal (every category that player
+      has data in) with its own search link next to the name.
 - [ ] Auto-deploy so the live link updates itself too (needs a real host like Vercel connected to
       this repo — the Artifact link can only be republished from a live Claude Code session)
 - [ ] Database (Supabase) set up

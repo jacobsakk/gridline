@@ -241,14 +241,30 @@ def fetch_all_pages(division, stat_id):
     return rows
 
 
-def fetch_fcs_conference_map():
-    """Returns {team_name: conference_name} for every FCS team, from the
-    NCAA API's conference standings (confirmed working for FCS)."""
-    data = _get("/standings/football/fcs")
+# The NCAA's own standings feed hasn't caught up to conference realignment
+# for these teams yet (confirmed directly against the live API -- both
+# still list Chicago St. under "FCS Independent"), so their known-correct
+# conference is applied on top of whatever the feed says.
+CONFERENCE_CORRECTIONS = {
+    "Chicago St.": "NEC",
+}
+
+
+def fetch_conference_map(division_slug):
+    """Returns {team_name: conference_name} for every team in a division,
+    from the NCAA API's conference standings -- confirmed working for both
+    "fcs" and "fbs" (both have this endpoint; D2 does not, hence
+    D2_KNOWN_CONFERENCES below being hand-built instead)."""
+    data = _get(f"/standings/football/{division_slug}")
     mapping = {}
     for conf in data["data"]:
+        # The feed labels true independents "FCS Independent"/"FBS
+        # Independent" (confirmed directly) -- collapsed to plain
+        # "Independent" so it reads the same as D2's own fallback value
+        # instead of being a third, division-specific spelling of "none".
+        conference = "Independent" if conf["conference"].endswith(" Independent") else conf["conference"]
         for team in conf["standings"]:
-            mapping[team["School"]] = conf["conference"]
+            mapping[team["School"]] = CONFERENCE_CORRECTIONS.get(team["School"], conference)
     return mapping
 
 

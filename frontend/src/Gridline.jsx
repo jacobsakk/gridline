@@ -3,7 +3,7 @@ import { ChevronUp, ChevronDown, ChevronsUpDown, Crown, BadgeCheck, FlaskConical
 import realStats from "./data/real-stats.json";
 import cmuHelmet from "./assets/cmu-helmet.png";
 
-const DIVISIONS = ["NAIA", "JUCO", "D2", "FCS"];
+const DIVISIONS = ["NAIA", "JUCO", "D2", "FCS", "FBS"];
 
 // "total" = season-to-date. Single-week rows (if any exist yet) are keyed
 // by the ISO date the snapshot was taken -- see scraper/build_data.py. A
@@ -112,8 +112,8 @@ for (const r of DATA) {
   }
 }
 
-const DIVISION_LABEL = { NAIA: "NAIA", JUCO: "Junior College", D2: "NCAA Division II", FCS: "FCS" };
-const LIVE_DIVISIONS = new Set(["NAIA", "JUCO", "D2", "FCS"]); // all four are real data now
+const DIVISION_LABEL = { NAIA: "NAIA", JUCO: "Junior College", D2: "NCAA Division II", FCS: "FCS", FBS: "FBS" };
+const LIVE_DIVISIONS = new Set(["NAIA", "JUCO", "D2", "FCS", "FBS"]); // all five are real data now
 
 function conferencesFor(division) {
   return [...new Set(DATA.filter((r) => r.division === division).map((r) => r.conference))].sort();
@@ -673,7 +673,7 @@ export default function Gridline() {
                 <h1 className="oswald" style={{ fontSize: 26, fontWeight: 700, margin: 0, letterSpacing: "0.01em" }}>
                   Central Michigan Pre-Portal Tracker
                 </h1>
-                <span style={{ color: "#8B959C", fontSize: 14 }}>weekly stats — NAIA · JUCO · D2 · FCS</span>
+                <span style={{ color: "#8B959C", fontSize: 14 }}>weekly stats — NAIA · JUCO · D2 · FCS · FBS</span>
               </div>
             </div>
             <button

@@ -1,6 +1,7 @@
 """
-Fetches real FCS + D2 individual stat leaders and writes them to
-frontend/src/data/real-stats.json for the front-end to read directly.
+Fetches real FBS + FCS + D2 individual stat leaders (plus NAIA/JUCO/CCCAA,
+below) and writes them to frontend/src/data/real-stats.json for the
+front-end to read directly.
 
 Run manually for now:
 
@@ -26,7 +27,7 @@ from ncaa_api import (
     build_division_rows,
     build_weekly_delta_rows,
     d2_conference_for,
-    fetch_fcs_conference_map,
+    fetch_conference_map,
     load_previous_snapshot,
     save_snapshot,
 )
@@ -59,8 +60,18 @@ def build_division(division_slug, division_label, run_date, fetch_total_rows):
 
 
 def build_ncaa_api_divisions(run_date):
+    print("Fetching FBS conference map...")
+    fbs_conferences = fetch_conference_map("fbs")
+    print(f"  {len(fbs_conferences)} FBS teams mapped to conferences")
+
+    print("Fetching FBS stat leaders (passing/rushing/receiving/tackling/sacks)...")
+    fbs_rows = build_division(
+        "fbs", "FBS", run_date,
+        lambda: build_division_rows("fbs", "FBS", lambda team: fbs_conferences.get(team, "Independent")),
+    )
+
     print("Fetching FCS conference map...")
-    fcs_conferences = fetch_fcs_conference_map()
+    fcs_conferences = fetch_conference_map("fcs")
     print(f"  {len(fcs_conferences)} FCS teams mapped to conferences")
 
     print("Fetching FCS stat leaders (passing/rushing/receiving/tackling/sacks)...")
@@ -82,7 +93,7 @@ def build_ncaa_api_divisions(run_date):
             f"and were tagged 'Independent' (e.g. {', '.join(unmapped_d2_teams[:5])}...)"
         )
 
-    return fcs_rows + d2_rows
+    return fbs_rows + fcs_rows + d2_rows
 
 
 def _run_with_browser(build_fn):
