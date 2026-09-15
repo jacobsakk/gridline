@@ -30,6 +30,15 @@ function playerSearchUrl(player, team, position) {
   return `https://www.google.com/search?q=${encodeURIComponent(q)}`;
 }
 
+// PFF's own site search (confirmed live: searching "Jayden Maiava" surfaces
+// his real premium.pff.com player page as the first result) -- no scraping,
+// just a link to PFF's own public search. PFF College only covers FBS/FCS,
+// so this is only shown for those two divisions.
+const PFF_DIVISIONS = new Set(["FBS", "FCS"]);
+function pffSearchUrl(player, team) {
+  return `https://www.pff.com/search?q=${encodeURIComponent([player, team].filter(Boolean).join(" "))}`;
+}
+
 // leaderKey = the stat used to rank "leader" for this category
 const CATEGORIES = {
   passing: {
@@ -603,6 +612,22 @@ function PlayerDetailModal({ sel, onClose, watchlist }) {
             </div>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
+            {PFF_DIVISIONS.has(sel.division) && (
+              <a
+                href={pffSearchUrl(sel.player, sel.team)}
+                target="_blank"
+                rel="noopener noreferrer"
+                title="Search PFF for this player"
+                style={{
+                  display: "flex", alignItems: "center", gap: 7, flexShrink: 0,
+                  background: "#1A2126", border: "1px solid #2A333A", color: "#8B959C",
+                  borderRadius: 5, padding: "10px 16px", fontSize: 14, fontWeight: 700,
+                  textDecoration: "none", whiteSpace: "nowrap",
+                }}
+              >
+                <ExternalLink size={16} /> PFF
+              </a>
+            )}
             <a
               href={playerSearchUrl(sel.player, sel.team, first?.position || sel.position)}
               target="_blank"
