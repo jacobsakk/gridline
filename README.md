@@ -56,14 +56,17 @@ suggested architecture.
   up this season (confirmed directly, not a scraping bug), and its tables give abbreviated names
   ("K Provost") and no position data, unlike the other 3 JUCO conferences — see `scraper/juco.py`
   for the exact findings.
-- **It's a "leaders" list, not a full roster** (D2/FCS). The NCAA's own stat pages (ncaa.com
+- **It's a "leaders" list, not a full roster** (FBS/D2/FCS). The NCAA's own stat pages (ncaa.com
   itself, not just our copy of it) only list top performers nationally per category — e.g. FCS
-  receiving currently stops at ~150 players total. A player with just 1-2 catches on the season
-  won't show up at all, in a smaller conference or otherwise — confirmed by checking ncaa.com
-  directly, not a bug in our scraper. Getting every player on every roster would mean scraping
-  every team's
-  individual box score page (~430 teams) instead of one national leaderboard call — a much bigger
-  job, intentionally not taken on for now.
+  receiving currently stops at ~150 players total, FBS rushing likewise. A player with just 1-2
+  catches (or carries) on the season won't show up at all, regardless of conference — confirmed by
+  checking ncaa.com directly, not a bug in our scraper. This is why a lower-volume-rushing
+  conference like the MAC can show only a handful of backs in FBS rushing (confirmed: 6, all of
+  whom rank in the national top 150) while a heavier-rushing conference shows many more — it's who
+  cracked the national cutoff, not who the conference actually has. Getting every player on every
+  roster would mean scraping every team's individual box score page (~430+ FBS/FCS/D2 teams
+  combined) instead of one national leaderboard call per category — a much bigger job,
+  intentionally not taken on for now.
 - **D2 conference tags: fixed, but hand-built.** The NCAA API's D2 conference-standings scraper
   is broken (confirmed — returns an error), so D2 conference tagging comes from a hand-built
   mapping in `scraper/ncaa_api.py` (`D2_KNOWN_CONFERENCES`) — all 159 teams that actually appear
