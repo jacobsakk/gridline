@@ -598,26 +598,31 @@ function PlayerDetailModal({ sel, onClose, watchlist }) {
               >
                 {watched ? <X size={18} color="#C89B3C" /> : <Plus size={18} color="#C89B3C" />}
               </button>
-              <a
-                href={playerSearchUrl(sel.player, sel.team, first?.position || sel.position)}
-                target="_blank"
-                rel="noopener noreferrer"
-                title="Search this player"
-                style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, color: "#8B959C", textDecoration: "none" }}
-                onMouseEnter={(e) => (e.currentTarget.style.color = "#C89B3C")}
-                onMouseLeave={(e) => (e.currentTarget.style.color = "#8B959C")}
-              >
-                Search <ExternalLink size={12} />
-              </a>
             </div>
             <div style={{ fontSize: 13, color: "#8B959C", marginTop: 3 }}>
               {sel.team}
               {first ? ` · ${first.conference} · ${first.position} · ${DIVISION_LABEL[sel.division] || sel.division}` : ""}
             </div>
           </div>
-          <button onClick={onClose} style={{ background: "none", border: "none", color: "#8B959C", cursor: "pointer", padding: 4, lineHeight: 0 }}>
-            <X size={18} />
-          </button>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
+            <a
+              href={playerSearchUrl(sel.player, sel.team, first?.position || sel.position)}
+              target="_blank"
+              rel="noopener noreferrer"
+              title="Search this player"
+              style={{
+                display: "flex", alignItems: "center", gap: 7, flexShrink: 0,
+                background: "#20281F", border: "1px solid #C89B3C", color: "#C89B3C",
+                borderRadius: 5, padding: "10px 16px", fontSize: 14, fontWeight: 700,
+                textDecoration: "none", whiteSpace: "nowrap",
+              }}
+            >
+              <ExternalLink size={16} /> Search
+            </a>
+            <button onClick={onClose} style={{ background: "none", border: "none", color: "#8B959C", cursor: "pointer", padding: 4, lineHeight: 0 }}>
+              <X size={18} />
+            </button>
+          </div>
         </div>
 
         <div style={{ padding: 20, display: "flex", flexDirection: "column", gap: 20 }}>
@@ -1022,16 +1027,13 @@ export default function Gridline() {
                         >
                           {watchlist.isWatched(r.player, r.team) ? <X size={16} color="#C89B3C" /> : <Plus size={16} color="#C89B3C" />}
                         </button>
-                        <a
+                        <span
                           className="player-name"
-                          href={playerSearchUrl(r.player, r.team, r.position)}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          title="Search this player"
-                          onClick={(e) => e.stopPropagation()}
+                          onClick={() => setSelectedPlayer({ player: r.player, team: r.team, division, position: r.position })}
+                          title="View full stats"
                         >
                           {r.player}
-                        </a>
+                        </span>
                         {r.sample && (
                           <span
                             title="Sample data"
