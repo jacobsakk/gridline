@@ -219,6 +219,21 @@ const pillStyle = (active) => ({
   cursor: "pointer",
 });
 
+// The negative margin cancels the extra padding visually (so it doesn't
+// throw off spacing next to the player name) while still giving the
+// button a bigger real hit target than the icon's own tiny bounding box --
+// paired with the .watch-toggle:hover rule in the global <style> block.
+const watchToggleButtonStyle = {
+  background: "none",
+  border: "none",
+  cursor: "pointer",
+  padding: 5,
+  margin: -5,
+  lineHeight: 0,
+  display: "inline-flex",
+  borderRadius: 999,
+};
+
 const fieldInputStyle = {
   width: "100%",
   background: "#12171A",
@@ -576,11 +591,12 @@ function PlayerDetailModal({ sel, onClose, watchlist }) {
                 {sel.player}
               </h2>
               <button
+                className="watch-toggle"
                 onClick={() => (watched ? watchlist.removePlayer(watched.id) : watchlist.addPlayer(sel))}
                 title={watched ? "Remove from watch list" : "Add to watch list"}
-                style={{ background: "none", border: "none", cursor: "pointer", padding: 0, lineHeight: 0 }}
+                style={watchToggleButtonStyle}
               >
-                <Star size={16} color="#C89B3C" fill={watched ? "#C89B3C" : "none"} />
+                {watched ? <X size={16} color="#C89B3C" /> : <Plus size={16} color="#C89B3C" />}
               </button>
               <a
                 href={playerSearchUrl(sel.player, sel.team, first?.position || sel.position)}
@@ -752,6 +768,7 @@ export default function Gridline() {
         tbody tr:hover { background: #1E262B !important; }
         .player-name { cursor: pointer; color: inherit; text-decoration: none; }
         .player-name:hover { color: #C89B3C; text-decoration: underline; }
+        .watch-toggle:hover { background: rgba(200,155,60,0.18); }
       `}</style>
 
       {/* Header */}
@@ -993,6 +1010,7 @@ export default function Gridline() {
                       <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
                         {isLeader && <Crown size={13} color="#C89B3C" />}
                         <button
+                          className="watch-toggle"
                           onClick={(e) => {
                             e.stopPropagation();
                             const watched = watchlist.players.find((p) => p.player === r.player && p.team === r.team);
@@ -1000,9 +1018,9 @@ export default function Gridline() {
                             else watchlist.addPlayer({ player: r.player, team: r.team, division, position: r.position });
                           }}
                           title={watchlist.isWatched(r.player, r.team) ? "Remove from watch list" : "Add to watch list"}
-                          style={{ background: "none", border: "none", cursor: "pointer", padding: 0, lineHeight: 0, display: "inline-flex" }}
+                          style={watchToggleButtonStyle}
                         >
-                          <Star size={13} color="#C89B3C" fill={watchlist.isWatched(r.player, r.team) ? "#C89B3C" : "none"} />
+                          {watchlist.isWatched(r.player, r.team) ? <X size={14} color="#C89B3C" /> : <Plus size={14} color="#C89B3C" />}
                         </button>
                         <a
                           className="player-name"
