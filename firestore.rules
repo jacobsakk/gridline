@@ -1,0 +1,15 @@
+rules_version = '2';
+
+// No auth on this site (it's a public stat tracker, not a login-gated app),
+// so access control here is just "only this one collection, nothing else in
+// the project is reachable" rather than per-user rules.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /watchlist/{docId} {
+      allow read, write: if true;
+    }
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

@@ -1,5 +1,7 @@
 import { useState, useMemo, useEffect, useRef } from "react";
 import { ChevronUp, ChevronDown, ChevronsUpDown, Crown, BadgeCheck, FlaskConical, Star, X, Plus, ExternalLink } from "lucide-react";
+import { collection, doc, addDoc, updateDoc, deleteDoc, onSnapshot, query, orderBy } from "firebase/firestore";
+import { db } from "./firebase";
 import realStats from "./data/real-stats.json";
 import cmuHelmet from "./assets/cmu-helmet.png";
 
@@ -146,37 +148,35 @@ function weeksFor(division) {
 // erroring.
 
 function useWatchlist() {
-  const [db, setDb] = useState(null);
   const [players, setPlayers] = useState([]);
-  const [checkedAvailability, setCheckedAvailability] = useState(false);
+  // Firestore's onSnapshot fires once immediately (from cache or server)
+  // even on a fresh page, so "we've heard back at least once" is a clean
+  // proxy for "ready" -- no separate availability probe needed the way
+  // window.claude.use() required one.
+  const [ready, setReady] = useState(false);
+  const [available, setAvailable] = useState(true);
 
   useEffect(() => {
-    let cancelled = false;
-    let unsubscribe = null;
-
-    (async () => {
-      const canUse = typeof window !== "undefined" && window.claude && typeof window.claude.use === "function";
-      const dbNamespace = canUse ? await window.claude.use("db") : null;
-      if (cancelled) return;
-      setDb(dbNamespace);
-      setCheckedAvailability(true);
-      if (dbNamespace) {
-        unsubscribe = dbNamespace.collection("watchlist").orderBy("player", "asc").onSnapshot(
-          (snap) => setPlayers(snap.docs.map((d) => ({ id: d.id, ...(d.data() || {}) }))),
-          () => setPlayers([])
-        );
+    const q = query(collection(db, "watchlist"), orderBy("player", "asc"));
+    const unsubscribe = onSnapshot(
+      q,
+      (snap) => {
+        setPlayers(snap.docs.map((d) => ({ id: d.id, ...(d.data() || {}) })));
+        setReady(true);
+      },
+      () => {
+        // Rules/network problem -- surface as unavailable rather than an
+        // infinite loading state.
+        setAvailable(false);
+        setReady(true);
       }
-    })();
-
-    return () => {
-      cancelled = true;
-      if (unsubscribe) unsubscribe();
-    };
+    );
+    return unsubscribe;
   }, []);
 
   async function addPlayer({ player, team, division, position }) {
-    if (!db || !player.trim()) return;
-    await db.collection("watchlist").add({
+    if (!player.trim()) return;
+    await addDoc(collection(db, "watchlist"), {
       player: player.trim(),
       team: (team || "").trim(),
       division: division || "",
@@ -191,13 +191,11 @@ function useWatchlist() {
   }
 
   async function removePlayer(id) {
-    if (!db) return;
-    await db.doc(`watchlist/${id}`).delete();
+    await deleteDoc(doc(db, "watchlist", id));
   }
 
   async function updateField(id, field, value) {
-    if (!db) return;
-    await db.doc(`watchlist/${id}`).update({ [field]: value });
+    await updateDoc(doc(db, "watchlist", id), { [field]: value });
   }
 
   const watchedKeys = useMemo(() => new Set(players.map((p) => `${p.player}::${p.team}`)), [players]);
@@ -205,7 +203,7 @@ function useWatchlist() {
     return watchedKeys.has(`${player}::${team}`);
   }
 
-  return { available: !!db, checkedAvailability, players, addPlayer, removePlayer, updateField, isWatched };
+  return { available, checkedAvailability: ready, players, addPlayer, removePlayer, updateField, isWatched };
 }
 
 const pillStyle = (active) => ({
@@ -457,7 +455,7 @@ function WatchListPanel({ watchlist, onClose, onSelectPlayer }) {
       {!watchlist.available ? (
         <div style={{ padding: 20, color: "#8B959C", fontSize: 13, lineHeight: 1.5 }}>
           {watchlist.checkedAvailability
-            ? "The watch list only works on the published page, not this local preview."
+            ? "Couldn't reach the watch list database. Check your connection and reload."
             : "Loading…"}
         </div>
       ) : (
