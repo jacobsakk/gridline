@@ -1,7 +1,7 @@
 # Gridline
 
 Weekly individual player stats tracker for NAIA, JUCO, NCAA Division II, and NCAA FCS football.
-Front-end is branded "Central Michigan Stat Tracker" per the owner's preference; the repo/project
+Front-end is branded "Central Michigan Pre-Portal Tracker" per the owner's preference; the repo/project
 name stays Gridline.
 
 See [docs/project-brief.md](docs/project-brief.md) for the full project brief: scope, confirmed

@@ -600,7 +600,7 @@ export default function Gridline() {
               <img src={cmuHelmet} alt="Central Michigan Chippewas helmet" style={{ height: 34, width: "auto" }} />
               <div style={{ display: "flex", alignItems: "baseline", gap: 14, flexWrap: "wrap" }}>
                 <h1 className="oswald" style={{ fontSize: 26, fontWeight: 700, margin: 0, letterSpacing: "0.01em" }}>
-                  Central Michigan Stat Tracker
+                  Central Michigan Pre-Portal Tracker
                 </h1>
                 <span style={{ color: "#8B959C", fontSize: 14 }}>weekly stats — NAIA · JUCO · D2 · FCS</span>
               </div>
