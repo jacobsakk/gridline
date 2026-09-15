@@ -5,6 +5,10 @@ import cmuHelmet from "./assets/cmu-helmet.png";
 
 const DIVISIONS = ["NAIA", "JUCO", "D2", "FCS", "FBS"];
 
+// Same canonical 9-value set every scraper normalizes to (see
+// POSITION_MAP in scraper/ncaa_api.py) -- the watch list groups by these.
+const WATCH_POSITIONS = ["ATH", "QB", "RB", "WR", "OL", "DL", "LB", "CB", "SAF"];
+
 // "total" = season-to-date. Single-week rows (if any exist yet) are keyed
 // by the ISO date the snapshot was taken -- see scraper/build_data.py. A
 // real single week only appears once a division's scraper has run at
@@ -306,6 +310,8 @@ const WATCHLIST_COLUMNS = ["Player", "Team", "Division", "Pos", "Pipelined?", "H
 function WatchListPanel({ watchlist, onClose, onSelectPlayer }) {
   const [name, setName] = useState("");
   const [team, setTeam] = useState("");
+  const [position, setPosition] = useState(WATCH_POSITIONS[0]);
+  const [positionTab, setPositionTab] = useState("All");
   const nameInputRef = useRef(null);
 
   useEffect(() => {
@@ -315,10 +321,13 @@ function WatchListPanel({ watchlist, onClose, onSelectPlayer }) {
   function handleAdd(e) {
     e.preventDefault();
     if (!name.trim()) return;
-    watchlist.addPlayer({ player: name, team, division: "" });
+    watchlist.addPlayer({ player: name, team, division: "", position });
     setName("");
     setTeam("");
   }
+
+  const visiblePlayers = positionTab === "All" ? watchlist.players : watchlist.players.filter((p) => p.position === positionTab);
+  const countFor = (pos) => (pos === "All" ? watchlist.players.length : watchlist.players.filter((p) => p.position === pos).length);
 
   return (
     <div
@@ -362,6 +371,13 @@ function WatchListPanel({ watchlist, onClose, onSelectPlayer }) {
               placeholder="Team (optional)"
               style={{ ...fieldInputStyle, width: "auto", flex: 1 }}
             />
+            <select value={position} onChange={(e) => setPosition(e.target.value)} style={{ ...selectStyle, minWidth: 0, flexShrink: 0 }}>
+              {WATCH_POSITIONS.map((p) => (
+                <option key={p} value={p}>
+                  {p}
+                </option>
+              ))}
+            </select>
             <button
               type="submit"
               style={{
@@ -388,8 +404,40 @@ function WatchListPanel({ watchlist, onClose, onSelectPlayer }) {
         </div>
       ) : (
         <div style={{ flex: 1, minHeight: 0, padding: "16px 32px 32px", display: "flex", flexDirection: "column" }}>
-          {watchlist.players.length === 0 ? (
-            <div style={{ color: "#5D666C", fontSize: 13 }}>No players on the watch list yet.</div>
+          <div style={{ display: "flex", gap: 4, borderBottom: "1px solid #2A333A", marginBottom: 16, flexWrap: "wrap", flexShrink: 0 }}>
+            {["All", ...WATCH_POSITIONS].map((pos) => (
+              <button
+                key={pos}
+                onClick={() => setPositionTab(pos)}
+                className="oswald"
+                style={{
+                  display: "flex", alignItems: "center", gap: 6,
+                  background: "none", border: "none", cursor: "pointer",
+                  padding: "8px 14px 10px", fontSize: 14, fontWeight: 600,
+                  color: positionTab === pos ? "#C89B3C" : "#8B959C",
+                  borderBottom: positionTab === pos ? "2px solid #C89B3C" : "2px solid transparent",
+                  marginBottom: -1,
+                }}
+              >
+                {pos}
+                <span
+                  className="tabular"
+                  style={{
+                    background: positionTab === pos ? "#20281F" : "#1A2126",
+                    color: positionTab === pos ? "#C89B3C" : "#5D666C",
+                    borderRadius: 999, padding: "1px 6px", fontSize: 11,
+                  }}
+                >
+                  {countFor(pos)}
+                </span>
+              </button>
+            ))}
+          </div>
+
+          {visiblePlayers.length === 0 ? (
+            <div style={{ color: "#5D666C", fontSize: 13 }}>
+              {watchlist.players.length === 0 ? "No players on the watch list yet." : `No ${positionTab} players on the watch list yet.`}
+            </div>
           ) : (
             <div style={{ flex: 1, minHeight: 0, border: "1px solid #2A333A", borderRadius: 6, overflow: "auto" }}>
               <table style={{ width: "100%", borderCollapse: "collapse" }}>
@@ -401,7 +449,7 @@ function WatchListPanel({ watchlist, onClose, onSelectPlayer }) {
                   </tr>
                 </thead>
                 <tbody>
-                  {watchlist.players.map((p, i) => (
+                  {visiblePlayers.map((p, i) => (
                     <WatchListRow
                       key={p.id}
                       p={p}
