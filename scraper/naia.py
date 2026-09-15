@@ -146,6 +146,10 @@ def transform_player(raw, conference, row_id_prefix):
         "conference": conference,
         "games": games,
         "sample": False,
+        # pageName is the exact relative path this PrestoSports site's own
+        # UI links to for this player's profile -- confirmed directly by
+        # loading one (Charlie Adamoli, Texas Wesleyan) rather than guessed.
+        "profileUrl": f"{BASE_URL}{raw.get('pageName')}" if raw.get("pageName") else "",
     }
 
     rows = []

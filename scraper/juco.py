@@ -169,7 +169,7 @@ def _header_keys(html, category):
     return resolved
 
 
-def parse_rows(html, category):
+def parse_rows(html, category, domain):
     header_keys = _header_keys(html, category)
     if "Name" not in header_keys:
         return []
@@ -181,11 +181,14 @@ def parse_rows(html, category):
         tds = re.findall(r"<td[^>]*>(.*?)</td>", row_html, re.S)
         if len(tds) != len(header_keys):
             continue
-        name_match = re.search(r'<a href="[^"]*/players/([a-z0-9]+)">\s*(.*?)\s*</a>', tds[name_idx], re.S)
+        # Capture the *whole* href (not just the id) so the profile link is
+        # built from what the site itself wrote, not a guessed path shape.
+        name_match = re.search(r'<a href="([^"]*/players/([a-z0-9]+))">\s*(.*?)\s*</a>', tds[name_idx], re.S)
         if not name_match:
             continue
-        player_id = name_match.group(1)
-        full_name = re.sub(r"\s+", " ", name_match.group(2)).strip()
+        href, player_id = name_match.group(1), name_match.group(2)
+        profile_url = href if href.startswith("http") else f"https://{domain}{href}"
+        full_name = re.sub(r"\s+", " ", name_match.group(3)).strip()
         position = re.sub(r"<[^>]+>", "", tds[pos_idx]).strip() if pos_idx is not None else ""
 
         stats = {}
@@ -194,7 +197,7 @@ def parse_rows(html, category):
                 continue
             stats[key] = re.sub(r"<[^>]+>", "", val).strip()
 
-        rows.append({"playerId": player_id, "fullName": full_name, "position": position, "stats": stats})
+        rows.append({"playerId": player_id, "profileUrl": profile_url, "fullName": full_name, "position": position, "stats": stats})
     return rows
 
 
@@ -205,7 +208,7 @@ def fetch_team_category(page, domain, team_id, category):
         f"?teamId={team_id}&view=lineup&sort={cfg['sort']}&pos={cfg['pos']}"
         f"&r=0&ajax=true&tmpl=stats-bios-template&min={cfg['min']}&cs=n"
     )
-    return parse_rows(_get(page, url), category)
+    return parse_rows(_get(page, url), category, domain)
 
 
 def transform_row(raw, category, team_name, conference, row_id_prefix):
@@ -220,6 +223,7 @@ def transform_row(raw, category, team_name, conference, row_id_prefix):
         "conference": conference,
         "games": _to_int(stats.get("gp")),
         "sample": False,
+        "profileUrl": raw.get("profileUrl", ""),
     }
 
     if category == "passing":

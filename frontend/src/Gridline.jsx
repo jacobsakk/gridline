@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect, useRef } from "react";
-import { ChevronUp, ChevronDown, ChevronsUpDown, Crown, BadgeCheck, FlaskConical, Star, X, Plus } from "lucide-react";
+import { ChevronUp, ChevronDown, ChevronsUpDown, Crown, BadgeCheck, FlaskConical, Star, X, Plus, ExternalLink } from "lucide-react";
 import realStats from "./data/real-stats.json";
 import cmuHelmet from "./assets/cmu-helmet.png";
 
@@ -16,6 +16,14 @@ function weekLabel(w) {
   return Number.isNaN(d.getTime()) ? String(w) : `Week of ${d.toLocaleDateString(undefined, { month: "short", day: "numeric" })}`;
 }
 
+// A generic web search works for every division (D2/FCS have no player
+// bio pages to link to at all -- confirmed, the NCAA API returns no id or
+// link field), unlike a scraped profile URL which only NAIA/JUCO/CCCAA have.
+function playerSearchUrl(player, team, position) {
+  const q = [player, team, position, "football"].filter(Boolean).join(" ");
+  return `https://www.google.com/search?q=${encodeURIComponent(q)}`;
+}
+
 // leaderKey = the stat used to rank "leader" for this category
 const CATEGORIES = {
   passing: {
@@ -25,6 +33,7 @@ const CATEGORIES = {
     columns: [
       { key: "games", label: "G" },
       { key: "compAtt", label: "C/ATT", sortKey: "att" },
+      { key: "pct", label: "PCT" },
       { key: "yards", label: "YDS" },
       { key: "td", label: "TD" },
       { key: "int", label: "INT" },
@@ -92,6 +101,17 @@ const LEADER_BOARDS = [
 ];
 
 const DATA = realStats;
+
+// None of the four sources sends completion % directly -- they all report
+// a "comp/att" string (compAtt) plus season totals, so it's derived once
+// here rather than duplicated across ncaa_api.py/naia.py/juco.py/cccaa.py.
+for (const r of DATA) {
+  if (r.category === "passing" && r.compAtt) {
+    const [comp, att] = r.compAtt.split("/").map(Number);
+    r.pct = att > 0 ? `${((comp / att) * 100).toFixed(1)}%` : "0.0%";
+  }
+}
+
 const DIVISION_LABEL = { NAIA: "NAIA", JUCO: "Junior College", D2: "NCAA Division II", FCS: "FCS" };
 const LIVE_DIVISIONS = new Set(["NAIA", "JUCO", "D2", "FCS"]); // all four are real data now
 
@@ -471,6 +491,17 @@ function PlayerDetailModal({ sel, onClose, watchlist }) {
               >
                 <Star size={16} color="#C89B3C" fill={watched ? "#C89B3C" : "none"} />
               </button>
+              <a
+                href={playerSearchUrl(sel.player, sel.team, first?.position || sel.position)}
+                target="_blank"
+                rel="noopener noreferrer"
+                title="Search this player"
+                style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, color: "#8B959C", textDecoration: "none" }}
+                onMouseEnter={(e) => (e.currentTarget.style.color = "#C89B3C")}
+                onMouseLeave={(e) => (e.currentTarget.style.color = "#8B959C")}
+              >
+                Search <ExternalLink size={12} />
+              </a>
             </div>
             <div style={{ fontSize: 13, color: "#8B959C", marginTop: 3 }}>
               {sel.team}
@@ -882,13 +913,17 @@ export default function Gridline() {
                         >
                           <Star size={13} color="#C89B3C" fill={watchlist.isWatched(r.player, r.team) ? "#C89B3C" : "none"} />
                         </button>
-                        <span
+                        <a
                           className="player-name"
-                          onClick={() => setSelectedPlayer({ player: r.player, team: r.team, division, position: r.position })}
-                          title="View full stats"
+                          href={playerSearchUrl(r.player, r.team, r.position)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          title="Search this player"
+                          style={{ color: "inherit", textDecoration: "none" }}
+                          onClick={(e) => e.stopPropagation()}
                         >
                           {r.player}
-                        </span>
+                        </a>
                         {r.sample && (
                           <span
                             title="Sample data"

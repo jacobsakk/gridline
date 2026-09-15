@@ -114,6 +114,10 @@ def transform_player(raw, row_id_prefix):
         "conference": "CCCAA",
         "games": games,
         "sample": False,
+        # pageName is the exact relative path this PrestoSports site's own
+        # UI links to for this player's profile -- same field, confirmed
+        # directly the same way as naia.py (Zennon Alo-Rosa).
+        "profileUrl": f"{BASE_URL}{raw.get('pageName')}" if raw.get("pageName") else "",
     }
 
     rows = []
