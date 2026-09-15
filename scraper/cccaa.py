@@ -146,7 +146,10 @@ def transform_player(raw, row_id_prefix):
     solo = _to_int(s.get("dtu"))
     ast = _to_int(s.get("dta"))
     tfl = float(s.get("tfl") or 0)
-    sacks = float(s.get("dso") or 0)
+    # Confirmed directly: CCCAA's total-sacks key is "dst", not "dso" like
+    # NAIA -- same platform, different key name for this one field (dsu/
+    # dsa/dsyd for solo/assisted/yards match NAIA's convention exactly).
+    sacks = float(s.get("dst") or 0)
     ints = _to_int(s.get("di"))
     pbu = _to_int(s.get("dbru"))
     if solo or ast or tfl or sacks or ints or pbu:
@@ -155,7 +158,7 @@ def transform_player(raw, row_id_prefix):
             "solo": solo, "ast": ast, "total": solo + ast,
             "tfl": s.get("tfl", "0.0"), "pbu": pbu, "int": ints,
             "soloSacks": _to_int(s.get("dsu")), "astSacks": _to_int(s.get("dsa")),
-            "sackYds": _to_int(s.get("dsyd")), "sacks": s.get("dso", "0.0"),
+            "sackYds": _to_int(s.get("dsyd")), "sacks": s.get("dst", "0.0"),
         })
 
     return rows

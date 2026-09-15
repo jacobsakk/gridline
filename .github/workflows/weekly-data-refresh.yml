@@ -1,0 +1,52 @@
+name: Weekly stats refresh
+
+# Runs every Sunday at 9am America/Detroit (13:00 UTC) -- after essentially
+# all NAIA/JUCO/D2/FCS games for the week are complete. Also runnable
+# manually from the Actions tab (workflow_dispatch) for testing.
+#
+# What this does: re-runs the scraper for all 4 divisions and commits the
+# refreshed frontend/src/data/real-stats.json + scraper/snapshots/ straight
+# back to this repo. It does NOT rebuild or redeploy the frontend, or touch
+# the published Claude Artifact -- that's a separate, still-manual step
+# (Claude's own scheduled cloud routines can't reach these stats sites at
+# all, confirmed directly -- see scraper/README.md).
+on:
+  schedule:
+    - cron: "0 13 * * 0"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install scraper dependencies
+        working-directory: scraper
+        run: |
+          pip install -r requirements.txt
+          playwright install --with-deps chromium
+
+      - name: Run the scraper (all divisions)
+        working-directory: scraper
+        run: python3 build_data.py
+
+      - name: Commit and push refreshed data
+        run: |
+          git config user.name "gridline-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add frontend/src/data/real-stats.json scraper/snapshots/
+          if git diff --cached --quiet; then
+            echo "No data changes this run -- nothing to commit."
+          else
+            git commit -m "Weekly stats refresh ($(date -u +%Y-%m-%d))"
+            git push
+          fi

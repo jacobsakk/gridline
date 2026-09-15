@@ -64,10 +64,28 @@ PrestoSports, each its own domain.
   Mexico Military Institute) — confirmed by checking its teams page directly, not a scraping bug.
 
 **Not yet built:**
-- **CCCAA** (3c2asports.org) — confirmed it needs different handling: its canonical domain
-  resolves to `cccaa.prestosports.com` and its team-stats page has no server-rendered team links
-  at all (0 matches, vs. real data on the other 4 conferences' identical page shape). Worth a
-  fresh look with the NAIA-style DataTables approach.
 - **Scenic West** (SIDEARM Sports, paywalled conference network) — deprioritized per the project
   brief; best-effort/partial only, don't sink time into it before other things.
+
+## CCCAA — Playwright scraper — **done**
+
+`cccaa.py` covers California's JUCO conference (3c2asports.org / cccaa.prestosports.com is the
+canonical domain). Same PrestoSports platform and data model as NAIA (confirmed identical `stats`
+field abbreviations for almost everything), but simpler:
+
+- Its team-stats page isn't server-rendered like the other 4 JUCO conferences (0 server-rendered
+  team links, vs. real data on ICCAC/KJCCC/MACCC/SWJCFC's identical page shape) — needed the
+  NAIA-style DataTables approach instead of `juco.py`'s HTML parsing.
+- `conference` is reliably populated per player on the "all players" view (0 nulls across a
+  181-player sample) — unlike NAIA, so no per-conference URL looping needed, just one page load
+  covering every category's table at once.
+- CCCAA's own site groups players into 11 internal sub-conferences (e.g. "American - Golden
+  Coast") — tagged `"CCCAA"` uniformly instead, keeping the Conference filter consistent with the
+  other JUCO conferences (each one filter value, not fragmented into sub-groups).
+- **One field name genuinely differs from NAIA's convention, caught after the owner noticed
+  CCCAA showed zero sacks for everyone**: the total-sacks key is `dst` here, not `dso` like NAIA
+  (`dsu`/`dsa`/`dsyd` for solo/assisted/yards match NAIA's naming exactly — confirmed against
+  CCCAA's own real sacks leader, David Tauscher, 4.5 sacks). Every other field (passing/rushing/
+  receiving/tackles/TFL/INT/PBU) was checked against real player data across every division after
+  finding this and came back clean — this was an isolated, single-field bug.
 

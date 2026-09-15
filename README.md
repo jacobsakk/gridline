@@ -27,10 +27,18 @@ suggested architecture.
   - `juco.py` — **done for 4 of 6 target conferences** (ICCAC, KJCCC, MACCC, SWJCFC).
     Same PrestoSports platform as NAIA, also needs Playwright (these pages challenge plain HTTP
     requests under load — confirmed directly, not the same mechanism as NAIA's Cloudflare
-    challenge but the fix is the same: a real browser). CCCAA and Scenic West not yet built —
-    see `scraper/README.md` for exactly why.
+    challenge but the fix is the same: a real browser).
+  - `cccaa.py` — **done.** California's JUCO conference, same data model as NAIA (one field name
+    genuinely differs — see Known limitations). Scenic West stays deprioritized per the brief.
   - `build_data.py` — orchestrates all of the above and writes `frontend/src/data/real-stats.json`.
     Run manually with `python3 scraper/build_data.py`.
+- `.github/workflows/weekly-data-refresh.yml` — GitHub Actions workflow that re-runs the scraper
+  every Sunday at 9am Eastern and commits refreshed data straight back to this repo (also
+  runnable on-demand from the Actions tab). Runs on GitHub's own hosted runners, which have normal
+  internet access — Claude's own scheduled cloud routines were tried first and confirmed unable
+  to reach any of these stats sites at all (a deliberate sandbox network policy, not fixable from
+  a prompt). This workflow only refreshes the *data* in the repo — it does not rebuild the
+  frontend or touch the published Claude Artifact link; that hand-off is still a manual step.
 - `docs/` — planning docs.
 
 ## Known limitations
@@ -39,10 +47,11 @@ suggested architecture.
   conference/team load goes through real headless Chromium, not a plain HTTP call — confirmed
   necessary for both (Cloudflare for NAIA, an AWS WAF challenge for JUCO under request volume) —
   a full `build_data.py` run takes noticeably longer than the NCAA-API-only version did.
-- **JUCO covers 4 of 6 target conferences.** CCCAA (3c2asports.org) isn't server-rendered like
-  the other 4 — confirmed directly, its team-stats page has no server-rendered team links at all —
-  and needs the NAIA-style DataTables approach instead; not yet built. Scenic West (SIDEARM
-  Sports, paywalled) stays deprioritized per the original brief.
+- **JUCO covers 5 of 6 target conferences** (ICCAC, KJCCC, MACCC, SWJCFC, CCCAA). Scenic West
+  (SIDEARM Sports, paywalled) stays deprioritized per the original brief.
+- **CCCAA's sacks field name genuinely differs from NAIA's** despite being the same platform:
+  `dst`, not `dso` (caught after showing zero sacks for everyone — now fixed). Checked every
+  other stat across every division after finding this; nothing else was affected.
 - **SWJCFC is partial in two ways**: its own site only has 2 of its ~8 member teams set
   up this season (confirmed directly, not a scraping bug), and its tables give abbreviated names
   ("K Provost") and no position data, unlike the other 3 JUCO conferences — see `scraper/juco.py`
@@ -87,13 +96,16 @@ suggested architecture.
 - [x] Positions normalized to a fixed 9-value set (ATH/QB/RB/WR/OL/DL/LB/CB/SAF)
 - [x] NAIA wired to real, live data via a Playwright scraper (13 conferences, 4 stat categories),
       shown first among division tabs — see `scraper/naia.py` / `scraper/README.md`
-- [x] JUCO wired to real, live data for 4 of 6 target conferences (ICCAC, KJCCC, MACCC, NJCAA
-      Region 5) — see `scraper/juco.py` / `scraper/README.md`. No sample data remains anywhere
-      in the app.
-- [ ] CCCAA scraper (needs the NAIA-style DataTables approach, not JUCO's server-rendered one)
+- [x] JUCO wired to real, live data for 5 of 6 target conferences (ICCAC, KJCCC, MACCC, SWJCFC,
+      CCCAA) — see `scraper/juco.py`, `scraper/cccaa.py` / `scraper/README.md`. No sample data
+      remains anywhere in the app.
+- [x] Weekly GitHub Actions job — re-runs the scraper every Sunday, commits fresh data to the
+      repo (`.github/workflows/weekly-data-refresh.yml`). Rebuilding the frontend and republishing
+      the live Artifact link from that fresh data is still a manual follow-up step.
+- [ ] Auto-deploy so the live link updates itself too (needs a real host like Vercel connected to
+      this repo — the Artifact link can only be republished from a live Claude Code session)
 - [ ] Database (Supabase) set up
 - [ ] Front-end reads from a database instead of a static JSON snapshot
-- [ ] Weekly GitHub Actions job (auto re-run all four scrapers)
 
 ## Running the front-end
 

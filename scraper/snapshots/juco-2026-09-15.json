@@ -4424,226 +4424,38 @@
   {
     "division": "JUCO",
     "week": "total",
-    "position": "WR",
-    "player": "Tyler Jackson",
-    "team": "Coffeyville",
+    "position": "QB",
+    "player": "Tim Carpenter",
+    "team": "Dodge City",
     "conference": "KJCCC",
     "games": 3,
     "sample": false,
-    "id": "real-juco-coffeyvillecommunitycollege-tylerjacksonjx6m-receiving",
-    "category": "receiving",
-    "rec": 13,
-    "yards": 151,
-    "td": 3,
-    "avg": "11.6"
+    "id": "real-juco-dodgecitycommunitycollege-timcarpenter2kox-passing",
+    "category": "passing",
+    "compAtt": "38/61",
+    "att": 61,
+    "yards": 394,
+    "td": 4,
+    "int": 2,
+    "rating": "131.6"
   },
   {
     "division": "JUCO",
     "week": "total",
-    "position": "WR",
-    "player": "Jayden Howard",
-    "team": "Coffeyville",
-    "conference": "KJCCC",
-    "games": 3,
-    "sample": false,
-    "id": "real-juco-coffeyvillecommunitycollege-jaydenhowardea5y-receiving",
-    "category": "receiving",
-    "rec": 9,
-    "yards": 142,
-    "td": 2,
-    "avg": "15.8"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "WR",
-    "player": "Cam Hunter",
-    "team": "Coffeyville",
+    "position": "QB",
+    "player": "NaCari McFarland",
+    "team": "Dodge City",
     "conference": "KJCCC",
     "games": 2,
     "sample": false,
-    "id": "real-juco-coffeyvillecommunitycollege-camhunteryo80-receiving",
-    "category": "receiving",
-    "rec": 6,
-    "yards": 119,
+    "id": "real-juco-dodgecitycommunitycollege-nacarimcfarlandx558-passing",
+    "category": "passing",
+    "compAtt": "0/2",
+    "att": 2,
+    "yards": 0,
     "td": 0,
-    "avg": "19.8"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "WR",
-    "player": "Isaiah Bird-Winston",
-    "team": "Coffeyville",
-    "conference": "KJCCC",
-    "games": 3,
-    "sample": false,
-    "id": "real-juco-coffeyvillecommunitycollege-isaiahbirdwinstontudp-receiving",
-    "category": "receiving",
-    "rec": 4,
-    "yards": 65,
-    "td": 0,
-    "avg": "16.3"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "WR",
-    "player": "Bralin Preston",
-    "team": "Coffeyville",
-    "conference": "KJCCC",
-    "games": 2,
-    "sample": false,
-    "id": "real-juco-coffeyvillecommunitycollege-bralinprestonbd9n-receiving",
-    "category": "receiving",
-    "rec": 3,
-    "yards": 45,
-    "td": 1,
-    "avg": "15.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "RB",
-    "player": "Diesel Solari",
-    "team": "Coffeyville",
-    "conference": "KJCCC",
-    "games": 2,
-    "sample": false,
-    "id": "real-juco-coffeyvillecommunitycollege-dieselsolaria230-receiving",
-    "category": "receiving",
-    "rec": 3,
-    "yards": 43,
-    "td": 1,
-    "avg": "14.3"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "WR",
-    "player": "Buddah Harris",
-    "team": "Coffeyville",
-    "conference": "KJCCC",
-    "games": 2,
-    "sample": false,
-    "id": "real-juco-coffeyvillecommunitycollege-buddahharris33v7-receiving",
-    "category": "receiving",
-    "rec": 2,
-    "yards": 50,
-    "td": 0,
-    "avg": "25.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "WR",
-    "player": "Azuri Jackson",
-    "team": "Coffeyville",
-    "conference": "KJCCC",
-    "games": 2,
-    "sample": false,
-    "id": "real-juco-coffeyvillecommunitycollege-azurijacksonv8gp-receiving",
-    "category": "receiving",
-    "rec": 2,
-    "yards": 28,
-    "td": 0,
-    "avg": "14.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "WR",
-    "player": "Kasen Lemons",
-    "team": "Coffeyville",
-    "conference": "KJCCC",
-    "games": 1,
-    "sample": false,
-    "id": "real-juco-coffeyvillecommunitycollege-kasenlemonsnsuz-receiving",
-    "category": "receiving",
-    "rec": 2,
-    "yards": 34,
-    "td": 0,
-    "avg": "17.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "RB",
-    "player": "TJ Ward",
-    "team": "Coffeyville",
-    "conference": "KJCCC",
-    "games": 3,
-    "sample": false,
-    "id": "real-juco-coffeyvillecommunitycollege-tjwardg7vs-receiving",
-    "category": "receiving",
-    "rec": 2,
-    "yards": 3,
-    "td": 0,
-    "avg": "1.5"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "WR",
-    "player": "Messiah Cage",
-    "team": "Coffeyville",
-    "conference": "KJCCC",
-    "games": 2,
-    "sample": false,
-    "id": "real-juco-coffeyvillecommunitycollege-messiahcagec68a-receiving",
-    "category": "receiving",
-    "rec": 1,
-    "yards": 6,
-    "td": 1,
-    "avg": "6.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "DL",
-    "player": "Mhaki Cunningham",
-    "team": "Coffeyville",
-    "conference": "KJCCC",
-    "games": 3,
-    "sample": false,
-    "id": "real-juco-coffeyvillecommunitycollege-mhakicunninghamrd1g-receiving",
-    "category": "receiving",
-    "rec": 1,
-    "yards": 28,
-    "td": 0,
-    "avg": "28.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "RB",
-    "player": "Jahmir Joseph",
-    "team": "Coffeyville",
-    "conference": "KJCCC",
-    "games": 3,
-    "sample": false,
-    "id": "real-juco-coffeyvillecommunitycollege-jahmirjoseph2590-receiving",
-    "category": "receiving",
-    "rec": 1,
-    "yards": -4,
-    "td": 0,
-    "avg": "-4.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "RB",
-    "player": "Aaron Tunstall",
-    "team": "Coffeyville",
-    "conference": "KJCCC",
-    "games": 1,
-    "sample": false,
-    "id": "real-juco-coffeyvillecommunitycollege-aarontunstally24c-receiving",
-    "category": "receiving",
-    "rec": 1,
-    "yards": 10,
-    "td": 0,
-    "avg": "10.0"
+    "int": 1,
+    "rating": "-100.0"
   },
   {
     "division": "JUCO",
@@ -9540,778 +9352,132 @@
   {
     "division": "JUCO",
     "week": "total",
-    "position": "WR",
-    "player": "Derrick King",
-    "team": "Independence",
-    "conference": "KJCCC",
+    "position": "QB",
+    "player": "Jacob Clopton",
+    "team": "Coahoma Community College",
+    "conference": "MACCC",
     "games": 3,
     "sample": false,
-    "id": "real-juco-independencecommunitycollege-derrickkingvh83-receiving",
-    "category": "receiving",
-    "rec": 12,
-    "yards": 230,
+    "id": "real-juco-coahomacommunitycollege-jacobcloptonntuc-passing",
+    "category": "passing",
+    "compAtt": "46/85",
+    "att": 85,
+    "yards": 549,
     "td": 2,
-    "avg": "19.2"
+    "int": 0,
+    "rating": "116.1"
+  },
+  {
+    "division": "JUCO",
+    "week": "total",
+    "position": "QB",
+    "player": "Jacob Clopton",
+    "team": "Coahoma Community College",
+    "conference": "MACCC",
+    "games": 3,
+    "sample": false,
+    "id": "real-juco-coahomacommunitycollege-jacobcloptonntuc-rushing",
+    "category": "rushing",
+    "att": 43,
+    "yards": 177,
+    "td": 2,
+    "avg": "4.1"
   },
   {
     "division": "JUCO",
     "week": "total",
     "position": "RB",
-    "player": "Toryn Jones",
-    "team": "Independence",
-    "conference": "KJCCC",
+    "player": "Prentavis Madison",
+    "team": "Coahoma Community College",
+    "conference": "MACCC",
     "games": 3,
     "sample": false,
-    "id": "real-juco-independencecommunitycollege-torynjonesl7dn-receiving",
-    "category": "receiving",
-    "rec": 6,
-    "yards": 66,
-    "td": 1,
-    "avg": "11.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "WR",
-    "player": "Phillip DeFelice",
-    "team": "Independence",
-    "conference": "KJCCC",
-    "games": 2,
-    "sample": false,
-    "id": "real-juco-independencecommunitycollege-phillipdefelice7491-receiving",
-    "category": "receiving",
-    "rec": 5,
-    "yards": 61,
-    "td": 1,
-    "avg": "12.2"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "WR",
-    "player": "Cameron Gray",
-    "team": "Independence",
-    "conference": "KJCCC",
-    "games": 3,
-    "sample": false,
-    "id": "real-juco-independencecommunitycollege-camerongrayodme-receiving",
-    "category": "receiving",
-    "rec": 5,
-    "yards": 195,
-    "td": 3,
-    "avg": "39.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "WR",
-    "player": "Noah Johnson",
-    "team": "Independence",
-    "conference": "KJCCC",
-    "games": 3,
-    "sample": false,
-    "id": "real-juco-independencecommunitycollege-noahjohnsonmgcd-receiving",
-    "category": "receiving",
-    "rec": 5,
-    "yards": 87,
+    "id": "real-juco-coahomacommunitycollege-prentavismadisonwah4-rushing",
+    "category": "rushing",
+    "att": 35,
+    "yards": 149,
     "td": 0,
-    "avg": "17.4"
+    "avg": "4.3"
   },
   {
     "division": "JUCO",
     "week": "total",
-    "position": "WR",
-    "player": "Peter Edwards",
-    "team": "Independence",
-    "conference": "KJCCC",
-    "games": 2,
+    "position": "RB",
+    "player": "Issac Day",
+    "team": "Coahoma Community College",
+    "conference": "MACCC",
+    "games": 3,
     "sample": false,
-    "id": "real-juco-independencecommunitycollege-peteredwardsjgff-receiving",
-    "category": "receiving",
-    "rec": 4,
-    "yards": 59,
+    "id": "real-juco-coahomacommunitycollege-issacdaysfu0-rushing",
+    "category": "rushing",
+    "att": 28,
+    "yards": 130,
+    "td": 2,
+    "avg": "4.6"
+  },
+  {
+    "division": "JUCO",
+    "week": "total",
+    "position": "RB",
+    "player": "Tyler Christon",
+    "team": "Coahoma Community College",
+    "conference": "MACCC",
+    "games": 3,
+    "sample": false,
+    "id": "real-juco-coahomacommunitycollege-tylerchristons65o-rushing",
+    "category": "rushing",
+    "att": 5,
+    "yards": 6,
     "td": 0,
-    "avg": "14.8"
+    "avg": "1.2"
   },
   {
     "division": "JUCO",
     "week": "total",
     "position": "WR",
-    "player": "Kahlil Allen",
-    "team": "Independence",
-    "conference": "KJCCC",
+    "player": "Abraylen Jenkins",
+    "team": "Coahoma Community College",
+    "conference": "MACCC",
+    "games": 3,
+    "sample": false,
+    "id": "real-juco-coahomacommunitycollege-abraylenjenkinsvbc8-rushing",
+    "category": "rushing",
+    "att": 1,
+    "yards": 6,
+    "td": 0,
+    "avg": "6.0"
+  },
+  {
+    "division": "JUCO",
+    "week": "total",
+    "position": "RB",
+    "player": "Anthony Stephens",
+    "team": "Coahoma Community College",
+    "conference": "MACCC",
     "games": 1,
     "sample": false,
-    "id": "real-juco-independencecommunitycollege-kahlilallenhdcy-receiving",
-    "category": "receiving",
-    "rec": 2,
-    "yards": 83,
-    "td": 1,
-    "avg": "41.5"
+    "id": "real-juco-coahomacommunitycollege-anthonystephensj63b-rushing",
+    "category": "rushing",
+    "att": 3,
+    "yards": 3,
+    "td": 0,
+    "avg": "1.0"
   },
   {
     "division": "JUCO",
     "week": "total",
     "position": "WR",
-    "player": "Fabian Early",
-    "team": "Independence",
-    "conference": "KJCCC",
-    "games": 2,
+    "player": "Jakarius Fields",
+    "team": "Coahoma Community College",
+    "conference": "MACCC",
+    "games": 3,
     "sample": false,
-    "id": "real-juco-independencecommunitycollege-fabianearlynt8l-receiving",
-    "category": "receiving",
-    "rec": 2,
-    "yards": 61,
+    "id": "real-juco-coahomacommunitycollege-jakariusfieldseyd4-rushing",
+    "category": "rushing",
+    "att": 1,
+    "yards": -14,
     "td": 0,
-    "avg": "30.5"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "DL",
-    "player": "Darien Carlisle",
-    "team": "Independence",
-    "conference": "KJCCC",
-    "games": 3,
-    "sample": false,
-    "id": "real-juco-independencecommunitycollege-dariencarlisleuy8l-receiving",
-    "category": "receiving",
-    "rec": 1,
-    "yards": 7,
-    "td": 0,
-    "avg": "7.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "RB",
-    "player": "Tyler Stephens",
-    "team": "Independence",
-    "conference": "KJCCC",
-    "games": 2,
-    "sample": false,
-    "id": "real-juco-independencecommunitycollege-tylerstephensnliq-receiving",
-    "category": "receiving",
-    "rec": 1,
-    "yards": 8,
-    "td": 0,
-    "avg": "8.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "SAF",
-    "player": "Makhyri Hinkle",
-    "team": "Independence",
-    "conference": "KJCCC",
-    "games": 3,
-    "sample": false,
-    "id": "real-juco-independencecommunitycollege-makhyrihinkle4njo-tackling",
-    "category": "tackling",
-    "solo": 19,
-    "ast": 6,
-    "total": 25,
-    "tfl": "0.5",
-    "pbu": 1,
-    "int": 1,
-    "soloSacks": 0.0,
-    "astSacks": 0,
-    "sackYds": 0,
-    "sacks": "0.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "LB",
-    "player": "Joshua Whiting",
-    "team": "Independence",
-    "conference": "KJCCC",
-    "games": 3,
-    "sample": false,
-    "id": "real-juco-independencecommunitycollege-joshuawhitingfb04-tackling",
-    "category": "tackling",
-    "solo": 9,
-    "ast": 14,
-    "total": 23,
-    "tfl": "6.0",
-    "pbu": 0,
-    "int": 0,
-    "soloSacks": 0.0,
-    "astSacks": 0,
-    "sackYds": 0,
-    "sacks": "0.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "SAF",
-    "player": "Antonio Jones",
-    "team": "Independence",
-    "conference": "KJCCC",
-    "games": 3,
-    "sample": false,
-    "id": "real-juco-independencecommunitycollege-antoniojonesg49i-tackling",
-    "category": "tackling",
-    "solo": 5,
-    "ast": 12,
-    "total": 17,
-    "tfl": "0.0",
-    "pbu": 4,
-    "int": 0,
-    "soloSacks": 0.0,
-    "astSacks": 0,
-    "sackYds": 0,
-    "sacks": "0.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "DL",
-    "player": "Jayvon Adebo",
-    "team": "Independence",
-    "conference": "KJCCC",
-    "games": 3,
-    "sample": false,
-    "id": "real-juco-independencecommunitycollege-jayvonadebo9jkp-tackling",
-    "category": "tackling",
-    "solo": 8,
-    "ast": 2,
-    "total": 10,
-    "tfl": "2.0",
-    "pbu": 0,
-    "int": 0,
-    "soloSacks": 0.0,
-    "astSacks": 0,
-    "sackYds": 0,
-    "sacks": "0.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "SAF",
-    "player": "Brendarion Hooks",
-    "team": "Independence",
-    "conference": "KJCCC",
-    "games": 3,
-    "sample": false,
-    "id": "real-juco-independencecommunitycollege-brendarionhooks4jbr-tackling",
-    "category": "tackling",
-    "solo": 3,
-    "ast": 7,
-    "total": 10,
-    "tfl": "0.0",
-    "pbu": 0,
-    "int": 0,
-    "soloSacks": 0.0,
-    "astSacks": 0,
-    "sackYds": 0,
-    "sacks": "0.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "LB",
-    "player": "Terrell Lowery",
-    "team": "Independence",
-    "conference": "KJCCC",
-    "games": 2,
-    "sample": false,
-    "id": "real-juco-independencecommunitycollege-terrelllowerylevl-tackling",
-    "category": "tackling",
-    "solo": 4,
-    "ast": 6,
-    "total": 10,
-    "tfl": "2.0",
-    "pbu": 1,
-    "int": 0,
-    "soloSacks": 0.0,
-    "astSacks": 0,
-    "sackYds": 0,
-    "sacks": "0.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "SAF",
-    "player": "Xavier Millerton",
-    "team": "Independence",
-    "conference": "KJCCC",
-    "games": 3,
-    "sample": false,
-    "id": "real-juco-independencecommunitycollege-xaviermillertongu1x-tackling",
-    "category": "tackling",
-    "solo": 2,
-    "ast": 8,
-    "total": 10,
-    "tfl": "0.0",
-    "pbu": 0,
-    "int": 1,
-    "soloSacks": 0.0,
-    "astSacks": 0,
-    "sackYds": 0,
-    "sacks": "0.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "SAF",
-    "player": "Keyon Bryant",
-    "team": "Independence",
-    "conference": "KJCCC",
-    "games": 3,
-    "sample": false,
-    "id": "real-juco-independencecommunitycollege-keyonbryantpe8g-tackling",
-    "category": "tackling",
-    "solo": 2,
-    "ast": 7,
-    "total": 9,
-    "tfl": "0.0",
-    "pbu": 1,
-    "int": 0,
-    "soloSacks": 0.0,
-    "astSacks": 0,
-    "sackYds": 0,
-    "sacks": "0.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "SAF",
-    "player": "Jaylin Allen",
-    "team": "Independence",
-    "conference": "KJCCC",
-    "games": 3,
-    "sample": false,
-    "id": "real-juco-independencecommunitycollege-jaylinallenvts2-tackling",
-    "category": "tackling",
-    "solo": 4,
-    "ast": 4,
-    "total": 8,
-    "tfl": "0.0",
-    "pbu": 0,
-    "int": 1,
-    "soloSacks": 0.0,
-    "astSacks": 0,
-    "sackYds": 0,
-    "sacks": "0.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "DL",
-    "player": "Darien Carlisle",
-    "team": "Independence",
-    "conference": "KJCCC",
-    "games": 3,
-    "sample": false,
-    "id": "real-juco-independencecommunitycollege-dariencarlisleuy8l-tackling",
-    "category": "tackling",
-    "solo": 2,
-    "ast": 5,
-    "total": 7,
-    "tfl": "1.0",
-    "pbu": 0,
-    "int": 0,
-    "soloSacks": 1.0,
-    "astSacks": 0,
-    "sackYds": 8,
-    "sacks": "1.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "LB",
-    "player": "Camarion Carter",
-    "team": "Independence",
-    "conference": "KJCCC",
-    "games": 3,
-    "sample": false,
-    "id": "real-juco-independencecommunitycollege-camarioncarteroho5-tackling",
-    "category": "tackling",
-    "solo": 5,
-    "ast": 2,
-    "total": 7,
-    "tfl": "3.0",
-    "pbu": 1,
-    "int": 0,
-    "soloSacks": 2.0,
-    "astSacks": 0,
-    "sackYds": 11,
-    "sacks": "2.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "DL",
-    "player": "Ronnie Ross",
-    "team": "Independence",
-    "conference": "KJCCC",
-    "games": 1,
-    "sample": false,
-    "id": "real-juco-independencecommunitycollege-ronnierossx44t-tackling",
-    "category": "tackling",
-    "solo": 5,
-    "ast": 2,
-    "total": 7,
-    "tfl": "1.0",
-    "pbu": 0,
-    "int": 0,
-    "soloSacks": 0.0,
-    "astSacks": 0,
-    "sackYds": 0,
-    "sacks": "0.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "DL",
-    "player": "Markiss Peterson",
-    "team": "Independence",
-    "conference": "KJCCC",
-    "games": 3,
-    "sample": false,
-    "id": "real-juco-independencecommunitycollege-markisspetersonln0g-tackling",
-    "category": "tackling",
-    "solo": 2,
-    "ast": 4,
-    "total": 6,
-    "tfl": "3.0",
-    "pbu": 0,
-    "int": 0,
-    "soloSacks": 0.0,
-    "astSacks": 0,
-    "sackYds": 0,
-    "sacks": "0.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "SAF",
-    "player": "Dylan Bunkley",
-    "team": "Independence",
-    "conference": "KJCCC",
-    "games": 3,
-    "sample": false,
-    "id": "real-juco-independencecommunitycollege-dylanbunkleyeejd-tackling",
-    "category": "tackling",
-    "solo": 2,
-    "ast": 2,
-    "total": 4,
-    "tfl": "0.0",
-    "pbu": 0,
-    "int": 0,
-    "soloSacks": 0.0,
-    "astSacks": 0,
-    "sackYds": 0,
-    "sacks": "0.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "DL",
-    "player": "Lyric Hawkins",
-    "team": "Independence",
-    "conference": "KJCCC",
-    "games": 3,
-    "sample": false,
-    "id": "real-juco-independencecommunitycollege-lyrichawkins8lsy-tackling",
-    "category": "tackling",
-    "solo": 1,
-    "ast": 3,
-    "total": 4,
-    "tfl": "0.0",
-    "pbu": 0,
-    "int": 0,
-    "soloSacks": 0.0,
-    "astSacks": 0,
-    "sackYds": 0,
-    "sacks": "0.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "DL",
-    "player": "Savion Ross",
-    "team": "Independence",
-    "conference": "KJCCC",
-    "games": 2,
-    "sample": false,
-    "id": "real-juco-independencecommunitycollege-savionrosscz3g-tackling",
-    "category": "tackling",
-    "solo": 1,
-    "ast": 3,
-    "total": 4,
-    "tfl": "0.5",
-    "pbu": 0,
-    "int": 0,
-    "soloSacks": 0.0,
-    "astSacks": 0,
-    "sackYds": 0,
-    "sacks": "0.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "SAF",
-    "player": "Johnnie Williams",
-    "team": "Independence",
-    "conference": "KJCCC",
-    "games": 2,
-    "sample": false,
-    "id": "real-juco-independencecommunitycollege-johnniewilliamsvq0a-tackling",
-    "category": "tackling",
-    "solo": 1,
-    "ast": 3,
-    "total": 4,
-    "tfl": "0.0",
-    "pbu": 0,
-    "int": 0,
-    "soloSacks": 0.0,
-    "astSacks": 0,
-    "sackYds": 0,
-    "sacks": "0.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "SAF",
-    "player": "LaWarren Chambers",
-    "team": "Independence",
-    "conference": "KJCCC",
-    "games": 2,
-    "sample": false,
-    "id": "real-juco-independencecommunitycollege-lawarrenchambers1bqe-tackling",
-    "category": "tackling",
-    "solo": 2,
-    "ast": 1,
-    "total": 3,
-    "tfl": "0.0",
-    "pbu": 0,
-    "int": 0,
-    "soloSacks": 0.0,
-    "astSacks": 0,
-    "sackYds": 0,
-    "sacks": "0.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "DL",
-    "player": "Branden Rudolph",
-    "team": "Independence",
-    "conference": "KJCCC",
-    "games": 3,
-    "sample": false,
-    "id": "real-juco-independencecommunitycollege-brandenrudolphqw6l-tackling",
-    "category": "tackling",
-    "solo": 0,
-    "ast": 3,
-    "total": 3,
-    "tfl": "1.0",
-    "pbu": 0,
-    "int": 0,
-    "soloSacks": 0.0,
-    "astSacks": 0,
-    "sackYds": 0,
-    "sacks": "0.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "DL",
-    "player": "Dylan Bolden",
-    "team": "Independence",
-    "conference": "KJCCC",
-    "games": 3,
-    "sample": false,
-    "id": "real-juco-independencecommunitycollege-dylanboldenf269-tackling",
-    "category": "tackling",
-    "solo": 0,
-    "ast": 2,
-    "total": 2,
-    "tfl": "0.5",
-    "pbu": 0,
-    "int": 0,
-    "soloSacks": 0.0,
-    "astSacks": 0,
-    "sackYds": 0,
-    "sacks": "0.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "SAF",
-    "player": "La\u2019Harry Debose",
-    "team": "Independence",
-    "conference": "KJCCC",
-    "games": 3,
-    "sample": false,
-    "id": "real-juco-independencecommunitycollege-larsquoharrydeboseuolo-tackling",
-    "category": "tackling",
-    "solo": 2,
-    "ast": 0,
-    "total": 2,
-    "tfl": "0.0",
-    "pbu": 3,
-    "int": 0,
-    "soloSacks": 0.0,
-    "astSacks": 0,
-    "sackYds": 0,
-    "sacks": "0.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "LB",
-    "player": "Cohen Fielder",
-    "team": "Independence",
-    "conference": "KJCCC",
-    "games": 2,
-    "sample": false,
-    "id": "real-juco-independencecommunitycollege-cohenfielder6un4-tackling",
-    "category": "tackling",
-    "solo": 0,
-    "ast": 2,
-    "total": 2,
-    "tfl": "0.5",
-    "pbu": 0,
-    "int": 0,
-    "soloSacks": 0.0,
-    "astSacks": 0,
-    "sackYds": 0,
-    "sacks": "0.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "LB",
-    "player": "Saione Inoke",
-    "team": "Independence",
-    "conference": "KJCCC",
-    "games": 2,
-    "sample": false,
-    "id": "real-juco-independencecommunitycollege-saioneinokey6n2-tackling",
-    "category": "tackling",
-    "solo": 1,
-    "ast": 0,
-    "total": 1,
-    "tfl": "0.0",
-    "pbu": 0,
-    "int": 0,
-    "soloSacks": 0.0,
-    "astSacks": 0,
-    "sackYds": 0,
-    "sacks": "0.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "RB",
-    "player": "Toryn Jones",
-    "team": "Independence",
-    "conference": "KJCCC",
-    "games": 3,
-    "sample": false,
-    "id": "real-juco-independencecommunitycollege-torynjonesl7dn-tackling",
-    "category": "tackling",
-    "solo": 0,
-    "ast": 1,
-    "total": 1,
-    "tfl": "0.0",
-    "pbu": 0,
-    "int": 0,
-    "soloSacks": 0.0,
-    "astSacks": 0,
-    "sackYds": 0,
-    "sacks": "0.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "DL",
-    "player": "Elijah Lynn",
-    "team": "Independence",
-    "conference": "KJCCC",
-    "games": 2,
-    "sample": false,
-    "id": "real-juco-independencecommunitycollege-elijahlynnua9j-tackling",
-    "category": "tackling",
-    "solo": 0,
-    "ast": 1,
-    "total": 1,
-    "tfl": "0.0",
-    "pbu": 0,
-    "int": 0,
-    "soloSacks": 0.0,
-    "astSacks": 0,
-    "sackYds": 0,
-    "sacks": "0.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "WR",
-    "player": "Jeremiah Rhoades",
-    "team": "Independence",
-    "conference": "KJCCC",
-    "games": 2,
-    "sample": false,
-    "id": "real-juco-independencecommunitycollege-jeremiahrhoades9uqp-tackling",
-    "category": "tackling",
-    "solo": 1,
-    "ast": 0,
-    "total": 1,
-    "tfl": "0.0",
-    "pbu": 0,
-    "int": 0,
-    "soloSacks": 0.0,
-    "astSacks": 0,
-    "sackYds": 0,
-    "sacks": "0.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "ATH",
-    "player": "Oscar Salgado",
-    "team": "Independence",
-    "conference": "KJCCC",
-    "games": 3,
-    "sample": false,
-    "id": "real-juco-independencecommunitycollege-oscarsalgadoe31v-tackling",
-    "category": "tackling",
-    "solo": 1,
-    "ast": 0,
-    "total": 1,
-    "tfl": "0.0",
-    "pbu": 0,
-    "int": 0,
-    "soloSacks": 0.0,
-    "astSacks": 0,
-    "sackYds": 0,
-    "sacks": "0.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "LB",
-    "player": "Ja\u2019Marcus Webster",
-    "team": "Independence",
-    "conference": "KJCCC",
-    "games": 2,
-    "sample": false,
-    "id": "real-juco-independencecommunitycollege-jarsquomarcuswebstero8re-tackling",
-    "category": "tackling",
-    "solo": 1,
-    "ast": 0,
-    "total": 1,
-    "tfl": "0.0",
-    "pbu": 0,
-    "int": 0,
-    "soloSacks": 0.0,
-    "astSacks": 0,
-    "sackYds": 0,
-    "sacks": "0.0"
+    "avg": "-14.0"
   },
   {
     "division": "JUCO",
@@ -13584,24 +12750,24 @@
   {
     "division": "JUCO",
     "week": "total",
-    "position": "SAF",
-    "player": "Lo'Kavion Jackson",
+    "position": "LB",
+    "player": "Andre Peters III",
     "team": "East Mississippi Community College",
     "conference": "MACCC",
     "games": 3,
     "sample": false,
-    "id": "real-juco-eastmississippicommunitycollege-lokavionjacksonio3a-tackling",
+    "id": "real-juco-eastmississippicommunitycollege-andrepetersiiitpen-tackling",
     "category": "tackling",
-    "solo": 7,
-    "ast": 8,
-    "total": 15,
-    "tfl": "0.5",
+    "solo": 14,
+    "ast": 6,
+    "total": 20,
+    "tfl": "3.0",
     "pbu": 0,
-    "int": 1,
-    "soloSacks": 0.0,
+    "int": 0,
+    "soloSacks": 2.0,
     "astSacks": 0,
-    "sackYds": 0,
-    "sacks": "0.0"
+    "sackYds": 9,
+    "sacks": "2.0"
   },
   {
     "division": "JUCO",
@@ -13628,106 +12794,40 @@
   {
     "division": "JUCO",
     "week": "total",
-    "position": "SAF",
-    "player": "Ja'Quarius Harrell",
+    "position": "DL",
+    "player": "Jarquez Perry",
     "team": "East Mississippi Community College",
     "conference": "MACCC",
     "games": 3,
     "sample": false,
-    "id": "real-juco-eastmississippicommunitycollege-jaquariusharrell0i30-tackling",
+    "id": "real-juco-eastmississippicommunitycollege-jarquezperryn6or-tackling",
     "category": "tackling",
-    "solo": 5,
-    "ast": 3,
-    "total": 8,
-    "tfl": "0.0",
-    "pbu": 1,
-    "int": 0,
-    "soloSacks": 0.0,
-    "astSacks": 0,
-    "sackYds": 0,
-    "sacks": "0.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "WR",
-    "player": "Sharroid Whitehead",
-    "team": "East Mississippi Community College",
-    "conference": "MACCC",
-    "games": 3,
-    "sample": false,
-    "id": "real-juco-eastmississippicommunitycollege-sharroidwhiteheadq6ec-tackling",
-    "category": "tackling",
-    "solo": 1,
-    "ast": 0,
-    "total": 1,
-    "tfl": "0.0",
+    "solo": 11,
+    "ast": 6,
+    "total": 17,
+    "tfl": "4.5",
     "pbu": 0,
     "int": 0,
-    "soloSacks": 0.0,
+    "soloSacks": 3.0,
     "astSacks": 0,
-    "sackYds": 0,
-    "sacks": "0.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "LB",
-    "player": "Kieran Berry",
-    "team": "East Mississippi Community College",
-    "conference": "MACCC",
-    "games": 2,
-    "sample": false,
-    "id": "real-juco-eastmississippicommunitycollege-kieranberryscdb-tackling",
-    "category": "tackling",
-    "solo": 1,
-    "ast": 1,
-    "total": 2,
-    "tfl": "1.0",
-    "pbu": 0,
-    "int": 0,
-    "soloSacks": 0.0,
-    "astSacks": 0,
-    "sackYds": 0,
-    "sacks": "0.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "QB",
-    "player": "Aidan Karsh",
-    "team": "East Mississippi Community College",
-    "conference": "MACCC",
-    "games": 3,
-    "sample": false,
-    "id": "real-juco-eastmississippicommunitycollege-aidankarshi44a-tackling",
-    "category": "tackling",
-    "solo": 0,
-    "ast": 1,
-    "total": 1,
-    "tfl": "0.0",
-    "pbu": 0,
-    "int": 0,
-    "soloSacks": 0.0,
-    "astSacks": 0,
-    "sackYds": 0,
-    "sacks": "0.0"
+    "sackYds": 23,
+    "sacks": "3.0"
   },
   {
     "division": "JUCO",
     "week": "total",
     "position": "SAF",
-    "player": "Evan Williams",
+    "player": "Lo'Kavion Jackson",
     "team": "East Mississippi Community College",
     "conference": "MACCC",
     "games": 3,
     "sample": false,
-    "id": "real-juco-eastmississippicommunitycollege-evanwilliams62qh-tackling",
+    "id": "real-juco-eastmississippicommunitycollege-lokavionjacksonio3a-tackling",
     "category": "tackling",
-    "solo": 5,
+    "solo": 7,
     "ast": 8,
-    "total": 13,
-    "tfl": "2.5",
+    "total": 15,
+    "tfl": "0.5",
     "pbu": 0,
     "int": 1,
     "soloSacks": 0.0,
@@ -13760,6 +12860,226 @@
   {
     "division": "JUCO",
     "week": "total",
+    "position": "LB",
+    "player": "Ja'Cari Owens",
+    "team": "East Mississippi Community College",
+    "conference": "MACCC",
+    "games": 3,
+    "sample": false,
+    "id": "real-juco-eastmississippicommunitycollege-jacariowensrxb7-tackling",
+    "category": "tackling",
+    "solo": 5,
+    "ast": 8,
+    "total": 13,
+    "tfl": "0.0",
+    "pbu": 0,
+    "int": 1,
+    "soloSacks": 0.0,
+    "astSacks": 0,
+    "sackYds": 0,
+    "sacks": "0.0"
+  },
+  {
+    "division": "JUCO",
+    "week": "total",
+    "position": "SAF",
+    "player": "Evan Williams",
+    "team": "East Mississippi Community College",
+    "conference": "MACCC",
+    "games": 3,
+    "sample": false,
+    "id": "real-juco-eastmississippicommunitycollege-evanwilliams62qh-tackling",
+    "category": "tackling",
+    "solo": 5,
+    "ast": 8,
+    "total": 13,
+    "tfl": "2.5",
+    "pbu": 0,
+    "int": 1,
+    "soloSacks": 0.0,
+    "astSacks": 0,
+    "sackYds": 0,
+    "sacks": "0.0"
+  },
+  {
+    "division": "JUCO",
+    "week": "total",
+    "position": "SAF",
+    "player": "Kasavion Shelton",
+    "team": "East Mississippi Community College",
+    "conference": "MACCC",
+    "games": 3,
+    "sample": false,
+    "id": "real-juco-eastmississippicommunitycollege-kasavionshelton9rxh-tackling",
+    "category": "tackling",
+    "solo": 6,
+    "ast": 3,
+    "total": 9,
+    "tfl": "2.0",
+    "pbu": 0,
+    "int": 0,
+    "soloSacks": 1.0,
+    "astSacks": 0,
+    "sackYds": 12,
+    "sacks": "1.0"
+  },
+  {
+    "division": "JUCO",
+    "week": "total",
+    "position": "LB",
+    "player": "Devan Whitsett",
+    "team": "East Mississippi Community College",
+    "conference": "MACCC",
+    "games": 3,
+    "sample": false,
+    "id": "real-juco-eastmississippicommunitycollege-devanwhitsettt537-tackling",
+    "category": "tackling",
+    "solo": 5,
+    "ast": 4,
+    "total": 9,
+    "tfl": "2.0",
+    "pbu": 0,
+    "int": 0,
+    "soloSacks": 1.0,
+    "astSacks": 0,
+    "sackYds": 9,
+    "sacks": "1.0"
+  },
+  {
+    "division": "JUCO",
+    "week": "total",
+    "position": "SAF",
+    "player": "Ja'Quarius Harrell",
+    "team": "East Mississippi Community College",
+    "conference": "MACCC",
+    "games": 3,
+    "sample": false,
+    "id": "real-juco-eastmississippicommunitycollege-jaquariusharrell0i30-tackling",
+    "category": "tackling",
+    "solo": 5,
+    "ast": 3,
+    "total": 8,
+    "tfl": "0.0",
+    "pbu": 1,
+    "int": 0,
+    "soloSacks": 0.0,
+    "astSacks": 0,
+    "sackYds": 0,
+    "sacks": "0.0"
+  },
+  {
+    "division": "JUCO",
+    "week": "total",
+    "position": "DL",
+    "player": "Ford Clark",
+    "team": "East Mississippi Community College",
+    "conference": "MACCC",
+    "games": 3,
+    "sample": false,
+    "id": "real-juco-eastmississippicommunitycollege-fordclarkuy32-tackling",
+    "category": "tackling",
+    "solo": 4,
+    "ast": 3,
+    "total": 7,
+    "tfl": "2.0",
+    "pbu": 0,
+    "int": 0,
+    "soloSacks": 1.0,
+    "astSacks": 0,
+    "sackYds": 7,
+    "sacks": "1.0"
+  },
+  {
+    "division": "JUCO",
+    "week": "total",
+    "position": "DL",
+    "player": "Kindal Moorehead Jr.",
+    "team": "East Mississippi Community College",
+    "conference": "MACCC",
+    "games": 3,
+    "sample": false,
+    "id": "real-juco-eastmississippicommunitycollege-kindalmooreheadjr5p54-tackling",
+    "category": "tackling",
+    "solo": 6,
+    "ast": 1,
+    "total": 7,
+    "tfl": "2.0",
+    "pbu": 0,
+    "int": 0,
+    "soloSacks": 0.0,
+    "astSacks": 0,
+    "sackYds": 0,
+    "sacks": "0.0"
+  },
+  {
+    "division": "JUCO",
+    "week": "total",
+    "position": "DL",
+    "player": "Jorden Rush",
+    "team": "East Mississippi Community College",
+    "conference": "MACCC",
+    "games": 3,
+    "sample": false,
+    "id": "real-juco-eastmississippicommunitycollege-jordenrush8bkb-tackling",
+    "category": "tackling",
+    "solo": 3,
+    "ast": 2,
+    "total": 5,
+    "tfl": "0.5",
+    "pbu": 0,
+    "int": 0,
+    "soloSacks": 0.0,
+    "astSacks": 0,
+    "sackYds": 0,
+    "sacks": "0.0"
+  },
+  {
+    "division": "JUCO",
+    "week": "total",
+    "position": "SAF",
+    "player": "Collin Bowens",
+    "team": "East Mississippi Community College",
+    "conference": "MACCC",
+    "games": 3,
+    "sample": false,
+    "id": "real-juco-eastmississippicommunitycollege-collinbowens51k3-tackling",
+    "category": "tackling",
+    "solo": 2,
+    "ast": 2,
+    "total": 4,
+    "tfl": "0.0",
+    "pbu": 1,
+    "int": 1,
+    "soloSacks": 0.0,
+    "astSacks": 0,
+    "sackYds": 0,
+    "sacks": "0.0"
+  },
+  {
+    "division": "JUCO",
+    "week": "total",
+    "position": "DL",
+    "player": "Kaideyn Rice",
+    "team": "East Mississippi Community College",
+    "conference": "MACCC",
+    "games": 3,
+    "sample": false,
+    "id": "real-juco-eastmississippicommunitycollege-kaideynriceilfe-tackling",
+    "category": "tackling",
+    "solo": 0,
+    "ast": 4,
+    "total": 4,
+    "tfl": "0.0",
+    "pbu": 0,
+    "int": 0,
+    "soloSacks": 0.0,
+    "astSacks": 0,
+    "sackYds": 0,
+    "sacks": "0.0"
+  },
+  {
+    "division": "JUCO",
+    "week": "total",
     "position": "SAF",
     "player": "Kylen Simmons",
     "team": "East Mississippi Community College",
@@ -13771,6 +13091,28 @@
     "solo": 3,
     "ast": 1,
     "total": 4,
+    "tfl": "1.0",
+    "pbu": 0,
+    "int": 0,
+    "soloSacks": 0.0,
+    "astSacks": 0,
+    "sackYds": 0,
+    "sacks": "0.0"
+  },
+  {
+    "division": "JUCO",
+    "week": "total",
+    "position": "LB",
+    "player": "Jayce Taylor",
+    "team": "East Mississippi Community College",
+    "conference": "MACCC",
+    "games": 3,
+    "sample": false,
+    "id": "real-juco-eastmississippicommunitycollege-jaycetaylorlbkk-tackling",
+    "category": "tackling",
+    "solo": 1,
+    "ast": 2,
+    "total": 3,
     "tfl": "1.0",
     "pbu": 0,
     "int": 0,
@@ -13805,138 +13147,6 @@
     "division": "JUCO",
     "week": "total",
     "position": "LB",
-    "player": "Andre Peters III",
-    "team": "East Mississippi Community College",
-    "conference": "MACCC",
-    "games": 3,
-    "sample": false,
-    "id": "real-juco-eastmississippicommunitycollege-andrepetersiiitpen-tackling",
-    "category": "tackling",
-    "solo": 14,
-    "ast": 6,
-    "total": 20,
-    "tfl": "3.0",
-    "pbu": 0,
-    "int": 0,
-    "soloSacks": 2.0,
-    "astSacks": 0,
-    "sackYds": 9,
-    "sacks": "2.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "SAF",
-    "player": "Demarious Pittman",
-    "team": "East Mississippi Community College",
-    "conference": "MACCC",
-    "games": 3,
-    "sample": false,
-    "id": "real-juco-eastmississippicommunitycollege-demariouspittmanz5uo-tackling",
-    "category": "tackling",
-    "solo": 1,
-    "ast": 0,
-    "total": 1,
-    "tfl": "0.0",
-    "pbu": 0,
-    "int": 0,
-    "soloSacks": 0.0,
-    "astSacks": 0,
-    "sackYds": 0,
-    "sacks": "0.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "LB",
-    "player": "Ja'Cari Owens",
-    "team": "East Mississippi Community College",
-    "conference": "MACCC",
-    "games": 3,
-    "sample": false,
-    "id": "real-juco-eastmississippicommunitycollege-jacariowensrxb7-tackling",
-    "category": "tackling",
-    "solo": 5,
-    "ast": 8,
-    "total": 13,
-    "tfl": "0.0",
-    "pbu": 0,
-    "int": 1,
-    "soloSacks": 0.0,
-    "astSacks": 0,
-    "sackYds": 0,
-    "sacks": "0.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "DL",
-    "player": "Jarquez Perry",
-    "team": "East Mississippi Community College",
-    "conference": "MACCC",
-    "games": 3,
-    "sample": false,
-    "id": "real-juco-eastmississippicommunitycollege-jarquezperryn6or-tackling",
-    "category": "tackling",
-    "solo": 11,
-    "ast": 6,
-    "total": 17,
-    "tfl": "4.5",
-    "pbu": 0,
-    "int": 0,
-    "soloSacks": 3.0,
-    "astSacks": 0,
-    "sackYds": 23,
-    "sacks": "3.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "SAF",
-    "player": "Kasavion Shelton",
-    "team": "East Mississippi Community College",
-    "conference": "MACCC",
-    "games": 3,
-    "sample": false,
-    "id": "real-juco-eastmississippicommunitycollege-kasavionshelton9rxh-tackling",
-    "category": "tackling",
-    "solo": 6,
-    "ast": 3,
-    "total": 9,
-    "tfl": "2.0",
-    "pbu": 0,
-    "int": 0,
-    "soloSacks": 1.0,
-    "astSacks": 0,
-    "sackYds": 12,
-    "sacks": "1.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "SAF",
-    "player": "Jordan Virgess",
-    "team": "East Mississippi Community College",
-    "conference": "MACCC",
-    "games": 3,
-    "sample": false,
-    "id": "real-juco-eastmississippicommunitycollege-jordanvirgessvb1t-tackling",
-    "category": "tackling",
-    "solo": 2,
-    "ast": 0,
-    "total": 2,
-    "tfl": "0.0",
-    "pbu": 0,
-    "int": 0,
-    "soloSacks": 0.0,
-    "astSacks": 0,
-    "sackYds": 0,
-    "sacks": "0.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "LB",
     "player": "Keyshawn Ben",
     "team": "East Mississippi Community College",
     "conference": "MACCC",
@@ -13958,128 +13168,18 @@
   {
     "division": "JUCO",
     "week": "total",
-    "position": "SAF",
-    "player": "Collin Bowens",
-    "team": "East Mississippi Community College",
-    "conference": "MACCC",
-    "games": 3,
-    "sample": false,
-    "id": "real-juco-eastmississippicommunitycollege-collinbowens51k3-tackling",
-    "category": "tackling",
-    "solo": 2,
-    "ast": 2,
-    "total": 4,
-    "tfl": "0.0",
-    "pbu": 1,
-    "int": 1,
-    "soloSacks": 0.0,
-    "astSacks": 0,
-    "sackYds": 0,
-    "sacks": "0.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
     "position": "LB",
-    "player": "Skylar Lashley",
-    "team": "East Mississippi Community College",
-    "conference": "MACCC",
-    "games": 3,
-    "sample": false,
-    "id": "real-juco-eastmississippicommunitycollege-skylarlashleyli9r-tackling",
-    "category": "tackling",
-    "solo": 0,
-    "ast": 1,
-    "total": 1,
-    "tfl": "0.0",
-    "pbu": 0,
-    "int": 0,
-    "soloSacks": 0.0,
-    "astSacks": 0,
-    "sackYds": 0,
-    "sacks": "0.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "LB",
-    "player": "Jayce Taylor",
-    "team": "East Mississippi Community College",
-    "conference": "MACCC",
-    "games": 3,
-    "sample": false,
-    "id": "real-juco-eastmississippicommunitycollege-jaycetaylorlbkk-tackling",
-    "category": "tackling",
-    "solo": 1,
-    "ast": 2,
-    "total": 3,
-    "tfl": "1.0",
-    "pbu": 0,
-    "int": 0,
-    "soloSacks": 0.0,
-    "astSacks": 0,
-    "sackYds": 0,
-    "sacks": "0.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "LB",
-    "player": "Bennett Payton",
+    "player": "Kieran Berry",
     "team": "East Mississippi Community College",
     "conference": "MACCC",
     "games": 2,
     "sample": false,
-    "id": "real-juco-eastmississippicommunitycollege-bennettpayton21sa-tackling",
+    "id": "real-juco-eastmississippicommunitycollege-kieranberryscdb-tackling",
     "category": "tackling",
     "solo": 1,
-    "ast": 0,
-    "total": 1,
-    "tfl": "0.0",
-    "pbu": 0,
-    "int": 0,
-    "soloSacks": 0.0,
-    "astSacks": 0,
-    "sackYds": 0,
-    "sacks": "0.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "LB",
-    "player": "Devan Whitsett",
-    "team": "East Mississippi Community College",
-    "conference": "MACCC",
-    "games": 3,
-    "sample": false,
-    "id": "real-juco-eastmississippicommunitycollege-devanwhitsettt537-tackling",
-    "category": "tackling",
-    "solo": 5,
-    "ast": 4,
-    "total": 9,
-    "tfl": "2.0",
-    "pbu": 0,
-    "int": 0,
-    "soloSacks": 1.0,
-    "astSacks": 0,
-    "sackYds": 9,
-    "sacks": "1.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "DL",
-    "player": "Jorden Rush",
-    "team": "East Mississippi Community College",
-    "conference": "MACCC",
-    "games": 3,
-    "sample": false,
-    "id": "real-juco-eastmississippicommunitycollege-jordenrush8bkb-tackling",
-    "category": "tackling",
-    "solo": 3,
-    "ast": 2,
-    "total": 5,
-    "tfl": "0.5",
+    "ast": 1,
+    "total": 2,
+    "tfl": "1.0",
     "pbu": 0,
     "int": 0,
     "soloSacks": 0.0,
@@ -14134,17 +13234,39 @@
   {
     "division": "JUCO",
     "week": "total",
-    "position": "DL",
-    "player": "Jonathan Wright",
+    "position": "WR",
+    "player": "John Austin Sterling",
     "team": "East Mississippi Community College",
     "conference": "MACCC",
     "games": 3,
     "sample": false,
-    "id": "real-juco-eastmississippicommunitycollege-jonathanwrightyaji-tackling",
+    "id": "real-juco-eastmississippicommunitycollege-johnaustinsterling3z9n-tackling",
     "category": "tackling",
-    "solo": 0,
-    "ast": 1,
-    "total": 1,
+    "solo": 2,
+    "ast": 0,
+    "total": 2,
+    "tfl": "0.0",
+    "pbu": 0,
+    "int": 0,
+    "soloSacks": 0.0,
+    "astSacks": 0,
+    "sackYds": 0,
+    "sacks": "0.0"
+  },
+  {
+    "division": "JUCO",
+    "week": "total",
+    "position": "SAF",
+    "player": "Jordan Virgess",
+    "team": "East Mississippi Community College",
+    "conference": "MACCC",
+    "games": 3,
+    "sample": false,
+    "id": "real-juco-eastmississippicommunitycollege-jordanvirgessvb1t-tackling",
+    "category": "tackling",
+    "solo": 2,
+    "ast": 0,
+    "total": 2,
     "tfl": "0.0",
     "pbu": 0,
     "int": 0,
@@ -14178,39 +13300,61 @@
   {
     "division": "JUCO",
     "week": "total",
-    "position": "DL",
-    "player": "Ford Clark",
+    "position": "QB",
+    "player": "Aidan Karsh",
     "team": "East Mississippi Community College",
     "conference": "MACCC",
     "games": 3,
     "sample": false,
-    "id": "real-juco-eastmississippicommunitycollege-fordclarkuy32-tackling",
+    "id": "real-juco-eastmississippicommunitycollege-aidankarshi44a-tackling",
     "category": "tackling",
-    "solo": 4,
-    "ast": 3,
-    "total": 7,
-    "tfl": "2.0",
+    "solo": 0,
+    "ast": 1,
+    "total": 1,
+    "tfl": "0.0",
     "pbu": 0,
     "int": 0,
-    "soloSacks": 1.0,
+    "soloSacks": 0.0,
     "astSacks": 0,
-    "sackYds": 7,
-    "sacks": "1.0"
+    "sackYds": 0,
+    "sacks": "0.0"
   },
   {
     "division": "JUCO",
     "week": "total",
-    "position": "WR",
-    "player": "John Austin Sterling",
+    "position": "DL",
+    "player": "Roydell Kennedy",
     "team": "East Mississippi Community College",
     "conference": "MACCC",
     "games": 3,
     "sample": false,
-    "id": "real-juco-eastmississippicommunitycollege-johnaustinsterling3z9n-tackling",
+    "id": "real-juco-eastmississippicommunitycollege-roydellkennedy0svk-tackling",
     "category": "tackling",
-    "solo": 2,
+    "solo": 1,
     "ast": 0,
-    "total": 2,
+    "total": 1,
+    "tfl": "1.0",
+    "pbu": 0,
+    "int": 0,
+    "soloSacks": 0.0,
+    "astSacks": 0,
+    "sackYds": 0,
+    "sacks": "0.0"
+  },
+  {
+    "division": "JUCO",
+    "week": "total",
+    "position": "LB",
+    "player": "Skylar Lashley",
+    "team": "East Mississippi Community College",
+    "conference": "MACCC",
+    "games": 3,
+    "sample": false,
+    "id": "real-juco-eastmississippicommunitycollege-skylarlashleyli9r-tackling",
+    "category": "tackling",
+    "solo": 0,
+    "ast": 1,
+    "total": 1,
     "tfl": "0.0",
     "pbu": 0,
     "int": 0,
@@ -14245,28 +13389,6 @@
     "division": "JUCO",
     "week": "total",
     "position": "DL",
-    "player": "Kindal Moorehead Jr.",
-    "team": "East Mississippi Community College",
-    "conference": "MACCC",
-    "games": 3,
-    "sample": false,
-    "id": "real-juco-eastmississippicommunitycollege-kindalmooreheadjr5p54-tackling",
-    "category": "tackling",
-    "solo": 6,
-    "ast": 1,
-    "total": 7,
-    "tfl": "2.0",
-    "pbu": 0,
-    "int": 0,
-    "soloSacks": 0.0,
-    "astSacks": 0,
-    "sackYds": 0,
-    "sacks": "0.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "DL",
     "player": "Nick Murray",
     "team": "East Mississippi Community College",
     "conference": "MACCC",
@@ -14288,18 +13410,62 @@
   {
     "division": "JUCO",
     "week": "total",
-    "position": "DL",
-    "player": "Roydell Kennedy",
+    "position": "LB",
+    "player": "Bennett Payton",
     "team": "East Mississippi Community College",
     "conference": "MACCC",
-    "games": 3,
+    "games": 2,
     "sample": false,
-    "id": "real-juco-eastmississippicommunitycollege-roydellkennedy0svk-tackling",
+    "id": "real-juco-eastmississippicommunitycollege-bennettpayton21sa-tackling",
     "category": "tackling",
     "solo": 1,
     "ast": 0,
     "total": 1,
-    "tfl": "1.0",
+    "tfl": "0.0",
+    "pbu": 0,
+    "int": 0,
+    "soloSacks": 0.0,
+    "astSacks": 0,
+    "sackYds": 0,
+    "sacks": "0.0"
+  },
+  {
+    "division": "JUCO",
+    "week": "total",
+    "position": "SAF",
+    "player": "Demarious Pittman",
+    "team": "East Mississippi Community College",
+    "conference": "MACCC",
+    "games": 3,
+    "sample": false,
+    "id": "real-juco-eastmississippicommunitycollege-demariouspittmanz5uo-tackling",
+    "category": "tackling",
+    "solo": 1,
+    "ast": 0,
+    "total": 1,
+    "tfl": "0.0",
+    "pbu": 0,
+    "int": 0,
+    "soloSacks": 0.0,
+    "astSacks": 0,
+    "sackYds": 0,
+    "sacks": "0.0"
+  },
+  {
+    "division": "JUCO",
+    "week": "total",
+    "position": "WR",
+    "player": "Sharroid Whitehead",
+    "team": "East Mississippi Community College",
+    "conference": "MACCC",
+    "games": 3,
+    "sample": false,
+    "id": "real-juco-eastmississippicommunitycollege-sharroidwhiteheadq6ec-tackling",
+    "category": "tackling",
+    "solo": 1,
+    "ast": 0,
+    "total": 1,
+    "tfl": "0.0",
     "pbu": 0,
     "int": 0,
     "soloSacks": 0.0,
@@ -14311,16 +13477,16 @@
     "division": "JUCO",
     "week": "total",
     "position": "DL",
-    "player": "Kaideyn Rice",
+    "player": "Jonathan Wright",
     "team": "East Mississippi Community College",
     "conference": "MACCC",
     "games": 3,
     "sample": false,
-    "id": "real-juco-eastmississippicommunitycollege-kaideynriceilfe-tackling",
+    "id": "real-juco-eastmississippicommunitycollege-jonathanwrightyaji-tackling",
     "category": "tackling",
     "solo": 0,
-    "ast": 4,
-    "total": 4,
+    "ast": 1,
+    "total": 1,
     "tfl": "0.0",
     "pbu": 0,
     "int": 0,
@@ -15308,6 +14474,204 @@
     "astSacks": 0,
     "sackYds": 0,
     "sacks": "0.0"
+  },
+  {
+    "division": "JUCO",
+    "week": "total",
+    "position": "ATH",
+    "player": "George Wilcox",
+    "team": "Holmes Community College",
+    "conference": "MACCC",
+    "games": 3,
+    "sample": false,
+    "id": "real-juco-holmescommunitycollege-georgewilcox1mdw-passing",
+    "category": "passing",
+    "compAtt": "61/130",
+    "att": 130,
+    "yards": 840,
+    "td": 9,
+    "int": 4,
+    "rating": "117.9"
+  },
+  {
+    "division": "JUCO",
+    "week": "total",
+    "position": "QB",
+    "player": "Erik Gilkey",
+    "team": "Holmes Community College",
+    "conference": "MACCC",
+    "games": 3,
+    "sample": false,
+    "id": "real-juco-holmescommunitycollege-erikgilkeye3ec-passing",
+    "category": "passing",
+    "compAtt": "3/11",
+    "att": 11,
+    "yards": 53,
+    "td": 1,
+    "int": 0,
+    "rating": "97.7"
+  },
+  {
+    "division": "JUCO",
+    "week": "total",
+    "position": "ATH",
+    "player": "Tristan Colenberg",
+    "team": "Holmes Community College",
+    "conference": "MACCC",
+    "games": 3,
+    "sample": false,
+    "id": "real-juco-holmescommunitycollege-tristancolenbergfkid-passing",
+    "category": "passing",
+    "compAtt": "1/1",
+    "att": 1,
+    "yards": 4,
+    "td": 0,
+    "int": 0,
+    "rating": "133.6"
+  },
+  {
+    "division": "JUCO",
+    "week": "total",
+    "position": "ATH",
+    "player": "George Wilcox",
+    "team": "Holmes Community College",
+    "conference": "MACCC",
+    "games": 3,
+    "sample": false,
+    "id": "real-juco-holmescommunitycollege-georgewilcox1mdw-rushing",
+    "category": "rushing",
+    "att": 23,
+    "yards": 66,
+    "td": 0,
+    "avg": "2.9"
+  },
+  {
+    "division": "JUCO",
+    "week": "total",
+    "position": "QB",
+    "player": "Erik Gilkey",
+    "team": "Holmes Community College",
+    "conference": "MACCC",
+    "games": 3,
+    "sample": false,
+    "id": "real-juco-holmescommunitycollege-erikgilkeye3ec-rushing",
+    "category": "rushing",
+    "att": 4,
+    "yards": 62,
+    "td": 0,
+    "avg": "15.5"
+  },
+  {
+    "division": "JUCO",
+    "week": "total",
+    "position": "ATH",
+    "player": "Jeramiah Miller",
+    "team": "Holmes Community College",
+    "conference": "MACCC",
+    "games": 1,
+    "sample": false,
+    "id": "real-juco-holmescommunitycollege-jeramiahmillernhfl-rushing",
+    "category": "rushing",
+    "att": 12,
+    "yards": 37,
+    "td": 0,
+    "avg": "3.1"
+  },
+  {
+    "division": "JUCO",
+    "week": "total",
+    "position": "RB",
+    "player": "DeCorey Knight",
+    "team": "Holmes Community College",
+    "conference": "MACCC",
+    "games": 3,
+    "sample": false,
+    "id": "real-juco-holmescommunitycollege-decoreyknighty8we-rushing",
+    "category": "rushing",
+    "att": 13,
+    "yards": 28,
+    "td": 0,
+    "avg": "2.2"
+  },
+  {
+    "division": "JUCO",
+    "week": "total",
+    "position": "WR",
+    "player": "Jamarius Grayer",
+    "team": "Holmes Community College",
+    "conference": "MACCC",
+    "games": 3,
+    "sample": false,
+    "id": "real-juco-holmescommunitycollege-jamariusgrayerdye9-rushing",
+    "category": "rushing",
+    "att": 1,
+    "yards": 19,
+    "td": 0,
+    "avg": "19.0"
+  },
+  {
+    "division": "JUCO",
+    "week": "total",
+    "position": "ATH",
+    "player": "RJ Evans II",
+    "team": "Holmes Community College",
+    "conference": "MACCC",
+    "games": 3,
+    "sample": false,
+    "id": "real-juco-holmescommunitycollege-rjevansii69ds-rushing",
+    "category": "rushing",
+    "att": 7,
+    "yards": 12,
+    "td": 0,
+    "avg": "1.7"
+  },
+  {
+    "division": "JUCO",
+    "week": "total",
+    "position": "WR",
+    "player": "Jaleil Cameron",
+    "team": "Holmes Community College",
+    "conference": "MACCC",
+    "games": 3,
+    "sample": false,
+    "id": "real-juco-holmescommunitycollege-jaleilcameronvdq3-rushing",
+    "category": "rushing",
+    "att": 1,
+    "yards": 0,
+    "td": 0,
+    "avg": "0.0"
+  },
+  {
+    "division": "JUCO",
+    "week": "total",
+    "position": "ATH",
+    "player": "Tristan Colenberg",
+    "team": "Holmes Community College",
+    "conference": "MACCC",
+    "games": 3,
+    "sample": false,
+    "id": "real-juco-holmescommunitycollege-tristancolenbergfkid-rushing",
+    "category": "rushing",
+    "att": 4,
+    "yards": -1,
+    "td": 0,
+    "avg": "-0.3"
+  },
+  {
+    "division": "JUCO",
+    "week": "total",
+    "position": "ATH",
+    "player": "Cohen Clark",
+    "team": "Holmes Community College",
+    "conference": "MACCC",
+    "games": 3,
+    "sample": false,
+    "id": "real-juco-holmescommunitycollege-cohenclarktalt-rushing",
+    "category": "rushing",
+    "att": 1,
+    "yards": -7,
+    "td": 0,
+    "avg": "-7.0"
   },
   {
     "division": "JUCO",
@@ -16406,738 +15770,6 @@
   {
     "division": "JUCO",
     "week": "total",
-    "position": "WR",
-    "player": "Gavin Pargo",
-    "team": "Itawamba Community College",
-    "conference": "MACCC",
-    "games": 3,
-    "sample": false,
-    "id": "real-juco-itawambacommunitycollege-gavinpargore5t-receiving",
-    "category": "receiving",
-    "rec": 10,
-    "yards": 115,
-    "td": 1,
-    "avg": "11.5"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "WR",
-    "player": "Ashton Blanchard",
-    "team": "Itawamba Community College",
-    "conference": "MACCC",
-    "games": 3,
-    "sample": false,
-    "id": "real-juco-itawambacommunitycollege-ashtonblanchardk5vv-receiving",
-    "category": "receiving",
-    "rec": 5,
-    "yards": 102,
-    "td": 1,
-    "avg": "20.4"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "RB",
-    "player": "Carlos Benjamin Jr.",
-    "team": "Itawamba Community College",
-    "conference": "MACCC",
-    "games": 3,
-    "sample": false,
-    "id": "real-juco-itawambacommunitycollege-carlosbenjaminjr8wdt-receiving",
-    "category": "receiving",
-    "rec": 4,
-    "yards": 73,
-    "td": 1,
-    "avg": "18.3"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "WR",
-    "player": "BJ Cork II",
-    "team": "Itawamba Community College",
-    "conference": "MACCC",
-    "games": 1,
-    "sample": false,
-    "id": "real-juco-itawambacommunitycollege-bjcorkiipkg1-receiving",
-    "category": "receiving",
-    "rec": 4,
-    "yards": 30,
-    "td": 0,
-    "avg": "7.5"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "RB",
-    "player": "Caiden Holliday",
-    "team": "Itawamba Community College",
-    "conference": "MACCC",
-    "games": 3,
-    "sample": false,
-    "id": "real-juco-itawambacommunitycollege-caidenhollidayrch8-receiving",
-    "category": "receiving",
-    "rec": 4,
-    "yards": 14,
-    "td": 0,
-    "avg": "3.5"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "WR",
-    "player": "Ter'Myihias Welch",
-    "team": "Itawamba Community College",
-    "conference": "MACCC",
-    "games": 2,
-    "sample": false,
-    "id": "real-juco-itawambacommunitycollege-termyihiaswelchl34k-receiving",
-    "category": "receiving",
-    "rec": 4,
-    "yards": 28,
-    "td": 0,
-    "avg": "7.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "WR",
-    "player": "Tyreke Darden",
-    "team": "Itawamba Community College",
-    "conference": "MACCC",
-    "games": 3,
-    "sample": false,
-    "id": "real-juco-itawambacommunitycollege-tyrekedardenpsi9-receiving",
-    "category": "receiving",
-    "rec": 3,
-    "yards": 58,
-    "td": 0,
-    "avg": "19.3"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "RB",
-    "player": "Tydarion Grier",
-    "team": "Itawamba Community College",
-    "conference": "MACCC",
-    "games": 3,
-    "sample": false,
-    "id": "real-juco-itawambacommunitycollege-tydariongrier5mrm-receiving",
-    "category": "receiving",
-    "rec": 2,
-    "yards": 9,
-    "td": 0,
-    "avg": "4.5"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "WR",
-    "player": "Caleb Groce",
-    "team": "Itawamba Community College",
-    "conference": "MACCC",
-    "games": 3,
-    "sample": false,
-    "id": "real-juco-itawambacommunitycollege-calebgrocexgxc-receiving",
-    "category": "receiving",
-    "rec": 2,
-    "yards": 29,
-    "td": 0,
-    "avg": "14.5"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "WR",
-    "player": "Gerritt Holcombe",
-    "team": "Itawamba Community College",
-    "conference": "MACCC",
-    "games": 3,
-    "sample": false,
-    "id": "real-juco-itawambacommunitycollege-gerrittholcombel4q5-receiving",
-    "category": "receiving",
-    "rec": 2,
-    "yards": 4,
-    "td": 0,
-    "avg": "2.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "LB",
-    "player": "Allen Dobbs",
-    "team": "Itawamba Community College",
-    "conference": "MACCC",
-    "games": 3,
-    "sample": false,
-    "id": "real-juco-itawambacommunitycollege-allendobbszk0c-tackling",
-    "category": "tackling",
-    "solo": 9,
-    "ast": 8,
-    "total": 17,
-    "tfl": "2.5",
-    "pbu": 0,
-    "int": 0,
-    "soloSacks": 1.0,
-    "astSacks": 0,
-    "sackYds": 0,
-    "sacks": "1.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "LB",
-    "player": "Jeremy Alo-Perry",
-    "team": "Itawamba Community College",
-    "conference": "MACCC",
-    "games": 3,
-    "sample": false,
-    "id": "real-juco-itawambacommunitycollege-jeremyaloperryvc6y-tackling",
-    "category": "tackling",
-    "solo": 9,
-    "ast": 6,
-    "total": 15,
-    "tfl": "3.0",
-    "pbu": 0,
-    "int": 0,
-    "soloSacks": 0.0,
-    "astSacks": 0,
-    "sackYds": 0,
-    "sacks": "0.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "DL",
-    "player": "Kole Caldwell",
-    "team": "Itawamba Community College",
-    "conference": "MACCC",
-    "games": 3,
-    "sample": false,
-    "id": "real-juco-itawambacommunitycollege-kolecaldwellnajh-tackling",
-    "category": "tackling",
-    "solo": 5,
-    "ast": 7,
-    "total": 12,
-    "tfl": "4.5",
-    "pbu": 0,
-    "int": 0,
-    "soloSacks": 0.5,
-    "astSacks": 0,
-    "sackYds": 4,
-    "sacks": "0.5"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "DL",
-    "player": "Seth Kidd",
-    "team": "Itawamba Community College",
-    "conference": "MACCC",
-    "games": 3,
-    "sample": false,
-    "id": "real-juco-itawambacommunitycollege-sethkiddbbel-tackling",
-    "category": "tackling",
-    "solo": 5,
-    "ast": 6,
-    "total": 11,
-    "tfl": "2.5",
-    "pbu": 0,
-    "int": 0,
-    "soloSacks": 1.5,
-    "astSacks": 0,
-    "sackYds": 11,
-    "sacks": "1.5"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "SAF",
-    "player": "Landon Richardson",
-    "team": "Itawamba Community College",
-    "conference": "MACCC",
-    "games": 3,
-    "sample": false,
-    "id": "real-juco-itawambacommunitycollege-landonrichardson9yku-tackling",
-    "category": "tackling",
-    "solo": 6,
-    "ast": 5,
-    "total": 11,
-    "tfl": "0.5",
-    "pbu": 1,
-    "int": 0,
-    "soloSacks": 0.0,
-    "astSacks": 0,
-    "sackYds": 0,
-    "sacks": "0.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "DL",
-    "player": "AaMarii Lofton",
-    "team": "Itawamba Community College",
-    "conference": "MACCC",
-    "games": 3,
-    "sample": false,
-    "id": "real-juco-itawambacommunitycollege-aamariiloftonty9w-tackling",
-    "category": "tackling",
-    "solo": 2,
-    "ast": 8,
-    "total": 10,
-    "tfl": "0.5",
-    "pbu": 0,
-    "int": 0,
-    "soloSacks": 0.0,
-    "astSacks": 0,
-    "sackYds": 0,
-    "sacks": "0.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "SAF",
-    "player": "Lakendrick Potts",
-    "team": "Itawamba Community College",
-    "conference": "MACCC",
-    "games": 3,
-    "sample": false,
-    "id": "real-juco-itawambacommunitycollege-lakendrickpotts98sm-tackling",
-    "category": "tackling",
-    "solo": 8,
-    "ast": 2,
-    "total": 10,
-    "tfl": "0.5",
-    "pbu": 2,
-    "int": 1,
-    "soloSacks": 0.0,
-    "astSacks": 0,
-    "sackYds": 0,
-    "sacks": "0.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "SAF",
-    "player": "Braylen Williams",
-    "team": "Itawamba Community College",
-    "conference": "MACCC",
-    "games": 3,
-    "sample": false,
-    "id": "real-juco-itawambacommunitycollege-braylenwilliams01bv-tackling",
-    "category": "tackling",
-    "solo": 6,
-    "ast": 4,
-    "total": 10,
-    "tfl": "0.0",
-    "pbu": 3,
-    "int": 1,
-    "soloSacks": 0.0,
-    "astSacks": 0,
-    "sackYds": 0,
-    "sacks": "0.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "LB",
-    "player": "Quincy Butts Jr.",
-    "team": "Itawamba Community College",
-    "conference": "MACCC",
-    "games": 3,
-    "sample": false,
-    "id": "real-juco-itawambacommunitycollege-quincybuttsjrbi22-tackling",
-    "category": "tackling",
-    "solo": 5,
-    "ast": 3,
-    "total": 8,
-    "tfl": "2.0",
-    "pbu": 1,
-    "int": 0,
-    "soloSacks": 0.0,
-    "astSacks": 0,
-    "sackYds": 0,
-    "sacks": "0.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "SAF",
-    "player": "Justin Grant",
-    "team": "Itawamba Community College",
-    "conference": "MACCC",
-    "games": 3,
-    "sample": false,
-    "id": "real-juco-itawambacommunitycollege-justingrant006v-tackling",
-    "category": "tackling",
-    "solo": 3,
-    "ast": 5,
-    "total": 8,
-    "tfl": "1.0",
-    "pbu": 1,
-    "int": 1,
-    "soloSacks": 0.0,
-    "astSacks": 0,
-    "sackYds": 0,
-    "sacks": "0.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "LB",
-    "player": "Shunquavious Jenkins",
-    "team": "Itawamba Community College",
-    "conference": "MACCC",
-    "games": 3,
-    "sample": false,
-    "id": "real-juco-itawambacommunitycollege-shunquaviousjenkins7f9x-tackling",
-    "category": "tackling",
-    "solo": 5,
-    "ast": 3,
-    "total": 8,
-    "tfl": "1.5",
-    "pbu": 1,
-    "int": 0,
-    "soloSacks": 0.0,
-    "astSacks": 0,
-    "sackYds": 0,
-    "sacks": "0.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "SAF",
-    "player": "Jaiden Dilworth",
-    "team": "Itawamba Community College",
-    "conference": "MACCC",
-    "games": 3,
-    "sample": false,
-    "id": "real-juco-itawambacommunitycollege-jaidendilworthumuu-tackling",
-    "category": "tackling",
-    "solo": 3,
-    "ast": 4,
-    "total": 7,
-    "tfl": "0.0",
-    "pbu": 2,
-    "int": 0,
-    "soloSacks": 0.0,
-    "astSacks": 0,
-    "sackYds": 0,
-    "sacks": "0.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "SAF",
-    "player": "Kenshiro Christopher",
-    "team": "Itawamba Community College",
-    "conference": "MACCC",
-    "games": 3,
-    "sample": false,
-    "id": "real-juco-itawambacommunitycollege-kenshirochristophermnbp-tackling",
-    "category": "tackling",
-    "solo": 6,
-    "ast": 0,
-    "total": 6,
-    "tfl": "0.0",
-    "pbu": 3,
-    "int": 0,
-    "soloSacks": 0.0,
-    "astSacks": 0,
-    "sackYds": 0,
-    "sacks": "0.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "SAF",
-    "player": "Tahj McBride",
-    "team": "Itawamba Community College",
-    "conference": "MACCC",
-    "games": 3,
-    "sample": false,
-    "id": "real-juco-itawambacommunitycollege-tahjmcbriderhby-tackling",
-    "category": "tackling",
-    "solo": 5,
-    "ast": 1,
-    "total": 6,
-    "tfl": "0.0",
-    "pbu": 0,
-    "int": 1,
-    "soloSacks": 0.0,
-    "astSacks": 0,
-    "sackYds": 0,
-    "sacks": "0.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "DL",
-    "player": "Silas Jones",
-    "team": "Itawamba Community College",
-    "conference": "MACCC",
-    "games": 3,
-    "sample": false,
-    "id": "real-juco-itawambacommunitycollege-silasjonesabtl-tackling",
-    "category": "tackling",
-    "solo": 2,
-    "ast": 3,
-    "total": 5,
-    "tfl": "0.5",
-    "pbu": 0,
-    "int": 0,
-    "soloSacks": 1.5,
-    "astSacks": 0,
-    "sackYds": 9,
-    "sacks": "1.5"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "DL",
-    "player": "Demetreus Ross",
-    "team": "Itawamba Community College",
-    "conference": "MACCC",
-    "games": 3,
-    "sample": false,
-    "id": "real-juco-itawambacommunitycollege-demetreusrossn96f-tackling",
-    "category": "tackling",
-    "solo": 1,
-    "ast": 3,
-    "total": 4,
-    "tfl": "1.5",
-    "pbu": 0,
-    "int": 0,
-    "soloSacks": 0.0,
-    "astSacks": 0,
-    "sackYds": 0,
-    "sacks": "0.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "LB",
-    "player": "Quantarrius Dawson",
-    "team": "Itawamba Community College",
-    "conference": "MACCC",
-    "games": 2,
-    "sample": false,
-    "id": "real-juco-itawambacommunitycollege-quantarriusdawsong4x6-tackling",
-    "category": "tackling",
-    "solo": 2,
-    "ast": 1,
-    "total": 3,
-    "tfl": "0.0",
-    "pbu": 0,
-    "int": 0,
-    "soloSacks": 0.0,
-    "astSacks": 0,
-    "sackYds": 0,
-    "sacks": "0.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "DL",
-    "player": "Nikolas Owens",
-    "team": "Itawamba Community College",
-    "conference": "MACCC",
-    "games": 2,
-    "sample": false,
-    "id": "real-juco-itawambacommunitycollege-nikolasowens6u0k-tackling",
-    "category": "tackling",
-    "solo": 1,
-    "ast": 2,
-    "total": 3,
-    "tfl": "1.0",
-    "pbu": 0,
-    "int": 0,
-    "soloSacks": 0.0,
-    "astSacks": 0,
-    "sackYds": 0,
-    "sacks": "0.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "SAF",
-    "player": "Kivan Stewart",
-    "team": "Itawamba Community College",
-    "conference": "MACCC",
-    "games": 1,
-    "sample": false,
-    "id": "real-juco-itawambacommunitycollege-kivanstewartqpw6-tackling",
-    "category": "tackling",
-    "solo": 1,
-    "ast": 2,
-    "total": 3,
-    "tfl": "0.0",
-    "pbu": 0,
-    "int": 0,
-    "soloSacks": 0.0,
-    "astSacks": 0,
-    "sackYds": 0,
-    "sacks": "0.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "SAF",
-    "player": "Deon Taylor",
-    "team": "Itawamba Community College",
-    "conference": "MACCC",
-    "games": 1,
-    "sample": false,
-    "id": "real-juco-itawambacommunitycollege-deontayloralep-tackling",
-    "category": "tackling",
-    "solo": 1,
-    "ast": 2,
-    "total": 3,
-    "tfl": "0.0",
-    "pbu": 1,
-    "int": 0,
-    "soloSacks": 0.0,
-    "astSacks": 0,
-    "sackYds": 0,
-    "sacks": "0.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "SAF",
-    "player": "MJ Washington",
-    "team": "Itawamba Community College",
-    "conference": "MACCC",
-    "games": 1,
-    "sample": false,
-    "id": "real-juco-itawambacommunitycollege-mjwashingtoninch-tackling",
-    "category": "tackling",
-    "solo": 3,
-    "ast": 0,
-    "total": 3,
-    "tfl": "0.0",
-    "pbu": 0,
-    "int": 0,
-    "soloSacks": 0.0,
-    "astSacks": 0,
-    "sackYds": 0,
-    "sacks": "0.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "DL",
-    "player": "James Carr",
-    "team": "Itawamba Community College",
-    "conference": "MACCC",
-    "games": 2,
-    "sample": false,
-    "id": "real-juco-itawambacommunitycollege-jamescarrnvfm-tackling",
-    "category": "tackling",
-    "solo": 0,
-    "ast": 2,
-    "total": 2,
-    "tfl": "1.0",
-    "pbu": 0,
-    "int": 0,
-    "soloSacks": 0.0,
-    "astSacks": 0,
-    "sackYds": 0,
-    "sacks": "0.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "SAF",
-    "player": "Jamarques Cathey",
-    "team": "Itawamba Community College",
-    "conference": "MACCC",
-    "games": 1,
-    "sample": false,
-    "id": "real-juco-itawambacommunitycollege-jamarquescatheycixq-tackling",
-    "category": "tackling",
-    "solo": 2,
-    "ast": 0,
-    "total": 2,
-    "tfl": "0.0",
-    "pbu": 0,
-    "int": 0,
-    "soloSacks": 0.0,
-    "astSacks": 0,
-    "sackYds": 0,
-    "sacks": "0.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "LB",
-    "player": "Kalen Higgs",
-    "team": "Itawamba Community College",
-    "conference": "MACCC",
-    "games": 2,
-    "sample": false,
-    "id": "real-juco-itawambacommunitycollege-kalenhiggscnfo-tackling",
-    "category": "tackling",
-    "solo": 2,
-    "ast": 0,
-    "total": 2,
-    "tfl": "0.0",
-    "pbu": 0,
-    "int": 0,
-    "soloSacks": 0.0,
-    "astSacks": 0,
-    "sackYds": 0,
-    "sacks": "0.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "SAF",
-    "player": "Marcus Mukeba",
-    "team": "Itawamba Community College",
-    "conference": "MACCC",
-    "games": 2,
-    "sample": false,
-    "id": "real-juco-itawambacommunitycollege-marcusmukebag3ws-tackling",
-    "category": "tackling",
-    "solo": 1,
-    "ast": 0,
-    "total": 1,
-    "tfl": "0.0",
-    "pbu": 0,
-    "int": 0,
-    "soloSacks": 0.0,
-    "astSacks": 0,
-    "sackYds": 0,
-    "sacks": "0.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "WR",
-    "player": "Carlos Robinson Jr.",
-    "team": "Itawamba Community College",
-    "conference": "MACCC",
-    "games": 2,
-    "sample": false,
-    "id": "real-juco-itawambacommunitycollege-carlosrobinsonjranxl-tackling",
-    "category": "tackling",
-    "solo": 1,
-    "ast": 0,
-    "total": 1,
-    "tfl": "0.0",
-    "pbu": 0,
-    "int": 0,
-    "soloSacks": 0.0,
-    "astSacks": 0,
-    "sackYds": 0,
-    "sacks": "0.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
     "position": "QB",
     "player": "Jevarion Glover",
     "team": "Jones College",
@@ -18068,6 +16700,342 @@
     "td": 0,
     "int": 0,
     "rating": "83.6"
+  },
+  {
+    "division": "JUCO",
+    "week": "total",
+    "position": "WR",
+    "player": "Eli Johnson",
+    "team": "Mississippi Delta Community College",
+    "conference": "MACCC",
+    "games": 3,
+    "sample": false,
+    "id": "real-juco-mississippideltacommunitycollege-elijohnson41hp-rushing",
+    "category": "rushing",
+    "att": 25,
+    "yards": 108,
+    "td": 1,
+    "avg": "4.3"
+  },
+  {
+    "division": "JUCO",
+    "week": "total",
+    "position": "RB",
+    "player": "Charlie Ward",
+    "team": "Mississippi Delta Community College",
+    "conference": "MACCC",
+    "games": 3,
+    "sample": false,
+    "id": "real-juco-mississippideltacommunitycollege-charliewardld0y-rushing",
+    "category": "rushing",
+    "att": 6,
+    "yards": 39,
+    "td": 1,
+    "avg": "6.5"
+  },
+  {
+    "division": "JUCO",
+    "week": "total",
+    "position": "QB",
+    "player": "Armon Vinson",
+    "team": "Mississippi Delta Community College",
+    "conference": "MACCC",
+    "games": 3,
+    "sample": false,
+    "id": "real-juco-mississippideltacommunitycollege-armonvinsonydv8-rushing",
+    "category": "rushing",
+    "att": 56,
+    "yards": 25,
+    "td": 3,
+    "avg": "0.4"
+  },
+  {
+    "division": "JUCO",
+    "week": "total",
+    "position": "RB",
+    "player": "Jaylen Neely",
+    "team": "Mississippi Delta Community College",
+    "conference": "MACCC",
+    "games": 3,
+    "sample": false,
+    "id": "real-juco-mississippideltacommunitycollege-jaylenneelya1kj-rushing",
+    "category": "rushing",
+    "att": 8,
+    "yards": 22,
+    "td": 0,
+    "avg": "2.8"
+  },
+  {
+    "division": "JUCO",
+    "week": "total",
+    "position": "RB",
+    "player": "Kijuan McMillan",
+    "team": "Mississippi Delta Community College",
+    "conference": "MACCC",
+    "games": 2,
+    "sample": false,
+    "id": "real-juco-mississippideltacommunitycollege-kijuanmcmillanpe37-rushing",
+    "category": "rushing",
+    "att": 5,
+    "yards": 15,
+    "td": 0,
+    "avg": "3.0"
+  },
+  {
+    "division": "JUCO",
+    "week": "total",
+    "position": "WR",
+    "player": "Jarrett Jasper",
+    "team": "Mississippi Delta Community College",
+    "conference": "MACCC",
+    "games": 2,
+    "sample": false,
+    "id": "real-juco-mississippideltacommunitycollege-jarrettjaspervjp6-rushing",
+    "category": "rushing",
+    "att": 1,
+    "yards": 7,
+    "td": 0,
+    "avg": "7.0"
+  },
+  {
+    "division": "JUCO",
+    "week": "total",
+    "position": "RB",
+    "player": "Artavious Moye",
+    "team": "Mississippi Delta Community College",
+    "conference": "MACCC",
+    "games": 2,
+    "sample": false,
+    "id": "real-juco-mississippideltacommunitycollege-artaviousmoye266d-rushing",
+    "category": "rushing",
+    "att": 3,
+    "yards": 7,
+    "td": 0,
+    "avg": "2.3"
+  },
+  {
+    "division": "JUCO",
+    "week": "total",
+    "position": "SAF",
+    "player": "Christopher May",
+    "team": "Mississippi Delta Community College",
+    "conference": "MACCC",
+    "games": 2,
+    "sample": false,
+    "id": "real-juco-mississippideltacommunitycollege-christophermay9aj6-rushing",
+    "category": "rushing",
+    "att": 2,
+    "yards": 4,
+    "td": 0,
+    "avg": "2.0"
+  },
+  {
+    "division": "JUCO",
+    "week": "total",
+    "position": "QB",
+    "player": "Devon Olive",
+    "team": "Mississippi Delta Community College",
+    "conference": "MACCC",
+    "games": 2,
+    "sample": false,
+    "id": "real-juco-mississippideltacommunitycollege-devonolivexpuz-rushing",
+    "category": "rushing",
+    "att": 1,
+    "yards": -10,
+    "td": 0,
+    "avg": "-10.0"
+  },
+  {
+    "division": "JUCO",
+    "week": "total",
+    "position": "WR",
+    "player": "Nick Celestine",
+    "team": "Mississippi Delta Community College",
+    "conference": "MACCC",
+    "games": 3,
+    "sample": false,
+    "id": "real-juco-mississippideltacommunitycollege-nickcelestinen1s7-rushing",
+    "category": "rushing",
+    "att": 5,
+    "yards": -11,
+    "td": 0,
+    "avg": "-2.2"
+  },
+  {
+    "division": "JUCO",
+    "week": "total",
+    "position": "WR",
+    "player": "Nick Celestine",
+    "team": "Mississippi Delta Community College",
+    "conference": "MACCC",
+    "games": 3,
+    "sample": false,
+    "id": "real-juco-mississippideltacommunitycollege-nickcelestinen1s7-receiving",
+    "category": "receiving",
+    "rec": 15,
+    "yards": 114,
+    "td": 0,
+    "avg": "7.6"
+  },
+  {
+    "division": "JUCO",
+    "week": "total",
+    "position": "WR",
+    "player": "Monclair Brave",
+    "team": "Mississippi Delta Community College",
+    "conference": "MACCC",
+    "games": 3,
+    "sample": false,
+    "id": "real-juco-mississippideltacommunitycollege-monclairbrave5jh7-receiving",
+    "category": "receiving",
+    "rec": 7,
+    "yards": 112,
+    "td": 1,
+    "avg": "16.0"
+  },
+  {
+    "division": "JUCO",
+    "week": "total",
+    "position": "WR",
+    "player": "Marlon Fluker",
+    "team": "Mississippi Delta Community College",
+    "conference": "MACCC",
+    "games": 3,
+    "sample": false,
+    "id": "real-juco-mississippideltacommunitycollege-marlonflukerpdd2-receiving",
+    "category": "receiving",
+    "rec": 6,
+    "yards": 99,
+    "td": 1,
+    "avg": "16.5"
+  },
+  {
+    "division": "JUCO",
+    "week": "total",
+    "position": "RB",
+    "player": "Charlie Ward",
+    "team": "Mississippi Delta Community College",
+    "conference": "MACCC",
+    "games": 3,
+    "sample": false,
+    "id": "real-juco-mississippideltacommunitycollege-charliewardld0y-receiving",
+    "category": "receiving",
+    "rec": 6,
+    "yards": 77,
+    "td": 0,
+    "avg": "12.8"
+  },
+  {
+    "division": "JUCO",
+    "week": "total",
+    "position": "WR",
+    "player": "TyQuarrious Boddy",
+    "team": "Mississippi Delta Community College",
+    "conference": "MACCC",
+    "games": 3,
+    "sample": false,
+    "id": "real-juco-mississippideltacommunitycollege-tyquarriousboddyfjun-receiving",
+    "category": "receiving",
+    "rec": 2,
+    "yards": 20,
+    "td": 0,
+    "avg": "10.0"
+  },
+  {
+    "division": "JUCO",
+    "week": "total",
+    "position": "SAF",
+    "player": "Roosevelt Harris Jr.",
+    "team": "Mississippi Delta Community College",
+    "conference": "MACCC",
+    "games": 3,
+    "sample": false,
+    "id": "real-juco-mississippideltacommunitycollege-rooseveltharrisjra9dd-receiving",
+    "category": "receiving",
+    "rec": 2,
+    "yards": 17,
+    "td": 0,
+    "avg": "8.5"
+  },
+  {
+    "division": "JUCO",
+    "week": "total",
+    "position": "RB",
+    "player": "Artavious Moye",
+    "team": "Mississippi Delta Community College",
+    "conference": "MACCC",
+    "games": 2,
+    "sample": false,
+    "id": "real-juco-mississippideltacommunitycollege-artaviousmoye266d-receiving",
+    "category": "receiving",
+    "rec": 2,
+    "yards": 27,
+    "td": 0,
+    "avg": "13.5"
+  },
+  {
+    "division": "JUCO",
+    "week": "total",
+    "position": "RB",
+    "player": "Jaylen Neely",
+    "team": "Mississippi Delta Community College",
+    "conference": "MACCC",
+    "games": 3,
+    "sample": false,
+    "id": "real-juco-mississippideltacommunitycollege-jaylenneelya1kj-receiving",
+    "category": "receiving",
+    "rec": 2,
+    "yards": 30,
+    "td": 0,
+    "avg": "15.0"
+  },
+  {
+    "division": "JUCO",
+    "week": "total",
+    "position": "WR",
+    "player": "Andres Hunt",
+    "team": "Mississippi Delta Community College",
+    "conference": "MACCC",
+    "games": 1,
+    "sample": false,
+    "id": "real-juco-mississippideltacommunitycollege-andreshunts69w-receiving",
+    "category": "receiving",
+    "rec": 1,
+    "yards": 13,
+    "td": 0,
+    "avg": "13.0"
+  },
+  {
+    "division": "JUCO",
+    "week": "total",
+    "position": "RB",
+    "player": "Kijuan McMillan",
+    "team": "Mississippi Delta Community College",
+    "conference": "MACCC",
+    "games": 2,
+    "sample": false,
+    "id": "real-juco-mississippideltacommunitycollege-kijuanmcmillanpe37-receiving",
+    "category": "receiving",
+    "rec": 1,
+    "yards": 11,
+    "td": 0,
+    "avg": "11.0"
+  },
+  {
+    "division": "JUCO",
+    "week": "total",
+    "position": "WR",
+    "player": "Jared Milsap",
+    "team": "Mississippi Delta Community College",
+    "conference": "MACCC",
+    "games": 3,
+    "sample": false,
+    "id": "real-juco-mississippideltacommunitycollege-jaredmilsapzrew-receiving",
+    "category": "receiving",
+    "rec": 1,
+    "yards": 15,
+    "td": 0,
+    "avg": "15.0"
   },
   {
     "division": "JUCO",
@@ -20160,768 +19128,6 @@
   {
     "division": "JUCO",
     "week": "total",
-    "position": "LB",
-    "player": "Jerone Baskin",
-    "team": "Northeast Mississippi Community College",
-    "conference": "MACCC",
-    "games": 3,
-    "sample": false,
-    "id": "real-juco-northeastmississippicommunitycollege-jeronebaskin8b0d-tackling",
-    "category": "tackling",
-    "solo": 10,
-    "ast": 14,
-    "total": 24,
-    "tfl": "3.5",
-    "pbu": 0,
-    "int": 0,
-    "soloSacks": 2.5,
-    "astSacks": 0,
-    "sackYds": 25,
-    "sacks": "2.5"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "LB",
-    "player": "Torell Henderson",
-    "team": "Northeast Mississippi Community College",
-    "conference": "MACCC",
-    "games": 3,
-    "sample": false,
-    "id": "real-juco-northeastmississippicommunitycollege-torellhendersonbmoa-tackling",
-    "category": "tackling",
-    "solo": 7,
-    "ast": 13,
-    "total": 20,
-    "tfl": "0.5",
-    "pbu": 0,
-    "int": 0,
-    "soloSacks": 0.0,
-    "astSacks": 0,
-    "sackYds": 0,
-    "sacks": "0.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "LB",
-    "player": "Rokari Covington",
-    "team": "Northeast Mississippi Community College",
-    "conference": "MACCC",
-    "games": 3,
-    "sample": false,
-    "id": "real-juco-northeastmississippicommunitycollege-rokaricovingtonjm92-tackling",
-    "category": "tackling",
-    "solo": 8,
-    "ast": 9,
-    "total": 17,
-    "tfl": "2.5",
-    "pbu": 1,
-    "int": 0,
-    "soloSacks": 0.5,
-    "astSacks": 0,
-    "sackYds": 4,
-    "sacks": "0.5"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "SAF",
-    "player": "Jeb Bolen",
-    "team": "Northeast Mississippi Community College",
-    "conference": "MACCC",
-    "games": 3,
-    "sample": false,
-    "id": "real-juco-northeastmississippicommunitycollege-jebbolen19al-tackling",
-    "category": "tackling",
-    "solo": 11,
-    "ast": 4,
-    "total": 15,
-    "tfl": "0.0",
-    "pbu": 1,
-    "int": 1,
-    "soloSacks": 0.0,
-    "astSacks": 0,
-    "sackYds": 0,
-    "sacks": "0.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "LB",
-    "player": "Kevin Kirklin",
-    "team": "Northeast Mississippi Community College",
-    "conference": "MACCC",
-    "games": 3,
-    "sample": false,
-    "id": "real-juco-northeastmississippicommunitycollege-kevinkirklinzsh1-tackling",
-    "category": "tackling",
-    "solo": 7,
-    "ast": 5,
-    "total": 12,
-    "tfl": "1.5",
-    "pbu": 0,
-    "int": 0,
-    "soloSacks": 0.0,
-    "astSacks": 0,
-    "sackYds": 0,
-    "sacks": "0.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "SAF",
-    "player": "Jalen Spikes",
-    "team": "Northeast Mississippi Community College",
-    "conference": "MACCC",
-    "games": 3,
-    "sample": false,
-    "id": "real-juco-northeastmississippicommunitycollege-jalenspikes3chn-tackling",
-    "category": "tackling",
-    "solo": 5,
-    "ast": 7,
-    "total": 12,
-    "tfl": "0.0",
-    "pbu": 0,
-    "int": 0,
-    "soloSacks": 0.0,
-    "astSacks": 0,
-    "sackYds": 0,
-    "sacks": "0.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "LB",
-    "player": "Shane Farmer",
-    "team": "Northeast Mississippi Community College",
-    "conference": "MACCC",
-    "games": 3,
-    "sample": false,
-    "id": "real-juco-northeastmississippicommunitycollege-shanefarmer4x1j-tackling",
-    "category": "tackling",
-    "solo": 5,
-    "ast": 6,
-    "total": 11,
-    "tfl": "1.0",
-    "pbu": 1,
-    "int": 1,
-    "soloSacks": 1.0,
-    "astSacks": 0,
-    "sackYds": 9,
-    "sacks": "1.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "SAF",
-    "player": "Zay Fox",
-    "team": "Northeast Mississippi Community College",
-    "conference": "MACCC",
-    "games": 3,
-    "sample": false,
-    "id": "real-juco-northeastmississippicommunitycollege-zayfoxrwi4-tackling",
-    "category": "tackling",
-    "solo": 8,
-    "ast": 2,
-    "total": 10,
-    "tfl": "0.0",
-    "pbu": 3,
-    "int": 0,
-    "soloSacks": 0.0,
-    "astSacks": 0,
-    "sackYds": 0,
-    "sacks": "0.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "LB",
-    "player": "Zay Hubbard",
-    "team": "Northeast Mississippi Community College",
-    "conference": "MACCC",
-    "games": 3,
-    "sample": false,
-    "id": "real-juco-northeastmississippicommunitycollege-zayhubbardteiu-tackling",
-    "category": "tackling",
-    "solo": 4,
-    "ast": 6,
-    "total": 10,
-    "tfl": "1.0",
-    "pbu": 0,
-    "int": 0,
-    "soloSacks": 0.0,
-    "astSacks": 0,
-    "sackYds": 0,
-    "sacks": "0.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "DL",
-    "player": "Christian Mays",
-    "team": "Northeast Mississippi Community College",
-    "conference": "MACCC",
-    "games": 3,
-    "sample": false,
-    "id": "real-juco-northeastmississippicommunitycollege-christianmays7487-tackling",
-    "category": "tackling",
-    "solo": 6,
-    "ast": 4,
-    "total": 10,
-    "tfl": "3.0",
-    "pbu": 0,
-    "int": 0,
-    "soloSacks": 0.0,
-    "astSacks": 0,
-    "sackYds": 0,
-    "sacks": "0.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "LB",
-    "player": "Jermil Jeffries",
-    "team": "Northeast Mississippi Community College",
-    "conference": "MACCC",
-    "games": 3,
-    "sample": false,
-    "id": "real-juco-northeastmississippicommunitycollege-jermiljeffriesu3el-tackling",
-    "category": "tackling",
-    "solo": 5,
-    "ast": 4,
-    "total": 9,
-    "tfl": "1.0",
-    "pbu": 0,
-    "int": 0,
-    "soloSacks": 0.0,
-    "astSacks": 0,
-    "sackYds": 0,
-    "sacks": "0.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "SAF",
-    "player": "Raiyen Oatis",
-    "team": "Northeast Mississippi Community College",
-    "conference": "MACCC",
-    "games": 3,
-    "sample": false,
-    "id": "real-juco-northeastmississippicommunitycollege-raiyenoatisajpv-tackling",
-    "category": "tackling",
-    "solo": 6,
-    "ast": 3,
-    "total": 9,
-    "tfl": "0.5",
-    "pbu": 1,
-    "int": 1,
-    "soloSacks": 0.0,
-    "astSacks": 0,
-    "sackYds": 0,
-    "sacks": "0.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "SAF",
-    "player": "Ja'Maree Thomas",
-    "team": "Northeast Mississippi Community College",
-    "conference": "MACCC",
-    "games": 3,
-    "sample": false,
-    "id": "real-juco-northeastmississippicommunitycollege-jamareethomasec5o-tackling",
-    "category": "tackling",
-    "solo": 3,
-    "ast": 6,
-    "total": 9,
-    "tfl": "0.0",
-    "pbu": 0,
-    "int": 0,
-    "soloSacks": 0.0,
-    "astSacks": 0,
-    "sackYds": 0,
-    "sacks": "0.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "DL",
-    "player": "Jakari Brown",
-    "team": "Northeast Mississippi Community College",
-    "conference": "MACCC",
-    "games": 3,
-    "sample": false,
-    "id": "real-juco-northeastmississippicommunitycollege-jakaribrownk9wq-tackling",
-    "category": "tackling",
-    "solo": 4,
-    "ast": 3,
-    "total": 7,
-    "tfl": "0.0",
-    "pbu": 0,
-    "int": 0,
-    "soloSacks": 0.0,
-    "astSacks": 0,
-    "sackYds": 0,
-    "sacks": "0.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "DL",
-    "player": "Cam Griffin",
-    "team": "Northeast Mississippi Community College",
-    "conference": "MACCC",
-    "games": 3,
-    "sample": false,
-    "id": "real-juco-northeastmississippicommunitycollege-camgriffinkn4g-tackling",
-    "category": "tackling",
-    "solo": 2,
-    "ast": 5,
-    "total": 7,
-    "tfl": "0.0",
-    "pbu": 0,
-    "int": 0,
-    "soloSacks": 0.0,
-    "astSacks": 0,
-    "sackYds": 0,
-    "sacks": "0.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "SAF",
-    "player": "Antonio Parker",
-    "team": "Northeast Mississippi Community College",
-    "conference": "MACCC",
-    "games": 1,
-    "sample": false,
-    "id": "real-juco-northeastmississippicommunitycollege-antonioparker6a4o-tackling",
-    "category": "tackling",
-    "solo": 6,
-    "ast": 1,
-    "total": 7,
-    "tfl": "0.0",
-    "pbu": 0,
-    "int": 0,
-    "soloSacks": 0.0,
-    "astSacks": 0,
-    "sackYds": 0,
-    "sacks": "0.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "DL",
-    "player": "Caden Kilgore",
-    "team": "Northeast Mississippi Community College",
-    "conference": "MACCC",
-    "games": 3,
-    "sample": false,
-    "id": "real-juco-northeastmississippicommunitycollege-cadenkilgorer5u1-tackling",
-    "category": "tackling",
-    "solo": 1,
-    "ast": 5,
-    "total": 6,
-    "tfl": "1.0",
-    "pbu": 0,
-    "int": 0,
-    "soloSacks": 0.5,
-    "astSacks": 0,
-    "sackYds": 4,
-    "sacks": "0.5"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "SAF",
-    "player": "Desmond Ball",
-    "team": "Northeast Mississippi Community College",
-    "conference": "MACCC",
-    "games": 3,
-    "sample": false,
-    "id": "real-juco-northeastmississippicommunitycollege-desmondball1rso-tackling",
-    "category": "tackling",
-    "solo": 4,
-    "ast": 1,
-    "total": 5,
-    "tfl": "0.0",
-    "pbu": 0,
-    "int": 0,
-    "soloSacks": 0.0,
-    "astSacks": 0,
-    "sackYds": 0,
-    "sacks": "0.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "SAF",
-    "player": "Miles Foster",
-    "team": "Northeast Mississippi Community College",
-    "conference": "MACCC",
-    "games": 2,
-    "sample": false,
-    "id": "real-juco-northeastmississippicommunitycollege-milesfosterx4sl-tackling",
-    "category": "tackling",
-    "solo": 3,
-    "ast": 2,
-    "total": 5,
-    "tfl": "0.0",
-    "pbu": 1,
-    "int": 0,
-    "soloSacks": 0.0,
-    "astSacks": 0,
-    "sackYds": 0,
-    "sacks": "0.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "DL",
-    "player": "J'Cameron Riley",
-    "team": "Northeast Mississippi Community College",
-    "conference": "MACCC",
-    "games": 3,
-    "sample": false,
-    "id": "real-juco-northeastmississippicommunitycollege-jcameronrileyqq11-tackling",
-    "category": "tackling",
-    "solo": 0,
-    "ast": 5,
-    "total": 5,
-    "tfl": "0.0",
-    "pbu": 0,
-    "int": 0,
-    "soloSacks": 0.0,
-    "astSacks": 0,
-    "sackYds": 0,
-    "sacks": "0.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "LB",
-    "player": "Xavier Thomas",
-    "team": "Northeast Mississippi Community College",
-    "conference": "MACCC",
-    "games": 2,
-    "sample": false,
-    "id": "real-juco-northeastmississippicommunitycollege-xavierthomasr65q-tackling",
-    "category": "tackling",
-    "solo": 1,
-    "ast": 3,
-    "total": 4,
-    "tfl": "0.0",
-    "pbu": 0,
-    "int": 0,
-    "soloSacks": 0.0,
-    "astSacks": 0,
-    "sackYds": 0,
-    "sacks": "0.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "DL",
-    "player": "Russell Davis",
-    "team": "Northeast Mississippi Community College",
-    "conference": "MACCC",
-    "games": 3,
-    "sample": false,
-    "id": "real-juco-northeastmississippicommunitycollege-russelldavisw9dw-tackling",
-    "category": "tackling",
-    "solo": 2,
-    "ast": 1,
-    "total": 3,
-    "tfl": "0.0",
-    "pbu": 0,
-    "int": 0,
-    "soloSacks": 0.0,
-    "astSacks": 0,
-    "sackYds": 0,
-    "sacks": "0.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "OL",
-    "player": "Ben Gault",
-    "team": "Northeast Mississippi Community College",
-    "conference": "MACCC",
-    "games": 3,
-    "sample": false,
-    "id": "real-juco-northeastmississippicommunitycollege-bengaultw332-tackling",
-    "category": "tackling",
-    "solo": 2,
-    "ast": 1,
-    "total": 3,
-    "tfl": "0.0",
-    "pbu": 0,
-    "int": 0,
-    "soloSacks": 0.0,
-    "astSacks": 0,
-    "sackYds": 0,
-    "sacks": "0.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "LB",
-    "player": "Aidan Taylor",
-    "team": "Northeast Mississippi Community College",
-    "conference": "MACCC",
-    "games": 3,
-    "sample": false,
-    "id": "real-juco-northeastmississippicommunitycollege-aidantaylorrh0r-tackling",
-    "category": "tackling",
-    "solo": 0,
-    "ast": 3,
-    "total": 3,
-    "tfl": "0.0",
-    "pbu": 0,
-    "int": 0,
-    "soloSacks": 0.0,
-    "astSacks": 0,
-    "sackYds": 0,
-    "sacks": "0.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "DL",
-    "player": "Elijsah Westbrook",
-    "team": "Northeast Mississippi Community College",
-    "conference": "MACCC",
-    "games": 2,
-    "sample": false,
-    "id": "real-juco-northeastmississippicommunitycollege-elijsahwestbrooky5dy-tackling",
-    "category": "tackling",
-    "solo": 2,
-    "ast": 1,
-    "total": 3,
-    "tfl": "2.5",
-    "pbu": 0,
-    "int": 0,
-    "soloSacks": 1.5,
-    "astSacks": 0,
-    "sackYds": 7,
-    "sacks": "1.5"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "DL",
-    "player": "Jayden Williams",
-    "team": "Northeast Mississippi Community College",
-    "conference": "MACCC",
-    "games": 3,
-    "sample": false,
-    "id": "real-juco-northeastmississippicommunitycollege-jaydenwilliamsca1a-tackling",
-    "category": "tackling",
-    "solo": 1,
-    "ast": 2,
-    "total": 3,
-    "tfl": "0.0",
-    "pbu": 0,
-    "int": 0,
-    "soloSacks": 0.0,
-    "astSacks": 0,
-    "sackYds": 0,
-    "sacks": "0.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "DL",
-    "player": "Tytus Davidson",
-    "team": "Northeast Mississippi Community College",
-    "conference": "MACCC",
-    "games": 1,
-    "sample": false,
-    "id": "real-juco-northeastmississippicommunitycollege-tytusdavidson881r-tackling",
-    "category": "tackling",
-    "solo": 0,
-    "ast": 2,
-    "total": 2,
-    "tfl": "0.0",
-    "pbu": 0,
-    "int": 0,
-    "soloSacks": 0.0,
-    "astSacks": 0,
-    "sackYds": 0,
-    "sacks": "0.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "WR",
-    "player": "Chase Booker",
-    "team": "Northeast Mississippi Community College",
-    "conference": "MACCC",
-    "games": 2,
-    "sample": false,
-    "id": "real-juco-northeastmississippicommunitycollege-chasebooker4ukz-tackling",
-    "category": "tackling",
-    "solo": 0,
-    "ast": 1,
-    "total": 1,
-    "tfl": "0.0",
-    "pbu": 0,
-    "int": 0,
-    "soloSacks": 0.0,
-    "astSacks": 0,
-    "sackYds": 0,
-    "sacks": "0.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "DL",
-    "player": "Donovan Hawkins",
-    "team": "Northeast Mississippi Community College",
-    "conference": "MACCC",
-    "games": 1,
-    "sample": false,
-    "id": "real-juco-northeastmississippicommunitycollege-donovanhawkinsqpm5-tackling",
-    "category": "tackling",
-    "solo": 1,
-    "ast": 0,
-    "total": 1,
-    "tfl": "0.0",
-    "pbu": 0,
-    "int": 0,
-    "soloSacks": 0.0,
-    "astSacks": 0,
-    "sackYds": 0,
-    "sacks": "0.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "SAF",
-    "player": "Mincer Minor",
-    "team": "Northeast Mississippi Community College",
-    "conference": "MACCC",
-    "games": 2,
-    "sample": false,
-    "id": "real-juco-northeastmississippicommunitycollege-mincerminorgkjp-tackling",
-    "category": "tackling",
-    "solo": 1,
-    "ast": 0,
-    "total": 1,
-    "tfl": "0.0",
-    "pbu": 0,
-    "int": 0,
-    "soloSacks": 0.0,
-    "astSacks": 0,
-    "sackYds": 0,
-    "sacks": "0.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "ATH",
-    "player": "Daniel Sherman",
-    "team": "Northeast Mississippi Community College",
-    "conference": "MACCC",
-    "games": 3,
-    "sample": false,
-    "id": "real-juco-northeastmississippicommunitycollege-danielshermann9sx-tackling",
-    "category": "tackling",
-    "solo": 0,
-    "ast": 1,
-    "total": 1,
-    "tfl": "0.0",
-    "pbu": 0,
-    "int": 0,
-    "soloSacks": 0.0,
-    "astSacks": 0,
-    "sackYds": 0,
-    "sacks": "0.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "WR",
-    "player": "Kelvin Walker",
-    "team": "Northeast Mississippi Community College",
-    "conference": "MACCC",
-    "games": 3,
-    "sample": false,
-    "id": "real-juco-northeastmississippicommunitycollege-kelvinwalkerrdfe-tackling",
-    "category": "tackling",
-    "solo": 1,
-    "ast": 0,
-    "total": 1,
-    "tfl": "0.0",
-    "pbu": 0,
-    "int": 0,
-    "soloSacks": 0.0,
-    "astSacks": 0,
-    "sackYds": 0,
-    "sacks": "0.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "WR",
-    "player": "Brooks Wallis",
-    "team": "Northeast Mississippi Community College",
-    "conference": "MACCC",
-    "games": 3,
-    "sample": false,
-    "id": "real-juco-northeastmississippicommunitycollege-brookswallis7yq7-tackling",
-    "category": "tackling",
-    "solo": 1,
-    "ast": 0,
-    "total": 1,
-    "tfl": "0.0",
-    "pbu": 0,
-    "int": 0,
-    "soloSacks": 0.0,
-    "astSacks": 0,
-    "sackYds": 0,
-    "sacks": "0.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "QB",
-    "player": "Neko Fann",
-    "team": "Northwest Mississippi Community College",
-    "conference": "MACCC",
-    "games": 3,
-    "sample": false,
-    "id": "real-juco-northwestmississippicommunitycollege-nekofann3dvq-passing",
-    "category": "passing",
-    "compAtt": "61/99",
-    "att": 99,
-    "yards": 630,
-    "td": 2,
-    "int": 2,
-    "rating": "117.7"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "QB",
-    "player": "Noah Gillon",
-    "team": "Northwest Mississippi Community College",
-    "conference": "MACCC",
-    "games": 3,
-    "sample": false,
-    "id": "real-juco-northwestmississippicommunitycollege-noahgillonpokh-passing",
-    "category": "passing",
-    "compAtt": "28/44",
-    "att": 44,
-    "yards": 344,
-    "td": 3,
-    "int": 1,
-    "rating": "147.3"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
     "position": "RB",
     "player": "Macaleb Taylor",
     "team": "Northwest Mississippi Community College",
@@ -22998,6 +21204,310 @@
   {
     "division": "JUCO",
     "week": "total",
+    "position": "RB",
+    "player": "Ronde Baker",
+    "team": "Southwest Mississippi Community College",
+    "conference": "MACCC",
+    "games": 3,
+    "sample": false,
+    "id": "real-juco-southwestmississippicommunitycollege-rondebakertikk-rushing",
+    "category": "rushing",
+    "att": 37,
+    "yards": 332,
+    "td": 3,
+    "avg": "9.0"
+  },
+  {
+    "division": "JUCO",
+    "week": "total",
+    "position": "RB",
+    "player": "Will Smith",
+    "team": "Southwest Mississippi Community College",
+    "conference": "MACCC",
+    "games": 3,
+    "sample": false,
+    "id": "real-juco-southwestmississippicommunitycollege-willsmithi16u-rushing",
+    "category": "rushing",
+    "att": 19,
+    "yards": 73,
+    "td": 0,
+    "avg": "3.8"
+  },
+  {
+    "division": "JUCO",
+    "week": "total",
+    "position": "RB",
+    "player": "Nyrikius Johnson",
+    "team": "Southwest Mississippi Community College",
+    "conference": "MACCC",
+    "games": 3,
+    "sample": false,
+    "id": "real-juco-southwestmississippicommunitycollege-nyrikiusjohnson1crj-rushing",
+    "category": "rushing",
+    "att": 14,
+    "yards": 55,
+    "td": 2,
+    "avg": "3.9"
+  },
+  {
+    "division": "JUCO",
+    "week": "total",
+    "position": "QB",
+    "player": "Jakhari Williams",
+    "team": "Southwest Mississippi Community College",
+    "conference": "MACCC",
+    "games": 3,
+    "sample": false,
+    "id": "real-juco-southwestmississippicommunitycollege-jakhariwilliamsdc5p-rushing",
+    "category": "rushing",
+    "att": 20,
+    "yards": 14,
+    "td": 0,
+    "avg": "0.7"
+  },
+  {
+    "division": "JUCO",
+    "week": "total",
+    "position": "RB",
+    "player": "Toney Scott III",
+    "team": "Southwest Mississippi Community College",
+    "conference": "MACCC",
+    "games": 2,
+    "sample": false,
+    "id": "real-juco-southwestmississippicommunitycollege-toneyscottiiisoyl-rushing",
+    "category": "rushing",
+    "att": 2,
+    "yards": 10,
+    "td": 0,
+    "avg": "5.0"
+  },
+  {
+    "division": "JUCO",
+    "week": "total",
+    "position": "QB",
+    "player": "Kaison Koenenn",
+    "team": "Southwest Mississippi Community College",
+    "conference": "MACCC",
+    "games": 1,
+    "sample": false,
+    "id": "real-juco-southwestmississippicommunitycollege-kaisonkoenennjn6h-rushing",
+    "category": "rushing",
+    "att": 1,
+    "yards": -3,
+    "td": 0,
+    "avg": "-3.0"
+  },
+  {
+    "division": "JUCO",
+    "week": "total",
+    "position": "RB",
+    "player": "Jace Jackson",
+    "team": "Southwest Mississippi Community College",
+    "conference": "MACCC",
+    "games": 3,
+    "sample": false,
+    "id": "real-juco-southwestmississippicommunitycollege-jacejackson439q-rushing",
+    "category": "rushing",
+    "att": 5,
+    "yards": -5,
+    "td": 0,
+    "avg": "-1.0"
+  },
+  {
+    "division": "JUCO",
+    "week": "total",
+    "position": "WR",
+    "player": "Zay Martin",
+    "team": "Southwest Mississippi Community College",
+    "conference": "MACCC",
+    "games": 3,
+    "sample": false,
+    "id": "real-juco-southwestmississippicommunitycollege-zaymartinzv50-receiving",
+    "category": "receiving",
+    "rec": 10,
+    "yards": 90,
+    "td": 1,
+    "avg": "9.0"
+  },
+  {
+    "division": "JUCO",
+    "week": "total",
+    "position": "WR",
+    "player": "Bryhsen Smith",
+    "team": "Southwest Mississippi Community College",
+    "conference": "MACCC",
+    "games": 3,
+    "sample": false,
+    "id": "real-juco-southwestmississippicommunitycollege-bryhsensmithpirl-receiving",
+    "category": "receiving",
+    "rec": 7,
+    "yards": 69,
+    "td": 0,
+    "avg": "9.9"
+  },
+  {
+    "division": "JUCO",
+    "week": "total",
+    "position": "RB",
+    "player": "Will Smith",
+    "team": "Southwest Mississippi Community College",
+    "conference": "MACCC",
+    "games": 3,
+    "sample": false,
+    "id": "real-juco-southwestmississippicommunitycollege-willsmithi16u-receiving",
+    "category": "receiving",
+    "rec": 6,
+    "yards": 43,
+    "td": 0,
+    "avg": "7.2"
+  },
+  {
+    "division": "JUCO",
+    "week": "total",
+    "position": "RB",
+    "player": "Ronde Baker",
+    "team": "Southwest Mississippi Community College",
+    "conference": "MACCC",
+    "games": 3,
+    "sample": false,
+    "id": "real-juco-southwestmississippicommunitycollege-rondebakertikk-receiving",
+    "category": "receiving",
+    "rec": 5,
+    "yards": 25,
+    "td": 0,
+    "avg": "5.0"
+  },
+  {
+    "division": "JUCO",
+    "week": "total",
+    "position": "WR",
+    "player": "AJ Lewis",
+    "team": "Southwest Mississippi Community College",
+    "conference": "MACCC",
+    "games": 2,
+    "sample": false,
+    "id": "real-juco-southwestmississippicommunitycollege-ajlewis0n2b-receiving",
+    "category": "receiving",
+    "rec": 5,
+    "yards": 48,
+    "td": 0,
+    "avg": "9.6"
+  },
+  {
+    "division": "JUCO",
+    "week": "total",
+    "position": "WR",
+    "player": "Deori Pope",
+    "team": "Southwest Mississippi Community College",
+    "conference": "MACCC",
+    "games": 3,
+    "sample": false,
+    "id": "real-juco-southwestmississippicommunitycollege-deoripopenfet-receiving",
+    "category": "receiving",
+    "rec": 5,
+    "yards": 173,
+    "td": 0,
+    "avg": "34.6"
+  },
+  {
+    "division": "JUCO",
+    "week": "total",
+    "position": "WR",
+    "player": "Tahj Williby",
+    "team": "Southwest Mississippi Community College",
+    "conference": "MACCC",
+    "games": 3,
+    "sample": false,
+    "id": "real-juco-southwestmississippicommunitycollege-tahjwillibyc2kw-receiving",
+    "category": "receiving",
+    "rec": 5,
+    "yards": 61,
+    "td": 1,
+    "avg": "12.2"
+  },
+  {
+    "division": "JUCO",
+    "week": "total",
+    "position": "WR",
+    "player": "Thomas McKnight",
+    "team": "Southwest Mississippi Community College",
+    "conference": "MACCC",
+    "games": 2,
+    "sample": false,
+    "id": "real-juco-southwestmississippicommunitycollege-thomasmcknighth0qy-receiving",
+    "category": "receiving",
+    "rec": 4,
+    "yards": 27,
+    "td": 0,
+    "avg": "6.8"
+  },
+  {
+    "division": "JUCO",
+    "week": "total",
+    "position": "WR",
+    "player": "Ferzell Shepard",
+    "team": "Southwest Mississippi Community College",
+    "conference": "MACCC",
+    "games": 3,
+    "sample": false,
+    "id": "real-juco-southwestmississippicommunitycollege-ferzellshepardl0rr-receiving",
+    "category": "receiving",
+    "rec": 3,
+    "yards": 16,
+    "td": 0,
+    "avg": "5.3"
+  },
+  {
+    "division": "JUCO",
+    "week": "total",
+    "position": "RB",
+    "player": "Jace Jackson",
+    "team": "Southwest Mississippi Community College",
+    "conference": "MACCC",
+    "games": 3,
+    "sample": false,
+    "id": "real-juco-southwestmississippicommunitycollege-jacejackson439q-receiving",
+    "category": "receiving",
+    "rec": 2,
+    "yards": 3,
+    "td": 0,
+    "avg": "1.5"
+  },
+  {
+    "division": "JUCO",
+    "week": "total",
+    "position": "WR",
+    "player": "Phillip Burchfield",
+    "team": "Southwest Mississippi Community College",
+    "conference": "MACCC",
+    "games": 3,
+    "sample": false,
+    "id": "real-juco-southwestmississippicommunitycollege-phillipburchfield17ix-receiving",
+    "category": "receiving",
+    "rec": 1,
+    "yards": 10,
+    "td": 0,
+    "avg": "10.0"
+  },
+  {
+    "division": "JUCO",
+    "week": "total",
+    "position": "RB",
+    "player": "Nyrikius Johnson",
+    "team": "Southwest Mississippi Community College",
+    "conference": "MACCC",
+    "games": 3,
+    "sample": false,
+    "id": "real-juco-southwestmississippicommunitycollege-nyrikiusjohnson1crj-receiving",
+    "category": "receiving",
+    "rec": 1,
+    "yards": 9,
+    "td": 0,
+    "avg": "9.0"
+  },
+  {
+    "division": "JUCO",
+    "week": "total",
     "position": "LB",
     "player": "Fred Nicholson",
     "team": "Southwest Mississippi Community College",
@@ -24848,302 +23358,6 @@
     "astSacks": 0,
     "sackYds": 0,
     "sacks": "0.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "ATH",
-    "player": "B Mann",
-    "team": "New Mexico Military Institute",
-    "conference": "SWJCFC",
-    "games": 4,
-    "sample": false,
-    "id": "real-juco-newmexicomilitaryinstitute-brandonmannnyr7-passing",
-    "category": "passing",
-    "compAtt": "46/90",
-    "att": 90,
-    "yards": 784,
-    "td": 10,
-    "int": 2,
-    "rating": "156.5"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "ATH",
-    "player": "D Acosta",
-    "team": "New Mexico Military Institute",
-    "conference": "SWJCFC",
-    "games": 1,
-    "sample": false,
-    "id": "real-juco-newmexicomilitaryinstitute-davidacostaqrae-passing",
-    "category": "passing",
-    "compAtt": "2/2",
-    "att": 2,
-    "yards": 69,
-    "td": 1,
-    "int": 0,
-    "rating": "554.8"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "ATH",
-    "player": "J Palomino",
-    "team": "New Mexico Military Institute",
-    "conference": "SWJCFC",
-    "games": 2,
-    "sample": false,
-    "id": "real-juco-newmexicomilitaryinstitute-jacobpalominopxhn-passing",
-    "category": "passing",
-    "compAtt": "3/7",
-    "att": 7,
-    "yards": 62,
-    "td": 0,
-    "int": 0,
-    "rating": "117.3"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "ATH",
-    "player": "T Moore",
-    "team": "New Mexico Military Institute",
-    "conference": "SWJCFC",
-    "games": 4,
-    "sample": false,
-    "id": "real-juco-newmexicomilitaryinstitute-tyronmoorebb8k-passing",
-    "category": "passing",
-    "compAtt": "3/4",
-    "att": 4,
-    "yards": 11,
-    "td": 0,
-    "int": 1,
-    "rating": "48.1"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "ATH",
-    "player": "A Muniz",
-    "team": "New Mexico Military Institute",
-    "conference": "SWJCFC",
-    "games": 4,
-    "sample": false,
-    "id": "real-juco-newmexicomilitaryinstitute-antoniomuniz8zqy-rushing",
-    "category": "rushing",
-    "att": 30,
-    "yards": 205,
-    "td": 1,
-    "avg": "6.8"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "ATH",
-    "player": "R Mackay-Peterson",
-    "team": "New Mexico Military Institute",
-    "conference": "SWJCFC",
-    "games": 2,
-    "sample": false,
-    "id": "real-juco-newmexicomilitaryinstitute-rashawnmackaypetersonqhgu-rushing",
-    "category": "rushing",
-    "att": 13,
-    "yards": 111,
-    "td": 1,
-    "avg": "8.5"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "ATH",
-    "player": "B Mann",
-    "team": "New Mexico Military Institute",
-    "conference": "SWJCFC",
-    "games": 4,
-    "sample": false,
-    "id": "real-juco-newmexicomilitaryinstitute-brandonmannnyr7-rushing",
-    "category": "rushing",
-    "att": 30,
-    "yards": 107,
-    "td": 0,
-    "avg": "3.6"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "ATH",
-    "player": "T Moore",
-    "team": "New Mexico Military Institute",
-    "conference": "SWJCFC",
-    "games": 4,
-    "sample": false,
-    "id": "real-juco-newmexicomilitaryinstitute-tyronmoorebb8k-rushing",
-    "category": "rushing",
-    "att": 17,
-    "yards": 62,
-    "td": 1,
-    "avg": "3.6"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "ATH",
-    "player": "R Jordan",
-    "team": "New Mexico Military Institute",
-    "conference": "SWJCFC",
-    "games": 3,
-    "sample": false,
-    "id": "real-juco-newmexicomilitaryinstitute-romeljordan2cch-rushing",
-    "category": "rushing",
-    "att": 7,
-    "yards": 33,
-    "td": 0,
-    "avg": "4.7"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "ATH",
-    "player": "J Palomino",
-    "team": "New Mexico Military Institute",
-    "conference": "SWJCFC",
-    "games": 2,
-    "sample": false,
-    "id": "real-juco-newmexicomilitaryinstitute-jacobpalominopxhn-rushing",
-    "category": "rushing",
-    "att": 9,
-    "yards": 27,
-    "td": 1,
-    "avg": "3.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "ATH",
-    "player": "I Riggins",
-    "team": "New Mexico Military Institute",
-    "conference": "SWJCFC",
-    "games": 3,
-    "sample": false,
-    "id": "real-juco-newmexicomilitaryinstitute-isaiahrigginswxim-rushing",
-    "category": "rushing",
-    "att": 1,
-    "yards": 10,
-    "td": 0,
-    "avg": "10.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "ATH",
-    "player": "A Gonzales",
-    "team": "New Mexico Military Institute",
-    "conference": "SWJCFC",
-    "games": 2,
-    "sample": false,
-    "id": "real-juco-newmexicomilitaryinstitute-alijahgonzales62gh-rushing",
-    "category": "rushing",
-    "att": 4,
-    "yards": 9,
-    "td": 0,
-    "avg": "2.3"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "ATH",
-    "player": "J Wood",
-    "team": "New Mexico Military Institute",
-    "conference": "SWJCFC",
-    "games": 4,
-    "sample": false,
-    "id": "real-juco-newmexicomilitaryinstitute-jaydnwoodwkro-rushing",
-    "category": "rushing",
-    "att": 3,
-    "yards": 8,
-    "td": 0,
-    "avg": "2.7"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "ATH",
-    "player": "J Sanchez-Calvilo",
-    "team": "New Mexico Military Institute",
-    "conference": "SWJCFC",
-    "games": 1,
-    "sample": false,
-    "id": "real-juco-newmexicomilitaryinstitute-juansanchezcalvilosyyc-rushing",
-    "category": "rushing",
-    "att": 1,
-    "yards": 2,
-    "td": 0,
-    "avg": "2.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "ATH",
-    "player": "D Hergenreder",
-    "team": "New Mexico Military Institute",
-    "conference": "SWJCFC",
-    "games": 1,
-    "sample": false,
-    "id": "real-juco-newmexicomilitaryinstitute-dylanhergenreder0s65-rushing",
-    "category": "rushing",
-    "att": 1,
-    "yards": 0,
-    "td": 0,
-    "avg": "0.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "ATH",
-    "player": "D Acosta",
-    "team": "New Mexico Military Institute",
-    "conference": "SWJCFC",
-    "games": 1,
-    "sample": false,
-    "id": "real-juco-newmexicomilitaryinstitute-davidacostaqrae-rushing",
-    "category": "rushing",
-    "att": 1,
-    "yards": -1,
-    "td": 0,
-    "avg": "-1.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "ATH",
-    "player": "C Seidenberger",
-    "team": "New Mexico Military Institute",
-    "conference": "SWJCFC",
-    "games": 1,
-    "sample": false,
-    "id": "real-juco-newmexicomilitaryinstitute-coleseidenbergert0lf-rushing",
-    "category": "rushing",
-    "att": 1,
-    "yards": -3,
-    "td": 0,
-    "avg": "-3.0"
-  },
-  {
-    "division": "JUCO",
-    "week": "total",
-    "position": "ATH",
-    "player": "B Beaty",
-    "team": "New Mexico Military Institute",
-    "conference": "SWJCFC",
-    "games": 2,
-    "sample": false,
-    "id": "real-juco-newmexicomilitaryinstitute-brockbeatyheh9-rushing",
-    "category": "rushing",
-    "att": 1,
-    "yards": -20,
-    "td": 0,
-    "avg": "-20.0"
   },
   {
     "division": "JUCO",
@@ -30403,7 +28617,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 2,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -37585,7 +35799,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 5,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -38035,7 +36249,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 7,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -41765,7 +39979,7 @@
     "soloSacks": 1,
     "astSacks": 1,
     "sackYds": 3,
-    "sacks": "0.0"
+    "sacks": "1.5"
   },
   {
     "division": "JUCO",
@@ -43231,7 +41445,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 3,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -43591,7 +41805,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 4,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -43987,7 +42201,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 2,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -52387,7 +50601,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 2,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -56405,7 +54619,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 4,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -56427,7 +54641,7 @@
     "soloSacks": 2,
     "astSacks": 1,
     "sackYds": 24,
-    "sacks": "0.0"
+    "sacks": "2.5"
   },
   {
     "division": "JUCO",
@@ -56449,7 +54663,7 @@
     "soloSacks": 2,
     "astSacks": 0,
     "sackYds": 2,
-    "sacks": "0.0"
+    "sacks": "2.0"
   },
   {
     "division": "JUCO",
@@ -56625,7 +54839,7 @@
     "soloSacks": 0,
     "astSacks": 1,
     "sackYds": 3,
-    "sacks": "0.0"
+    "sacks": "0.5"
   },
   {
     "division": "JUCO",
@@ -56669,7 +54883,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 5,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -56757,7 +54971,7 @@
     "soloSacks": 1,
     "astSacks": 1,
     "sackYds": 7,
-    "sacks": "0.0"
+    "sacks": "1.5"
   },
   {
     "division": "JUCO",
@@ -56845,7 +55059,7 @@
     "soloSacks": 2,
     "astSacks": 0,
     "sackYds": 19,
-    "sacks": "0.0"
+    "sacks": "2.0"
   },
   {
     "division": "JUCO",
@@ -57087,7 +55301,7 @@
     "soloSacks": 1,
     "astSacks": 1,
     "sackYds": 8,
-    "sacks": "0.0"
+    "sacks": "1.5"
   },
   {
     "division": "JUCO",
@@ -57131,7 +55345,7 @@
     "soloSacks": 2,
     "astSacks": 0,
     "sackYds": 7,
-    "sacks": "0.0"
+    "sacks": "2.0"
   },
   {
     "division": "JUCO",
@@ -57307,7 +55521,7 @@
     "soloSacks": 0,
     "astSacks": 1,
     "sackYds": 1,
-    "sacks": "0.0"
+    "sacks": "0.5"
   },
   {
     "division": "JUCO",
@@ -57615,7 +55829,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 9,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -57703,7 +55917,7 @@
     "soloSacks": 2,
     "astSacks": 0,
     "sackYds": 9,
-    "sacks": "0.0"
+    "sacks": "2.0"
   },
   {
     "division": "JUCO",
@@ -57791,7 +56005,7 @@
     "soloSacks": 2,
     "astSacks": 1,
     "sackYds": 10,
-    "sacks": "0.0"
+    "sacks": "2.5"
   },
   {
     "division": "JUCO",
@@ -57813,7 +56027,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 9,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -58011,7 +56225,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 5,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -58231,7 +56445,7 @@
     "soloSacks": 0,
     "astSacks": 1,
     "sackYds": 5,
-    "sacks": "0.0"
+    "sacks": "0.5"
   },
   {
     "division": "JUCO",
@@ -58627,7 +56841,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 3,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -58649,7 +56863,7 @@
     "soloSacks": 0,
     "astSacks": 1,
     "sackYds": 3,
-    "sacks": "0.0"
+    "sacks": "0.5"
   },
   {
     "division": "JUCO",
@@ -58781,7 +56995,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 5,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -59001,7 +57215,7 @@
     "soloSacks": 2,
     "astSacks": 0,
     "sackYds": 6,
-    "sacks": "0.0"
+    "sacks": "2.0"
   },
   {
     "division": "JUCO",
@@ -59287,7 +57501,7 @@
     "soloSacks": 0,
     "astSacks": 1,
     "sackYds": 6,
-    "sacks": "0.0"
+    "sacks": "0.5"
   },
   {
     "division": "JUCO",
@@ -59485,7 +57699,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 5,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -59639,7 +57853,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 1,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -59771,7 +57985,7 @@
     "soloSacks": 0,
     "astSacks": 2,
     "sackYds": 6,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -59925,7 +58139,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 4,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -60013,7 +58227,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 7,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -60189,7 +58403,7 @@
     "soloSacks": 2,
     "astSacks": 1,
     "sackYds": 43,
-    "sacks": "0.0"
+    "sacks": "2.5"
   },
   {
     "division": "JUCO",
@@ -60409,7 +58623,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 7,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -60519,7 +58733,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 13,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -60629,7 +58843,7 @@
     "soloSacks": 0,
     "astSacks": 1,
     "sackYds": 4,
-    "sacks": "0.0"
+    "sacks": "0.5"
   },
   {
     "division": "JUCO",
@@ -61157,7 +59371,7 @@
     "soloSacks": 2,
     "astSacks": 0,
     "sackYds": 17,
-    "sacks": "0.0"
+    "sacks": "2.0"
   },
   {
     "division": "JUCO",
@@ -61201,7 +59415,7 @@
     "soloSacks": 3,
     "astSacks": 0,
     "sackYds": 12,
-    "sacks": "0.0"
+    "sacks": "3.0"
   },
   {
     "division": "JUCO",
@@ -61245,7 +59459,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 11,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -61311,7 +59525,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 0,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -61531,7 +59745,7 @@
     "soloSacks": 2,
     "astSacks": 0,
     "sackYds": 17,
-    "sacks": "0.0"
+    "sacks": "2.0"
   },
   {
     "division": "JUCO",
@@ -61575,7 +59789,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 6,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -61597,7 +59811,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 2,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -61685,7 +59899,7 @@
     "soloSacks": 2,
     "astSacks": 1,
     "sackYds": 29,
-    "sacks": "0.0"
+    "sacks": "2.5"
   },
   {
     "division": "JUCO",
@@ -61883,7 +60097,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 4,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -61905,7 +60119,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 1,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -62081,7 +60295,7 @@
     "soloSacks": 0,
     "astSacks": 1,
     "sackYds": 2,
-    "sacks": "0.0"
+    "sacks": "0.5"
   },
   {
     "division": "JUCO",
@@ -62213,7 +60427,7 @@
     "soloSacks": 1,
     "astSacks": 1,
     "sackYds": 9,
-    "sacks": "0.0"
+    "sacks": "1.5"
   },
   {
     "division": "JUCO",
@@ -62367,7 +60581,7 @@
     "soloSacks": 2,
     "astSacks": 1,
     "sackYds": 22,
-    "sacks": "0.0"
+    "sacks": "2.5"
   },
   {
     "division": "JUCO",
@@ -62433,7 +60647,7 @@
     "soloSacks": 0,
     "astSacks": 1,
     "sackYds": 2,
-    "sacks": "0.0"
+    "sacks": "0.5"
   },
   {
     "division": "JUCO",
@@ -62477,7 +60691,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 4,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -62697,7 +60911,7 @@
     "soloSacks": 2,
     "astSacks": 0,
     "sackYds": 21,
-    "sacks": "0.0"
+    "sacks": "2.0"
   },
   {
     "division": "JUCO",
@@ -62829,7 +61043,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 8,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -62851,7 +61065,7 @@
     "soloSacks": 1,
     "astSacks": 1,
     "sackYds": 6,
-    "sacks": "0.0"
+    "sacks": "1.5"
   },
   {
     "division": "JUCO",
@@ -62917,7 +61131,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 6,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -62961,7 +61175,7 @@
     "soloSacks": 0,
     "astSacks": 1,
     "sackYds": 5,
-    "sacks": "0.0"
+    "sacks": "0.5"
   },
   {
     "division": "JUCO",
@@ -63071,7 +61285,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 12,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -63115,7 +61329,7 @@
     "soloSacks": 2,
     "astSacks": 0,
     "sackYds": 13,
-    "sacks": "0.0"
+    "sacks": "2.0"
   },
   {
     "division": "JUCO",
@@ -63247,7 +61461,7 @@
     "soloSacks": 1,
     "astSacks": 1,
     "sackYds": 11,
-    "sacks": "0.0"
+    "sacks": "1.5"
   },
   {
     "division": "JUCO",
@@ -63335,7 +61549,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 4,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -63511,7 +61725,7 @@
     "soloSacks": 2,
     "astSacks": 0,
     "sackYds": 13,
-    "sacks": "0.0"
+    "sacks": "2.0"
   },
   {
     "division": "JUCO",
@@ -63709,7 +61923,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 11,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -63841,7 +62055,7 @@
     "soloSacks": 2,
     "astSacks": 1,
     "sackYds": 12,
-    "sacks": "0.0"
+    "sacks": "2.5"
   },
   {
     "division": "JUCO",
@@ -63885,7 +62099,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 14,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -63995,7 +62209,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 3,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -64127,7 +62341,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 7,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -64523,7 +62737,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 10,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -64809,7 +63023,7 @@
     "soloSacks": 2,
     "astSacks": 0,
     "sackYds": 15,
-    "sacks": "0.0"
+    "sacks": "2.0"
   },
   {
     "division": "JUCO",
@@ -65051,7 +63265,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 6,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -65161,7 +63375,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 7,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -65359,7 +63573,7 @@
     "soloSacks": 0,
     "astSacks": 1,
     "sackYds": 1,
-    "sacks": "0.0"
+    "sacks": "0.5"
   },
   {
     "division": "JUCO",
@@ -65447,7 +63661,7 @@
     "soloSacks": 0,
     "astSacks": 1,
     "sackYds": 2,
-    "sacks": "0.0"
+    "sacks": "0.5"
   },
   {
     "division": "JUCO",
@@ -65513,7 +63727,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 10,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -65645,7 +63859,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 8,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -65733,7 +63947,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 1,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -65799,7 +64013,7 @@
     "soloSacks": 2,
     "astSacks": 0,
     "sackYds": 12,
-    "sacks": "0.0"
+    "sacks": "2.0"
   },
   {
     "division": "JUCO",
@@ -65821,7 +64035,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 0,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -66041,7 +64255,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 2,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -66393,7 +64607,7 @@
     "soloSacks": 0,
     "astSacks": 1,
     "sackYds": 5,
-    "sacks": "0.0"
+    "sacks": "0.5"
   },
   {
     "division": "JUCO",
@@ -66459,7 +64673,7 @@
     "soloSacks": 2,
     "astSacks": 0,
     "sackYds": 8,
-    "sacks": "0.0"
+    "sacks": "2.0"
   },
   {
     "division": "JUCO",
@@ -66481,7 +64695,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 1,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -66613,7 +64827,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 2,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -66657,7 +64871,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 2,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -66679,7 +64893,7 @@
     "soloSacks": 0,
     "astSacks": 1,
     "sackYds": 4,
-    "sacks": "0.0"
+    "sacks": "0.5"
   },
   {
     "division": "JUCO",
@@ -66723,7 +64937,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 7,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -66855,7 +65069,7 @@
     "soloSacks": 1,
     "astSacks": 1,
     "sackYds": 3,
-    "sacks": "0.0"
+    "sacks": "1.5"
   },
   {
     "division": "JUCO",
@@ -66943,7 +65157,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 9,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -67449,7 +65663,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 8,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -67581,7 +65795,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 9,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -67669,7 +65883,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 5,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -67713,7 +65927,7 @@
     "soloSacks": 3,
     "astSacks": 0,
     "sackYds": 13,
-    "sacks": "0.0"
+    "sacks": "3.0"
   },
   {
     "division": "JUCO",
@@ -67735,7 +65949,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 6,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -67889,7 +66103,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 1,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -67955,7 +66169,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 17,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -68087,7 +66301,7 @@
     "soloSacks": 0,
     "astSacks": 1,
     "sackYds": 1,
-    "sacks": "0.0"
+    "sacks": "0.5"
   },
   {
     "division": "JUCO",
@@ -68351,7 +66565,7 @@
     "soloSacks": 0,
     "astSacks": 1,
     "sackYds": 2,
-    "sacks": "0.0"
+    "sacks": "0.5"
   },
   {
     "division": "JUCO",
@@ -68417,7 +66631,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 10,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -68835,7 +67049,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 11,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -69165,7 +67379,7 @@
     "soloSacks": 0,
     "astSacks": 1,
     "sackYds": 4,
-    "sacks": "0.0"
+    "sacks": "0.5"
   },
   {
     "division": "JUCO",
@@ -69231,7 +67445,7 @@
     "soloSacks": 0,
     "astSacks": 1,
     "sackYds": 4,
-    "sacks": "0.0"
+    "sacks": "0.5"
   },
   {
     "division": "JUCO",
@@ -69341,7 +67555,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 12,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -69385,7 +67599,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 4,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -69693,7 +67907,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 2,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -69781,7 +67995,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 2,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -69803,7 +68017,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 12,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -70177,7 +68391,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 5,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -70353,7 +68567,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 10,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -70507,7 +68721,7 @@
     "soloSacks": 0,
     "astSacks": 1,
     "sackYds": 8,
-    "sacks": "0.0"
+    "sacks": "0.5"
   },
   {
     "division": "JUCO",
@@ -70661,7 +68875,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 4,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -70749,7 +68963,7 @@
     "soloSacks": 0,
     "astSacks": 1,
     "sackYds": 0,
-    "sacks": "0.0"
+    "sacks": "0.5"
   },
   {
     "division": "JUCO",
@@ -70947,7 +69161,7 @@
     "soloSacks": 0,
     "astSacks": 1,
     "sackYds": 1,
-    "sacks": "0.0"
+    "sacks": "0.5"
   },
   {
     "division": "JUCO",
@@ -70969,7 +69183,7 @@
     "soloSacks": 2,
     "astSacks": 0,
     "sackYds": 15,
-    "sacks": "0.0"
+    "sacks": "2.0"
   },
   {
     "division": "JUCO",
@@ -70991,7 +69205,7 @@
     "soloSacks": 0,
     "astSacks": 1,
     "sackYds": 2,
-    "sacks": "0.0"
+    "sacks": "0.5"
   },
   {
     "division": "JUCO",
@@ -71123,7 +69337,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 10,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -71233,7 +69447,7 @@
     "soloSacks": 0,
     "astSacks": 1,
     "sackYds": 3,
-    "sacks": "0.0"
+    "sacks": "0.5"
   },
   {
     "division": "JUCO",
@@ -71453,7 +69667,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 6,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -71497,7 +69711,7 @@
     "soloSacks": 0,
     "astSacks": 1,
     "sackYds": 3,
-    "sacks": "0.0"
+    "sacks": "0.5"
   },
   {
     "division": "JUCO",
@@ -71673,7 +69887,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 8,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -71695,7 +69909,7 @@
     "soloSacks": 1,
     "astSacks": 1,
     "sackYds": 11,
-    "sacks": "0.0"
+    "sacks": "1.5"
   },
   {
     "division": "JUCO",
@@ -71871,7 +70085,7 @@
     "soloSacks": 0,
     "astSacks": 1,
     "sackYds": 3,
-    "sacks": "0.0"
+    "sacks": "0.5"
   },
   {
     "division": "JUCO",
@@ -71937,7 +70151,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 9,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -72245,7 +70459,7 @@
     "soloSacks": 0,
     "astSacks": 1,
     "sackYds": 1,
-    "sacks": "0.0"
+    "sacks": "0.5"
   },
   {
     "division": "JUCO",
@@ -72333,7 +70547,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 8,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -72377,7 +70591,7 @@
     "soloSacks": 1,
     "astSacks": 2,
     "sackYds": 8,
-    "sacks": "0.0"
+    "sacks": "2.0"
   },
   {
     "division": "JUCO",
@@ -72399,7 +70613,7 @@
     "soloSacks": 1,
     "astSacks": 1,
     "sackYds": 8,
-    "sacks": "0.0"
+    "sacks": "1.5"
   },
   {
     "division": "JUCO",
@@ -72465,7 +70679,7 @@
     "soloSacks": 1,
     "astSacks": 1,
     "sackYds": 9,
-    "sacks": "0.0"
+    "sacks": "1.5"
   },
   {
     "division": "JUCO",
@@ -72575,7 +70789,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 3,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -72641,7 +70855,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 8,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -73125,7 +71339,7 @@
     "soloSacks": 0,
     "astSacks": 1,
     "sackYds": 1,
-    "sacks": "0.0"
+    "sacks": "0.5"
   },
   {
     "division": "JUCO",
@@ -73213,7 +71427,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 4,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -73279,7 +71493,7 @@
     "soloSacks": 2,
     "astSacks": 0,
     "sackYds": 8,
-    "sacks": "0.0"
+    "sacks": "2.0"
   },
   {
     "division": "JUCO",
@@ -73411,7 +71625,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 7,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -73433,7 +71647,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 9,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -73609,7 +71823,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 7,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -73829,7 +72043,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 5,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -73873,7 +72087,7 @@
     "soloSacks": 2,
     "astSacks": 0,
     "sackYds": 18,
-    "sacks": "0.0"
+    "sacks": "2.0"
   },
   {
     "division": "JUCO",
@@ -73961,7 +72175,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 9,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -74467,7 +72681,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 6,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -74577,7 +72791,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 8,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -74687,7 +72901,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 12,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -74709,7 +72923,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 16,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -74885,7 +73099,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 7,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -74951,7 +73165,7 @@
     "soloSacks": 0,
     "astSacks": 1,
     "sackYds": 4,
-    "sacks": "0.0"
+    "sacks": "0.5"
   },
   {
     "division": "JUCO",
@@ -74995,7 +73209,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 5,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -75039,7 +73253,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 4,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -75105,7 +73319,7 @@
     "soloSacks": 3,
     "astSacks": 0,
     "sackYds": 16,
-    "sacks": "0.0"
+    "sacks": "3.0"
   },
   {
     "division": "JUCO",
@@ -75215,7 +73429,7 @@
     "soloSacks": 0,
     "astSacks": 1,
     "sackYds": 3,
-    "sacks": "0.0"
+    "sacks": "0.5"
   },
   {
     "division": "JUCO",
@@ -75391,7 +73605,7 @@
     "soloSacks": 0,
     "astSacks": 1,
     "sackYds": 6,
-    "sacks": "0.0"
+    "sacks": "0.5"
   },
   {
     "division": "JUCO",
@@ -75457,7 +73671,7 @@
     "soloSacks": 0,
     "astSacks": 1,
     "sackYds": 1,
-    "sacks": "0.0"
+    "sacks": "0.5"
   },
   {
     "division": "JUCO",
@@ -75699,7 +73913,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 7,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -75919,7 +74133,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 2,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -76117,7 +74331,7 @@
     "soloSacks": 1,
     "astSacks": 1,
     "sackYds": 13,
-    "sacks": "0.0"
+    "sacks": "1.5"
   },
   {
     "division": "JUCO",
@@ -76183,7 +74397,7 @@
     "soloSacks": 0,
     "astSacks": 1,
     "sackYds": 2,
-    "sacks": "0.0"
+    "sacks": "0.5"
   },
   {
     "division": "JUCO",
@@ -76381,7 +74595,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 5,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -76513,7 +74727,7 @@
     "soloSacks": 2,
     "astSacks": 1,
     "sackYds": 13,
-    "sacks": "0.0"
+    "sacks": "2.5"
   },
   {
     "division": "JUCO",
@@ -76623,7 +74837,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 10,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -76733,7 +74947,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 5,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -76843,7 +75057,7 @@
     "soloSacks": 2,
     "astSacks": 0,
     "sackYds": 16,
-    "sacks": "0.0"
+    "sacks": "2.0"
   },
   {
     "division": "JUCO",
@@ -77041,7 +75255,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 9,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -77283,7 +75497,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 4,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -77327,7 +75541,7 @@
     "soloSacks": 2,
     "astSacks": 0,
     "sackYds": 12,
-    "sacks": "0.0"
+    "sacks": "2.0"
   },
   {
     "division": "JUCO",
@@ -77349,7 +75563,7 @@
     "soloSacks": 0,
     "astSacks": 2,
     "sackYds": 3,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -77613,7 +75827,7 @@
     "soloSacks": 3,
     "astSacks": 0,
     "sackYds": 10,
-    "sacks": "0.0"
+    "sacks": "3.0"
   },
   {
     "division": "JUCO",
@@ -77833,7 +76047,7 @@
     "soloSacks": 2,
     "astSacks": 0,
     "sackYds": 12,
-    "sacks": "0.0"
+    "sacks": "2.0"
   },
   {
     "division": "JUCO",
@@ -77877,7 +76091,7 @@
     "soloSacks": 1,
     "astSacks": 1,
     "sackYds": 9,
-    "sacks": "0.0"
+    "sacks": "1.5"
   },
   {
     "division": "JUCO",
@@ -77899,7 +76113,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 6,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -78053,7 +76267,7 @@
     "soloSacks": 0,
     "astSacks": 1,
     "sackYds": 5,
-    "sacks": "0.0"
+    "sacks": "0.5"
   },
   {
     "division": "JUCO",
@@ -78097,7 +76311,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 4,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -78119,7 +76333,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 0,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -78185,7 +76399,7 @@
     "soloSacks": 0,
     "astSacks": 1,
     "sackYds": 4,
-    "sacks": "0.0"
+    "sacks": "0.5"
   },
   {
     "division": "JUCO",
@@ -78251,7 +76465,7 @@
     "soloSacks": 0,
     "astSacks": 2,
     "sackYds": 4,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -78273,7 +76487,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 0,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -78295,7 +76509,7 @@
     "soloSacks": 2,
     "astSacks": 0,
     "sackYds": 21,
-    "sacks": "0.0"
+    "sacks": "2.0"
   },
   {
     "division": "JUCO",
@@ -78405,7 +76619,7 @@
     "soloSacks": 2,
     "astSacks": 0,
     "sackYds": 25,
-    "sacks": "0.0"
+    "sacks": "2.0"
   },
   {
     "division": "JUCO",
@@ -78449,7 +76663,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 14,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -78603,7 +76817,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 10,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -78625,7 +76839,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 16,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -78647,7 +76861,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 7,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -78669,7 +76883,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 5,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -78691,7 +76905,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 8,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -78779,7 +76993,7 @@
     "soloSacks": 0,
     "astSacks": 1,
     "sackYds": 1,
-    "sacks": "0.0"
+    "sacks": "0.5"
   },
   {
     "division": "JUCO",
@@ -78823,7 +77037,7 @@
     "soloSacks": 0,
     "astSacks": 1,
     "sackYds": 4,
-    "sacks": "0.0"
+    "sacks": "0.5"
   },
   {
     "division": "JUCO",
@@ -79021,7 +77235,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 5,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -79329,7 +77543,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 4,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -79351,7 +77565,7 @@
     "soloSacks": 0,
     "astSacks": 2,
     "sackYds": 3,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -79373,7 +77587,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 6,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -79417,7 +77631,7 @@
     "soloSacks": 0,
     "astSacks": 1,
     "sackYds": 3,
-    "sacks": "0.0"
+    "sacks": "0.5"
   },
   {
     "division": "JUCO",
@@ -79615,7 +77829,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 0,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -79659,7 +77873,7 @@
     "soloSacks": 0,
     "astSacks": 1,
     "sackYds": 3,
-    "sacks": "0.0"
+    "sacks": "0.5"
   },
   {
     "division": "JUCO",
@@ -79791,7 +78005,7 @@
     "soloSacks": 0,
     "astSacks": 1,
     "sackYds": 6,
-    "sacks": "0.0"
+    "sacks": "0.5"
   },
   {
     "division": "JUCO",
@@ -79813,7 +78027,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 15,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -79857,7 +78071,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 5,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -80319,7 +78533,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 2,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -80341,7 +78555,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 11,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -80473,7 +78687,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 7,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -80495,7 +78709,7 @@
     "soloSacks": 0,
     "astSacks": 1,
     "sackYds": 1,
-    "sacks": "0.0"
+    "sacks": "0.5"
   },
   {
     "division": "JUCO",
@@ -80693,7 +78907,7 @@
     "soloSacks": 1,
     "astSacks": 1,
     "sackYds": 7,
-    "sacks": "0.0"
+    "sacks": "1.5"
   },
   {
     "division": "JUCO",
@@ -80803,7 +79017,7 @@
     "soloSacks": 0,
     "astSacks": 1,
     "sackYds": 0,
-    "sacks": "0.0"
+    "sacks": "0.5"
   },
   {
     "division": "JUCO",
@@ -81111,7 +79325,7 @@
     "soloSacks": 2,
     "astSacks": 0,
     "sackYds": 21,
-    "sacks": "0.0"
+    "sacks": "2.0"
   },
   {
     "division": "JUCO",
@@ -81133,7 +79347,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 3,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -81397,7 +79611,7 @@
     "soloSacks": 2,
     "astSacks": 0,
     "sackYds": 15,
-    "sacks": "0.0"
+    "sacks": "2.0"
   },
   {
     "division": "JUCO",
@@ -81507,7 +79721,7 @@
     "soloSacks": 1,
     "astSacks": 2,
     "sackYds": 6,
-    "sacks": "0.0"
+    "sacks": "2.0"
   },
   {
     "division": "JUCO",
@@ -81617,7 +79831,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 1,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -81639,7 +79853,7 @@
     "soloSacks": 0,
     "astSacks": 1,
     "sackYds": 3,
-    "sacks": "0.0"
+    "sacks": "0.5"
   },
   {
     "division": "JUCO",
@@ -81749,7 +79963,7 @@
     "soloSacks": 0,
     "astSacks": 1,
     "sackYds": 5,
-    "sacks": "0.0"
+    "sacks": "0.5"
   },
   {
     "division": "JUCO",
@@ -82079,7 +80293,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 10,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -82101,7 +80315,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 9,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -82519,7 +80733,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 7,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -82849,7 +81063,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 7,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -82959,7 +81173,7 @@
     "soloSacks": 0,
     "astSacks": 1,
     "sackYds": 4,
-    "sacks": "0.0"
+    "sacks": "0.5"
   },
   {
     "division": "JUCO",
@@ -82981,7 +81195,7 @@
     "soloSacks": 2,
     "astSacks": 0,
     "sackYds": 5,
-    "sacks": "0.0"
+    "sacks": "2.0"
   },
   {
     "division": "JUCO",
@@ -83113,7 +81327,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 5,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -83245,7 +81459,7 @@
     "soloSacks": 0,
     "astSacks": 1,
     "sackYds": 2,
-    "sacks": "0.0"
+    "sacks": "0.5"
   },
   {
     "division": "JUCO",
@@ -83289,7 +81503,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 3,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -83311,7 +81525,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 9,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -83487,7 +81701,7 @@
     "soloSacks": 0,
     "astSacks": 1,
     "sackYds": 0,
-    "sacks": "0.0"
+    "sacks": "0.5"
   },
   {
     "division": "JUCO",
@@ -83531,7 +81745,7 @@
     "soloSacks": 2,
     "astSacks": 0,
     "sackYds": 13,
-    "sacks": "0.0"
+    "sacks": "2.0"
   },
   {
     "division": "JUCO",
@@ -83575,7 +81789,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 21,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -84037,7 +82251,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 5,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -84191,7 +82405,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 0,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -84235,7 +82449,7 @@
     "soloSacks": 0,
     "astSacks": 1,
     "sackYds": 4,
-    "sacks": "0.0"
+    "sacks": "0.5"
   },
   {
     "division": "JUCO",
@@ -84367,7 +82581,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 12,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -84455,7 +82669,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 4,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -84477,7 +82691,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 8,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -84851,7 +83065,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 5,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -84895,7 +83109,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 9,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -84939,7 +83153,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 5,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -85159,7 +83373,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 0,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -85181,7 +83395,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 1,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -85203,7 +83417,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 8,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -85225,7 +83439,7 @@
     "soloSacks": 2,
     "astSacks": 0,
     "sackYds": 16,
-    "sacks": "0.0"
+    "sacks": "2.0"
   },
   {
     "division": "JUCO",
@@ -85247,7 +83461,7 @@
     "soloSacks": 0,
     "astSacks": 3,
     "sackYds": 9,
-    "sacks": "0.0"
+    "sacks": "1.5"
   },
   {
     "division": "JUCO",
@@ -85313,7 +83527,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 7,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -85599,7 +83813,7 @@
     "soloSacks": 2,
     "astSacks": 0,
     "sackYds": 9,
-    "sacks": "0.0"
+    "sacks": "2.0"
   },
   {
     "division": "JUCO",
@@ -85797,7 +84011,7 @@
     "soloSacks": 0,
     "astSacks": 1,
     "sackYds": 3,
-    "sacks": "0.0"
+    "sacks": "0.5"
   },
   {
     "division": "JUCO",
@@ -85863,7 +84077,7 @@
     "soloSacks": 0,
     "astSacks": 1,
     "sackYds": 2,
-    "sacks": "0.0"
+    "sacks": "0.5"
   },
   {
     "division": "JUCO",
@@ -86193,7 +84407,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 5,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -86347,7 +84561,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 8,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -86479,7 +84693,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 10,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -86589,7 +84803,7 @@
     "soloSacks": 1,
     "astSacks": 1,
     "sackYds": 11,
-    "sacks": "0.0"
+    "sacks": "1.5"
   },
   {
     "division": "JUCO",
@@ -86721,7 +84935,7 @@
     "soloSacks": 0,
     "astSacks": 1,
     "sackYds": 6,
-    "sacks": "0.0"
+    "sacks": "0.5"
   },
   {
     "division": "JUCO",
@@ -86853,7 +85067,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 10,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -86919,7 +85133,7 @@
     "soloSacks": 0,
     "astSacks": 1,
     "sackYds": 1,
-    "sacks": "0.0"
+    "sacks": "0.5"
   },
   {
     "division": "JUCO",
@@ -87425,7 +85639,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 8,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -87535,7 +85749,7 @@
     "soloSacks": 0,
     "astSacks": 1,
     "sackYds": 3,
-    "sacks": "0.0"
+    "sacks": "0.5"
   },
   {
     "division": "JUCO",
@@ -87557,7 +85771,7 @@
     "soloSacks": 0,
     "astSacks": 1,
     "sackYds": 3,
-    "sacks": "0.0"
+    "sacks": "0.5"
   },
   {
     "division": "JUCO",
@@ -87601,7 +85815,7 @@
     "soloSacks": 0,
     "astSacks": 1,
     "sackYds": 1,
-    "sacks": "0.0"
+    "sacks": "0.5"
   },
   {
     "division": "JUCO",
@@ -87623,7 +85837,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 6,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -87667,7 +85881,7 @@
     "soloSacks": 1,
     "astSacks": 2,
     "sackYds": 9,
-    "sacks": "0.0"
+    "sacks": "2.0"
   },
   {
     "division": "JUCO",
@@ -87843,7 +86057,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 5,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -87997,7 +86211,7 @@
     "soloSacks": 2,
     "astSacks": 0,
     "sackYds": 12,
-    "sacks": "0.0"
+    "sacks": "2.0"
   },
   {
     "division": "JUCO",
@@ -88019,7 +86233,7 @@
     "soloSacks": 4,
     "astSacks": 1,
     "sackYds": 28,
-    "sacks": "0.0"
+    "sacks": "4.5"
   },
   {
     "division": "JUCO",
@@ -88327,7 +86541,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 7,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -88437,7 +86651,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 2,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -88657,7 +86871,7 @@
     "soloSacks": 0,
     "astSacks": 1,
     "sackYds": 4,
-    "sacks": "0.0"
+    "sacks": "0.5"
   },
   {
     "division": "JUCO",
@@ -88855,7 +87069,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 6,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -88877,7 +87091,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 6,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -89075,7 +87289,7 @@
     "soloSacks": 0,
     "astSacks": 1,
     "sackYds": 5,
-    "sacks": "0.0"
+    "sacks": "0.5"
   },
   {
     "division": "JUCO",
@@ -89229,7 +87443,7 @@
     "soloSacks": 0,
     "astSacks": 1,
     "sackYds": 2,
-    "sacks": "0.0"
+    "sacks": "0.5"
   },
   {
     "division": "JUCO",
@@ -89251,7 +87465,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 9,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -89273,7 +87487,7 @@
     "soloSacks": 1,
     "astSacks": 1,
     "sackYds": 13,
-    "sacks": "0.0"
+    "sacks": "1.5"
   },
   {
     "division": "JUCO",
@@ -89361,7 +87575,7 @@
     "soloSacks": 0,
     "astSacks": 1,
     "sackYds": 5,
-    "sacks": "0.0"
+    "sacks": "0.5"
   },
   {
     "division": "JUCO",
@@ -89735,7 +87949,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 9,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -89779,7 +87993,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 5,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -89801,7 +88015,7 @@
     "soloSacks": 1,
     "astSacks": 1,
     "sackYds": 15,
-    "sacks": "0.0"
+    "sacks": "1.5"
   },
   {
     "division": "JUCO",
@@ -89867,7 +88081,7 @@
     "soloSacks": 0,
     "astSacks": 1,
     "sackYds": 1,
-    "sacks": "0.0"
+    "sacks": "0.5"
   },
   {
     "division": "JUCO",
@@ -89933,7 +88147,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 14,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -90065,7 +88279,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 13,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -90109,7 +88323,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 16,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -90219,7 +88433,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 10,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -90439,7 +88653,7 @@
     "soloSacks": 2,
     "astSacks": 0,
     "sackYds": 10,
-    "sacks": "0.0"
+    "sacks": "2.0"
   },
   {
     "division": "JUCO",
@@ -91033,7 +89247,7 @@
     "soloSacks": 0,
     "astSacks": 1,
     "sackYds": 0,
-    "sacks": "0.0"
+    "sacks": "0.5"
   },
   {
     "division": "JUCO",
@@ -91121,7 +89335,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 2,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -91363,7 +89577,7 @@
     "soloSacks": 2,
     "astSacks": 0,
     "sackYds": 5,
-    "sacks": "0.0"
+    "sacks": "2.0"
   },
   {
     "division": "JUCO",
@@ -91539,7 +89753,7 @@
     "soloSacks": 2,
     "astSacks": 0,
     "sackYds": 10,
-    "sacks": "0.0"
+    "sacks": "2.0"
   },
   {
     "division": "JUCO",
@@ -91737,7 +89951,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 4,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -91781,7 +89995,7 @@
     "soloSacks": 0,
     "astSacks": 2,
     "sackYds": 10,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -92551,7 +90765,7 @@
     "soloSacks": 0,
     "astSacks": 1,
     "sackYds": 2,
-    "sacks": "0.0"
+    "sacks": "0.5"
   },
   {
     "division": "JUCO",
@@ -92705,7 +90919,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 8,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -92727,7 +90941,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 8,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -92881,7 +91095,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 7,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -93277,7 +91491,7 @@
     "soloSacks": 1,
     "astSacks": 0,
     "sackYds": 7,
-    "sacks": "0.0"
+    "sacks": "1.0"
   },
   {
     "division": "JUCO",
@@ -93321,7 +91535,7 @@
     "soloSacks": 2,
     "astSacks": 0,
     "sackYds": 15,
-    "sacks": "0.0"
+    "sacks": "2.0"
   },
   {
     "division": "JUCO",
