@@ -532,7 +532,7 @@ function WatchListPanel({ watchlist, onClose, onSelectPlayer }) {
       <div
         style={{
           flexShrink: 0,
-          padding: "16px 32px",
+          padding: "16px var(--gutter)",
           borderBottom: "1px solid #2A333A",
           display: "flex",
           alignItems: "center",
@@ -592,7 +592,7 @@ function WatchListPanel({ watchlist, onClose, onSelectPlayer }) {
             : "Loading…"}
         </div>
       ) : (
-        <div style={{ flex: 1, minHeight: 0, padding: "16px 32px 32px", display: "flex", flexDirection: "column" }}>
+        <div style={{ flex: 1, minHeight: 0, padding: "16px var(--gutter) var(--gutter)", display: "flex", flexDirection: "column" }}>
           <div style={{ display: "flex", gap: 4, borderBottom: "1px solid #2A333A", marginBottom: 16, flexWrap: "wrap", flexShrink: 0 }}>
             {["All", ...WATCH_POSITIONS].map((pos) => (
               <button
@@ -885,8 +885,8 @@ export default function Gridline() {
 
   return (
     <div
+      className="app-shell"
       style={{
-        height: "100vh",
         display: "flex",
         flexDirection: "column",
         overflow: "hidden",
@@ -905,16 +905,26 @@ export default function Gridline() {
         .player-name { cursor: pointer; color: inherit; text-decoration: none; }
         .player-name:hover { color: #C89B3C; text-decoration: underline; }
         .watch-toggle:hover { background: rgba(200,155,60,0.18); }
+        /* 100vh on mobile browsers includes the address-bar area, cutting
+           content off underneath it -- 100dvh tracks the real visible
+           viewport. Kept as a progressive override, not the only rule, for
+           the handful of browsers that don't support dvh yet. */
+        .app-shell { height: 100vh; --gutter: 32px; }
+        @supports (height: 100dvh) { .app-shell { height: 100dvh; } }
+        @media (max-width: 480px) {
+          .app-shell { --gutter: 16px; }
+          .app-title { font-size: 19px !important; }
+        }
       `}</style>
 
       {/* Header */}
-      <div style={{ flexShrink: 0, borderBottom: "1px solid #2A333A", padding: "20px 32px 16px" }}>
+      <div style={{ flexShrink: 0, borderBottom: "1px solid #2A333A", padding: "20px var(--gutter) 16px" }}>
         <div style={{ maxWidth: "100%", margin: 0 }}>
-          <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 14 }}>
+          <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 14, flexWrap: "wrap" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-              <img src={cmuHelmet} alt="Central Michigan Chippewas helmet" style={{ height: 34, width: "auto" }} />
+              <img src={cmuHelmet} alt="Central Michigan Chippewas helmet" style={{ height: 34, width: "auto", flexShrink: 0 }} />
               <div style={{ display: "flex", alignItems: "baseline", gap: 14, flexWrap: "wrap" }}>
-                <h1 className="oswald" style={{ fontSize: 26, fontWeight: 700, margin: 0, letterSpacing: "0.01em" }}>
+                <h1 className="oswald app-title" style={{ fontSize: 26, fontWeight: 700, margin: 0, letterSpacing: "0.01em" }}>
                   Central Michigan Pre-Portal Tracker
                 </h1>
                 <span style={{ color: "#8B959C", fontSize: 14 }}>weekly stats — NAIA · JUCO · D2 · FCS · FBS</span>
@@ -952,7 +962,7 @@ export default function Gridline() {
       )}
       {selectedPlayer && <PlayerDetailModal sel={selectedPlayer} onClose={() => setSelectedPlayer(null)} watchlist={watchlist} />}
 
-      <div style={{ flexShrink: 0, padding: "16px 32px 0" }}>
+      <div style={{ flexShrink: 0, padding: "16px var(--gutter) 0" }}>
         {/* Division tabs */}
         <div style={{ display: "flex", gap: 4, borderBottom: "1px solid #2A333A", marginBottom: 14 }}>
           {DIVISIONS.map((d) => (
@@ -1107,7 +1117,7 @@ export default function Gridline() {
       {/* Table -- a full-width grid that scrolls in place, spreadsheet-style,
           with the header row pinned via `position: sticky` on each <th>
           (sticky on <thead> itself is unreliable across browsers). */}
-      <div style={{ flex: 1, minHeight: 0, padding: "0 32px 16px", display: "flex", flexDirection: "column" }}>
+      <div style={{ flex: 1, minHeight: 0, padding: "0 var(--gutter) 16px", display: "flex", flexDirection: "column" }}>
         <div style={{ flex: 1, minHeight: 0, border: "1px solid #2A333A", borderRadius: 6, overflow: "auto" }}>
           <table style={{ width: "100%", borderCollapse: "collapse" }}>
             <thead>
