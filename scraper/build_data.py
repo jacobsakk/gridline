@@ -112,12 +112,19 @@ def build_naia_division(run_date):
 
 def build_juco_division(run_date):
     from juco import CONFERENCES, build_juco_rows
+    from cccaa import build_cccaa_rows
 
     print(f"Fetching JUCO stat leaders across {len(CONFERENCES)} conferences "
           f"(also uses a real browser -- these sites challenge plain HTTP requests "
           f"under load, confirmed directly)...")
+    print("Fetching CCCAA (California JUCO) stat leaders...")
 
-    return build_division("juco", "JUCO", run_date, lambda: _run_with_browser(build_juco_rows))
+    def fetch_total_rows():
+        def _fetch(page):
+            return build_juco_rows(page) + build_cccaa_rows(page)
+        return _run_with_browser(_fetch)
+
+    return build_division("juco", "JUCO", run_date, fetch_total_rows)
 
 
 def main():
