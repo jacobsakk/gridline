@@ -18,6 +18,28 @@ per-conference requests). Run with `python3 build_data.py`.
 - Positions are normalized to a fixed 9-value set (`POSITION_MAP`) — see module docstring.
 - Real single-week numbers require two runs (snapshot + diff) — see `scraper/snapshots/`.
 
+## NAIA — Playwright scraper — **done**
+
+`naia.py` + `build_data.py` (`build_naia_division()`) fetch every individual stat leader
+(passing/rushing/receiving/defense) from `naiastats.prestosports.com` — the same PrestoSports
+platform as the JUCO conferences, but one national site with a conference filter built in.
+
+- Blocked by a Cloudflare JS challenge on a plain HTTP request (confirmed) — Playwright's
+  headless Chromium renders through it fine, no stealth plugins needed.
+- Once past Cloudflare, every player's full stat line (offense AND defense, every category) is
+  already sitting in the page's DataTables client-side data store as one rich object —
+  `window.jQuery('#stats-table-...').DataTable().data().toArray()` — no per-category requests
+  needed. Field abbreviations (`pa`/`pc`/`pyd` for passing, `dtu`/`dta`/`dtt`/`tfl`/`dso` for
+  defense, etc.) were verified against real rendered numbers, not guessed — see the module
+  docstring for the exact cross-check.
+- Conference tagging: NAIA's site doesn't reliably fill in `conference` on the "All Conferences"
+  view, so each of the 13 conferences is fetched separately via its own URL
+  (`CONFERENCE_PATHS`) — authoritative, no external mapping needed (simpler than the D2 problem).
+- Reuses `ncaa_api.py`'s snapshot/diff machinery unchanged for real week-by-week data, since NAIA
+  rows are transformed into the exact same shape.
+- Setup: `pip install -r requirements.txt && playwright install chromium` (one-time, downloads a
+  browser binary — only needs to happen once per machine).
+
 ## JUCO — Playwright scraper — not yet built
 
 Five of six target conferences (CCCAA, KJCCC, ICCAC, MACCC, NJCAA Region 5) run on PrestoSports
@@ -33,29 +55,3 @@ investigation).
 Scenic West (SIDEARM Sports, paywalled conference network) is out of scope beyond
 best-effort/partial — don't sink time into it before the other five work.
 
-## NAIA — investigated, not yet built (owner wants this added, positioned first)
-
-Confirmed feasible, same class of problem as JUCO:
-
-- Stats live at `naiastats.prestosports.com` — **the same PrestoSports platform as the JUCO
-  conferences**, so an adapter built for one should transfer real logic to the other.
-- **One national site**, not per-conference (unlike JUCO) — all conferences' stats in one place,
-  filterable by conference or "All Conferences" via the site's own dropdown.
-- **Blocked by a Cloudflare JS challenge** on a plain HTTP request — confirmed directly (`curl`
-  gets a "Just a moment..." challenge page, HTTP 403). A real headless browser (Playwright)
-  renders through it fine — confirmed by loading it in our own browser tool and seeing real data.
-- Full player names resolve directly on the full players-list page (`/sports/fball/{season}/
-  players?sort={statKey}&jsRendering=true`) — no separate name-lookup request needed, simpler
-  than some JUCO conferences.
-- Their own "Tackles" defense table already comes pre-merged: solo/ast/total/TFL/TFL-yds/sacks/
-  sack-yds/QB-hurries all in one row per player — no 5-way merge needed like we had to build for
-  D2/FCS.
-- No conference column in the player list itself, but querying per-conference (14 total, via the
-  site's own conference filter) gets it "for free" — much simpler than the D2 conference-mapping
-  problem, no external mapping needed.
-
-**Bottom line:** doable, and arguably an *easier* first Playwright target than JUCO (one site
-instead of five, defense already merged) — but it's still the first Playwright-based scraper in
-this project (none exist yet), so it's a real chunk of new infrastructure, not a quick addition.
-Owner has asked for this to be added and shown first among the division tabs — worth doing before
-or alongside the JUCO scraper, since they now share the same underlying approach.

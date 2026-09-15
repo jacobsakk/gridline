@@ -19,7 +19,7 @@ const rand = mulberry32(88);
 const ri = (a, b) => Math.floor(rand() * (b - a + 1)) + a;
 const pick = (arr) => arr[Math.floor(rand() * arr.length)];
 
-const DIVISIONS = ["JUCO", "D2", "FCS"];
+const DIVISIONS = ["NAIA", "JUCO", "D2", "FCS"];
 const WEEKS = [1, 2, 3, 4]; // JUCO sample data only
 
 // "total" = season-to-date. For D2/FCS, single-week rows (if any exist yet)
@@ -259,8 +259,8 @@ function buildSampleDataset() {
 }
 
 const DATA = [...realStats, ...buildSampleDataset()];
-const DIVISION_LABEL = { JUCO: "Junior College", D2: "NCAA Division II", FCS: "FCS" };
-const LIVE_DIVISIONS = new Set(["D2", "FCS"]); // whole division, real NCAA API data
+const DIVISION_LABEL = { NAIA: "NAIA", JUCO: "Junior College", D2: "NCAA Division II", FCS: "FCS" };
+const LIVE_DIVISIONS = new Set(["NAIA", "D2", "FCS"]); // whole division, real scraped/API data
 
 function conferencesFor(division) {
   return [...new Set(DATA.filter((r) => r.division === division).map((r) => r.conference))].sort();
@@ -283,7 +283,7 @@ function weeksFor(division) {
 // ---------- Component ----------
 
 export default function Gridline() {
-  const [division, setDivision] = useState("FCS");
+  const [division, setDivision] = useState("NAIA");
   const [category, setCategory] = useState("passing");
   const [week, setWeek] = useState("total");
   const [position, setPosition] = useState("All");
@@ -378,13 +378,12 @@ export default function Gridline() {
               <h1 className="oswald" style={{ fontSize: 34, fontWeight: 700, margin: 0, letterSpacing: "0.01em" }}>
                 Central Michigan Stat Tracker
               </h1>
-              <span style={{ color: "#8B959C", fontSize: 15 }}>weekly stats — JUCO · D2 · FCS</span>
+              <span style={{ color: "#8B959C", fontSize: 15 }}>weekly stats — NAIA · JUCO · D2 · FCS</span>
             </div>
           </div>
           <p style={{ margin: "6px 0 0", color: "#8B959C", fontSize: 14, maxWidth: 620, lineHeight: 1.5 }}>
-            D2 and FCS are live data, pulled directly from the NCAA's own stats feed (season
-            totals to date). JUCO is still sample data — those sources are harder to scrape and
-            aren't connected yet.
+            NAIA, D2, and FCS are live data (season totals to date). JUCO is still sample data —
+            that source is harder to scrape and isn't connected yet.
           </p>
         </div>
       </div>
@@ -433,7 +432,7 @@ export default function Gridline() {
           {isLiveView ? (
             <>
               <BadgeCheck size={15} />
-              <span>Live data — {DIVISION_LABEL[division]}, season totals to date (source: NCAA)</span>
+              <span>Live data — {DIVISION_LABEL[division]}, season totals to date (source: {division === "NAIA" ? "NAIA" : "NCAA"})</span>
             </>
           ) : (
             <>
