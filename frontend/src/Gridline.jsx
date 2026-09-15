@@ -7,7 +7,7 @@ const DIVISIONS = ["NAIA", "JUCO", "D2", "FCS", "FBS"];
 
 // Same canonical 9-value set every scraper normalizes to (see
 // POSITION_MAP in scraper/ncaa_api.py) -- the watch list groups by these.
-const WATCH_POSITIONS = ["ATH", "QB", "RB", "WR", "OL", "DL", "LB", "CB", "SAF"];
+const WATCH_POSITIONS = ["ATH", "QB", "RB", "WR", "TE", "OL", "DL", "LB", "CB", "SAF"];
 
 // "total" = season-to-date. Single-week rows (if any exist yet) are keyed
 // by the ISO date the snapshot was taken -- see scraper/build_data.py. A
@@ -58,7 +58,7 @@ const CATEGORIES = {
   },
   receiving: {
     label: "Receiving",
-    positions: ["WR", "RB"],
+    positions: ["WR", "TE", "RB"],
     leaderKey: "yards",
     columns: [
       { key: "games", label: "G" },
@@ -231,6 +231,17 @@ const fieldInputStyle = {
 };
 // Compact variant for an input sitting inside a table cell (watch list grid).
 const cellInputStyle = { ...fieldInputStyle, padding: "4px 6px", fontSize: 12.5, background: "#12171A" };
+// Grows with content (see autoResizeNotes) so the whole note is always
+// fully visible -- no clipping, no internal scrolling. The row just gets
+// as tall as it needs to be, same as any other cell with a lot in it.
+const notesInputStyle = {
+  ...cellInputStyle,
+  display: "block",
+  resize: "none",
+  overflow: "hidden",
+  lineHeight: 1.4,
+  minHeight: 26,
+};
 
 // One editable row of the watch list grid. Each text field keeps local
 // state so keystrokes don't round-trip to the db on every character --
@@ -240,6 +251,18 @@ function WatchListRow({ p, onRemove, onUpdate, onSelect, style }) {
   const [notes, setNotes] = useState(p.notes || "");
   const [hometown, setHometown] = useState(p.hometown || "");
   const [snapCount, setSnapCount] = useState(p.snapCount || "");
+  const notesRef = useRef(null);
+
+  // Grows the textarea to fit its content (capped by CSS max-height, which
+  // switches to a scrollbar past that) instead of clipping a long note --
+  // runs on mount too, so a saved long note is already expanded on load.
+  const autoResizeNotes = () => {
+    const el = notesRef.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${el.scrollHeight}px`;
+  };
+  useEffect(autoResizeNotes, []);
 
   return (
     <tr style={style}>
@@ -295,13 +318,18 @@ function WatchListRow({ p, onRemove, onUpdate, onSelect, style }) {
           style={cellInputStyle}
         />
       </td>
-      <td style={tdStyle}>
-        <input
+      <td style={{ ...tdStyle, verticalAlign: "top" }}>
+        <textarea
+          ref={notesRef}
           value={notes}
-          onChange={(e) => setNotes(e.target.value)}
+          onChange={(e) => {
+            setNotes(e.target.value);
+            autoResizeNotes();
+          }}
           onBlur={() => onUpdate("notes", notes)}
           placeholder="Notes…"
-          style={cellInputStyle}
+          rows={1}
+          style={notesInputStyle}
         />
       </td>
       <td style={{ ...tdStyle, textAlign: "center" }}>
