@@ -659,7 +659,7 @@ export default function Gridline() {
         .tabular { font-variant-numeric: tabular-nums; }
         ::selection { background: #C89B3C; color: #12171A; }
         tbody tr:hover { background: #1E262B !important; }
-        .player-name { cursor: pointer; }
+        .player-name { cursor: pointer; color: inherit; text-decoration: none; }
         .player-name:hover { color: #C89B3C; text-decoration: underline; }
       `}</style>
 
@@ -919,7 +919,6 @@ export default function Gridline() {
                           target="_blank"
                           rel="noopener noreferrer"
                           title="Search this player"
-                          style={{ color: "inherit", textDecoration: "none" }}
                           onClick={(e) => e.stopPropagation()}
                         >
                           {r.player}
