@@ -150,12 +150,13 @@ function useWatchlist() {
     };
   }, []);
 
-  async function addPlayer({ player, team, division }) {
+  async function addPlayer({ player, team, division, position }) {
     if (!db || !player.trim()) return;
     await db.collection("watchlist").add({
       player: player.trim(),
       team: (team || "").trim(),
       division: division || "",
+      position: position || "",
       pipelined: false,
       notes: "",
       hometown: "",
@@ -210,16 +211,23 @@ const cellInputStyle = { ...fieldInputStyle, padding: "4px 6px", fontSize: 12.5,
 // state so keystrokes don't round-trip to the db on every character --
 // it only commits (onUpdate) on blur, same pattern as the main scraped
 // table's cells are read-only render of committed data.
-function WatchListRow({ p, onRemove, onUpdate, style }) {
+function WatchListRow({ p, onRemove, onUpdate, onSelect, style }) {
   const [notes, setNotes] = useState(p.notes || "");
   const [hometown, setHometown] = useState(p.hometown || "");
   const [eligibility, setEligibility] = useState(p.eligibility || "");
 
   return (
     <tr style={style}>
-      <td style={{ ...tdStyle, fontWeight: 600, color: "#EDEAE0" }}>{p.player}</td>
+      <td style={{ ...tdStyle, fontWeight: 600, color: "#EDEAE0" }}>
+        <span className="player-name" onClick={() => onSelect(p)} title="View full stats">
+          {p.player}
+        </span>
+      </td>
       <td style={{ ...tdStyle, color: "#8B959C" }}>{p.team || "—"}</td>
       <td style={{ ...tdStyle, color: "#8B959C", fontSize: 12.5 }}>{p.division || "—"}</td>
+      <td style={{ ...tdStyle, color: "#A23B3B", fontWeight: 600 }} className="oswald">
+        {p.position || "—"}
+      </td>
       <td style={tdStyle}>
         <div style={{ display: "flex", gap: 6 }}>
           <button style={pillStyle(p.pipelined === true)} onClick={() => onUpdate("pipelined", true)}>
@@ -270,12 +278,12 @@ function WatchListRow({ p, onRemove, onUpdate, style }) {
   );
 }
 
-const WATCHLIST_COLUMNS = ["Player", "Team", "Division", "Pipelined?", "Hometown", "Eligibility", "Notes", ""];
+const WATCHLIST_COLUMNS = ["Player", "Team", "Division", "Pos", "Pipelined?", "Hometown", "Eligibility", "Notes", ""];
 
 // Full-screen overlay -- same spreadsheet grid language as the main stats
 // table (sticky header, gridlines) instead of a narrow sidebar, so editing
 // a dozen watched players' notes/hometown/eligibility doesn't feel cramped.
-function WatchListPanel({ watchlist, onClose }) {
+function WatchListPanel({ watchlist, onClose, onSelectPlayer }) {
   const [name, setName] = useState("");
   const [team, setTeam] = useState("");
   const nameInputRef = useRef(null);
@@ -380,6 +388,7 @@ function WatchListPanel({ watchlist, onClose }) {
                       style={{ background: i % 2 === 0 ? "#151B1F" : "#12171A", borderTop: "1px solid #212A2F" }}
                       onRemove={() => watchlist.removePlayer(p.id)}
                       onUpdate={(field, value) => watchlist.updateField(p.id, field, value)}
+                      onSelect={onSelectPlayer}
                     />
                   ))}
                 </tbody>
@@ -659,7 +668,13 @@ export default function Gridline() {
         </div>
       </div>
 
-      {watchlistOpen && <WatchListPanel watchlist={watchlist} onClose={() => setWatchlistOpen(false)} />}
+      {watchlistOpen && (
+        <WatchListPanel
+          watchlist={watchlist}
+          onClose={() => setWatchlistOpen(false)}
+          onSelectPlayer={(p) => setSelectedPlayer({ player: p.player, team: p.team, division: p.division, position: p.position })}
+        />
+      )}
       {selectedPlayer && <PlayerDetailModal sel={selectedPlayer} onClose={() => setSelectedPlayer(null)} watchlist={watchlist} />}
 
       <div style={{ flexShrink: 0, padding: "16px 32px 0" }}>
@@ -860,7 +875,7 @@ export default function Gridline() {
                             e.stopPropagation();
                             const watched = watchlist.players.find((p) => p.player === r.player && p.team === r.team);
                             if (watched) watchlist.removePlayer(watched.id);
-                            else watchlist.addPlayer({ player: r.player, team: r.team, division });
+                            else watchlist.addPlayer({ player: r.player, team: r.team, division, position: r.position });
                           }}
                           title={watchlist.isWatched(r.player, r.team) ? "Remove from watch list" : "Add to watch list"}
                           style={{ background: "none", border: "none", cursor: "pointer", padding: 0, lineHeight: 0, display: "inline-flex" }}
@@ -869,7 +884,7 @@ export default function Gridline() {
                         </button>
                         <span
                           className="player-name"
-                          onClick={() => setSelectedPlayer({ player: r.player, team: r.team, division })}
+                          onClick={() => setSelectedPlayer({ player: r.player, team: r.team, division, position: r.position })}
                           title="View full stats"
                         >
                           {r.player}
