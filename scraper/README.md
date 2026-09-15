@@ -42,8 +42,9 @@ platform as the JUCO conferences, but one national site with a conference filter
 
 ## JUCO — Playwright scraper — **done for 4 of 6 target conferences**
 
-`juco.py` + `build_data.py` (`build_juco_division()`) cover ICCAC, KJCCC, MACCC, and NJCAA
-Region 5 — all run on PrestoSports, each its own domain.
+`juco.py` + `build_data.py` (`build_juco_division()`) cover ICCAC, KJCCC, MACCC, and SWJCFC
+(NJCAA Region 5's actual football conference name; njcaaregion5.com is the domain) — all run on
+PrestoSports, each its own domain.
 
 - These pages are plain server-rendered HTML (no client-side DataTables store like NAIA), but
   still needs a real browser: a plain HTTP request that worked fine minutes into testing started
@@ -59,9 +60,8 @@ Region 5 — all run on PrestoSports, each its own domain.
   `astSacks` pinned to 0 so the shared weekly-delta math still comes out exactly right.
 - Conference tagging is trivial here — unlike NAIA/D2, each JUCO conference is its own domain, so
   there's no team → conference mapping problem at all.
-- **NJCAA Region 5's own site currently only has 2 of its ~8 member teams set up** (Cisco
-  College, New Mexico Military Institute) — confirmed by checking its teams page directly, not a
-  scraping bug.
+- **SWJCFC's own site currently only has 2 of its ~8 member teams set up** (Cisco College, New
+  Mexico Military Institute) — confirmed by checking its teams page directly, not a scraping bug.
 
 **Not yet built:**
 - **CCCAA** (3c2asports.org) — confirmed it needs different handling: its canonical domain

@@ -24,7 +24,7 @@ suggested architecture.
   - `naia.py` — **done.** Fetches the same 4 categories for NAIA from
     `naiastats.prestosports.com` via a real headless browser (Playwright) — needed because the
     site is protected by a Cloudflare JS challenge.
-  - `juco.py` — **done for 4 of 6 target conferences** (ICCAC, KJCCC, MACCC, NJCAA Region 5).
+  - `juco.py` — **done for 4 of 6 target conferences** (ICCAC, KJCCC, MACCC, SWJCFC).
     Same PrestoSports platform as NAIA, also needs Playwright (these pages challenge plain HTTP
     requests under load — confirmed directly, not the same mechanism as NAIA's Cloudflare
     challenge but the fix is the same: a real browser). CCCAA and Scenic West not yet built —
@@ -43,7 +43,7 @@ suggested architecture.
   the other 4 — confirmed directly, its team-stats page has no server-rendered team links at all —
   and needs the NAIA-style DataTables approach instead; not yet built. Scenic West (SIDEARM
   Sports, paywalled) stays deprioritized per the original brief.
-- **NJCAA Region 5 is partial in two ways**: its own site only has 2 of its ~8 member teams set
+- **SWJCFC is partial in two ways**: its own site only has 2 of its ~8 member teams set
   up this season (confirmed directly, not a scraping bug), and its tables give abbreviated names
   ("K Provost") and no position data, unlike the other 3 JUCO conferences — see `scraper/juco.py`
   for the exact findings.

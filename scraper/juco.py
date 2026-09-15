@@ -1,6 +1,8 @@
 """
 JUCO scraper for 4 of the 5 target PrestoSports conferences -- ICCAC,
-KJCCC, MACCC, and NJCAA Region 5.
+KJCCC, MACCC, and SWJCFC (NJCAA Region 5 -- the region's actual football
+conference name; njcaaregion5.com is the domain, SWJCFC is the label used
+throughout this app per the project brief).
 
 CCCAA (3c2asports.org) is NOT included here -- confirmed it needs
 different handling entirely: its canonical domain resolves to
@@ -38,16 +40,15 @@ e.g. Tony Palmer (ICCAC, LB) rendered as SOLO 16/AST 8/TOT 24/TFL 1.5/
 FF 1/BRUP 1, which matched this parser's column mapping exactly.
 
 Known limitations:
-- NJCAA Region 5's own site currently only has 2 of its ~8 member teams
-  listed (confirmed by checking its teams page directly) -- not a
-  scraping bug, the site itself just doesn't have the others set up
-  this season.
-- NJCAA Region 5's tables also don't include Yr/Pos columns and give
-  abbreviated names ("K Provost", not "Kyle Provost") -- both confirmed
-  directly, unlike ICCAC/KJCCC/MACCC which give full names and Yr/Pos.
-  Position falls back to "ATH". Getting full names would need a second
-  per-player request; not done given this conference already has just
-  2 of 8 teams.
+- SWJCFC's own site (njcaaregion5.com) currently only has 2 of its ~8
+  member teams listed (confirmed by checking its teams page directly) --
+  not a scraping bug, the site itself just doesn't have the others set
+  up this season.
+- SWJCFC's tables also don't include Yr/Pos columns and give abbreviated
+  names ("K Provost", not "Kyle Provost") -- both confirmed directly,
+  unlike ICCAC/KJCCC/MACCC which give full names and Yr/Pos. Position
+  falls back to "ATH". Getting full names would need a second per-player
+  request; not done given this conference already has just 2 of 8 teams.
 """
 
 import re
@@ -63,13 +64,13 @@ CONFERENCES = {
     "ICCAC": "iccac.org",
     "KJCCC": "kjccc.org",
     "MACCC": "macccathletics.com",
-    "NJCAA Region 5": "njcaaregion5.com",
+    "SWJCFC": "njcaaregion5.com",
 }
 
 # category -> query params (pos/sort/min) for the fetch URL. Column layout
 # is NOT hardcoded here -- it's read from each response's own <thead>
 # data-key attributes (see parse_rows), because it varies by conference:
-# e.g. NJCAA Region 5's defense table omits Yr/Pos entirely, confirmed
+# e.g. SWJCFC's defense table omits Yr/Pos entirely, confirmed
 # directly (its header is ['Rk','Name','&nbsp;','gp','tkl',...], not
 # ['#','Name','Yr','Pos','gp','tkl',...] like the other 3 conferences).
 CATEGORY_CONFIG = {
