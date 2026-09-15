@@ -31,6 +31,7 @@ from ncaa_api import (
     load_previous_snapshot,
     save_snapshot,
 )
+from conference_sites import fetch_supplemental_rows
 
 OUTPUT_PATH = os.path.join(
     os.path.dirname(__file__), "..", "frontend", "src", "data", "real-stats.json"
@@ -70,6 +71,11 @@ def build_ncaa_api_divisions(run_date):
         lambda: build_division_rows("fbs", "FBS", lambda team: fbs_conferences.get(team, "Independent")),
     )
 
+    print("Cross-referencing FBS against each conference's own stats page "
+          "(the NCAA's national leaderboard misses anyone outside roughly "
+          "the national top 150 per category)...")
+    fbs_rows += fetch_supplemental_rows("FBS", fbs_rows)
+
     print("Fetching FCS conference map...")
     fcs_conferences = fetch_conference_map("fcs")
     print(f"  {len(fcs_conferences)} FCS teams mapped to conferences")
@@ -80,11 +86,17 @@ def build_ncaa_api_divisions(run_date):
         lambda: build_division_rows("fcs", "FCS", lambda team: fcs_conferences.get(team, "Independent")),
     )
 
+    print("Cross-referencing FCS against each conference's own stats page...")
+    fcs_rows += fetch_supplemental_rows("FCS", fcs_rows)
+
     print("Fetching D2 stat leaders (passing/rushing/receiving/tackling/sacks)...")
     d2_rows = build_division(
         "d2", "D2", run_date,
         lambda: build_division_rows("d2", "D2", d2_conference_for),
     )
+
+    print("Cross-referencing D2 against each conference's own stats page...")
+    d2_rows += fetch_supplemental_rows("D2", d2_rows)
 
     unmapped_d2_teams = sorted({r["team"] for r in d2_rows if r["conference"] == "Independent"})
     if unmapped_d2_teams:

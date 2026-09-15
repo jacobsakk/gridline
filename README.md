@@ -67,6 +67,17 @@ suggested architecture.
   roster would mean scraping every team's individual box score page (~430+ FBS/FCS/D2 teams
   combined) instead of one national leaderboard call per category — a much bigger job,
   intentionally not taken on for now.
+- **...mostly solved anyway, via each conference's own site.** `scraper/conference_sites.py`
+  cross-references the NCAA leaderboard against 32 of the 37 FBS/FCS/D2 conferences' own official
+  stats pages (all on the Sidearm Sports platform, confirmed directly — plain server-rendered HTML,
+  no browser needed) and adds anyone missing from the national cutoff, deduped by (player, category)
+  — confirmed directly: MAC rushing went from the national leaderboard's 6 to a real 25 this way,
+  matching the MAC's own site exactly. Passing/rushing/receiving only (these tables don't carry
+  position at all, so a fixed per-category default is used; defense isn't covered since these
+  sites split it very differently from the NCAA's own 5-leaderboard merge). Not covered: SEC
+  (publishes stats as a stale PDF, not a page), Big Ten and SoCon (a different, newer platform —
+  real data, just needs a second scraper, not built yet), and Mountain East/SIAC (no working stats
+  page found on either site when checked directly).
 - **D2 conference tags: fixed, but hand-built.** The NCAA API's D2 conference-standings scraper
   is broken (confirmed — returns an error), so D2 conference tagging comes from a hand-built
   mapping in `scraper/ncaa_api.py` (`D2_KNOWN_CONFERENCES`) — all 159 teams that actually appear
