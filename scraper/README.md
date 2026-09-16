@@ -96,27 +96,34 @@ field abbreviations for almost everything), but simpler:
   receiving/tackles/TFL/INT/PBU) was checked against real player data across every division after
   finding this and came back clean — this was an isolated, single-field bug.
 
-## Watch list X / film link lookup — Google Custom Search API — **done**
+## Watch list bio / link lookup — Google Custom Search API — **done**
 
-`watchlist_enrich.py` fills in the watch list's X and Film Link fields automatically for players
-who don't have them yet, instead of leaving both purely manual. Different shape from every other
-pipeline here: it doesn't touch `real-stats.json` at all, and it reads/writes the live Firestore
-watch list directly over its public REST API (no service account needed — `firestore.rules`
-already allows open read/write on the `watchlist` collection, so a plain unauthenticated HTTP
-request works, same access the front-end itself has).
+`watchlist_enrich.py` fills in the watch list's Height, Weight, X, and Film Link fields
+automatically for players who don't have them yet, instead of leaving everything purely manual.
+Different shape from every other pipeline here: it doesn't touch `real-stats.json` at all, and it
+reads/writes the live Firestore watch list directly over its public REST API (no service account
+needed — `firestore.rules` already allows open read/write on the `watchlist` collection, so a
+plain unauthenticated HTTP request works, same access the front-end itself has).
 
-- **Why this works at all**: in practice, searching a real recruit's name + team + position turns
-  up their X (Twitter) or Hudl profile near the top of the results far more often than not — the
-  same search the front-end's own "Search" button already opens for a human to click. This script
-  just reads that search programmatically via Google's official Custom Search JSON API and checks
-  the top 5 results for an `x.com`/`twitter.com` link or a `hudl.com` link, rather than scraping
-  Google's search results page directly — which would violate Google's ToS and, confirmed by this
-  project's own experience with other bot-protected sites, would likely get an automated runner's
-  IP blocked or CAPTCHA'd within a handful of requests anyway.
+- **One search covers all four fields** — the same query the front-end's own "Search" button
+  already builds (`{player} {team} {position} football`), read programmatically via Google's
+  official Custom Search JSON API instead of scraping Google's results page directly (which would
+  violate Google's ToS and, confirmed by this project's own experience with other bot-protected
+  sites, would likely get an automated runner's IP blocked or CAPTCHA'd within a handful of
+  requests anyway).
+  - **X / Film Link**: checked by domain — the first `x.com`/`twitter.com` result becomes `xLink`,
+    the first `hudl.com` result becomes `filmLink`, since in practice a real recruit's X or Hudl
+    profile shows up near the top far more often than not.
+  - **Height / Weight**: most school bio/roster pages (Sidearm, PrestoSports, MaxPreps,
+    247Sports, etc.) print a "Height"/"Weight" or combined "HT/WT" line. This fetches each of the
+    top results in ranked order and regex-scans the page's plain text for that pattern, stopping
+    at the first page that has it — confirmed directly against a real, live school athletics
+    roster page (Dakota State's `dsuathletics.com` bio page for a real NAIA player), which the
+    parser correctly pulled `6'3"` / `205` from a whitespace-heavy bio table, not a guess.
 - **Never overwrites a manual entry** — only fills a field that's currently empty. A doc's
-  `socialLookupAt` timestamp marks it as tried (whether or not anything was found) so the same
-  player isn't re-queried every single day, burning quota for no reason; it's eligible again after
-  14 days in case a recruit sets up an X or Hudl account later.
+  `enrichedAt` timestamp marks it as tried (whether or not anything was found) so the same player
+  isn't re-queried every single day, burning quota for no reason; it's eligible again after 14
+  days in case new info shows up later.
 - **Runs daily**, not weekly like the stats scrapers, since the watch list changes whenever
   someone adds a player rather than on a season schedule — see
   `.github/workflows/watchlist-enrich.yml`. Capped at 40 lookups/run to stay well under the free

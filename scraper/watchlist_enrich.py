@@ -1,12 +1,20 @@
 """
-Fills in X (Twitter) and Film Link for watch list players who don't have
-them yet, using Google's Custom Search JSON API -- the same query the
-front-end's own "Search" button already builds (see playerSearchUrl() in
-Gridline.jsx: "{player} {team} {position} football"), just read
-programmatically instead of clicked by a human. Checks the top few
-results for an x.com/twitter.com link (-> xLink) and a hudl.com link
-(-> filmLink), since in practice one of those is usually near the top
-for a real recruit.
+Fills in Height, Weight, X (Twitter), and Film Link for watch list
+players who don't have them yet, using Google's Custom Search JSON API --
+the same query the front-end's own "Search" button already builds (see
+playerSearchUrl() in Gridline.jsx: "{player} {team} {position} football"),
+just read programmatically instead of clicked by a human.
+
+One search per player covers all four fields, so this doesn't burn any
+extra Custom Search quota per field:
+  - X / Film Link: checked by domain -- an x.com/twitter.com link becomes
+    xLink, a hudl.com link becomes filmLink, since in practice one of
+    those is usually near the top of the results for a real recruit.
+  - Height / Weight: most school bio/roster pages (Sidearm, PrestoSports,
+    MaxPreps, 247Sports, etc.) print a "Height"/"Weight" or combined
+    "HT/WT" line near the top of the page. This fetches each of the top
+    results in ranked order and regex-scans the page's plain text for
+    that pattern, stopping at the first page that has it.
 
 Runs against the live Firestore watch list directly over its public REST
 API -- no service account needed, since firestore.rules already allows
@@ -39,6 +47,7 @@ every day.
 import datetime
 import json
 import os
+import re
 import sys
 import time
 import urllib.error
@@ -53,6 +62,20 @@ MAX_PER_RUN = 40  # stays well under the 100/day free Custom Search quota
 RECHECK_AFTER_DAYS = 14
 RESULTS_TO_SCAN = 5
 REQUEST_PAUSE_SECONDS = 0.3
+PAGE_FETCH_TIMEOUT = 15
+MAX_PAGE_BYTES = 300_000  # bio info is always near the top -- no need to read a whole page
+
+USER_AGENT = (
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
+    "(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+)
+
+# Covers "HT/WT: 6-2 / 210" (common Sidearm combined format) as well as
+# separate "Height: 6'2\"" / "Weight: 210 lbs" lines (PrestoSports,
+# MaxPreps, 247Sports, and most school CMS bio pages).
+COMBINED_HW_RE = re.compile(r'H(?:ei)?T\s*/\s*W(?:ei)?T\s*:?\s*(\d[\'\-]\d{1,2}"?)\s*/\s*(\d{2,3})', re.I)
+HEIGHT_RE = re.compile(r'Height\s*:?\s*(\d[\'\-]\d{1,2}"?)', re.I)
+WEIGHT_RE = re.compile(r'Weight\s*:?\s*(\d{2,3})\s*(?:lbs?|pounds)?', re.I)
 
 
 def _get_json(url):
@@ -80,9 +103,9 @@ def fetch_watchlist():
 def needs_lookup(p):
     if p.get("removed"):
         return False
-    if p.get("xLink") and p.get("filmLink"):
-        return False  # already has both -- nothing to fill in
-    last = p.get("socialLookupAt")
+    if p.get("xLink") and p.get("filmLink") and p.get("height") and p.get("weight"):
+        return False  # already has everything -- nothing left to fill in
+    last = p.get("enrichedAt")
     if not last:
         return True
     try:
@@ -105,7 +128,7 @@ def search_top_links(query, api_key, cx):
     return [item.get("link", "") for item in result.get("items", [])]
 
 
-def find_links(links):
+def find_social_links(links):
     x_link, film_link = None, None
     for link in links:
         domain = urllib.parse.urlparse(link).netloc.lower()
@@ -114,6 +137,54 @@ def find_links(links):
         if film_link is None and "hudl.com" in domain:
             film_link = link
     return x_link, film_link
+
+
+def _normalize_height(raw):
+    match = re.match(r"(\d)[\'\-](\d{1,2})", raw)
+    if not match:
+        return raw
+    feet, inches = match.groups()
+    return f"{feet}'{int(inches)}\""
+
+
+def _page_text(url):
+    """Best-effort plain-text fetch -- returns None on any failure (dead
+    link, timeout, non-HTML content, site blocking the request) rather
+    than raising, since this is a best-effort scan of pages we don't
+    control."""
+    try:
+        req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
+        with urllib.request.urlopen(req, timeout=PAGE_FETCH_TIMEOUT) as resp:
+            html = resp.read(MAX_PAGE_BYTES).decode("utf-8", errors="replace")
+    except Exception:
+        return None
+    return re.sub(r"<[^>]+>", " ", html)
+
+
+def find_height_weight(links):
+    height, weight = None, None
+    for link in links:
+        if height and weight:
+            break
+        text = _page_text(link)
+        if not text:
+            continue
+        combined = COMBINED_HW_RE.search(text)
+        if combined:
+            if not height:
+                height = _normalize_height(combined.group(1))
+            if not weight:
+                weight = combined.group(2)
+            continue
+        if not height:
+            h = HEIGHT_RE.search(text)
+            if h:
+                height = _normalize_height(h.group(1))
+        if not weight:
+            w = WEIGHT_RE.search(text)
+            if w:
+                weight = w.group(1)
+    return height, weight
 
 
 def patch_player(doc_id, updates):
@@ -141,7 +212,8 @@ def main():
     candidates = [p for p in players if needs_lookup(p)][:MAX_PER_RUN]
     print(f"{len(players)} watch list players total, {len(candidates)} up for a lookup this run.")
 
-    found_x = found_film = attempted = 0
+    found = {"height": 0, "weight": 0, "xLink": 0, "filmLink": 0}
+    attempted = 0
     for p in candidates:
         query = " ".join(filter(None, [p.get("player"), p.get("team"), p.get("position"), "football"]))
         links = search_top_links(query, api_key, cx)
@@ -149,25 +221,36 @@ def main():
             print("  stopping early -- search API call failed, likely quota exhausted for today.")
             break
 
-        x_link, film_link = find_links(links)
         attempted += 1
-        updates = {"socialLookupAt": datetime.datetime.now(datetime.timezone.utc).isoformat()}
+        updates = {"enrichedAt": datetime.datetime.now(datetime.timezone.utc).isoformat()}
+
+        x_link, film_link = find_social_links(links)
         if x_link and not p.get("xLink"):
             updates["xLink"] = x_link
-            found_x += 1
+            found["xLink"] += 1
         if film_link and not p.get("filmLink"):
             updates["filmLink"] = film_link
-            found_film += 1
+            found["filmLink"] += 1
+
+        if not p.get("height") or not p.get("weight"):
+            height, weight = find_height_weight(links)
+            if height and not p.get("height"):
+                updates["height"] = height
+                found["height"] += 1
+            if weight and not p.get("weight"):
+                updates["weight"] = weight
+                found["weight"] += 1
 
         patch_player(p["id"], updates)
-        print(
-            f"  {p.get('player')} ({p.get('team')}): "
-            f"{'X found' if 'xLink' in updates else 'no X'}, "
-            f"{'Hudl found' if 'filmLink' in updates else 'no Hudl'}"
-        )
+        filled = [k for k in ("height", "weight", "xLink", "filmLink") if k in updates]
+        print(f"  {p.get('player')} ({p.get('team')}): filled {', '.join(filled) if filled else 'nothing'}")
         time.sleep(REQUEST_PAUSE_SECONDS)
 
-    print(f"\nDone: checked {attempted} players, filled in {found_x} X links and {found_film} film links.")
+    print(
+        f"\nDone: checked {attempted} players -- "
+        f"filled in {found['height']} heights, {found['weight']} weights, "
+        f"{found['xLink']} X links, {found['filmLink']} film links."
+    )
 
 
 if __name__ == "__main__":

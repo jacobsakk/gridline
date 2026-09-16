@@ -1,8 +1,8 @@
-name: Watch list X / film link lookup
+name: Watch list bio / link lookup
 
-# Fills in X (Twitter) and Film Link for watch list players who don't have
-# them yet, using Google's Custom Search API to check the top few results
-# for the same query the front-end's own "Search" button already builds
+# Fills in Height, Weight, X (Twitter), and Film Link for watch list
+# players who don't have them yet, using Google's Custom Search API on
+# the same query the front-end's own "Search" button already builds
 # (player + team + position + "football"). Writes straight to Firestore
 # over its public REST API (no service account needed -- firestore.rules
 # already allows open read/write on the watchlist collection). Never
@@ -29,7 +29,7 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Look up X / film links for watch list players
+      - name: Look up bio info / links for watch list players
         working-directory: scraper
         env:
           GOOGLE_SEARCH_API_KEY: ${{ secrets.GOOGLE_SEARCH_API_KEY }}
