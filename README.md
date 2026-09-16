@@ -130,12 +130,12 @@ suggested architecture.
       modal. Removing someone is a soft-delete (a `removed` flag, not an actual delete) so their
       notes/hometown/eligibility/links survive and come back automatically if they're added again
       later.
-- [x] Watch list extras: position tabs with live counts, Eligibility (1-5 years, sortable), an X
-      field and a Film Link field (both plain URLs, each with a click-through icon once filled
-      in) meant to be filled in by hand from wherever the owner found them, an "UPDATED" badge on
-      a player whose real stats changed since the card was last opened, a 2-3-player side-by-side
-      compare view, and a CSV export of whatever's currently visible (respects the position
-      filter).
+- [x] Watch list extras: position tabs with live counts, Height and Weight (free text, filled in
+      by hand), Eligibility (1-5 years, sortable), an X field and a Film Link field (both plain
+      URLs, each with a click-through icon once filled in) meant to be filled in by hand from
+      wherever the owner found them, an "UPDATED" badge on a player whose real stats changed
+      since the card was last opened, a 2-3-player side-by-side compare view, and a CSV export of
+      whatever's currently visible (respects the position filter).
 - [x] Manual drag-and-drop reordering — a grip handle on each row lets the owner drag a player to
       any position within whatever's currently visible (e.g. just the QB tab), not just swap with
       a neighbor. Built on pointer events rather than native HTML5 drag-and-drop (native DnD

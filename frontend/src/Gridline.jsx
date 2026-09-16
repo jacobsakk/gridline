@@ -221,6 +221,8 @@ function useWatchlist() {
       pipelined: false,
       notes: "",
       hometown: "",
+      height: "",
+      weight: "",
       eligibility: "",
       xLink: "",
       filmLink: "",
@@ -459,6 +461,8 @@ function WatchListRow({
   rowRef,
 }) {
   const [notes, setNotes] = useState(p.notes || "");
+  const [height, setHeight] = useState(p.height || "");
+  const [weight, setWeight] = useState(p.weight || "");
   const [xLink, setXLink] = useState(p.xLink || "");
   const [filmLink, setFilmLink] = useState(p.filmLink || "");
   const notesRef = useRef(null);
@@ -526,6 +530,24 @@ function WatchListRow({
       <td style={{ ...tdStyle, color: "#8B959C", fontSize: 12.5 }}>{p.division || "—"}</td>
       <td style={{ ...tdStyle, color: "#A23B3B", fontWeight: 600 }} className="oswald">
         {p.position || "—"}
+      </td>
+      <td style={tdStyle}>
+        <input
+          value={height}
+          onChange={(e) => setHeight(e.target.value)}
+          onBlur={() => onUpdate("height", height)}
+          placeholder={`e.g. 6'2"`}
+          style={{ ...cellInputStyle, width: 64 }}
+        />
+      </td>
+      <td style={tdStyle}>
+        <input
+          value={weight}
+          onChange={(e) => setWeight(e.target.value)}
+          onBlur={() => onUpdate("weight", weight)}
+          placeholder="e.g. 210"
+          style={{ ...cellInputStyle, width: 64 }}
+        />
       </td>
       <td style={tdStyle}>
         <select
@@ -613,7 +635,7 @@ function WatchListRow({
   );
 }
 
-const WATCHLIST_COLUMNS = ["", "", "Player", "Team", "Division", "Pos", "Eligibility", "Pipelined?", "Hometown", "X", "Film Link", "Notes", ""];
+const WATCHLIST_COLUMNS = ["", "", "Player", "Team", "Division", "Pos", "Ht", "Wt", "Eligibility", "Pipelined?", "Hometown", "X", "Film Link", "Notes", ""];
 // Which of the columns above can be clicked to sort the watch list --
 // keyed by the doc field each one reads.
 const WATCHLIST_SORTABLE = { Eligibility: "eligibility" };
@@ -622,7 +644,7 @@ const WATCHLIST_SORTABLE = { Eligibility: "eligibility" };
 // table (sticky header, gridlines) instead of a narrow sidebar, so editing
 // a dozen watched players' notes/hometown/eligibility doesn't feel cramped.
 function exportWatchListCsv(players) {
-  const headers = ["Player", "Team", "Division", "Position", "Eligibility", "Pipelined", "Hometown", "X", "Film Link", "Notes"];
+  const headers = ["Player", "Team", "Division", "Position", "Height", "Weight", "Eligibility", "Pipelined", "Hometown", "X", "Film Link", "Notes"];
   const escape = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`;
   const lines = [headers.map(escape).join(",")];
   for (const p of players) {
@@ -632,6 +654,8 @@ function exportWatchListCsv(players) {
         p.team,
         p.division,
         p.position,
+        p.height,
+        p.weight,
         p.eligibility ? `${p.eligibility} year${p.eligibility === "1" ? "" : "s"}` : "",
         p.pipelined === true ? "Yes" : p.pipelined === false ? "No" : "",
         p.hometown,
@@ -997,6 +1021,8 @@ function PlayerDetailModal({ sel, onClose, watchlist }) {
   // Local echo of the free-text fields, same as WatchListRow -- commit
   // on blur instead of round-tripping to the db on every keystroke.
   const [wlNotes, setWlNotes] = useState(watched?.notes || "");
+  const [wlHeight, setWlHeight] = useState(watched?.height || "");
+  const [wlWeight, setWlWeight] = useState(watched?.weight || "");
   const [wlXLink, setWlXLink] = useState(watched?.xLink || "");
   const [wlFilmLink, setWlFilmLink] = useState(watched?.filmLink || "");
   const wlNotesRef = useRef(null);
@@ -1105,6 +1131,26 @@ function PlayerDetailModal({ sel, onClose, watchlist }) {
                 Your Watch List Info
               </div>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 12, marginBottom: 12 }}>
+                <div>
+                  <label style={fieldLabelStyle}>Height</label>
+                  <input
+                    value={wlHeight}
+                    onChange={(e) => setWlHeight(e.target.value)}
+                    onBlur={() => watchlist.updateField(watched.id, "height", wlHeight)}
+                    placeholder={`e.g. 6'2"`}
+                    style={fieldInputStyle}
+                  />
+                </div>
+                <div>
+                  <label style={fieldLabelStyle}>Weight</label>
+                  <input
+                    value={wlWeight}
+                    onChange={(e) => setWlWeight(e.target.value)}
+                    onBlur={() => watchlist.updateField(watched.id, "weight", wlWeight)}
+                    placeholder="e.g. 210"
+                    style={fieldInputStyle}
+                  />
+                </div>
                 <div>
                   <label style={fieldLabelStyle}>Eligibility</label>
                   <select
