@@ -444,9 +444,9 @@ function HometownPicker({ value, onCommit }) {
 // it only commits (onUpdate) on blur, same pattern as the main scraped
 // table's cells are read-only render of committed data.
 const PRIORITY_STYLES = {
-  High: { background: "#2A1A1A", border: "1px solid #A23B3B", color: "#E08585" },
+  High: { background: "#1B2A1E", border: "1px solid #33502F", color: "#8FCB86" },
   Medium: { background: "#2A241A", border: "1px solid #C89B3C", color: "#C89B3C" },
-  Low: { background: "#1A2126", border: "1px solid #2A333A", color: "#8B959C" },
+  Low: { background: "#2A1A1A", border: "1px solid #A23B3B", color: "#E08585" },
 };
 
 function WatchListRow({ p, onRemove, onUpdate, onSelect, compareSelected, onToggleCompare, style }) {
