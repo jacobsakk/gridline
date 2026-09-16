@@ -519,7 +519,7 @@ const WATCHLIST_COLUMNS = ["Player", "Team", "Division", "Pos", "Eligibility", "
 // Full-screen overlay -- same spreadsheet grid language as the main stats
 // table (sticky header, gridlines) instead of a narrow sidebar, so editing
 // a dozen watched players' notes/hometown/eligibility doesn't feel cramped.
-function WatchListPanel({ watchlist, onClose, onSelectPlayer }) {
+function WatchListPanel({ watchlist, search, setSearch, onClose, onSelectPlayer }) {
   const [name, setName] = useState("");
   const [team, setTeam] = useState("");
   const [position, setPosition] = useState(WATCH_POSITIONS[0]);
@@ -538,8 +538,10 @@ function WatchListPanel({ watchlist, onClose, onSelectPlayer }) {
     setTeam("");
   }
 
-  const visiblePlayers = positionTab === "All" ? watchlist.players : watchlist.players.filter((p) => p.position === positionTab);
-  const countFor = (pos) => (pos === "All" ? watchlist.players.length : watchlist.players.filter((p) => p.position === pos).length);
+  const q = search.trim().toLowerCase();
+  const searched = q ? watchlist.players.filter((p) => p.player.toLowerCase().includes(q) || (p.team || "").toLowerCase().includes(q)) : watchlist.players;
+  const visiblePlayers = positionTab === "All" ? searched : searched.filter((p) => p.position === positionTab);
+  const countFor = (pos) => (pos === "All" ? searched.length : searched.filter((p) => p.position === pos).length);
 
   return (
     <div
@@ -616,6 +618,31 @@ function WatchListPanel({ watchlist, onClose, onSelectPlayer }) {
         </div>
       ) : (
         <div style={{ flex: 1, minHeight: 0, padding: "16px var(--gutter) var(--gutter)", display: "flex", flexDirection: "column" }}>
+          <div style={{ position: "relative", marginBottom: 14, maxWidth: 420, flexShrink: 0 }}>
+            <Search size={15} color="#5D666C" style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} />
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search player or school…"
+              style={{
+                width: "100%", background: "#1A2126", border: "1px solid #2A333A", color: "#EDEAE0",
+                borderRadius: 5, padding: "9px 32px", fontSize: 13.5, fontFamily: "inherit",
+              }}
+            />
+            {search && (
+              <button
+                onClick={() => setSearch("")}
+                title="Clear search"
+                style={{
+                  position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)",
+                  background: "none", border: "none", color: "#5D666C", cursor: "pointer", padding: 4, lineHeight: 0,
+                }}
+              >
+                <X size={14} />
+              </button>
+            )}
+          </div>
+
           <div style={{ display: "flex", gap: 4, borderBottom: "1px solid #2A333A", marginBottom: 16, flexWrap: "wrap", flexShrink: 0 }}>
             {["All", ...WATCH_POSITIONS].map((pos) => (
               <button
@@ -648,7 +675,11 @@ function WatchListPanel({ watchlist, onClose, onSelectPlayer }) {
 
           {visiblePlayers.length === 0 ? (
             <div style={{ color: "#5D666C", fontSize: 13 }}>
-              {watchlist.players.length === 0 ? "No players on the watch list yet." : `No ${positionTab} players on the watch list yet.`}
+              {watchlist.players.length === 0
+                ? "No players on the watch list yet."
+                : q
+                ? "No watch list players match your search."
+                : `No ${positionTab} players on the watch list yet.`}
             </div>
           ) : (
             <div style={{ flex: 1, minHeight: 0, border: "1px solid #2A333A", borderRadius: 6, overflow: "auto" }}>
@@ -1039,6 +1070,8 @@ export default function Gridline() {
       {watchlistOpen && (
         <WatchListPanel
           watchlist={watchlist}
+          search={search}
+          setSearch={setSearch}
           onClose={() => setWatchlistOpen(false)}
           onSelectPlayer={(p) => setSelectedPlayer({ player: p.player, team: p.team, division: p.division, position: p.position })}
         />
