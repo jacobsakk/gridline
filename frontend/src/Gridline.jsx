@@ -286,6 +286,7 @@ const fieldInputStyle = {
   color: "#EDEAE0",
   fontFamily: "inherit",
 };
+const fieldLabelStyle = { display: "block", fontSize: 10.5, color: "#5D666C", letterSpacing: "0.03em", margin: "0 0 4px" };
 // Compact variant for an input sitting inside a table cell (watch list grid).
 const cellInputStyle = { ...fieldInputStyle, padding: "4px 6px", fontSize: 12.5, background: "#12171A" };
 // Grows with content (see autoResizeNotes) so the whole note is always
@@ -896,6 +897,19 @@ function PlayerDetailModal({ sel, onClose, watchlist }) {
   const first = rows[0];
   const watched = watchlist.players.find((p) => p.player === sel.player && p.team === sel.team);
 
+  // Local echo of the two free-text fields, same as WatchListRow -- commit
+  // on blur instead of round-tripping to the db on every keystroke.
+  const [wlNotes, setWlNotes] = useState(watched?.notes || "");
+  const [wlSnapCount, setWlSnapCount] = useState(watched?.snapCount || "");
+  const wlNotesRef = useRef(null);
+  const autoResizeWlNotes = () => {
+    const el = wlNotesRef.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${el.scrollHeight}px`;
+  };
+  useEffect(autoResizeWlNotes, []);
+
   const byCategory = useMemo(() => {
     const grouped = {};
     rows.forEach((r) => {
@@ -984,6 +998,85 @@ function PlayerDetailModal({ sel, onClose, watchlist }) {
         </div>
 
         <div style={{ padding: 20, display: "flex", flexDirection: "column", gap: 20 }}>
+          {watched && (
+            <div style={{ background: "#1A2126", border: "1px solid #2A333A", borderRadius: 6, padding: 14 }}>
+              <div
+                className="oswald"
+                style={{ fontSize: 12.5, fontWeight: 600, color: "#8FCB86", marginBottom: 10, textTransform: "uppercase", letterSpacing: "0.04em" }}
+              >
+                Your Watch List Info
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 12, marginBottom: 12 }}>
+                <div>
+                  <label style={fieldLabelStyle}>Priority</label>
+                  <select
+                    value={watched.priority || ""}
+                    onChange={(e) => watchlist.updateField(watched.id, "priority", e.target.value)}
+                    style={{ ...fieldInputStyle, cursor: "pointer", fontWeight: 700, ...(PRIORITY_STYLES[watched.priority] || {}) }}
+                  >
+                    <option value="">—</option>
+                    <option value="High">High</option>
+                    <option value="Medium">Medium</option>
+                    <option value="Low">Low</option>
+                  </select>
+                </div>
+                <div>
+                  <label style={fieldLabelStyle}>Eligibility</label>
+                  <select
+                    value={watched.eligibility || ""}
+                    onChange={(e) => watchlist.updateField(watched.id, "eligibility", e.target.value)}
+                    style={{ ...fieldInputStyle, cursor: "pointer" }}
+                  >
+                    <option value="">—</option>
+                    {[1, 2, 3, 4, 5].map((n) => (
+                      <option key={n} value={n}>
+                        {n} {n === 1 ? "year" : "years"}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label style={fieldLabelStyle}>Pipelined?</label>
+                  <div style={{ display: "flex", gap: 6 }}>
+                    <button style={pillStyle(watched.pipelined === true)} onClick={() => watchlist.updateField(watched.id, "pipelined", true)}>
+                      Yes
+                    </button>
+                    <button style={pillStyle(watched.pipelined === false)} onClick={() => watchlist.updateField(watched.id, "pipelined", false)}>
+                      No
+                    </button>
+                  </div>
+                </div>
+                <div>
+                  <label style={fieldLabelStyle}>Snap Count</label>
+                  <input
+                    value={wlSnapCount}
+                    onChange={(e) => setWlSnapCount(e.target.value)}
+                    onBlur={() => watchlist.updateField(watched.id, "snapCount", wlSnapCount)}
+                    placeholder="e.g. 512 (PFF)"
+                    style={fieldInputStyle}
+                  />
+                </div>
+                <div style={{ position: "relative" }}>
+                  <label style={fieldLabelStyle}>Hometown</label>
+                  <HometownPicker value={watched.hometown} onCommit={(val) => watchlist.updateField(watched.id, "hometown", val)} />
+                </div>
+              </div>
+              <label style={fieldLabelStyle}>Notes</label>
+              <textarea
+                ref={wlNotesRef}
+                value={wlNotes}
+                onChange={(e) => {
+                  setWlNotes(e.target.value);
+                  autoResizeWlNotes();
+                }}
+                onBlur={() => watchlist.updateField(watched.id, "notes", wlNotes)}
+                placeholder="Notes…"
+                rows={1}
+                style={{ ...notesInputStyle, padding: "6px 8px" }}
+              />
+            </div>
+          )}
+
           {rows.length === 0 && <div style={{ color: "#5D666C", fontSize: 13 }}>No tracked stats found for this player.</div>}
           {Object.keys(CATEGORIES).map((key) => {
             const catRows = byCategory[key];
