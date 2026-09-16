@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, useRef } from "react";
-import { ChevronUp, ChevronDown, ChevronsUpDown, Crown, BadgeCheck, FlaskConical, Star, X, Plus, ExternalLink } from "lucide-react";
-import { collection, doc, addDoc, updateDoc, deleteDoc, onSnapshot, query, orderBy } from "firebase/firestore";
+import { ChevronUp, ChevronDown, ChevronsUpDown, Crown, BadgeCheck, FlaskConical, Star, X, Plus, ExternalLink, Search } from "lucide-react";
+import { collection, doc, addDoc, updateDoc, onSnapshot, query, orderBy } from "firebase/firestore";
 import { db } from "./firebase";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -150,7 +150,11 @@ function weeksFor(division) {
 // erroring.
 
 function useWatchlist() {
-  const [players, setPlayers] = useState([]);
+  // Every doc ever added, including ones the owner has since "removed" --
+  // those just get removed:true rather than actually deleted, so their
+  // notes/hometown/eligibility/snapCount survive and come back automatically
+  // if the same player (by name+team) is ever added again.
+  const [allDocs, setAllDocs] = useState([]);
   // Firestore's onSnapshot fires once immediately (from cache or server)
   // even on a fresh page, so "we've heard back at least once" is a clean
   // proxy for "ready" -- no separate availability probe needed the way
@@ -163,7 +167,7 @@ function useWatchlist() {
     const unsubscribe = onSnapshot(
       q,
       (snap) => {
-        setPlayers(snap.docs.map((d) => ({ id: d.id, ...(d.data() || {}) })));
+        setAllDocs(snap.docs.map((d) => ({ id: d.id, ...(d.data() || {}) })));
         setReady(true);
       },
       () => {
@@ -176,11 +180,29 @@ function useWatchlist() {
     return unsubscribe;
   }, []);
 
+  const players = useMemo(() => allDocs.filter((p) => !p.removed), [allDocs]);
+
   async function addPlayer({ player, team, division, position }) {
-    if (!player.trim()) return;
+    const trimmedPlayer = player.trim();
+    if (!trimmedPlayer) return;
+    const trimmedTeam = (team || "").trim();
+
+    // If this exact player was removed before, bring their doc back
+    // instead of creating a fresh blank one -- their old notes etc. are
+    // still sitting on it untouched.
+    const archived = allDocs.find((p) => p.removed && p.player === trimmedPlayer && p.team === trimmedTeam);
+    if (archived) {
+      await updateDoc(doc(db, "watchlist", archived.id), {
+        removed: false,
+        division: division || archived.division || "",
+        position: position || archived.position || "",
+      });
+      return;
+    }
+
     await addDoc(collection(db, "watchlist"), {
-      player: player.trim(),
-      team: (team || "").trim(),
+      player: trimmedPlayer,
+      team: trimmedTeam,
       division: division || "",
       position: position || "",
       pipelined: false,
@@ -188,12 +210,13 @@ function useWatchlist() {
       hometown: "",
       eligibility: "",
       snapCount: "",
+      removed: false,
       addedAt: new Date().toISOString(),
     });
   }
 
   async function removePlayer(id) {
-    await deleteDoc(doc(db, "watchlist", id));
+    await updateDoc(doc(db, "watchlist", id), { removed: true, removedAt: new Date().toISOString() });
   }
 
   async function updateField(id, field, value) {
@@ -816,6 +839,7 @@ export default function Gridline() {
   const [week, setWeek] = useState("total");
   const [position, setPosition] = useState("All");
   const [conference, setConference] = useState("All");
+  const [search, setSearch] = useState("");
   const [sortKey, setSortKey] = useState("yards");
   const [sortDir, setSortDir] = useState("desc");
   const [watchlistOpen, setWatchlistOpen] = useState(false);
@@ -832,6 +856,8 @@ export default function Gridline() {
     let filtered = DATA.filter((r) => r.division === division && r.category === category && r.week === week);
     if (position !== "All") filtered = filtered.filter((r) => r.position === position);
     if (conference !== "All") filtered = filtered.filter((r) => r.conference === conference);
+    const q = search.trim().toLowerCase();
+    if (q) filtered = filtered.filter((r) => r.player.toLowerCase().includes(q) || r.team.toLowerCase().includes(q));
 
     filtered = [...filtered].sort((a, b) => {
       const av = parseFloat(a[sortKey]) || 0;
@@ -839,7 +865,7 @@ export default function Gridline() {
       return sortDir === "desc" ? bv - av : av - bv;
     });
     return filtered;
-  }, [division, category, week, position, conference, sortKey, sortDir]);
+  }, [division, category, week, position, conference, search, sortKey, sortDir]);
 
   // Leader callouts at the top: one per LEADER_BOARDS entry, ranked by that
   // board's own sortKey (several boards share the Defense category but
@@ -949,6 +975,31 @@ export default function Gridline() {
                 </span>
               )}
             </button>
+          </div>
+
+          <div style={{ position: "relative", marginTop: 14, maxWidth: 420 }}>
+            <Search size={15} color="#5D666C" style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} />
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search player or school…"
+              style={{
+                width: "100%", background: "#1A2126", border: "1px solid #2A333A", color: "#EDEAE0",
+                borderRadius: 5, padding: "9px 32px", fontSize: 13.5, fontFamily: "inherit",
+              }}
+            />
+            {search && (
+              <button
+                onClick={() => setSearch("")}
+                title="Clear search"
+                style={{
+                  position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)",
+                  background: "none", border: "none", color: "#5D666C", cursor: "pointer", padding: 4, lineHeight: 0,
+                }}
+              >
+                <X size={14} />
+              </button>
+            )}
           </div>
         </div>
       </div>
