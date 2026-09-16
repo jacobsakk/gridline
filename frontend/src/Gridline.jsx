@@ -219,10 +219,10 @@ function useWatchlist() {
       division: division || "",
       position: position || "",
       pipelined: false,
-      priority: "",
       notes: "",
       hometown: "",
       eligibility: "",
+      xLink: "",
       filmLink: "",
       lastSeenSnapshot: "",
       sortOrder: Date.now(),
@@ -444,12 +444,6 @@ function HometownPicker({ value, onCommit }) {
 // state so keystrokes don't round-trip to the db on every character --
 // it only commits (onUpdate) on blur, same pattern as the main scraped
 // table's cells are read-only render of committed data.
-const PRIORITY_STYLES = {
-  High: { background: "#1B2A1E", border: "1px solid #33502F", color: "#8FCB86" },
-  Medium: { background: "#2A241A", border: "1px solid #C89B3C", color: "#C89B3C" },
-  Low: { background: "#2A1A1A", border: "1px solid #A23B3B", color: "#E08585" },
-};
-
 function WatchListRow({
   p,
   onRemove,
@@ -465,6 +459,7 @@ function WatchListRow({
   rowRef,
 }) {
   const [notes, setNotes] = useState(p.notes || "");
+  const [xLink, setXLink] = useState(p.xLink || "");
   const [filmLink, setFilmLink] = useState(p.filmLink || "");
   const notesRef = useRef(null);
 
@@ -534,18 +529,6 @@ function WatchListRow({
       </td>
       <td style={tdStyle}>
         <select
-          value={p.priority || ""}
-          onChange={(e) => onUpdate("priority", e.target.value)}
-          style={{ ...cellInputStyle, cursor: "pointer", fontWeight: 700, ...(PRIORITY_STYLES[p.priority] || {}) }}
-        >
-          <option value="">—</option>
-          <option value="High">High</option>
-          <option value="Medium">Medium</option>
-          <option value="Low">Low</option>
-        </select>
-      </td>
-      <td style={tdStyle}>
-        <select
           value={p.eligibility || ""}
           onChange={(e) => onUpdate("eligibility", e.target.value)}
           style={{ ...cellInputStyle, cursor: "pointer" }}
@@ -570,6 +553,22 @@ function WatchListRow({
       </td>
       <td style={{ ...tdStyle, position: "relative" }}>
         <HometownPicker value={p.hometown} onCommit={(val) => onUpdate("hometown", val)} />
+      </td>
+      <td style={tdStyle}>
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <input
+            value={xLink}
+            onChange={(e) => setXLink(e.target.value)}
+            onBlur={() => onUpdate("xLink", xLink)}
+            placeholder="X profile (URL)"
+            style={cellInputStyle}
+          />
+          {xLink && (
+            <a href={xLink} target="_blank" rel="noopener noreferrer" title="Open X profile" style={{ color: "#C89B3C", display: "flex", lineHeight: 0, flexShrink: 0 }}>
+              <ExternalLink size={14} />
+            </a>
+          )}
+        </div>
       </td>
       <td style={tdStyle}>
         <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
@@ -614,17 +613,16 @@ function WatchListRow({
   );
 }
 
-const WATCHLIST_COLUMNS = ["", "", "Player", "Team", "Division", "Pos", "Priority", "Eligibility", "Pipelined?", "Hometown", "Film Link", "Notes", ""];
+const WATCHLIST_COLUMNS = ["", "", "Player", "Team", "Division", "Pos", "Eligibility", "Pipelined?", "Hometown", "X", "Film Link", "Notes", ""];
 // Which of the columns above can be clicked to sort the watch list --
 // keyed by the doc field each one reads.
-const WATCHLIST_SORTABLE = { Priority: "priority", Eligibility: "eligibility" };
-const PRIORITY_RANK = { High: 3, Medium: 2, Low: 1, "": 0 };
+const WATCHLIST_SORTABLE = { Eligibility: "eligibility" };
 
 // Full-screen overlay -- same spreadsheet grid language as the main stats
 // table (sticky header, gridlines) instead of a narrow sidebar, so editing
 // a dozen watched players' notes/hometown/eligibility doesn't feel cramped.
 function exportWatchListCsv(players) {
-  const headers = ["Player", "Team", "Division", "Position", "Priority", "Eligibility", "Pipelined", "Hometown", "Film Link", "Notes"];
+  const headers = ["Player", "Team", "Division", "Position", "Eligibility", "Pipelined", "Hometown", "X", "Film Link", "Notes"];
   const escape = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`;
   const lines = [headers.map(escape).join(",")];
   for (const p of players) {
@@ -634,10 +632,10 @@ function exportWatchListCsv(players) {
         p.team,
         p.division,
         p.position,
-        p.priority,
         p.eligibility ? `${p.eligibility} year${p.eligibility === "1" ? "" : "s"}` : "",
         p.pipelined === true ? "Yes" : p.pipelined === false ? "No" : "",
         p.hometown,
+        p.xLink,
         p.filmLink,
         p.notes,
       ]
@@ -656,7 +654,7 @@ function exportWatchListCsv(players) {
   URL.revokeObjectURL(url);
 }
 
-function WatchListPanel({ watchlist, search, setSearch, onClose, onSelectPlayer }) {
+function WatchListPanel({ watchlist, onClose, onSelectPlayer }) {
   const [name, setName] = useState("");
   const [team, setTeam] = useState("");
   const [position, setPosition] = useState(WATCH_POSITIONS[0]);
@@ -679,10 +677,8 @@ function WatchListPanel({ watchlist, search, setSearch, onClose, onSelectPlayer 
     setTeam("");
   }
 
-  const q = search.trim().toLowerCase();
-  const searched = q ? watchlist.players.filter((p) => p.player.toLowerCase().includes(q) || (p.team || "").toLowerCase().includes(q)) : watchlist.players;
-  const byPosition = positionTab === "All" ? searched : searched.filter((p) => p.position === positionTab);
-  const countFor = (pos) => (pos === "All" ? searched.length : searched.filter((p) => p.position === pos).length);
+  const byPosition = positionTab === "All" ? watchlist.players : watchlist.players.filter((p) => p.position === positionTab);
+  const countFor = (pos) => (pos === "All" ? watchlist.players.length : watchlist.players.filter((p) => p.position === pos).length);
 
   // Falls back to when they were added for any doc from before sortOrder
   // existed, rather than an undefined value that'd sort unpredictably.
@@ -693,8 +689,8 @@ function WatchListPanel({ watchlist, search, setSearch, onClose, onSelectPlayer 
   const visiblePlayers = useMemo(() => {
     if (!wlSortKey) return [...byPosition].sort((a, b) => orderValue(a) - orderValue(b));
     const sorted = [...byPosition].sort((a, b) => {
-      const av = wlSortKey === "priority" ? PRIORITY_RANK[a.priority || ""] : parseFloat(a[wlSortKey]) || 0;
-      const bv = wlSortKey === "priority" ? PRIORITY_RANK[b.priority || ""] : parseFloat(b[wlSortKey]) || 0;
+      const av = parseFloat(a[wlSortKey]) || 0;
+      const bv = parseFloat(b[wlSortKey]) || 0;
       return wlSortDir === "desc" ? bv - av : av - bv;
     });
     return sorted;
@@ -901,31 +897,6 @@ function WatchListPanel({ watchlist, search, setSearch, onClose, onSelectPlayer 
         </div>
       ) : (
         <div style={{ flex: 1, minHeight: 0, padding: "16px var(--gutter) var(--gutter)", display: "flex", flexDirection: "column" }}>
-          <div style={{ position: "relative", marginBottom: 14, maxWidth: 420, flexShrink: 0 }}>
-            <Search size={15} color="#5D666C" style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} />
-            <input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search player or school…"
-              style={{
-                width: "100%", background: "#1A2126", border: "1px solid #2A333A", color: "#EDEAE0",
-                borderRadius: 5, padding: "9px 32px", fontSize: 13.5, fontFamily: "inherit",
-              }}
-            />
-            {search && (
-              <button
-                onClick={() => setSearch("")}
-                title="Clear search"
-                style={{
-                  position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)",
-                  background: "none", border: "none", color: "#5D666C", cursor: "pointer", padding: 4, lineHeight: 0,
-                }}
-              >
-                <X size={14} />
-              </button>
-            )}
-          </div>
-
           <div style={{ display: "flex", gap: 4, borderBottom: "1px solid #2A333A", marginBottom: 16, flexWrap: "wrap", flexShrink: 0 }}>
             {["All", ...WATCH_POSITIONS].map((pos) => (
               <button
@@ -960,8 +931,6 @@ function WatchListPanel({ watchlist, search, setSearch, onClose, onSelectPlayer 
             <div style={{ color: "#5D666C", fontSize: 13 }}>
               {watchlist.players.length === 0
                 ? "No players on the watch list yet."
-                : q
-                ? "No watch list players match your search."
                 : `No ${positionTab} players on the watch list yet.`}
             </div>
           ) : (
@@ -1025,9 +994,10 @@ function PlayerDetailModal({ sel, onClose, watchlist }) {
   const first = rows[0];
   const watched = watchlist.players.find((p) => p.player === sel.player && p.team === sel.team);
 
-  // Local echo of the two free-text fields, same as WatchListRow -- commit
+  // Local echo of the free-text fields, same as WatchListRow -- commit
   // on blur instead of round-tripping to the db on every keystroke.
   const [wlNotes, setWlNotes] = useState(watched?.notes || "");
+  const [wlXLink, setWlXLink] = useState(watched?.xLink || "");
   const [wlFilmLink, setWlFilmLink] = useState(watched?.filmLink || "");
   const wlNotesRef = useRef(null);
   const autoResizeWlNotes = () => {
@@ -1136,19 +1106,6 @@ function PlayerDetailModal({ sel, onClose, watchlist }) {
               </div>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 12, marginBottom: 12 }}>
                 <div>
-                  <label style={fieldLabelStyle}>Priority</label>
-                  <select
-                    value={watched.priority || ""}
-                    onChange={(e) => watchlist.updateField(watched.id, "priority", e.target.value)}
-                    style={{ ...fieldInputStyle, cursor: "pointer", fontWeight: 700, ...(PRIORITY_STYLES[watched.priority] || {}) }}
-                  >
-                    <option value="">—</option>
-                    <option value="High">High</option>
-                    <option value="Medium">Medium</option>
-                    <option value="Low">Low</option>
-                  </select>
-                </div>
-                <div>
                   <label style={fieldLabelStyle}>Eligibility</label>
                   <select
                     value={watched.eligibility || ""}
@@ -1172,6 +1129,23 @@ function PlayerDetailModal({ sel, onClose, watchlist }) {
                     <button style={pillStyle(watched.pipelined === false)} onClick={() => watchlist.updateField(watched.id, "pipelined", false)}>
                       No
                     </button>
+                  </div>
+                </div>
+                <div>
+                  <label style={fieldLabelStyle}>X</label>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                    <input
+                      value={wlXLink}
+                      onChange={(e) => setWlXLink(e.target.value)}
+                      onBlur={() => watchlist.updateField(watched.id, "xLink", wlXLink)}
+                      placeholder="X profile (URL)"
+                      style={fieldInputStyle}
+                    />
+                    {wlXLink && (
+                      <a href={wlXLink} target="_blank" rel="noopener noreferrer" title="Open X profile" style={{ color: "#C89B3C", display: "flex", lineHeight: 0, flexShrink: 0 }}>
+                        <ExternalLink size={15} />
+                      </a>
+                    )}
                   </div>
                 </div>
                 <div>
@@ -1595,8 +1569,6 @@ export default function Gridline() {
       {watchlistOpen && (
         <WatchListPanel
           watchlist={watchlist}
-          search={search}
-          setSearch={setSearch}
           onClose={() => setWatchlistOpen(false)}
           onSelectPlayer={(p) => {
             watchlist.markSeen(p.id, p.player, p.team);

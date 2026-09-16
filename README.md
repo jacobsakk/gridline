@@ -128,14 +128,14 @@ suggested architecture.
       Firestore's own security rules (`firestore.rules`), scoped to just the `watchlist`
       collection. Add a player from any row's + icon, the panel's own form, or the stats detail
       modal. Removing someone is a soft-delete (a `removed` flag, not an actual delete) so their
-      notes/hometown/eligibility/film link survive and come back automatically if they're added
-      again later.
-- [x] Watch list extras: position tabs with live counts, Priority (High/Medium/Low, sortable),
-      Eligibility (1-5 years, sortable), a Film Link field (a plain URL, with a click-through
-      icon once it's filled in) meant to be filled in by hand from wherever the owner found the
-      clip, an "UPDATED" badge on a player whose real stats changed since the card was last
-      opened, a 2-3-player side-by-side compare view, and a CSV export of whatever's currently
-      visible (respects the search/position filters).
+      notes/hometown/eligibility/links survive and come back automatically if they're added again
+      later.
+- [x] Watch list extras: position tabs with live counts, Eligibility (1-5 years, sortable), an X
+      field and a Film Link field (both plain URLs, each with a click-through icon once filled
+      in) meant to be filled in by hand from wherever the owner found them, an "UPDATED" badge on
+      a player whose real stats changed since the card was last opened, a 2-3-player side-by-side
+      compare view, and a CSV export of whatever's currently visible (respects the position
+      filter).
 - [x] Manual drag-and-drop reordering — a grip handle on each row lets the owner drag a player to
       any position within whatever's currently visible (e.g. just the QB tab), not just swap with
       a neighbor. Built on pointer events rather than native HTML5 drag-and-drop (native DnD
@@ -151,9 +151,10 @@ suggested architecture.
 - [x] Player name in the main grid links straight to a Google search (name + team + position);
       the watch list's name click instead opens a stats detail modal (every category that player
       has data in) with its own search link next to the name.
-- [x] Search bar (top of the main page, shared with the watch list) for player name or school —
-      jumps across divisions/categories to wherever a match actually lives instead of showing an
-      empty table if the currently open tab has none.
+- [x] Search bar (top of the main page) for player name or school — jumps across
+      divisions/categories to wherever a match actually lives instead of showing an empty table if
+      the currently open tab has none. (The watch list had its own copy of this box for a while;
+      removed since the watch list's position tabs already narrow it down.)
 - [x] "Breakout this week" strip — scoped to whichever division tab is open, scanning that
       division's real single-week rows for whoever had the best week most recently; naturally
       stays sparse early in the season since a division needs two scraper runs before any real
