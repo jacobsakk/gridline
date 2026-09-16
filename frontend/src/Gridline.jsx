@@ -867,6 +867,38 @@ export default function Gridline() {
     return filtered;
   }, [division, category, week, position, conference, search, sortKey, sortDir]);
 
+  // A search shouldn't be scoped to whatever tab happens to be open -- if
+  // there's no match in the current division/category, jump to wherever a
+  // real match actually lives (any division, any category) instead of
+  // just showing an empty table. Debounced so fast typing doesn't cause a
+  // tab-flicker on every partial keystroke; only fires once per distinct
+  // search value, not on every manual tab click afterward (deps: [search]
+  // only, on purpose).
+  useEffect(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return undefined;
+    const timer = setTimeout(() => {
+      const matchesCurrent = DATA.some(
+        (r) =>
+          r.division === division && r.category === category && r.week === week &&
+          (r.player.toLowerCase().includes(q) || r.team.toLowerCase().includes(q))
+      );
+      if (matchesCurrent) return;
+      const hit = DATA.find((r) => r.week === "total" && (r.player.toLowerCase().includes(q) || r.team.toLowerCase().includes(q)));
+      if (hit) {
+        setDivision(hit.division);
+        setCategory(hit.category);
+        setWeek("total");
+        setPosition("All");
+        setConference("All");
+        setSortKey(CATEGORIES[hit.category].leaderKey);
+        setSortDir("desc");
+      }
+    }, 400);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentionally search-only, see comment above
+  }, [search]);
+
   // Leader callouts at the top: one per LEADER_BOARDS entry, ranked by that
   // board's own sortKey (several boards share the Defense category but
   // rank by a different column -- Sacks, Interceptions, etc.)
