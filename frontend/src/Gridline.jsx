@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect, useRef, Fragment } from "react";
-import { ChevronUp, ChevronDown, ChevronsUpDown, Crown, BadgeCheck, FlaskConical, Star, X, Plus, ExternalLink, Search, Download, Columns3, TrendingUp } from "lucide-react";
+import { ChevronUp, ChevronDown, ChevronsUpDown, Crown, BadgeCheck, FlaskConical, Star, X, Plus, ExternalLink, Search, Download, Columns3, TrendingUp, GripVertical } from "lucide-react";
 import { collection, doc, addDoc, updateDoc, onSnapshot, query, orderBy } from "firebase/firestore";
 import { db } from "./firebase";
 import L from "leaflet";
@@ -450,7 +450,20 @@ const PRIORITY_STYLES = {
   Low: { background: "#2A1A1A", border: "1px solid #A23B3B", color: "#E08585" },
 };
 
-function WatchListRow({ p, onRemove, onUpdate, onSelect, compareSelected, onToggleCompare, style, reorderable, isFirst, isLast, onMoveUp, onMoveDown }) {
+function WatchListRow({
+  p,
+  onRemove,
+  onUpdate,
+  onSelect,
+  compareSelected,
+  onToggleCompare,
+  style,
+  draggable,
+  isDragging,
+  dropIndicator,
+  onDragHandlePointerDown,
+  rowRef,
+}) {
   const [notes, setNotes] = useState(p.notes || "");
   const [filmLink, setFilmLink] = useState(p.filmLink || "");
   const notesRef = useRef(null);
@@ -469,28 +482,24 @@ function WatchListRow({ p, onRemove, onUpdate, onSelect, compareSelected, onTogg
   const currentSignature = useMemo(() => playerStatsSignature(p.player, p.team), [p.player, p.team]);
   const hasUpdate = p.lastSeenSnapshot && currentSignature && p.lastSeenSnapshot !== currentSignature;
 
+  const dropLineStyle =
+    dropIndicator === "before"
+      ? { boxShadow: "inset 0 2px 0 0 #C89B3C" }
+      : dropIndicator === "after"
+      ? { boxShadow: "inset 0 -2px 0 0 #C89B3C" }
+      : null;
+
   return (
-    <tr style={style}>
+    <tr ref={rowRef} style={{ ...style, ...dropLineStyle, opacity: isDragging ? 0.4 : 1 }}>
       <td style={{ ...tdStyle, textAlign: "center" }}>
-        {reorderable && (
-          <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>
-            <button
-              onClick={onMoveUp}
-              disabled={isFirst}
-              title="Move up"
-              style={{ background: "none", border: "none", color: isFirst ? "#3A4348" : "#8B959C", cursor: isFirst ? "default" : "pointer", padding: 0, lineHeight: 0 }}
-            >
-              <ChevronUp size={14} />
-            </button>
-            <button
-              onClick={onMoveDown}
-              disabled={isLast}
-              title="Move down"
-              style={{ background: "none", border: "none", color: isLast ? "#3A4348" : "#8B959C", cursor: isLast ? "default" : "pointer", padding: 0, lineHeight: 0 }}
-            >
-              <ChevronDown size={14} />
-            </button>
-          </div>
+        {draggable && (
+          <span
+            onPointerDown={onDragHandlePointerDown}
+            title="Drag to reorder"
+            style={{ display: "inline-flex", color: "#5D666C", cursor: "grab", lineHeight: 0, touchAction: "none" }}
+          >
+            <GripVertical size={15} />
+          </span>
         )}
       </td>
       <td style={{ ...tdStyle, textAlign: "center" }}>
@@ -701,22 +710,83 @@ function WatchListPanel({ watchlist, search, setSearch, onClose, onSelectPlayer 
     }
   }
 
-  // Drag-free reordering: swap this player's rank with whichever neighbor
-  // is adjacent in the *currently visible* list (so moving someone within
-  // the QB tab only reorders them relative to other QBs) -- only makes
-  // sense with no column sort active, which is why the buttons are hidden
-  // otherwise rather than fighting that sort.
-  async function moveInBoard(id, direction) {
-    const idx = visiblePlayers.findIndex((p) => p.id === id);
-    const swapIdx = idx + direction;
-    if (idx === -1 || swapIdx < 0 || swapIdx >= visiblePlayers.length) return;
-    const a = visiblePlayers[idx];
-    const b = visiblePlayers[swapIdx];
-    let aOrder = orderValue(a);
-    let bOrder = orderValue(b);
-    if (aOrder === bOrder) bOrder = direction > 0 ? aOrder + 1 : aOrder - 1;
-    await Promise.all([watchlist.updateField(a.id, "sortOrder", bOrder), watchlist.updateField(b.id, "sortOrder", aOrder)]);
+  // Drag-and-drop reordering, scoped to whatever's currently visible (so
+  // dragging within the QB tab only reorders relative to other QBs) --
+  // only makes sense with no column sort active, which is why the drag
+  // handle is hidden otherwise rather than fighting that sort. Dropping a
+  // row assigns it a sortOrder exactly between its new neighbors (rather
+  // than renumbering the whole list), so this is a single write per drop.
+  //
+  // Built on pointer events rather than native HTML5 drag-and-drop: native
+  // DnD doesn't fire on touch devices at all, and needs a real user
+  // gesture to engage (synthetic mouse events used by test tooling don't
+  // reliably trigger it either) -- confirmed directly while testing this.
+  const [dragId, setDragId] = useState(null);
+  const [dropTarget, setDropTarget] = useState(null); // { id, position: "before" | "after" }
+  const rowNodes = useRef(new Map()); // id -> <tr> DOM node, for hit-testing during drag
+  const dropTargetRef = useRef(null);
+  const visiblePlayersRef = useRef(visiblePlayers);
+  useEffect(() => {
+    visiblePlayersRef.current = visiblePlayers;
+  }, [visiblePlayers]);
+
+  function setRowNode(id) {
+    return (node) => {
+      if (node) rowNodes.current.set(id, node);
+      else rowNodes.current.delete(id);
+    };
   }
+
+  function handleDragHandlePointerDown(e, id) {
+    e.preventDefault();
+    setDragId(id);
+  }
+
+  useEffect(() => {
+    if (!dragId) return;
+
+    function handlePointerMove(e) {
+      let found = null;
+      for (const [id, node] of rowNodes.current) {
+        if (id === dragId) continue;
+        const rect = node.getBoundingClientRect();
+        if (e.clientY >= rect.top && e.clientY <= rect.bottom) {
+          found = { id, position: e.clientY - rect.top < rect.height / 2 ? "before" : "after" };
+          break;
+        }
+      }
+      dropTargetRef.current = found;
+      setDropTarget(found);
+    }
+
+    async function handlePointerUp() {
+      const from = dragId;
+      const target = dropTargetRef.current;
+      setDragId(null);
+      setDropTarget(null);
+      dropTargetRef.current = null;
+      if (!from || !target || from === target.id) return;
+
+      const withoutDragged = visiblePlayersRef.current.filter((p) => p.id !== from);
+      const targetIdx = withoutDragged.findIndex((p) => p.id === target.id);
+      if (targetIdx === -1) return;
+      const insertAt = target.position === "after" ? targetIdx + 1 : targetIdx;
+      const prev = withoutDragged[insertAt - 1];
+      const next = withoutDragged[insertAt];
+      const prevVal = prev ? orderValue(prev) : null;
+      const nextVal = next ? orderValue(next) : null;
+      const newVal = prevVal == null ? (nextVal == null ? Date.now() : nextVal - 1) : nextVal == null ? prevVal + 1 : (prevVal + nextVal) / 2;
+      await watchlist.updateField(from, "sortOrder", newVal);
+    }
+
+    window.addEventListener("pointermove", handlePointerMove);
+    window.addEventListener("pointerup", handlePointerUp, { once: true });
+    return () => {
+      window.removeEventListener("pointermove", handlePointerMove);
+      window.removeEventListener("pointerup", handlePointerUp);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dragId]);
 
   function toggleCompare(id) {
     setCompareIds((prev) => {
@@ -926,11 +996,11 @@ function WatchListPanel({ watchlist, search, setSearch, onClose, onSelectPlayer 
                       onSelect={onSelectPlayer}
                       compareSelected={compareIds.has(p.id)}
                       onToggleCompare={() => toggleCompare(p.id)}
-                      reorderable={!wlSortKey}
-                      isFirst={i === 0}
-                      isLast={i === visiblePlayers.length - 1}
-                      onMoveUp={() => moveInBoard(p.id, -1)}
-                      onMoveDown={() => moveInBoard(p.id, 1)}
+                      draggable={!wlSortKey}
+                      isDragging={dragId === p.id}
+                      dropIndicator={dropTarget && dropTarget.id === p.id ? dropTarget.position : null}
+                      onDragHandlePointerDown={(e) => handleDragHandlePointerDown(e, p.id)}
+                      rowRef={setRowNode(p.id)}
                     />
                   ))}
                 </tbody>

@@ -136,10 +136,13 @@ suggested architecture.
       clip, an "UPDATED" badge on a player whose real stats changed since the card was last
       opened, a 2-3-player side-by-side compare view, and a CSV export of whatever's currently
       visible (respects the search/position filters).
-- [x] Manual drag-free reordering — up/down arrows on each row let the owner rank players within
-      whatever's currently visible (e.g. just the QB tab), backed by a `sortOrder` field swapped
-      between the two adjacent rows. Only shown in the default (unsorted) view — sorting by a
-      column and manual ranking are mutually exclusive, so the arrows hide while a column sort is
+- [x] Manual drag-and-drop reordering — a grip handle on each row lets the owner drag a player to
+      any position within whatever's currently visible (e.g. just the QB tab), not just swap with
+      a neighbor. Built on pointer events rather than native HTML5 drag-and-drop (native DnD
+      doesn't fire on touch devices at all, confirmed directly). A drop assigns the moved row a
+      `sortOrder` exactly between its new neighbors, so it's a single write per drop rather than
+      renumbering the whole list. Only shown in the default (unsorted) view — sorting by a column
+      and manual ranking are mutually exclusive, so the handle hides while a column sort is
       active.
 - [x] Hometown has a real type-ahead address search with a live map preview (OpenStreetMap +
       Nominatim, no API key or account needed anywhere) — only feasible once off the Artifact's
