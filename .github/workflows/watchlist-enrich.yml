@@ -1,0 +1,37 @@
+name: Watch list X / film link lookup
+
+# Fills in X (Twitter) and Film Link for watch list players who don't have
+# them yet, using Google's Custom Search API to check the top few results
+# for the same query the front-end's own "Search" button already builds
+# (player + team + position + "football"). Writes straight to Firestore
+# over its public REST API (no service account needed -- firestore.rules
+# already allows open read/write on the watchlist collection). Never
+# touches a field someone already filled in by hand.
+#
+# Needs two repo secrets: GOOGLE_SEARCH_API_KEY and GOOGLE_SEARCH_CX (see
+# scraper/watchlist_enrich.py for where to get them). Runs daily rather
+# than weekly since the watch list changes whenever someone adds a
+# player, and the script self-limits well under the free 100-queries/day
+# Custom Search quota.
+on:
+  schedule:
+    - cron: "0 12 * * *"
+  workflow_dispatch: {}
+
+jobs:
+  enrich:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Look up X / film links for watch list players
+        working-directory: scraper
+        env:
+          GOOGLE_SEARCH_API_KEY: ${{ secrets.GOOGLE_SEARCH_API_KEY }}
+          GOOGLE_SEARCH_CX: ${{ secrets.GOOGLE_SEARCH_CX }}
+        run: python3 watchlist_enrich.py

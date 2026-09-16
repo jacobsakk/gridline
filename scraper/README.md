@@ -96,3 +96,35 @@ field abbreviations for almost everything), but simpler:
   receiving/tackles/TFL/INT/PBU) was checked against real player data across every division after
   finding this and came back clean — this was an isolated, single-field bug.
 
+## Watch list X / film link lookup — Google Custom Search API — **done**
+
+`watchlist_enrich.py` fills in the watch list's X and Film Link fields automatically for players
+who don't have them yet, instead of leaving both purely manual. Different shape from every other
+pipeline here: it doesn't touch `real-stats.json` at all, and it reads/writes the live Firestore
+watch list directly over its public REST API (no service account needed — `firestore.rules`
+already allows open read/write on the `watchlist` collection, so a plain unauthenticated HTTP
+request works, same access the front-end itself has).
+
+- **Why this works at all**: in practice, searching a real recruit's name + team + position turns
+  up their X (Twitter) or Hudl profile near the top of the results far more often than not — the
+  same search the front-end's own "Search" button already opens for a human to click. This script
+  just reads that search programmatically via Google's official Custom Search JSON API and checks
+  the top 5 results for an `x.com`/`twitter.com` link or a `hudl.com` link, rather than scraping
+  Google's search results page directly — which would violate Google's ToS and, confirmed by this
+  project's own experience with other bot-protected sites, would likely get an automated runner's
+  IP blocked or CAPTCHA'd within a handful of requests anyway.
+- **Never overwrites a manual entry** — only fills a field that's currently empty. A doc's
+  `socialLookupAt` timestamp marks it as tried (whether or not anything was found) so the same
+  player isn't re-queried every single day, burning quota for no reason; it's eligible again after
+  14 days in case a recruit sets up an X or Hudl account later.
+- **Runs daily**, not weekly like the stats scrapers, since the watch list changes whenever
+  someone adds a player rather than on a season schedule — see
+  `.github/workflows/watchlist-enrich.yml`. Capped at 40 lookups/run to stay well under the free
+  Custom Search tier's 100 queries/day.
+- **Setup** (one-time, by the project owner — this needs a Google account, so it can't be
+  automated): enable the Custom Search API and create an API key at
+  [Google Cloud Console](https://console.cloud.google.com/apis/library/customsearch.googleapis.com),
+  create a search engine at [Programmable Search Engine](https://programmablesearchengine.google.com/)
+  set to "Search the entire web" (not just specific sites), then add both values as repo secrets
+  (`GOOGLE_SEARCH_API_KEY`, `GOOGLE_SEARCH_CX`) under Settings → Secrets and variables → Actions.
+  Until those secrets exist, the workflow runs and exits immediately without doing anything.

@@ -168,6 +168,12 @@ suggested architecture.
       sites is blocked by CORS (confirmed directly, no `Access-Control-Allow-Origin` header). A
       server-side per-player lookup would need a paid Firebase Cloud Functions tier or a bulk
       scrape too expensive to run for every player — not attempted.
+- [x] Auto-fill X (Twitter) and Film Link for watch list players — a daily GitHub Actions job
+      (`scraper/watchlist_enrich.py`, see `scraper/README.md`) checks the top Google Custom Search
+      results for a player's name + team + position for an x.com/twitter.com or hudl.com link and
+      fills in whichever field is still empty, never overwriting a manual entry. Requires the repo
+      owner to add two API secrets one time (`GOOGLE_SEARCH_API_KEY`, `GOOGLE_SEARCH_CX`) — the
+      workflow no-ops harmlessly until they exist.
 - [ ] Big Ten and SoCon aren't in the conference cross-reference yet — both use a different,
       newer stats platform (a JSON API behind a game-by-game CMS, not the simple leaderboard
       endpoint the other 32 conferences have), which needs its own dedicated scraper.
