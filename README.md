@@ -114,19 +114,53 @@ suggested architecture.
       CCCAA) — see `scraper/juco.py`, `scraper/cccaa.py` / `scraper/README.md`. No sample data
       remains anywhere in the app.
 - [x] Weekly GitHub Actions job — re-runs the scraper every Sunday, commits fresh data to the
-      repo (`.github/workflows/weekly-data-refresh.yml`). Rebuilding the frontend and republishing
-      the live Artifact link from that fresh data is still a manual follow-up step.
-- [x] Watch list — a shared, editable list of players (top-right, full-screen grid), backed by
-      the Claude Artifact `db` capability. Add/remove a player from any row's star icon or the
-      panel's own form; each entry tracks Pipelined (yes/no), Hometown, Eligibility, and Notes.
+      repo (`.github/workflows/weekly-data-refresh.yml`).
+- [x] **Live site on GitHub Pages, auto-deploying on every push** (`.github/workflows/
+      deploy-pages.yml`) — including the commits the weekly scraper job itself makes, so fresh
+      data reaches the live site with zero manual steps. Moved off the Claude Artifact hosting
+      model entirely: an Artifact's share link pins to whatever version it was last manually
+      re-shared at (confirmed directly — stayed on an old version across ~19 publishes this
+      session despite the live content changing every time), which defeats a tool meant to update
+      itself weekly with no one watching.
+- [x] Watch list — a shared, editable full-screen grid, backed by real Firebase Firestore (not the
+      Claude Artifact `db` capability, which only exists inside that one hosting model and stopped
+      working the moment the site moved to Pages). No login for viewers; access control is
+      Firestore's own security rules (`firestore.rules`), scoped to just the `watchlist`
+      collection. Add a player from any row's + icon, the panel's own form, or the stats detail
+      modal. Removing someone is a soft-delete (a `removed` flag, not an actual delete) so their
+      notes/hometown/eligibility/snap count survive and come back automatically if they're added
+      again later.
+- [x] Watch list extras: position tabs with live counts, Priority (High/Medium/Low, sortable),
+      Eligibility (1-5 years, sortable), a Snap Count field meant to be filled in by hand from
+      wherever the owner looks it up (PFF, etc. — nothing here scrapes that), an "UPDATED" badge
+      on a player whose real stats changed since the card was last opened, a 2-3-player
+      side-by-side compare view, and a CSV export of whatever's currently visible (respects the
+      search/position filters).
+- [x] Hometown has a real type-ahead address search with a live map preview (OpenStreetMap +
+      Nominatim, no API key or account needed anywhere) — only feasible once off the Artifact's
+      CSP sandbox, which blocked every map library and external tile host.
 - [x] Passing completion % (PCT) column, derived client-side from each row's comp/att.
 - [x] Player name in the main grid links straight to a Google search (name + team + position);
       the watch list's name click instead opens a stats detail modal (every category that player
       has data in) with its own search link next to the name.
-- [ ] Auto-deploy so the live link updates itself too (needs a real host like Vercel connected to
-      this repo — the Artifact link can only be republished from a live Claude Code session)
-- [ ] Database (Supabase) set up
-- [ ] Front-end reads from a database instead of a static JSON snapshot
+- [x] Search bar (top of the main page, shared with the watch list) for player name or school —
+      jumps across divisions/categories to wherever a match actually lives instead of showing an
+      empty table if the currently open tab has none.
+- [x] "Breakout this week" strip — scans every division's real single-week rows (not just the
+      open tab) for whoever had the best week most recently; naturally stays sparse early in the
+      season since a division needs two scraper runs before any real single-week number exists.
+- [x] Cross-references FBS/FCS/D2 against 32 of 37 conferences' own stats pages to fill in players
+      the NCAA's national leaderboard misses (see the "leaders list, not a full roster" note
+      above and `scraper/conference_sites.py`).
+- [ ] Auto-fill Eligibility instead of typing it in by hand — investigated this session and hit
+      two real walls: NAIA/JUCO's own "Career Stats" tab doesn't actually break stats out by
+      season for most players (confirmed directly), and a client-side lookup against any of these
+      sites is blocked by CORS (confirmed directly, no `Access-Control-Allow-Origin` header). A
+      server-side per-player lookup would need a paid Firebase Cloud Functions tier or a bulk
+      scrape too expensive to run for every player — not attempted.
+- [ ] Big Ten and SoCon aren't in the conference cross-reference yet — both use a different,
+      newer stats platform (a JSON API behind a game-by-game CMS, not the simple leaderboard
+      endpoint the other 32 conferences have), which needs its own dedicated scraper.
 
 ## Running the front-end
 

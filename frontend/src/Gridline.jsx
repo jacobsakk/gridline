@@ -1,5 +1,5 @@
-import { useState, useMemo, useEffect, useRef } from "react";
-import { ChevronUp, ChevronDown, ChevronsUpDown, Crown, BadgeCheck, FlaskConical, Star, X, Plus, ExternalLink, Search } from "lucide-react";
+import { useState, useMemo, useEffect, useRef, Fragment } from "react";
+import { ChevronUp, ChevronDown, ChevronsUpDown, Crown, BadgeCheck, FlaskConical, Star, X, Plus, ExternalLink, Search, Download, Columns3, TrendingUp } from "lucide-react";
 import { collection, doc, addDoc, updateDoc, onSnapshot, query, orderBy } from "firebase/firestore";
 import { db } from "./firebase";
 import L from "leaflet";
@@ -123,6 +123,19 @@ for (const r of DATA) {
 const DIVISION_LABEL = { NAIA: "NAIA", JUCO: "Junior College", D2: "NCAA Division II", FCS: "FCS", FBS: "FBS" };
 const LIVE_DIVISIONS = new Set(["NAIA", "JUCO", "D2", "FCS", "FBS"]); // all five are real data now
 
+// A cheap fingerprint of everything real-stats.json currently says about
+// one player -- not a hash, just a stable string that changes whenever
+// their numbers do. Used to flag "this watch-listed player's stats
+// changed since you last opened their card" without storing a full copy
+// of their stats anywhere.
+function playerStatsSignature(player, team) {
+  const rows = DATA.filter((r) => r.player === player && r.team === team);
+  return rows
+    .map((r) => `${r.id}:${r.yards ?? ""}:${r.td ?? ""}:${r.att ?? ""}:${r.rec ?? ""}:${r.total ?? ""}:${r.sacks ?? ""}:${r.int ?? ""}`)
+    .sort()
+    .join("|");
+}
+
 function conferencesFor(division) {
   return [...new Set(DATA.filter((r) => r.division === division).map((r) => r.conference))].sort();
 }
@@ -206,10 +219,12 @@ function useWatchlist() {
       division: division || "",
       position: position || "",
       pipelined: false,
+      priority: "",
       notes: "",
       hometown: "",
       eligibility: "",
       snapCount: "",
+      lastSeenSnapshot: "",
       removed: false,
       addedAt: new Date().toISOString(),
     });
@@ -228,7 +243,11 @@ function useWatchlist() {
     return watchedKeys.has(`${player}::${team}`);
   }
 
-  return { available, checkedAvailability: ready, players, addPlayer, removePlayer, updateField, isWatched };
+  async function markSeen(id, player, team) {
+    await updateDoc(doc(db, "watchlist", id), { lastSeenSnapshot: playerStatsSignature(player, team) });
+  }
+
+  return { available, checkedAvailability: ready, players, addPlayer, removePlayer, updateField, markSeen, isWatched };
 }
 
 const pillStyle = (active) => ({
@@ -423,7 +442,13 @@ function HometownPicker({ value, onCommit }) {
 // state so keystrokes don't round-trip to the db on every character --
 // it only commits (onUpdate) on blur, same pattern as the main scraped
 // table's cells are read-only render of committed data.
-function WatchListRow({ p, onRemove, onUpdate, onSelect, style }) {
+const PRIORITY_STYLES = {
+  High: { background: "#2A1A1A", border: "1px solid #A23B3B", color: "#E08585" },
+  Medium: { background: "#2A241A", border: "1px solid #C89B3C", color: "#C89B3C" },
+  Low: { background: "#1A2126", border: "1px solid #2A333A", color: "#8B959C" },
+};
+
+function WatchListRow({ p, onRemove, onUpdate, onSelect, compareSelected, onToggleCompare, style }) {
   const [notes, setNotes] = useState(p.notes || "");
   const [snapCount, setSnapCount] = useState(p.snapCount || "");
   const notesRef = useRef(null);
@@ -439,17 +464,52 @@ function WatchListRow({ p, onRemove, onUpdate, onSelect, style }) {
   };
   useEffect(autoResizeNotes, []);
 
+  const currentSignature = useMemo(() => playerStatsSignature(p.player, p.team), [p.player, p.team]);
+  const hasUpdate = p.lastSeenSnapshot && currentSignature && p.lastSeenSnapshot !== currentSignature;
+
   return (
     <tr style={style}>
+      <td style={{ ...tdStyle, textAlign: "center" }}>
+        <input
+          type="checkbox"
+          checked={compareSelected}
+          onChange={onToggleCompare}
+          title="Select to compare"
+          style={{ cursor: "pointer" }}
+        />
+      </td>
       <td style={{ ...tdStyle, fontWeight: 600, color: "#EDEAE0" }}>
-        <span className="player-name" onClick={() => onSelect(p)} title="View full stats">
-          {p.player}
+        <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+          <span className="player-name" onClick={() => onSelect(p)} title="View full stats">
+            {p.player}
+          </span>
+          {hasUpdate && (
+            <span
+              title="This player's stats have changed since you last viewed them"
+              className="tabular"
+              style={{ background: "#20281F", color: "#C89B3C", borderRadius: 999, padding: "1px 6px", fontSize: 10, fontWeight: 700 }}
+            >
+              UPDATED
+            </span>
+          )}
         </span>
       </td>
       <td style={{ ...tdStyle, color: "#8B959C" }}>{p.team || "—"}</td>
       <td style={{ ...tdStyle, color: "#8B959C", fontSize: 12.5 }}>{p.division || "—"}</td>
       <td style={{ ...tdStyle, color: "#A23B3B", fontWeight: 600 }} className="oswald">
         {p.position || "—"}
+      </td>
+      <td style={tdStyle}>
+        <select
+          value={p.priority || ""}
+          onChange={(e) => onUpdate("priority", e.target.value)}
+          style={{ ...cellInputStyle, cursor: "pointer", fontWeight: 700, ...(PRIORITY_STYLES[p.priority] || {}) }}
+        >
+          <option value="">—</option>
+          <option value="High">High</option>
+          <option value="Medium">Medium</option>
+          <option value="Low">Low</option>
+        </select>
       </td>
       <td style={tdStyle}>
         <select
@@ -514,16 +574,57 @@ function WatchListRow({ p, onRemove, onUpdate, onSelect, style }) {
   );
 }
 
-const WATCHLIST_COLUMNS = ["Player", "Team", "Division", "Pos", "Eligibility", "Pipelined?", "Hometown", "Snap Count", "Notes", ""];
+const WATCHLIST_COLUMNS = ["", "Player", "Team", "Division", "Pos", "Priority", "Eligibility", "Pipelined?", "Hometown", "Snap Count", "Notes", ""];
+// Which of the columns above can be clicked to sort the watch list --
+// keyed by the doc field each one reads.
+const WATCHLIST_SORTABLE = { Priority: "priority", Eligibility: "eligibility" };
+const PRIORITY_RANK = { High: 3, Medium: 2, Low: 1, "": 0 };
 
 // Full-screen overlay -- same spreadsheet grid language as the main stats
 // table (sticky header, gridlines) instead of a narrow sidebar, so editing
 // a dozen watched players' notes/hometown/eligibility doesn't feel cramped.
+function exportWatchListCsv(players) {
+  const headers = ["Player", "Team", "Division", "Position", "Priority", "Eligibility", "Pipelined", "Hometown", "Snap Count", "Notes"];
+  const escape = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`;
+  const lines = [headers.map(escape).join(",")];
+  for (const p of players) {
+    lines.push(
+      [
+        p.player,
+        p.team,
+        p.division,
+        p.position,
+        p.priority,
+        p.eligibility ? `${p.eligibility} year${p.eligibility === "1" ? "" : "s"}` : "",
+        p.pipelined === true ? "Yes" : p.pipelined === false ? "No" : "",
+        p.hometown,
+        p.snapCount,
+        p.notes,
+      ]
+        .map(escape)
+        .join(",")
+    );
+  }
+  const blob = new Blob([lines.join("\n")], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `watch-list-${new Date().toISOString().slice(0, 10)}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
 function WatchListPanel({ watchlist, search, setSearch, onClose, onSelectPlayer }) {
   const [name, setName] = useState("");
   const [team, setTeam] = useState("");
   const [position, setPosition] = useState(WATCH_POSITIONS[0]);
   const [positionTab, setPositionTab] = useState("All");
+  const [wlSortKey, setWlSortKey] = useState(null);
+  const [wlSortDir, setWlSortDir] = useState("desc");
+  const [compareIds, setCompareIds] = useState(() => new Set());
+  const [showCompare, setShowCompare] = useState(false);
   const nameInputRef = useRef(null);
 
   useEffect(() => {
@@ -540,8 +641,39 @@ function WatchListPanel({ watchlist, search, setSearch, onClose, onSelectPlayer 
 
   const q = search.trim().toLowerCase();
   const searched = q ? watchlist.players.filter((p) => p.player.toLowerCase().includes(q) || (p.team || "").toLowerCase().includes(q)) : watchlist.players;
-  const visiblePlayers = positionTab === "All" ? searched : searched.filter((p) => p.position === positionTab);
+  const byPosition = positionTab === "All" ? searched : searched.filter((p) => p.position === positionTab);
   const countFor = (pos) => (pos === "All" ? searched.length : searched.filter((p) => p.position === pos).length);
+
+  const visiblePlayers = useMemo(() => {
+    if (!wlSortKey) return byPosition;
+    const sorted = [...byPosition].sort((a, b) => {
+      const av = wlSortKey === "priority" ? PRIORITY_RANK[a.priority || ""] : parseFloat(a[wlSortKey]) || 0;
+      const bv = wlSortKey === "priority" ? PRIORITY_RANK[b.priority || ""] : parseFloat(b[wlSortKey]) || 0;
+      return wlSortDir === "desc" ? bv - av : av - bv;
+    });
+    return sorted;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [byPosition, wlSortKey, wlSortDir]);
+
+  function handleWlSort(field) {
+    if (wlSortKey === field) {
+      setWlSortDir((d) => (d === "desc" ? "asc" : "desc"));
+    } else {
+      setWlSortKey(field);
+      setWlSortDir("desc");
+    }
+  }
+
+  function toggleCompare(id) {
+    setCompareIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else if (next.size < 3) next.add(id);
+      return next;
+    });
+  }
+
+  const compareList = watchlist.players.filter((p) => compareIds.has(p.id));
 
   return (
     <div
@@ -603,6 +735,33 @@ function WatchListPanel({ watchlist, search, setSearch, onClose, onSelectPlayer 
               <Plus size={14} /> Add
             </button>
           </form>
+        )}
+
+        {watchlist.available && watchlist.players.length > 0 && (
+          <button
+            onClick={() => exportWatchListCsv(visiblePlayers)}
+            title="Export the currently visible rows as a CSV file"
+            style={{
+              display: "flex", alignItems: "center", gap: 6, flexShrink: 0,
+              background: "#1A2126", border: "1px solid #2A333A", color: "#EDEAE0",
+              borderRadius: 5, padding: "8px 12px", fontSize: 13, fontWeight: 600, cursor: "pointer",
+            }}
+          >
+            <Download size={14} /> Export CSV
+          </button>
+        )}
+
+        {compareIds.size >= 2 && (
+          <button
+            onClick={() => setShowCompare(true)}
+            style={{
+              display: "flex", alignItems: "center", gap: 6, flexShrink: 0,
+              background: "#20281F", border: "1px solid #C89B3C", color: "#C89B3C",
+              borderRadius: 5, padding: "8px 12px", fontSize: 13, fontWeight: 700, cursor: "pointer",
+            }}
+          >
+            <Columns3 size={14} /> Compare ({compareIds.size})
+          </button>
         )}
 
         <button onClick={onClose} style={{ background: "none", border: "none", color: "#8B959C", cursor: "pointer", padding: 4, lineHeight: 0 }}>
@@ -686,9 +845,20 @@ function WatchListPanel({ watchlist, search, setSearch, onClose, onSelectPlayer 
               <table style={{ width: "100%", borderCollapse: "collapse" }}>
                 <thead>
                   <tr style={{ background: "#1A2126" }}>
-                    {WATCHLIST_COLUMNS.map((label) => (
-                      <Th key={label} label={label} sticky />
-                    ))}
+                    {WATCHLIST_COLUMNS.map((label, i) => {
+                      const sortField = WATCHLIST_SORTABLE[label];
+                      return (
+                        <Th
+                          key={i}
+                          label={label}
+                          sticky
+                          sortable={!!sortField}
+                          active={wlSortKey === sortField}
+                          dir={wlSortDir}
+                          onClick={sortField ? () => handleWlSort(sortField) : undefined}
+                        />
+                      );
+                    })}
                   </tr>
                 </thead>
                 <tbody>
@@ -700,6 +870,8 @@ function WatchListPanel({ watchlist, search, setSearch, onClose, onSelectPlayer 
                       onRemove={() => watchlist.removePlayer(p.id)}
                       onUpdate={(field, value) => watchlist.updateField(p.id, field, value)}
                       onSelect={onSelectPlayer}
+                      compareSelected={compareIds.has(p.id)}
+                      onToggleCompare={() => toggleCompare(p.id)}
                     />
                   ))}
                 </tbody>
@@ -708,6 +880,7 @@ function WatchListPanel({ watchlist, search, setSearch, onClose, onSelectPlayer 
           )}
         </div>
       )}
+      {showCompare && <CompareModal players={compareList} onClose={() => setShowCompare(false)} />}
     </div>
   );
 }
@@ -862,6 +1035,102 @@ function PlayerDetailModal({ sel, onClose, watchlist }) {
 const detailThStyle = { padding: "8px 12px", fontSize: 11.5, fontWeight: 600, color: "#8B959C", textAlign: "left", whiteSpace: "nowrap" };
 const detailTdStyle = { padding: "7px 12px", fontSize: 13, color: "#C7CDD1" };
 
+// Puts 2-3 watch-listed players' full stat lines side by side instead of
+// opening each one's detail modal separately. Only categories at least
+// one of them actually has data in are shown (a QB-vs-WR comparison
+// doesn't render an empty Passing section for the receiver).
+function CompareModal({ players, onClose }) {
+  const playerRows = players.map((p) => ({ p, rows: DATA.filter((r) => r.player === p.player && r.team === p.team) }));
+  const categories = Object.keys(CATEGORIES).filter((key) => playerRows.some(({ rows }) => rows.some((r) => r.category === key)));
+
+  return (
+    <div
+      onClick={onClose}
+      style={{ position: "fixed", inset: 0, background: "rgba(8,10,12,0.75)", zIndex: 70, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          background: "#151B1F", border: "1px solid #2A333A", borderRadius: 8, width: 900, maxWidth: "100%",
+          maxHeight: "85vh", overflowY: "auto", boxShadow: "0 24px 64px rgba(0,0,0,0.5)",
+        }}
+      >
+        <div
+          style={{
+            padding: "16px 20px", borderBottom: "1px solid #2A333A", display: "flex", alignItems: "center",
+            justifyContent: "space-between", position: "sticky", top: 0, background: "#151B1F",
+          }}
+        >
+          <h2 className="oswald" style={{ fontSize: 20, margin: 0, fontWeight: 700 }}>
+            Compare Players
+          </h2>
+          <button onClick={onClose} style={{ background: "none", border: "none", color: "#8B959C", cursor: "pointer", padding: 4, lineHeight: 0 }}>
+            <X size={18} />
+          </button>
+        </div>
+
+        <div style={{ padding: 20, overflowX: "auto" }}>
+          <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 200 + players.length * 180 }}>
+            <thead>
+              <tr>
+                <th style={{ ...detailThStyle, position: "sticky", left: 0, background: "#151B1F" }}> </th>
+                {playerRows.map(({ p }) => (
+                  <th key={p.id} style={{ ...detailThStyle, minWidth: 180 }}>
+                    <div className="oswald" style={{ fontSize: 15, fontWeight: 700, color: "#EDEAE0" }}>
+                      {p.player}
+                    </div>
+                    <div style={{ fontSize: 11.5, color: "#8B959C", fontWeight: 400 }}>
+                      {p.team || "—"} · {p.position || "—"}
+                    </div>
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {categories.length === 0 && (
+                <tr>
+                  <td colSpan={players.length + 1} style={{ ...detailTdStyle, textAlign: "center", color: "#5D666C", padding: 24 }}>
+                    No tracked stats found for these players.
+                  </td>
+                </tr>
+              )}
+              {categories.map((catKey) => {
+                const cat = CATEGORIES[catKey];
+                return (
+                  <Fragment key={catKey}>
+                    <tr>
+                      <td
+                        colSpan={players.length + 1}
+                        className="oswald"
+                        style={{ padding: "10px 12px 4px", fontSize: 12, fontWeight: 700, color: "#C89B3C", textTransform: "uppercase", letterSpacing: "0.04em" }}
+                      >
+                        {cat.label}
+                      </td>
+                    </tr>
+                    {cat.columns.map((col) => (
+                      <tr key={col.key} style={{ borderTop: "1px solid #212A2F" }}>
+                        <td style={{ ...detailTdStyle, position: "sticky", left: 0, background: "#151B1F", color: "#8B959C" }}>{col.label}</td>
+                        {playerRows.map(({ p, rows }) => {
+                          const row = rows.find((r) => r.category === catKey && r.week === "total");
+                          return (
+                            <td key={p.id} className="tabular" style={detailTdStyle}>
+                              {row ? row[col.key] : "—"}
+                            </td>
+                          );
+                        })}
+                      </tr>
+                    ))}
+                  </Fragment>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ---------- Component ----------
 
 export default function Gridline() {
@@ -943,6 +1212,27 @@ export default function Gridline() {
     });
   }, [division, week, conference]);
 
+  // Scans every division for whoever actually had the best single-week
+  // production most recently -- deliberately NOT scoped to the open
+  // division tab, since the point is surfacing someone you wouldn't have
+  // thought to go looking for. Real single-week rows only exist once a
+  // division's scraper has run more than once (see scraper/build_data.py),
+  // so this naturally fills in as the season goes on rather than needing
+  // any special-casing here.
+  const breakoutPerformers = useMemo(() => {
+    const weeklyRows = DATA.filter((r) => r.week !== "total");
+    if (weeklyRows.length === 0) return { week: null, entries: [] };
+    const latestWeek = weeklyRows.reduce((max, r) => (r.week > max ? r.week : max), weeklyRows[0].week);
+    const thisWeek = weeklyRows.filter((r) => r.week === latestWeek);
+    const entries = LEADER_BOARDS.map((board) => {
+      const catRows = thisWeek.filter((r) => r.category === board.categoryKey);
+      const sorted = [...catRows].sort((a, b) => (parseFloat(b[board.sortKey]) || 0) - (parseFloat(a[board.sortKey]) || 0));
+      const col = CATEGORIES[board.categoryKey].columns.find((c) => c.key === board.sortKey);
+      return { board, leader: sorted[0], statLabel: col?.label || "" };
+    }).filter((e) => e.leader);
+    return { week: latestWeek, entries };
+  }, []);
+
   function handleSort(key) {
     if (key === sortKey) {
       setSortDir((d) => (d === "desc" ? "asc" : "desc"));
@@ -969,6 +1259,16 @@ export default function Gridline() {
     setCategory(board.categoryKey);
     setPosition("All");
     setSortKey(board.sortKey);
+    setSortDir("desc");
+  }
+
+  function handleBreakoutClick(entry) {
+    setDivision(entry.leader.division);
+    setConference("All");
+    setWeek(entry.leader.week);
+    setCategory(entry.board.categoryKey);
+    setPosition("All");
+    setSortKey(entry.board.sortKey);
     setSortDir("desc");
   }
 
@@ -1073,7 +1373,10 @@ export default function Gridline() {
           search={search}
           setSearch={setSearch}
           onClose={() => setWatchlistOpen(false)}
-          onSelectPlayer={(p) => setSelectedPlayer({ player: p.player, team: p.team, division: p.division, position: p.position })}
+          onSelectPlayer={(p) => {
+            watchlist.markSeen(p.id, p.player, p.team);
+            setSelectedPlayer({ player: p.player, team: p.team, division: p.division, position: p.position });
+          }}
         />
       )}
       {selectedPlayer && <PlayerDetailModal sel={selectedPlayer} onClose={() => setSelectedPlayer(null)} watchlist={watchlist} />}
@@ -1102,6 +1405,42 @@ export default function Gridline() {
               {d}
             </button>
           ))}
+        </div>
+
+        {/* Breakout performers -- scans every division, not just the open
+            tab, for whoever actually had the best week most recently */}
+        <div style={{ marginBottom: 14 }}>
+          <span style={{ fontSize: 11, color: "#5D666C", letterSpacing: "0.03em", display: "flex", alignItems: "center", gap: 5, marginBottom: 6 }}>
+            <TrendingUp size={12} color="#C89B3C" />
+            Breakout this week{breakoutPerformers.week ? ` — ${weekLabel(breakoutPerformers.week)}` : ""}
+          </span>
+          {breakoutPerformers.entries.length === 0 ? (
+            <div style={{ fontSize: 12.5, color: "#5D666C", padding: "8px 0" }}>
+              No real single-week numbers yet — these show up once a division's weekly scrape has run more than once this season.
+            </div>
+          ) : (
+            <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+              {breakoutPerformers.entries.map(({ board, leader, statLabel }) => (
+                <button
+                  key={board.key}
+                  onClick={() => handleBreakoutClick({ board, leader })}
+                  style={{
+                    display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 2,
+                    background: "#1A2126", border: "1px solid #33502F", borderRadius: 5,
+                    padding: "8px 14px", cursor: "pointer", textAlign: "left", minWidth: 148,
+                  }}
+                >
+                  <span className="oswald" style={{ fontSize: 11, color: "#8FCB86", fontWeight: 500 }}>
+                    {board.label} · {DIVISION_LABEL[leader.division]}
+                  </span>
+                  <span style={{ fontSize: 13.5, fontWeight: 600, color: "#EDEAE0" }}>{leader.player}</span>
+                  <span className="tabular" style={{ fontSize: 12.5, color: "#C89B3C" }}>
+                    {leader[board.sortKey]} {statLabel} this week
+                  </span>
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Live / sample banner */}
