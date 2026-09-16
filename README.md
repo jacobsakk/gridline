@@ -128,14 +128,19 @@ suggested architecture.
       Firestore's own security rules (`firestore.rules`), scoped to just the `watchlist`
       collection. Add a player from any row's + icon, the panel's own form, or the stats detail
       modal. Removing someone is a soft-delete (a `removed` flag, not an actual delete) so their
-      notes/hometown/eligibility/snap count survive and come back automatically if they're added
+      notes/hometown/eligibility/film link survive and come back automatically if they're added
       again later.
 - [x] Watch list extras: position tabs with live counts, Priority (High/Medium/Low, sortable),
-      Eligibility (1-5 years, sortable), a Snap Count field meant to be filled in by hand from
-      wherever the owner looks it up (PFF, etc. — nothing here scrapes that), an "UPDATED" badge
-      on a player whose real stats changed since the card was last opened, a 2-3-player
-      side-by-side compare view, and a CSV export of whatever's currently visible (respects the
-      search/position filters).
+      Eligibility (1-5 years, sortable), a Film Link field (a plain URL, with a click-through
+      icon once it's filled in) meant to be filled in by hand from wherever the owner found the
+      clip, an "UPDATED" badge on a player whose real stats changed since the card was last
+      opened, a 2-3-player side-by-side compare view, and a CSV export of whatever's currently
+      visible (respects the search/position filters).
+- [x] Manual drag-free reordering — up/down arrows on each row let the owner rank players within
+      whatever's currently visible (e.g. just the QB tab), backed by a `sortOrder` field swapped
+      between the two adjacent rows. Only shown in the default (unsorted) view — sorting by a
+      column and manual ranking are mutually exclusive, so the arrows hide while a column sort is
+      active.
 - [x] Hometown has a real type-ahead address search with a live map preview (OpenStreetMap +
       Nominatim, no API key or account needed anywhere) — only feasible once off the Artifact's
       CSP sandbox, which blocked every map library and external tile host.
@@ -146,9 +151,10 @@ suggested architecture.
 - [x] Search bar (top of the main page, shared with the watch list) for player name or school —
       jumps across divisions/categories to wherever a match actually lives instead of showing an
       empty table if the currently open tab has none.
-- [x] "Breakout this week" strip — scans every division's real single-week rows (not just the
-      open tab) for whoever had the best week most recently; naturally stays sparse early in the
-      season since a division needs two scraper runs before any real single-week number exists.
+- [x] "Breakout this week" strip — scoped to whichever division tab is open, scanning that
+      division's real single-week rows for whoever had the best week most recently; naturally
+      stays sparse early in the season since a division needs two scraper runs before any real
+      single-week number exists.
 - [x] Cross-references FBS/FCS/D2 against 32 of 37 conferences' own stats pages to fill in players
       the NCAA's national leaderboard misses (see the "leaders list, not a full roster" note
       above and `scraper/conference_sites.py`).

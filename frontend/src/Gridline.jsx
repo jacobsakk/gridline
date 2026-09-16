@@ -165,7 +165,7 @@ function weeksFor(division) {
 function useWatchlist() {
   // Every doc ever added, including ones the owner has since "removed" --
   // those just get removed:true rather than actually deleted, so their
-  // notes/hometown/eligibility/snapCount survive and come back automatically
+  // notes/hometown/eligibility/filmLink survive and come back automatically
   // if the same player (by name+team) is ever added again.
   const [allDocs, setAllDocs] = useState([]);
   // Firestore's onSnapshot fires once immediately (from cache or server)
@@ -223,8 +223,9 @@ function useWatchlist() {
       notes: "",
       hometown: "",
       eligibility: "",
-      snapCount: "",
+      filmLink: "",
       lastSeenSnapshot: "",
+      sortOrder: Date.now(),
       removed: false,
       addedAt: new Date().toISOString(),
     });
@@ -449,9 +450,9 @@ const PRIORITY_STYLES = {
   Low: { background: "#2A1A1A", border: "1px solid #A23B3B", color: "#E08585" },
 };
 
-function WatchListRow({ p, onRemove, onUpdate, onSelect, compareSelected, onToggleCompare, style }) {
+function WatchListRow({ p, onRemove, onUpdate, onSelect, compareSelected, onToggleCompare, style, reorderable, isFirst, isLast, onMoveUp, onMoveDown }) {
   const [notes, setNotes] = useState(p.notes || "");
-  const [snapCount, setSnapCount] = useState(p.snapCount || "");
+  const [filmLink, setFilmLink] = useState(p.filmLink || "");
   const notesRef = useRef(null);
 
   // Grows the textarea to fit its content (capped by CSS max-height, which
@@ -470,6 +471,28 @@ function WatchListRow({ p, onRemove, onUpdate, onSelect, compareSelected, onTogg
 
   return (
     <tr style={style}>
+      <td style={{ ...tdStyle, textAlign: "center" }}>
+        {reorderable && (
+          <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>
+            <button
+              onClick={onMoveUp}
+              disabled={isFirst}
+              title="Move up"
+              style={{ background: "none", border: "none", color: isFirst ? "#3A4348" : "#8B959C", cursor: isFirst ? "default" : "pointer", padding: 0, lineHeight: 0 }}
+            >
+              <ChevronUp size={14} />
+            </button>
+            <button
+              onClick={onMoveDown}
+              disabled={isLast}
+              title="Move down"
+              style={{ background: "none", border: "none", color: isLast ? "#3A4348" : "#8B959C", cursor: isLast ? "default" : "pointer", padding: 0, lineHeight: 0 }}
+            >
+              <ChevronDown size={14} />
+            </button>
+          </div>
+        )}
+      </td>
       <td style={{ ...tdStyle, textAlign: "center" }}>
         <input
           type="checkbox"
@@ -540,13 +563,20 @@ function WatchListRow({ p, onRemove, onUpdate, onSelect, compareSelected, onTogg
         <HometownPicker value={p.hometown} onCommit={(val) => onUpdate("hometown", val)} />
       </td>
       <td style={tdStyle}>
-        <input
-          value={snapCount}
-          onChange={(e) => setSnapCount(e.target.value)}
-          onBlur={() => onUpdate("snapCount", snapCount)}
-          placeholder="e.g. 512 (PFF)"
-          style={cellInputStyle}
-        />
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <input
+            value={filmLink}
+            onChange={(e) => setFilmLink(e.target.value)}
+            onBlur={() => onUpdate("filmLink", filmLink)}
+            placeholder="Film link (URL)"
+            style={cellInputStyle}
+          />
+          {filmLink && (
+            <a href={filmLink} target="_blank" rel="noopener noreferrer" title="Open film link" style={{ color: "#C89B3C", display: "flex", lineHeight: 0, flexShrink: 0 }}>
+              <ExternalLink size={14} />
+            </a>
+          )}
+        </div>
       </td>
       <td style={{ ...tdStyle, verticalAlign: "top" }}>
         <textarea
@@ -575,7 +605,7 @@ function WatchListRow({ p, onRemove, onUpdate, onSelect, compareSelected, onTogg
   );
 }
 
-const WATCHLIST_COLUMNS = ["", "Player", "Team", "Division", "Pos", "Priority", "Eligibility", "Pipelined?", "Hometown", "Snap Count", "Notes", ""];
+const WATCHLIST_COLUMNS = ["", "", "Player", "Team", "Division", "Pos", "Priority", "Eligibility", "Pipelined?", "Hometown", "Film Link", "Notes", ""];
 // Which of the columns above can be clicked to sort the watch list --
 // keyed by the doc field each one reads.
 const WATCHLIST_SORTABLE = { Priority: "priority", Eligibility: "eligibility" };
@@ -585,7 +615,7 @@ const PRIORITY_RANK = { High: 3, Medium: 2, Low: 1, "": 0 };
 // table (sticky header, gridlines) instead of a narrow sidebar, so editing
 // a dozen watched players' notes/hometown/eligibility doesn't feel cramped.
 function exportWatchListCsv(players) {
-  const headers = ["Player", "Team", "Division", "Position", "Priority", "Eligibility", "Pipelined", "Hometown", "Snap Count", "Notes"];
+  const headers = ["Player", "Team", "Division", "Position", "Priority", "Eligibility", "Pipelined", "Hometown", "Film Link", "Notes"];
   const escape = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`;
   const lines = [headers.map(escape).join(",")];
   for (const p of players) {
@@ -599,7 +629,7 @@ function exportWatchListCsv(players) {
         p.eligibility ? `${p.eligibility} year${p.eligibility === "1" ? "" : "s"}` : "",
         p.pipelined === true ? "Yes" : p.pipelined === false ? "No" : "",
         p.hometown,
-        p.snapCount,
+        p.filmLink,
         p.notes,
       ]
         .map(escape)
@@ -645,8 +675,14 @@ function WatchListPanel({ watchlist, search, setSearch, onClose, onSelectPlayer 
   const byPosition = positionTab === "All" ? searched : searched.filter((p) => p.position === positionTab);
   const countFor = (pos) => (pos === "All" ? searched.length : searched.filter((p) => p.position === pos).length);
 
+  // Falls back to when they were added for any doc from before sortOrder
+  // existed, rather than an undefined value that'd sort unpredictably.
+  function orderValue(p) {
+    return p.sortOrder ?? (p.addedAt ? new Date(p.addedAt).getTime() : 0);
+  }
+
   const visiblePlayers = useMemo(() => {
-    if (!wlSortKey) return byPosition;
+    if (!wlSortKey) return [...byPosition].sort((a, b) => orderValue(a) - orderValue(b));
     const sorted = [...byPosition].sort((a, b) => {
       const av = wlSortKey === "priority" ? PRIORITY_RANK[a.priority || ""] : parseFloat(a[wlSortKey]) || 0;
       const bv = wlSortKey === "priority" ? PRIORITY_RANK[b.priority || ""] : parseFloat(b[wlSortKey]) || 0;
@@ -663,6 +699,23 @@ function WatchListPanel({ watchlist, search, setSearch, onClose, onSelectPlayer 
       setWlSortKey(field);
       setWlSortDir("desc");
     }
+  }
+
+  // Drag-free reordering: swap this player's rank with whichever neighbor
+  // is adjacent in the *currently visible* list (so moving someone within
+  // the QB tab only reorders them relative to other QBs) -- only makes
+  // sense with no column sort active, which is why the buttons are hidden
+  // otherwise rather than fighting that sort.
+  async function moveInBoard(id, direction) {
+    const idx = visiblePlayers.findIndex((p) => p.id === id);
+    const swapIdx = idx + direction;
+    if (idx === -1 || swapIdx < 0 || swapIdx >= visiblePlayers.length) return;
+    const a = visiblePlayers[idx];
+    const b = visiblePlayers[swapIdx];
+    let aOrder = orderValue(a);
+    let bOrder = orderValue(b);
+    if (aOrder === bOrder) bOrder = direction > 0 ? aOrder + 1 : aOrder - 1;
+    await Promise.all([watchlist.updateField(a.id, "sortOrder", bOrder), watchlist.updateField(b.id, "sortOrder", aOrder)]);
   }
 
   function toggleCompare(id) {
@@ -873,6 +926,11 @@ function WatchListPanel({ watchlist, search, setSearch, onClose, onSelectPlayer 
                       onSelect={onSelectPlayer}
                       compareSelected={compareIds.has(p.id)}
                       onToggleCompare={() => toggleCompare(p.id)}
+                      reorderable={!wlSortKey}
+                      isFirst={i === 0}
+                      isLast={i === visiblePlayers.length - 1}
+                      onMoveUp={() => moveInBoard(p.id, -1)}
+                      onMoveDown={() => moveInBoard(p.id, 1)}
                     />
                   ))}
                 </tbody>
@@ -900,7 +958,7 @@ function PlayerDetailModal({ sel, onClose, watchlist }) {
   // Local echo of the two free-text fields, same as WatchListRow -- commit
   // on blur instead of round-tripping to the db on every keystroke.
   const [wlNotes, setWlNotes] = useState(watched?.notes || "");
-  const [wlSnapCount, setWlSnapCount] = useState(watched?.snapCount || "");
+  const [wlFilmLink, setWlFilmLink] = useState(watched?.filmLink || "");
   const wlNotesRef = useRef(null);
   const autoResizeWlNotes = () => {
     const el = wlNotesRef.current;
@@ -1047,14 +1105,21 @@ function PlayerDetailModal({ sel, onClose, watchlist }) {
                   </div>
                 </div>
                 <div>
-                  <label style={fieldLabelStyle}>Snap Count</label>
-                  <input
-                    value={wlSnapCount}
-                    onChange={(e) => setWlSnapCount(e.target.value)}
-                    onBlur={() => watchlist.updateField(watched.id, "snapCount", wlSnapCount)}
-                    placeholder="e.g. 512 (PFF)"
-                    style={fieldInputStyle}
-                  />
+                  <label style={fieldLabelStyle}>Film Link</label>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                    <input
+                      value={wlFilmLink}
+                      onChange={(e) => setWlFilmLink(e.target.value)}
+                      onBlur={() => watchlist.updateField(watched.id, "filmLink", wlFilmLink)}
+                      placeholder="Film link (URL)"
+                      style={fieldInputStyle}
+                    />
+                    {wlFilmLink && (
+                      <a href={wlFilmLink} target="_blank" rel="noopener noreferrer" title="Open film link" style={{ color: "#C89B3C", display: "flex", lineHeight: 0, flexShrink: 0 }}>
+                        <ExternalLink size={15} />
+                      </a>
+                    )}
+                  </div>
                 </div>
                 <div style={{ position: "relative" }}>
                   <label style={fieldLabelStyle}>Hometown</label>
@@ -1305,15 +1370,13 @@ export default function Gridline() {
     });
   }, [division, week, conference]);
 
-  // Scans every division for whoever actually had the best single-week
-  // production most recently -- deliberately NOT scoped to the open
-  // division tab, since the point is surfacing someone you wouldn't have
-  // thought to go looking for. Real single-week rows only exist once a
-  // division's scraper has run more than once (see scraper/build_data.py),
-  // so this naturally fills in as the season goes on rather than needing
-  // any special-casing here.
+  // Scans the currently open division for whoever actually had the best
+  // single-week production most recently. Real single-week rows only exist
+  // once a division's scraper has run more than once (see
+  // scraper/build_data.py), so this naturally fills in as the season goes
+  // on rather than needing any special-casing here.
   const breakoutPerformers = useMemo(() => {
-    const weeklyRows = DATA.filter((r) => r.week !== "total");
+    const weeklyRows = DATA.filter((r) => r.week !== "total" && r.division === division);
     if (weeklyRows.length === 0) return { week: null, entries: [] };
     const latestWeek = weeklyRows.reduce((max, r) => (r.week > max ? r.week : max), weeklyRows[0].week);
     const thisWeek = weeklyRows.filter((r) => r.week === latestWeek);
@@ -1324,7 +1387,7 @@ export default function Gridline() {
       return { board, leader: sorted[0], statLabel: col?.label || "" };
     }).filter((e) => e.leader);
     return { week: latestWeek, entries };
-  }, []);
+  }, [division]);
 
   function handleSort(key) {
     if (key === sortKey) {
@@ -1356,7 +1419,6 @@ export default function Gridline() {
   }
 
   function handleBreakoutClick(entry) {
-    setDivision(entry.leader.division);
     setConference("All");
     setWeek(entry.leader.week);
     setCategory(entry.board.categoryKey);
@@ -1500,16 +1562,16 @@ export default function Gridline() {
           ))}
         </div>
 
-        {/* Breakout performers -- scans every division, not just the open
-            tab, for whoever actually had the best week most recently */}
+        {/* Breakout performers -- scoped to the currently open division tab,
+            scanning for whoever actually had the best week most recently */}
         <div style={{ marginBottom: 14 }}>
           <span style={{ fontSize: 11, color: "#5D666C", letterSpacing: "0.03em", display: "flex", alignItems: "center", gap: 5, marginBottom: 6 }}>
             <TrendingUp size={12} color="#C89B3C" />
-            Breakout this week{breakoutPerformers.week ? ` — ${weekLabel(breakoutPerformers.week)}` : ""}
+            {DIVISION_LABEL[division]} breakout this week{breakoutPerformers.week ? ` — ${weekLabel(breakoutPerformers.week)}` : ""}
           </span>
           {breakoutPerformers.entries.length === 0 ? (
             <div style={{ fontSize: 12.5, color: "#5D666C", padding: "8px 0" }}>
-              No real single-week numbers yet — these show up once a division's weekly scrape has run more than once this season.
+              No real single-week numbers yet for {DIVISION_LABEL[division]} — these show up once this division's weekly scrape has run more than once this season.
             </div>
           ) : (
             <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
@@ -1524,7 +1586,7 @@ export default function Gridline() {
                   }}
                 >
                   <span className="oswald" style={{ fontSize: 11, color: "#8FCB86", fontWeight: 500 }}>
-                    {board.label} · {DIVISION_LABEL[leader.division]}
+                    {board.label}
                   </span>
                   <span style={{ fontSize: 13.5, fontWeight: 600, color: "#EDEAE0" }}>{leader.player}</span>
                   <span className="tabular" style={{ fontSize: 12.5, color: "#C89B3C" }}>
