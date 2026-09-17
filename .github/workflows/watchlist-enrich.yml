@@ -1,23 +1,39 @@
 name: Watch list bio / link lookup
 
-# Fills in Height, Weight, X (Twitter), and Film Link for watch list
-# players who don't have them yet, using the Tavily Search API on the
-# same query the front-end's own "Search" button already builds
-# (player + team + position + "football"). Writes straight to Firestore
-# over its public REST API (no service account needed -- firestore.rules
-# already allows open read/write on the watchlist collection). Never
-# touches a field someone already filled in by hand.
+# Fills in Height, Weight, Hometown, X (Twitter), and Film Link for
+# watch list players who don't have them yet, using the Tavily Search
+# API on the same query the front-end's own "Search" button already
+# builds (player + team + position + "football"). Writes straight to
+# Firestore over its public REST API (no service account needed --
+# firestore.rules already allows open read/write on the watchlist
+# collection). Never touches a field someone already filled in by hand.
 #
 # Needs one repo secret: TAVILY_API_KEY (see scraper/watchlist_enrich.py
 # for where to get it -- no credit card required, unlike Google's Custom
 # Search API, which turned out to no longer be available to new Google
-# Cloud projects at all). Runs daily rather than weekly since the watch
-# list changes whenever someone adds a player, and the script self-
-# limits well under the free 1,000-searches/month Tavily quota.
+# Cloud projects at all).
+#
+# Runs every 15 minutes rather than daily so a newly added player gets
+# looked up almost immediately instead of waiting up to a day -- cheap
+# to do since this is a public repo (Actions minutes are free/unlimited
+# here) and the script itself only spends Tavily quota on players that
+# actually need a lookup (needs_lookup()), so an idle run with nothing
+# new to do just exits in a couple seconds. Real Tavily usage is driven
+# by how many players actually need a lookup, not by how often this
+# runs, and stays well under the free 1,000-searches/month quota at
+# realistic watch-list sizes.
 on:
   schedule:
-    - cron: "0 12 * * *"
+    - cron: "*/15 * * * *"
   workflow_dispatch: {}
+
+# Queues a new run instead of letting it overlap an in-flight one -- a
+# 15-minute schedule means back-to-back runs are close enough together
+# that this matters if a run were ever slow, avoiding two instances
+# racing to write the same candidate at once.
+concurrency:
+  group: watchlist-enrich
+  cancel-in-progress: false
 
 jobs:
   enrich:

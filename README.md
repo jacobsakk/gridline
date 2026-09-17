@@ -169,8 +169,10 @@ suggested architecture.
       server-side per-player lookup would need a paid Firebase Cloud Functions tier or a bulk
       scrape too expensive to run for every player — not attempted.
 - [x] Auto-fill Height, Weight, Hometown, X (Twitter), and Film Link for watch list players — a
-      daily GitHub Actions job (`scraper/watchlist_enrich.py`, see `scraper/README.md`) runs one
-      Tavily search per player (same query the front-end's own "Search" button builds) and checks
+      GitHub Actions job running every 15 minutes (`scraper/watchlist_enrich.py`, see
+      `scraper/README.md`) so a newly added player gets looked up almost immediately, not on a
+      daily/weekly delay. Runs one Tavily search per player (same query the front-end's own
+      "Search" button builds) and checks
       the top results for an x.com/twitter.com or hudl.com link, plus a Height/Weight/Hometown bio
       line in whichever result's content snippet (or page) looks like a roster page — fills in
       whichever fields are still empty, never overwriting a manual entry. Eligibility is

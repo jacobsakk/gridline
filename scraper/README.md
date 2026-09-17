@@ -146,10 +146,15 @@ access the front-end itself has).
   `enrichedAt` timestamp marks it as tried (whether or not anything was found) so the same player
   isn't re-queried every single day, burning quota for no reason; it's eligible again after 14
   days in case new info shows up later.
-- **Runs daily**, not weekly like the stats scrapers, since the watch list changes whenever
-  someone adds a player rather than on a season schedule — see
-  `.github/workflows/watchlist-enrich.yml`. Capped at 30 lookups/run to stay comfortably under the
-  free 1,000-searches/month Tavily quota even if every daily run maxes out.
+- **Runs every 15 minutes**, not weekly/daily like the other scrapers, so a newly added player
+  gets looked up almost immediately instead of waiting for a scheduled refresh — see
+  `.github/workflows/watchlist-enrich.yml`. Free to run this often since the repo is public
+  (GitHub Actions minutes are unlimited there) and real Tavily usage is driven by how many players
+  actually need a lookup (`needs_lookup()`), not by how often the workflow fires — an idle run
+  with nothing new just exits in a couple seconds. Capped at 30 lookups/run regardless, to stay
+  comfortably under the free 1,000-searches/month Tavily quota even during a large backlog. A
+  `concurrency` guard queues rather than overlaps runs, in case one is ever still going when the
+  next 15-minute tick fires.
 - **Setup** (one-time, by the project owner — this needs an account, so it can't be automated):
   sign up at [tavily.com](https://tavily.com) (no credit card needed), copy the API key from the
   dashboard (starts with `tvly-`), then add it as a repo secret named `TAVILY_API_KEY` under
