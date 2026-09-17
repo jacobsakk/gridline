@@ -188,6 +188,14 @@ suggested architecture.
       assumed — so this uses Tavily instead, which needs no credit card.) Requires the repo owner
       to add one API secret one time (`TAVILY_API_KEY`) — the workflow no-ops
       harmlessly until it exists.
+- [x] Light/dark mode — a toggle in the header (sun/moon icon) next to Watch List. Defaults to the
+      visitor's own OS/browser preference on first visit, then remembers whatever they pick
+      (`localStorage`) from then on. Every color in the app (~170 previously hardcoded hex values)
+      now goes through a shared set of CSS custom properties (`--bg-page`, `--text-primary`,
+      `--accent`, etc.) defined once and swapped by a `data-theme` attribute, rather than being a
+      second copy of the styling to keep in sync — the dark palette is the original, unchanged
+      look; the light palette is a new, deliberately warm (not stark-white) parchment-toned
+      counterpart designed to keep the same gold-accent identity.
 - [ ] Big Ten and SoCon aren't in the conference cross-reference yet — both use a different,
       newer stats platform (a JSON API behind a game-by-game CMS, not the simple leaderboard
       endpoint the other 32 conferences have), which needs its own dedicated scraper.

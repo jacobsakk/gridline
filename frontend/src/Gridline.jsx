@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect, useRef, Fragment } from "react";
-import { ChevronUp, ChevronDown, ChevronsUpDown, Crown, BadgeCheck, FlaskConical, Star, X, Plus, ExternalLink, Search, Download, Columns3, TrendingUp, GripVertical } from "lucide-react";
+import { ChevronUp, ChevronDown, ChevronsUpDown, Crown, BadgeCheck, FlaskConical, Star, X, Plus, ExternalLink, Search, Download, Columns3, TrendingUp, GripVertical, Sun, Moon } from "lucide-react";
 import { collection, doc, addDoc, updateDoc, onSnapshot, query, orderBy } from "firebase/firestore";
 import { db } from "./firebase";
 import L from "leaflet";
@@ -254,9 +254,9 @@ function useWatchlist() {
 }
 
 const pillStyle = (active) => ({
-  background: active ? "#20281F" : "#1A2126",
-  border: active ? "1px solid #C89B3C" : "1px solid #2A333A",
-  color: active ? "#C89B3C" : "#8B959C",
+  background: active ? "var(--accent-bg)" : "var(--bg-surface)",
+  border: active ? "1px solid var(--accent)" : "1px solid var(--border)",
+  color: active ? "var(--accent)" : "var(--text-muted)",
   borderRadius: 4,
   padding: "3px 10px",
   fontSize: 12,
@@ -281,17 +281,17 @@ const watchToggleButtonStyle = {
 
 const fieldInputStyle = {
   width: "100%",
-  background: "#12171A",
-  border: "1px solid #2A333A",
+  background: "var(--bg-page)",
+  border: "1px solid var(--border)",
   borderRadius: 4,
   padding: "6px 8px",
   fontSize: 13,
-  color: "#EDEAE0",
+  color: "var(--text-primary)",
   fontFamily: "inherit",
 };
-const fieldLabelStyle = { display: "block", fontSize: 10.5, color: "#5D666C", letterSpacing: "0.03em", margin: "0 0 4px" };
+const fieldLabelStyle = { display: "block", fontSize: 10.5, color: "var(--text-faint)", letterSpacing: "0.03em", margin: "0 0 4px" };
 // Compact variant for an input sitting inside a table cell (watch list grid).
-const cellInputStyle = { ...fieldInputStyle, padding: "4px 6px", fontSize: 12.5, background: "#12171A" };
+const cellInputStyle = { ...fieldInputStyle, padding: "4px 6px", fontSize: 12.5, background: "var(--bg-page)" };
 // Grows with content (see autoResizeNotes) so the whole note is always
 // fully visible -- no clipping, no internal scrolling. The row just gets
 // as tall as it needs to be, same as any other cell with a lot in it.
@@ -310,8 +310,8 @@ const hometownDropdownStyle = {
   top: "calc(100% + 4px)",
   left: 0,
   width: 260,
-  background: "#1A2126",
-  border: "1px solid #2A333A",
+  background: "var(--bg-surface)",
+  border: "1px solid var(--border)",
   borderRadius: 6,
   overflow: "hidden",
   boxShadow: "0 12px 32px rgba(0,0,0,0.5)",
@@ -319,9 +319,9 @@ const hometownDropdownStyle = {
 const hometownSuggestionStyle = {
   padding: "8px 10px",
   fontSize: 12.5,
-  color: "#C7CDD1",
+  color: "var(--text-secondary)",
   cursor: "pointer",
-  borderBottom: "1px solid #212A2F",
+  borderBottom: "1px solid var(--border-subtle)",
 };
 
 // Type-ahead hometown search against OpenStreetMap's free Nominatim API --
@@ -377,9 +377,9 @@ function HometownPicker({ value, onCommit }) {
       L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 12 }).addTo(mapRef.current);
       markerRef.current = L.circleMarker([preview.lat, preview.lon], {
         radius: 6,
-        color: "#C89B3C",
+        color: "var(--accent)",
         weight: 2,
-        fillColor: "#C89B3C",
+        fillColor: "var(--accent)",
         fillOpacity: 1,
       }).addTo(mapRef.current);
     } else {
@@ -483,9 +483,9 @@ function WatchListRow({
 
   const dropLineStyle =
     dropIndicator === "before"
-      ? { boxShadow: "inset 0 2px 0 0 #C89B3C" }
+      ? { boxShadow: "inset 0 2px 0 0 var(--accent)" }
       : dropIndicator === "after"
-      ? { boxShadow: "inset 0 -2px 0 0 #C89B3C" }
+      ? { boxShadow: "inset 0 -2px 0 0 var(--accent)" }
       : null;
 
   return (
@@ -495,7 +495,7 @@ function WatchListRow({
           <span
             onPointerDown={onDragHandlePointerDown}
             title="Drag to reorder"
-            style={{ display: "inline-flex", color: "#5D666C", cursor: "grab", lineHeight: 0, touchAction: "none" }}
+            style={{ display: "inline-flex", color: "var(--text-faint)", cursor: "grab", lineHeight: 0, touchAction: "none" }}
           >
             <GripVertical size={15} />
           </span>
@@ -510,7 +510,7 @@ function WatchListRow({
           style={{ cursor: "pointer" }}
         />
       </td>
-      <td style={{ ...tdStyle, fontWeight: 600, color: "#EDEAE0" }}>
+      <td style={{ ...tdStyle, fontWeight: 600, color: "var(--text-primary)" }}>
         <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
           <span className="player-name" onClick={() => onSelect(p)} title="View full stats">
             {p.player}
@@ -519,16 +519,16 @@ function WatchListRow({
             <span
               title="This player's stats have changed since you last viewed them"
               className="tabular"
-              style={{ background: "#20281F", color: "#C89B3C", borderRadius: 999, padding: "1px 6px", fontSize: 10, fontWeight: 700 }}
+              style={{ background: "var(--accent-bg)", color: "var(--accent)", borderRadius: 999, padding: "1px 6px", fontSize: 10, fontWeight: 700 }}
             >
               UPDATED
             </span>
           )}
         </span>
       </td>
-      <td style={{ ...tdStyle, color: "#8B959C" }}>{p.team || "—"}</td>
-      <td style={{ ...tdStyle, color: "#8B959C", fontSize: 12.5 }}>{p.division || "—"}</td>
-      <td style={{ ...tdStyle, color: "#A23B3B", fontWeight: 600 }} className="oswald">
+      <td style={{ ...tdStyle, color: "var(--text-muted)" }}>{p.team || "—"}</td>
+      <td style={{ ...tdStyle, color: "var(--text-muted)", fontSize: 12.5 }}>{p.division || "—"}</td>
+      <td style={{ ...tdStyle, color: "var(--danger)", fontWeight: 600 }} className="oswald">
         {p.position || "—"}
       </td>
       <td style={tdStyle}>
@@ -586,7 +586,7 @@ function WatchListRow({
             style={cellInputStyle}
           />
           {xLink && (
-            <a href={xLink} target="_blank" rel="noopener noreferrer" title="Open X profile" style={{ color: "#C89B3C", display: "flex", lineHeight: 0, flexShrink: 0 }}>
+            <a href={xLink} target="_blank" rel="noopener noreferrer" title="Open X profile" style={{ color: "var(--accent)", display: "flex", lineHeight: 0, flexShrink: 0 }}>
               <ExternalLink size={14} />
             </a>
           )}
@@ -602,7 +602,7 @@ function WatchListRow({
             style={cellInputStyle}
           />
           {filmLink && (
-            <a href={filmLink} target="_blank" rel="noopener noreferrer" title="Open film link" style={{ color: "#C89B3C", display: "flex", lineHeight: 0, flexShrink: 0 }}>
+            <a href={filmLink} target="_blank" rel="noopener noreferrer" title="Open film link" style={{ color: "var(--accent)", display: "flex", lineHeight: 0, flexShrink: 0 }}>
               <ExternalLink size={14} />
             </a>
           )}
@@ -626,7 +626,7 @@ function WatchListRow({
         <button
           onClick={onRemove}
           title="Remove from watch list"
-          style={{ background: "none", border: "none", color: "#5D666C", cursor: "pointer", padding: 2, lineHeight: 0 }}
+          style={{ background: "none", border: "none", color: "var(--text-faint)", cursor: "pointer", padding: 2, lineHeight: 0 }}
         >
           <X size={15} />
         </button>
@@ -824,7 +824,7 @@ function WatchListPanel({ watchlist, onClose, onSelectPlayer }) {
       style={{
         position: "fixed",
         inset: 0,
-        background: "#12171A",
+        background: "var(--bg-page)",
         zIndex: 50,
         display: "flex",
         flexDirection: "column",
@@ -834,7 +834,7 @@ function WatchListPanel({ watchlist, onClose, onSelectPlayer }) {
         style={{
           flexShrink: 0,
           padding: "16px var(--gutter)",
-          borderBottom: "1px solid #2A333A",
+          borderBottom: "1px solid var(--border)",
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
@@ -842,7 +842,7 @@ function WatchListPanel({ watchlist, onClose, onSelectPlayer }) {
           flexWrap: "wrap",
         }}
       >
-        <h2 className="oswald" style={{ fontSize: 22, margin: 0, fontWeight: 700, color: "#EDEAE0" }}>
+        <h2 className="oswald" style={{ fontSize: 22, margin: 0, fontWeight: 700, color: "var(--text-primary)" }}>
           Watch List
         </h2>
 
@@ -872,7 +872,7 @@ function WatchListPanel({ watchlist, onClose, onSelectPlayer }) {
               type="submit"
               style={{
                 display: "flex", alignItems: "center", justifyContent: "center", gap: 6, flexShrink: 0,
-                background: "#20281F", border: "1px solid #C89B3C", color: "#C89B3C",
+                background: "var(--accent-bg)", border: "1px solid var(--accent)", color: "var(--accent)",
                 borderRadius: 4, padding: "7px 12px", fontSize: 13, fontWeight: 600, cursor: "pointer",
               }}
             >
@@ -887,7 +887,7 @@ function WatchListPanel({ watchlist, onClose, onSelectPlayer }) {
             title="Export the currently visible rows as a CSV file"
             style={{
               display: "flex", alignItems: "center", gap: 6, flexShrink: 0,
-              background: "#1A2126", border: "1px solid #2A333A", color: "#EDEAE0",
+              background: "var(--bg-surface)", border: "1px solid var(--border)", color: "var(--text-primary)",
               borderRadius: 5, padding: "8px 12px", fontSize: 13, fontWeight: 600, cursor: "pointer",
             }}
           >
@@ -900,7 +900,7 @@ function WatchListPanel({ watchlist, onClose, onSelectPlayer }) {
             onClick={() => setShowCompare(true)}
             style={{
               display: "flex", alignItems: "center", gap: 6, flexShrink: 0,
-              background: "#20281F", border: "1px solid #C89B3C", color: "#C89B3C",
+              background: "var(--accent-bg)", border: "1px solid var(--accent)", color: "var(--accent)",
               borderRadius: 5, padding: "8px 12px", fontSize: 13, fontWeight: 700, cursor: "pointer",
             }}
           >
@@ -908,20 +908,20 @@ function WatchListPanel({ watchlist, onClose, onSelectPlayer }) {
           </button>
         )}
 
-        <button onClick={onClose} style={{ background: "none", border: "none", color: "#8B959C", cursor: "pointer", padding: 4, lineHeight: 0 }}>
+        <button onClick={onClose} style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer", padding: 4, lineHeight: 0 }}>
           <X size={22} />
         </button>
       </div>
 
       {!watchlist.available ? (
-        <div style={{ padding: 20, color: "#8B959C", fontSize: 13, lineHeight: 1.5 }}>
+        <div style={{ padding: 20, color: "var(--text-muted)", fontSize: 13, lineHeight: 1.5 }}>
           {watchlist.checkedAvailability
             ? "Couldn't reach the watch list database. Check your connection and reload."
             : "Loading…"}
         </div>
       ) : (
         <div style={{ flex: 1, minHeight: 0, padding: "16px var(--gutter) var(--gutter)", display: "flex", flexDirection: "column" }}>
-          <div style={{ display: "flex", gap: 4, borderBottom: "1px solid #2A333A", marginBottom: 16, flexWrap: "wrap", flexShrink: 0 }}>
+          <div style={{ display: "flex", gap: 4, borderBottom: "1px solid var(--border)", marginBottom: 16, flexWrap: "wrap", flexShrink: 0 }}>
             {["All", ...WATCH_POSITIONS].map((pos) => (
               <button
                 key={pos}
@@ -931,8 +931,8 @@ function WatchListPanel({ watchlist, onClose, onSelectPlayer }) {
                   display: "flex", alignItems: "center", gap: 6,
                   background: "none", border: "none", cursor: "pointer",
                   padding: "8px 14px 10px", fontSize: 14, fontWeight: 600,
-                  color: positionTab === pos ? "#C89B3C" : "#8B959C",
-                  borderBottom: positionTab === pos ? "2px solid #C89B3C" : "2px solid transparent",
+                  color: positionTab === pos ? "var(--accent)" : "var(--text-muted)",
+                  borderBottom: positionTab === pos ? "2px solid var(--accent)" : "2px solid transparent",
                   marginBottom: -1,
                 }}
               >
@@ -940,8 +940,8 @@ function WatchListPanel({ watchlist, onClose, onSelectPlayer }) {
                 <span
                   className="tabular"
                   style={{
-                    background: positionTab === pos ? "#20281F" : "#1A2126",
-                    color: positionTab === pos ? "#C89B3C" : "#5D666C",
+                    background: positionTab === pos ? "var(--accent-bg)" : "var(--bg-surface)",
+                    color: positionTab === pos ? "var(--accent)" : "var(--text-faint)",
                     borderRadius: 999, padding: "1px 6px", fontSize: 11,
                   }}
                 >
@@ -952,16 +952,16 @@ function WatchListPanel({ watchlist, onClose, onSelectPlayer }) {
           </div>
 
           {visiblePlayers.length === 0 ? (
-            <div style={{ color: "#5D666C", fontSize: 13 }}>
+            <div style={{ color: "var(--text-faint)", fontSize: 13 }}>
               {watchlist.players.length === 0
                 ? "No players on the watch list yet."
                 : `No ${positionTab} players on the watch list yet.`}
             </div>
           ) : (
-            <div style={{ flex: 1, minHeight: 0, border: "1px solid #2A333A", borderRadius: 6, overflow: "auto" }}>
+            <div style={{ flex: 1, minHeight: 0, border: "1px solid var(--border)", borderRadius: 6, overflow: "auto" }}>
               <table style={{ width: "100%", borderCollapse: "collapse" }}>
                 <thead>
-                  <tr style={{ background: "#1A2126" }}>
+                  <tr style={{ background: "var(--bg-surface)" }}>
                     {WATCHLIST_COLUMNS.map((label, i) => {
                       const sortField = WATCHLIST_SORTABLE[label];
                       return (
@@ -983,7 +983,7 @@ function WatchListPanel({ watchlist, onClose, onSelectPlayer }) {
                     <WatchListRow
                       key={p.id}
                       p={p}
-                      style={{ background: i % 2 === 0 ? "#151B1F" : "#12171A", borderTop: "1px solid #212A2F" }}
+                      style={{ background: i % 2 === 0 ? "var(--bg-panel)" : "var(--bg-page)", borderTop: "1px solid var(--border-subtle)" }}
                       onRemove={() => watchlist.removePlayer(p.id)}
                       onUpdate={(field, value) => watchlist.updateField(p.id, field, value)}
                       onSelect={onSelectPlayer}
@@ -1059,8 +1059,8 @@ function PlayerDetailModal({ sel, onClose, watchlist }) {
       <div
         onClick={(e) => e.stopPropagation()}
         style={{
-          background: "#151B1F",
-          border: "1px solid #2A333A",
+          background: "var(--bg-panel)",
+          border: "1px solid var(--border)",
           borderRadius: 8,
           width: 640,
           maxWidth: "100%",
@@ -1072,13 +1072,13 @@ function PlayerDetailModal({ sel, onClose, watchlist }) {
         <div
           style={{
             padding: "16px 20px",
-            borderBottom: "1px solid #2A333A",
+            borderBottom: "1px solid var(--border)",
             display: "flex",
             alignItems: "flex-start",
             justifyContent: "space-between",
             position: "sticky",
             top: 0,
-            background: "#151B1F",
+            background: "var(--bg-panel)",
           }}
         >
           <div>
@@ -1092,10 +1092,10 @@ function PlayerDetailModal({ sel, onClose, watchlist }) {
                 title={watched ? "Remove from watch list" : "Add to watch list"}
                 style={watchToggleButtonStyle}
               >
-                {watched ? <X size={18} color="#C89B3C" /> : <Plus size={18} color="#C89B3C" />}
+                {watched ? <X size={18} color="var(--accent)" /> : <Plus size={18} color="var(--accent)" />}
               </button>
             </div>
-            <div style={{ fontSize: 13, color: "#8B959C", marginTop: 3 }}>
+            <div style={{ fontSize: 13, color: "var(--text-muted)", marginTop: 3 }}>
               {sel.team}
               {first ? ` · ${first.conference} · ${first.position} · ${DIVISION_LABEL[sel.division] || sel.division}` : ""}
             </div>
@@ -1108,14 +1108,14 @@ function PlayerDetailModal({ sel, onClose, watchlist }) {
               title="Search this player"
               style={{
                 display: "flex", alignItems: "center", gap: 7, flexShrink: 0,
-                background: "#20281F", border: "1px solid #C89B3C", color: "#C89B3C",
+                background: "var(--accent-bg)", border: "1px solid var(--accent)", color: "var(--accent)",
                 borderRadius: 5, padding: "10px 16px", fontSize: 14, fontWeight: 700,
                 textDecoration: "none", whiteSpace: "nowrap",
               }}
             >
               <ExternalLink size={16} /> Search
             </a>
-            <button onClick={onClose} style={{ background: "none", border: "none", color: "#8B959C", cursor: "pointer", padding: 4, lineHeight: 0 }}>
+            <button onClick={onClose} style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer", padding: 4, lineHeight: 0 }}>
               <X size={18} />
             </button>
           </div>
@@ -1123,10 +1123,10 @@ function PlayerDetailModal({ sel, onClose, watchlist }) {
 
         <div style={{ padding: 20, display: "flex", flexDirection: "column", gap: 20 }}>
           {watched && (
-            <div style={{ background: "#1A2126", border: "1px solid #2A333A", borderRadius: 6, padding: 14 }}>
+            <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 6, padding: 14 }}>
               <div
                 className="oswald"
-                style={{ fontSize: 12.5, fontWeight: 600, color: "#8FCB86", marginBottom: 10, textTransform: "uppercase", letterSpacing: "0.04em" }}
+                style={{ fontSize: 12.5, fontWeight: 600, color: "var(--success)", marginBottom: 10, textTransform: "uppercase", letterSpacing: "0.04em" }}
               >
                 Your Watch List Info
               </div>
@@ -1188,7 +1188,7 @@ function PlayerDetailModal({ sel, onClose, watchlist }) {
                       style={fieldInputStyle}
                     />
                     {wlXLink && (
-                      <a href={wlXLink} target="_blank" rel="noopener noreferrer" title="Open X profile" style={{ color: "#C89B3C", display: "flex", lineHeight: 0, flexShrink: 0 }}>
+                      <a href={wlXLink} target="_blank" rel="noopener noreferrer" title="Open X profile" style={{ color: "var(--accent)", display: "flex", lineHeight: 0, flexShrink: 0 }}>
                         <ExternalLink size={15} />
                       </a>
                     )}
@@ -1205,7 +1205,7 @@ function PlayerDetailModal({ sel, onClose, watchlist }) {
                       style={fieldInputStyle}
                     />
                     {wlFilmLink && (
-                      <a href={wlFilmLink} target="_blank" rel="noopener noreferrer" title="Open film link" style={{ color: "#C89B3C", display: "flex", lineHeight: 0, flexShrink: 0 }}>
+                      <a href={wlFilmLink} target="_blank" rel="noopener noreferrer" title="Open film link" style={{ color: "var(--accent)", display: "flex", lineHeight: 0, flexShrink: 0 }}>
                         <ExternalLink size={15} />
                       </a>
                     )}
@@ -1232,7 +1232,7 @@ function PlayerDetailModal({ sel, onClose, watchlist }) {
             </div>
           )}
 
-          {rows.length === 0 && <div style={{ color: "#5D666C", fontSize: 13 }}>No tracked stats found for this player.</div>}
+          {rows.length === 0 && <div style={{ color: "var(--text-faint)", fontSize: 13 }}>No tracked stats found for this player.</div>}
           {Object.keys(CATEGORIES).map((key) => {
             const catRows = byCategory[key];
             if (!catRows) return null;
@@ -1241,14 +1241,14 @@ function PlayerDetailModal({ sel, onClose, watchlist }) {
               <div key={key}>
                 <div
                   className="oswald"
-                  style={{ fontSize: 12.5, fontWeight: 600, color: "#C89B3C", marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.04em" }}
+                  style={{ fontSize: 12.5, fontWeight: 600, color: "var(--accent)", marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.04em" }}
                 >
                   {cat.label}
                 </div>
-                <div style={{ border: "1px solid #2A333A", borderRadius: 6, overflow: "hidden" }}>
+                <div style={{ border: "1px solid var(--border)", borderRadius: 6, overflow: "hidden" }}>
                   <table style={{ width: "100%", borderCollapse: "collapse" }}>
                     <thead>
-                      <tr style={{ background: "#1A2126" }}>
+                      <tr style={{ background: "var(--bg-surface)" }}>
                         <th style={detailThStyle}>Week</th>
                         {cat.columns.map((col) => (
                           <th key={col.key} style={{ ...detailThStyle, textAlign: "right" }}>
@@ -1259,7 +1259,7 @@ function PlayerDetailModal({ sel, onClose, watchlist }) {
                     </thead>
                     <tbody>
                       {catRows.map((r) => (
-                        <tr key={r.id} style={{ borderTop: "1px solid #212A2F" }}>
+                        <tr key={r.id} style={{ borderTop: "1px solid var(--border-subtle)" }}>
                           <td style={detailTdStyle}>{weekLabel(r.week)}</td>
                           {cat.columns.map((col) => (
                             <td key={col.key} className="tabular" style={{ ...detailTdStyle, textAlign: "right" }}>
@@ -1280,8 +1280,8 @@ function PlayerDetailModal({ sel, onClose, watchlist }) {
   );
 }
 
-const detailThStyle = { padding: "8px 12px", fontSize: 11.5, fontWeight: 600, color: "#8B959C", textAlign: "left", whiteSpace: "nowrap" };
-const detailTdStyle = { padding: "7px 12px", fontSize: 13, color: "#C7CDD1" };
+const detailThStyle = { padding: "8px 12px", fontSize: 11.5, fontWeight: 600, color: "var(--text-muted)", textAlign: "left", whiteSpace: "nowrap" };
+const detailTdStyle = { padding: "7px 12px", fontSize: 13, color: "var(--text-secondary)" };
 
 // Puts 2-3 watch-listed players' full stat lines side by side instead of
 // opening each one's detail modal separately. Only categories at least
@@ -1299,20 +1299,20 @@ function CompareModal({ players, onClose }) {
       <div
         onClick={(e) => e.stopPropagation()}
         style={{
-          background: "#151B1F", border: "1px solid #2A333A", borderRadius: 8, width: 900, maxWidth: "100%",
+          background: "var(--bg-panel)", border: "1px solid var(--border)", borderRadius: 8, width: 900, maxWidth: "100%",
           maxHeight: "85vh", overflowY: "auto", boxShadow: "0 24px 64px rgba(0,0,0,0.5)",
         }}
       >
         <div
           style={{
-            padding: "16px 20px", borderBottom: "1px solid #2A333A", display: "flex", alignItems: "center",
-            justifyContent: "space-between", position: "sticky", top: 0, background: "#151B1F",
+            padding: "16px 20px", borderBottom: "1px solid var(--border)", display: "flex", alignItems: "center",
+            justifyContent: "space-between", position: "sticky", top: 0, background: "var(--bg-panel)",
           }}
         >
           <h2 className="oswald" style={{ fontSize: 20, margin: 0, fontWeight: 700 }}>
             Compare Players
           </h2>
-          <button onClick={onClose} style={{ background: "none", border: "none", color: "#8B959C", cursor: "pointer", padding: 4, lineHeight: 0 }}>
+          <button onClick={onClose} style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer", padding: 4, lineHeight: 0 }}>
             <X size={18} />
           </button>
         </div>
@@ -1321,13 +1321,13 @@ function CompareModal({ players, onClose }) {
           <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 200 + players.length * 180 }}>
             <thead>
               <tr>
-                <th style={{ ...detailThStyle, position: "sticky", left: 0, background: "#151B1F" }}> </th>
+                <th style={{ ...detailThStyle, position: "sticky", left: 0, background: "var(--bg-panel)" }}> </th>
                 {playerRows.map(({ p }) => (
                   <th key={p.id} style={{ ...detailThStyle, minWidth: 180 }}>
-                    <div className="oswald" style={{ fontSize: 15, fontWeight: 700, color: "#EDEAE0" }}>
+                    <div className="oswald" style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)" }}>
                       {p.player}
                     </div>
-                    <div style={{ fontSize: 11.5, color: "#8B959C", fontWeight: 400 }}>
+                    <div style={{ fontSize: 11.5, color: "var(--text-muted)", fontWeight: 400 }}>
                       {p.team || "—"} · {p.position || "—"}
                     </div>
                   </th>
@@ -1337,7 +1337,7 @@ function CompareModal({ players, onClose }) {
             <tbody>
               {categories.length === 0 && (
                 <tr>
-                  <td colSpan={players.length + 1} style={{ ...detailTdStyle, textAlign: "center", color: "#5D666C", padding: 24 }}>
+                  <td colSpan={players.length + 1} style={{ ...detailTdStyle, textAlign: "center", color: "var(--text-faint)", padding: 24 }}>
                     No tracked stats found for these players.
                   </td>
                 </tr>
@@ -1350,14 +1350,14 @@ function CompareModal({ players, onClose }) {
                       <td
                         colSpan={players.length + 1}
                         className="oswald"
-                        style={{ padding: "10px 12px 4px", fontSize: 12, fontWeight: 700, color: "#C89B3C", textTransform: "uppercase", letterSpacing: "0.04em" }}
+                        style={{ padding: "10px 12px 4px", fontSize: 12, fontWeight: 700, color: "var(--accent)", textTransform: "uppercase", letterSpacing: "0.04em" }}
                       >
                         {cat.label}
                       </td>
                     </tr>
                     {cat.columns.map((col) => (
-                      <tr key={col.key} style={{ borderTop: "1px solid #212A2F" }}>
-                        <td style={{ ...detailTdStyle, position: "sticky", left: 0, background: "#151B1F", color: "#8B959C" }}>{col.label}</td>
+                      <tr key={col.key} style={{ borderTop: "1px solid var(--border-subtle)" }}>
+                        <td style={{ ...detailTdStyle, position: "sticky", left: 0, background: "var(--bg-panel)", color: "var(--text-muted)" }}>{col.label}</td>
                         {playerRows.map(({ p, rows }) => {
                           const row = rows.find((r) => r.category === catKey && r.week === "total");
                           return (
@@ -1392,6 +1392,16 @@ export default function Gridline() {
   const [sortDir, setSortDir] = useState("desc");
   const [watchlistOpen, setWatchlistOpen] = useState(false);
   const [selectedPlayer, setSelectedPlayer] = useState(null);
+  const [theme, setTheme] = useState(() => {
+    const saved = typeof window !== "undefined" && window.localStorage.getItem("gridline-theme");
+    if (saved === "light" || saved === "dark") return saved;
+    return typeof window !== "undefined" && window.matchMedia("(prefers-color-scheme: light)").matches
+      ? "light"
+      : "dark";
+  });
+  useEffect(() => {
+    window.localStorage.setItem("gridline-theme", theme);
+  }, [theme]);
   const watchlist = useWatchlist();
 
   const cat = CATEGORIES[category];
@@ -1520,25 +1530,72 @@ export default function Gridline() {
   return (
     <div
       className="app-shell"
+      data-theme={theme}
       style={{
         display: "flex",
         flexDirection: "column",
         overflow: "hidden",
-        background: "#12171A",
-        color: "#EDEAE0",
+        background: "var(--bg-page)",
+        color: "var(--text-primary)",
         fontFamily: "'Inter', 'Helvetica Neue', Arial, sans-serif",
       }}
     >
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap');
+        :root {
+          --bg-page: #12171A;
+          --bg-panel: #151B1F;
+          --bg-surface: #1A2126;
+          --border: #2A333A;
+          --border-subtle: #212A2F;
+          --border-faint: #1C2429;
+          --row-hover: #1E262B;
+          --text-primary: #EDEAE0;
+          --text-secondary: #C7CDD1;
+          --text-muted: #8B959C;
+          --text-faint: #5D666C;
+          --accent: #C89B3C;
+          --accent-bg: #20281F;
+          --accent-hover-tint: rgba(200,155,60,0.18);
+          --success: #8FCB86;
+          --success-bg: #1B2A1E;
+          --success-border: #33502F;
+          --danger: #A23B3B;
+          --warning: #D9A85C;
+          --warning-bg: #241D16;
+          --warning-border: #4A3A22;
+        }
+        .app-shell[data-theme="light"] {
+          --bg-page: #F6F3EC;
+          --bg-panel: #FFFFFF;
+          --bg-surface: #EFEAE0;
+          --border: #DCD5C4;
+          --border-subtle: #E6E0D2;
+          --border-faint: #EAE4D6;
+          --row-hover: #EFE9DB;
+          --text-primary: #211E17;
+          --text-secondary: #4B4740;
+          --text-muted: #736E62;
+          --text-faint: #948E7E;
+          --accent: #A8761F;
+          --accent-bg: #FBF1D9;
+          --accent-hover-tint: rgba(168,118,31,0.15);
+          --success: #2B7A39;
+          --success-bg: #E5F3E3;
+          --success-border: #9FCBA0;
+          --danger: #A23B3B;
+          --warning: #9C6B1F;
+          --warning-bg: #FBF0DD;
+          --warning-border: #E8C98A;
+        }
         * { box-sizing: border-box; }
         .oswald { font-family: 'Oswald', sans-serif; }
         .tabular { font-variant-numeric: tabular-nums; }
-        ::selection { background: #C89B3C; color: #12171A; }
-        tbody tr:hover { background: #1E262B !important; }
+        ::selection { background: var(--accent); color: var(--bg-page); }
+        tbody tr:hover { background: var(--row-hover) !important; }
         .player-name { cursor: pointer; color: inherit; text-decoration: none; }
-        .player-name:hover { color: #C89B3C; text-decoration: underline; }
-        .watch-toggle:hover { background: rgba(200,155,60,0.18); }
+        .player-name:hover { color: var(--accent); text-decoration: underline; }
+        .watch-toggle:hover { background: var(--accent-hover-tint); }
         /* 100vh on mobile browsers includes the address-bar area, cutting
            content off underneath it -- 100dvh tracks the real visible
            viewport. Kept as a progressive override, not the only rule, for
@@ -1552,7 +1609,7 @@ export default function Gridline() {
       `}</style>
 
       {/* Header */}
-      <div style={{ flexShrink: 0, borderBottom: "1px solid #2A333A", padding: "20px var(--gutter) 16px" }}>
+      <div style={{ flexShrink: 0, borderBottom: "1px solid var(--border)", padding: "20px var(--gutter) 16px" }}>
         <div style={{ maxWidth: "100%", margin: 0 }}>
           <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 14, flexWrap: "wrap" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
@@ -1561,38 +1618,51 @@ export default function Gridline() {
                 <h1 className="oswald app-title" style={{ fontSize: 26, fontWeight: 700, margin: 0, letterSpacing: "0.01em" }}>
                   Central Michigan Pre-Portal Tracker
                 </h1>
-                <span style={{ color: "#8B959C", fontSize: 14 }}>weekly stats — NAIA · JUCO · D2 · FCS · FBS</span>
+                <span style={{ color: "var(--text-muted)", fontSize: 14 }}>weekly stats — NAIA · JUCO · D2 · FCS · FBS</span>
               </div>
             </div>
-            <button
-              onClick={() => setWatchlistOpen(true)}
-              style={{
-                display: "flex", alignItems: "center", gap: 6, flexShrink: 0,
-                background: "#1A2126", border: "1px solid #2A333A", color: "#EDEAE0",
-                borderRadius: 5, padding: "8px 12px", fontSize: 13, fontWeight: 600, cursor: "pointer",
-              }}
-            >
-              <Star size={14} color="#C89B3C" fill={watchlist.players.length ? "#C89B3C" : "none"} />
-              Watch List
-              {watchlist.players.length > 0 && (
-                <span
-                  className="tabular"
-                  style={{ background: "#20281F", color: "#C89B3C", borderRadius: 999, padding: "1px 7px", fontSize: 11.5 }}
-                >
-                  {watchlist.players.length}
-                </span>
-              )}
-            </button>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
+              <button
+                onClick={() => setWatchlistOpen(true)}
+                style={{
+                  display: "flex", alignItems: "center", gap: 6, flexShrink: 0,
+                  background: "var(--bg-surface)", border: "1px solid var(--border)", color: "var(--text-primary)",
+                  borderRadius: 5, padding: "8px 12px", fontSize: 13, fontWeight: 600, cursor: "pointer",
+                }}
+              >
+                <Star size={14} color="var(--accent)" fill={watchlist.players.length ? "var(--accent)" : "none"} />
+                Watch List
+                {watchlist.players.length > 0 && (
+                  <span
+                    className="tabular"
+                    style={{ background: "var(--accent-bg)", color: "var(--accent)", borderRadius: 999, padding: "1px 7px", fontSize: 11.5 }}
+                  >
+                    {watchlist.players.length}
+                  </span>
+                )}
+              </button>
+              <button
+                onClick={() => setTheme((t) => (t === "dark" ? "light" : "dark"))}
+                title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+                style={{
+                  display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+                  background: "var(--bg-surface)", border: "1px solid var(--border)", color: "var(--text-primary)",
+                  borderRadius: 5, width: 34, height: 34, cursor: "pointer",
+                }}
+              >
+                {theme === "dark" ? <Sun size={15} /> : <Moon size={15} />}
+              </button>
+            </div>
           </div>
 
           <div style={{ position: "relative", marginTop: 14, maxWidth: 420 }}>
-            <Search size={15} color="#5D666C" style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} />
+            <Search size={15} color="var(--text-faint)" style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} />
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search player or school…"
               style={{
-                width: "100%", background: "#1A2126", border: "1px solid #2A333A", color: "#EDEAE0",
+                width: "100%", background: "var(--bg-surface)", border: "1px solid var(--border)", color: "var(--text-primary)",
                 borderRadius: 5, padding: "9px 32px", fontSize: 13.5, fontFamily: "inherit",
               }}
             />
@@ -1602,7 +1672,7 @@ export default function Gridline() {
                 title="Clear search"
                 style={{
                   position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)",
-                  background: "none", border: "none", color: "#5D666C", cursor: "pointer", padding: 4, lineHeight: 0,
+                  background: "none", border: "none", color: "var(--text-faint)", cursor: "pointer", padding: 4, lineHeight: 0,
                 }}
               >
                 <X size={14} />
@@ -1626,7 +1696,7 @@ export default function Gridline() {
 
       <div style={{ flexShrink: 0, padding: "16px var(--gutter) 0" }}>
         {/* Division tabs */}
-        <div style={{ display: "flex", gap: 4, borderBottom: "1px solid #2A333A", marginBottom: 14 }}>
+        <div style={{ display: "flex", gap: 4, borderBottom: "1px solid var(--border)", marginBottom: 14 }}>
           {DIVISIONS.map((d) => (
             <button
               key={d}
@@ -1639,8 +1709,8 @@ export default function Gridline() {
                 padding: "10px 18px 12px",
                 fontSize: 15,
                 fontWeight: 600,
-                color: division === d ? "#C89B3C" : "#8B959C",
-                borderBottom: division === d ? "2px solid #C89B3C" : "2px solid transparent",
+                color: division === d ? "var(--accent)" : "var(--text-muted)",
+                borderBottom: division === d ? "2px solid var(--accent)" : "2px solid transparent",
                 marginBottom: -1,
               }}
               title={DIVISION_LABEL[d]}
@@ -1653,12 +1723,12 @@ export default function Gridline() {
         {/* Breakout performers -- scoped to the currently open division tab,
             scanning for whoever actually had the best week most recently */}
         <div style={{ marginBottom: 14 }}>
-          <span style={{ fontSize: 11, color: "#5D666C", letterSpacing: "0.03em", display: "flex", alignItems: "center", gap: 5, marginBottom: 6 }}>
-            <TrendingUp size={12} color="#C89B3C" />
+          <span style={{ fontSize: 11, color: "var(--text-faint)", letterSpacing: "0.03em", display: "flex", alignItems: "center", gap: 5, marginBottom: 6 }}>
+            <TrendingUp size={12} color="var(--accent)" />
             {DIVISION_LABEL[division]} breakout this week{breakoutPerformers.week ? ` — ${weekLabel(breakoutPerformers.week)}` : ""}
           </span>
           {breakoutPerformers.entries.length === 0 ? (
-            <div style={{ fontSize: 12.5, color: "#5D666C", padding: "8px 0" }}>
+            <div style={{ fontSize: 12.5, color: "var(--text-faint)", padding: "8px 0" }}>
               No real single-week numbers yet for {DIVISION_LABEL[division]} — these show up once this division's weekly scrape has run more than once this season.
             </div>
           ) : (
@@ -1669,15 +1739,15 @@ export default function Gridline() {
                   onClick={() => handleBreakoutClick({ board, leader })}
                   style={{
                     display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 2,
-                    background: "#1A2126", border: "1px solid #33502F", borderRadius: 5,
+                    background: "var(--bg-surface)", border: "1px solid var(--success-border)", borderRadius: 5,
                     padding: "8px 14px", cursor: "pointer", textAlign: "left", minWidth: 148,
                   }}
                 >
-                  <span className="oswald" style={{ fontSize: 11, color: "#8FCB86", fontWeight: 500 }}>
+                  <span className="oswald" style={{ fontSize: 11, color: "var(--success)", fontWeight: 500 }}>
                     {board.label}
                   </span>
-                  <span style={{ fontSize: 13.5, fontWeight: 600, color: "#EDEAE0" }}>{leader.player}</span>
-                  <span className="tabular" style={{ fontSize: 12.5, color: "#C89B3C" }}>
+                  <span style={{ fontSize: 13.5, fontWeight: 600, color: "var(--text-primary)" }}>{leader.player}</span>
+                  <span className="tabular" style={{ fontSize: 12.5, color: "var(--accent)" }}>
                     {leader[board.sortKey]} {statLabel} this week
                   </span>
                 </button>
@@ -1695,10 +1765,10 @@ export default function Gridline() {
             marginBottom: 12,
             padding: "7px 12px",
             borderRadius: 5,
-            background: isLiveView ? "#1B2A1E" : "#241D16",
-            border: isLiveView ? "1px solid #33502F" : "1px solid #4A3A22",
+            background: isLiveView ? "var(--success-bg)" : "var(--warning-bg)",
+            border: isLiveView ? "1px solid var(--success-border)" : "1px solid var(--warning-border)",
             fontSize: 13,
-            color: isLiveView ? "#8FCB86" : "#D9A85C",
+            color: isLiveView ? "var(--success)" : "var(--warning)",
           }}
         >
           {isLiveView ? (
@@ -1716,7 +1786,7 @@ export default function Gridline() {
 
         {/* Weekly leaders strip */}
         <div style={{ marginBottom: 14 }}>
-          <span style={{ fontSize: 11, color: "#5D666C", letterSpacing: "0.03em", display: "block", marginBottom: 6 }}>
+          <span style={{ fontSize: 11, color: "var(--text-faint)", letterSpacing: "0.03em", display: "block", marginBottom: 6 }}>
             {weekLabel(week)} leaders — {conference === "All" ? DIVISION_LABEL[division] : conference}
           </span>
           <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
@@ -1731,8 +1801,8 @@ export default function Gridline() {
                   flexDirection: "column",
                   alignItems: "flex-start",
                   gap: 2,
-                  background: active ? "#20281F" : "#1A2126",
-                  border: active ? "1px solid #C89B3C" : "1px solid #2A333A",
+                  background: active ? "var(--accent-bg)" : "var(--bg-surface)",
+                  border: active ? "1px solid var(--accent)" : "1px solid var(--border)",
                   borderRadius: 5,
                   padding: "6px 14px",
                   cursor: "pointer",
@@ -1740,18 +1810,18 @@ export default function Gridline() {
                   minWidth: 148,
                 }}
               >
-                <span className="oswald" style={{ fontSize: 11, color: "#8B959C", fontWeight: 500 }}>
+                <span className="oswald" style={{ fontSize: 11, color: "var(--text-muted)", fontWeight: 500 }}>
                   {board.label}
                 </span>
                 {leader ? (
                   <>
-                    <span style={{ fontSize: 13.5, fontWeight: 600, color: "#EDEAE0" }}>{leader.player}</span>
-                    <span className="tabular" style={{ fontSize: 12.5, color: "#C89B3C" }}>
+                    <span style={{ fontSize: 13.5, fontWeight: 600, color: "var(--text-primary)" }}>{leader.player}</span>
+                    <span className="tabular" style={{ fontSize: 12.5, color: "var(--accent)" }}>
                       {leader[board.sortKey]} {statLabel}
                     </span>
                   </>
                 ) : (
-                  <span style={{ fontSize: 13, color: "#5D666C" }}>No data</span>
+                  <span style={{ fontSize: 13, color: "var(--text-faint)" }}>No data</span>
                 )}
               </button>
               );
@@ -1806,7 +1876,7 @@ export default function Gridline() {
             </select>
           </FilterGroup>
 
-          <span style={{ marginLeft: "auto", color: "#5D666C", fontSize: 13 }}>
+          <span style={{ marginLeft: "auto", color: "var(--text-faint)", fontSize: 13 }}>
             {rows.length} player{rows.length !== 1 ? "s" : ""}
           </span>
         </div>
@@ -1816,10 +1886,10 @@ export default function Gridline() {
           with the header row pinned via `position: sticky` on each <th>
           (sticky on <thead> itself is unreliable across browsers). */}
       <div style={{ flex: 1, minHeight: 0, padding: "0 var(--gutter) 16px", display: "flex", flexDirection: "column" }}>
-        <div style={{ flex: 1, minHeight: 0, border: "1px solid #2A333A", borderRadius: 6, overflow: "auto" }}>
+        <div style={{ flex: 1, minHeight: 0, border: "1px solid var(--border)", borderRadius: 6, overflow: "auto" }}>
           <table style={{ width: "100%", borderCollapse: "collapse" }}>
             <thead>
-              <tr style={{ background: "#1A2126" }}>
+              <tr style={{ background: "var(--bg-surface)" }}>
                 <Th label="Player" sticky />
                 <Th label="Team" sticky />
                 <Th label="Conf" sticky />
@@ -1845,14 +1915,14 @@ export default function Gridline() {
                   <tr
                     key={r.id}
                     style={{
-                      background: isLeader ? "#20281F" : i % 2 === 0 ? "#151B1F" : "#12171A",
-                      borderTop: "1px solid #212A2F",
-                      borderLeft: isLeader ? "2px solid #C89B3C" : "2px solid transparent",
+                      background: isLeader ? "var(--accent-bg)" : i % 2 === 0 ? "var(--bg-panel)" : "var(--bg-page)",
+                      borderTop: "1px solid var(--border-subtle)",
+                      borderLeft: isLeader ? "2px solid var(--accent)" : "2px solid transparent",
                     }}
                   >
-                    <td style={{ ...tdStyle, fontWeight: 600, color: "#EDEAE0" }}>
+                    <td style={{ ...tdStyle, fontWeight: 600, color: "var(--text-primary)" }}>
                       <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
-                        {isLeader && <Crown size={13} color="#C89B3C" />}
+                        {isLeader && <Crown size={13} color="var(--accent)" />}
                         <button
                           className="watch-toggle"
                           onClick={(e) => {
@@ -1864,7 +1934,7 @@ export default function Gridline() {
                           title={watchlist.isWatched(r.player, r.team) ? "Remove from watch list" : "Add to watch list"}
                           style={watchToggleButtonStyle}
                         >
-                          {watchlist.isWatched(r.player, r.team) ? <X size={16} color="#C89B3C" /> : <Plus size={16} color="#C89B3C" />}
+                          {watchlist.isWatched(r.player, r.team) ? <X size={16} color="var(--accent)" /> : <Plus size={16} color="var(--accent)" />}
                         </button>
                         <span
                           className="player-name"
@@ -1878,8 +1948,8 @@ export default function Gridline() {
                             title="Sample data"
                             style={{
                               fontSize: 9.5,
-                              color: "#D9A85C",
-                              border: "1px solid #4A3A22",
+                              color: "var(--warning)",
+                              border: "1px solid var(--warning-border)",
                               borderRadius: 3,
                               padding: "1px 4px",
                               fontWeight: 600,
@@ -1891,9 +1961,9 @@ export default function Gridline() {
                         )}
                       </span>
                     </td>
-                    <td style={{ ...tdStyle, color: "#8B959C" }}>{r.team}</td>
-                    <td style={{ ...tdStyle, color: "#8B959C", fontSize: 12.5 }}>{r.conference}</td>
-                    <td style={{ ...tdStyle, color: "#A23B3B", fontWeight: 600 }} className="oswald">
+                    <td style={{ ...tdStyle, color: "var(--text-muted)" }}>{r.team}</td>
+                    <td style={{ ...tdStyle, color: "var(--text-muted)", fontSize: 12.5 }}>{r.conference}</td>
+                    <td style={{ ...tdStyle, color: "var(--danger)", fontWeight: 600 }} className="oswald">
                       {r.position}
                     </td>
                     {cat.columns.map((col) => (
@@ -1906,7 +1976,7 @@ export default function Gridline() {
               })}
               {rows.length === 0 && (
                 <tr>
-                  <td colSpan={4 + cat.columns.length} style={{ ...tdStyle, textAlign: "center", color: "#5D666C", padding: 32 }}>
+                  <td colSpan={4 + cat.columns.length} style={{ ...tdStyle, textAlign: "center", color: "var(--text-faint)", padding: 32 }}>
                     No players match this filter for the selected week.
                   </td>
                 </tr>
@@ -1922,7 +1992,7 @@ export default function Gridline() {
 function FilterGroup({ label, children }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-      <span style={{ fontSize: 11, color: "#5D666C", letterSpacing: "0.03em" }}>{label}</span>
+      <span style={{ fontSize: 11, color: "var(--text-faint)", letterSpacing: "0.03em" }}>{label}</span>
       {children}
     </div>
   );
@@ -1938,13 +2008,13 @@ function Th({ label, align = "left", sortable, active, dir, onClick, sticky }) {
         textAlign: align,
         fontSize: 13,
         fontWeight: 600,
-        color: active ? "#C89B3C" : "#8B959C",
+        color: active ? "var(--accent)" : "var(--text-muted)",
         cursor: sortable ? "pointer" : "default",
         userSelect: "none",
-        borderBottom: "1px solid #2A333A",
-        borderRight: "1px solid #212A2F",
+        borderBottom: "1px solid var(--border)",
+        borderRight: "1px solid var(--border-subtle)",
         whiteSpace: "nowrap",
-        ...(sticky ? { position: "sticky", top: 0, background: "#1A2126", zIndex: 1 } : null),
+        ...(sticky ? { position: "sticky", top: 0, background: "var(--bg-surface)", zIndex: 1 } : null),
       }}
     >
       <span style={{ display: "inline-flex", alignItems: "center", gap: 4, justifyContent: align === "right" ? "flex-end" : "flex-start" }}>
@@ -1960,12 +2030,12 @@ function Th({ label, align = "left", sortable, active, dir, onClick, sticky }) {
   );
 }
 
-const tdStyle = { padding: "9px 16px", fontSize: 14, color: "#C7CDD1", borderRight: "1px solid #1C2429" };
+const tdStyle = { padding: "9px 16px", fontSize: 14, color: "var(--text-secondary)", borderRight: "1px solid var(--border-faint)" };
 
 const selectStyle = {
-  background: "#1A2126",
-  color: "#EDEAE0",
-  border: "1px solid #2A333A",
+  background: "var(--bg-surface)",
+  color: "var(--text-primary)",
+  border: "1px solid var(--border)",
   borderRadius: 4,
   padding: "7px 10px",
   fontSize: 14,
