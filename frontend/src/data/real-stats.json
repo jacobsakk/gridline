@@ -254322,16 +254322,16 @@
     "division": "FBS",
     "week": "total",
     "category": "rushing",
-    "position": "RB",
+    "position": "QB",
     "player": "William Watson III",
     "team": "Massachusetts",
     "conference": "MAC",
     "games": 2,
     "sample": false,
-    "att": 118,
-    "yards": 880,
-    "avg": "7.5",
-    "td": 7
+    "att": 10,
+    "yards": 80,
+    "avg": "8.0",
+    "td": 2
   },
   {
     "id": "real-fbs-conf-rushing-75",

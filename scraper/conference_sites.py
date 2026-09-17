@@ -161,6 +161,25 @@ def _parse_leader_table(html, section_id):
     return rows
 
 
+# A conference site's own posted numbers are trusted as-is everywhere
+# else in this file -- these are the confirmed exceptions, verified
+# directly against real box scores rather than assumed wrong. Same
+# pattern as ncaa_api.py's CONFERENCE_CORRECTIONS: applied on top of
+# whatever the site says, keyed by (player, team, category).
+STAT_CORRECTIONS = {
+    # getsomemaction.com (MAC) listed 118 att / 880 yds for his rushing
+    # line through 2 games -- not just wrong but physically impossible
+    # (that plus his ~22 pass attempts/game would be 91 plays/game from
+    # one player). Real through the same 2 games, per box scores: 10
+    # carries, 80 yards, 2 TDs. Also fixes position -- he's the starting
+    # QB (see his own passing row), not the "RB" this file defaults
+    # every rushing entry to absent real position data from these sites.
+    ("William Watson III", "Massachusetts", "rushing"): {
+        "att": 10, "yards": 80, "avg": "8.0", "td": 2, "position": "QB",
+    },
+}
+
+
 def _row_from_stats(category, default_position, player, team, division, conference, stats, row_id):
     games = _to_int(stats.get("G"))
     base = {
@@ -177,21 +196,24 @@ def _row_from_stats(category, default_position, player, team, division, conferen
     }
     if category == "passing":
         comp, att = _to_int(stats.get("COMP")), _to_int(stats.get("ATT"))
-        return {
+        row = {
             **base, "compAtt": f"{comp}/{att}", "att": att,
             "yards": _to_int(stats.get("YDS")), "td": _to_int(stats.get("TD")),
             "int": _to_int(stats.get("INT")), "rating": stats.get("EFFIC", "0.0"),
         }
-    if category == "rushing":
-        return {
+    elif category == "rushing":
+        row = {
             **base, "att": _to_int(stats.get("ATT")), "yards": _to_int(stats.get("YDS")),
             "avg": stats.get("AVG", "0.0"), "td": _to_int(stats.get("TD")),
         }
-    # receiving
-    return {
-        **base, "rec": _to_int(stats.get("REC")), "yards": _to_int(stats.get("YDS")),
-        "avg": stats.get("AVG/C", "0.0"), "td": _to_int(stats.get("TD")),
-    }
+    else:
+        # receiving
+        row = {
+            **base, "rec": _to_int(stats.get("REC")), "yards": _to_int(stats.get("YDS")),
+            "avg": stats.get("AVG/C", "0.0"), "td": _to_int(stats.get("TD")),
+        }
+    row.update(STAT_CORRECTIONS.get((player, team, category), {}))
+    return row
 
 
 def fetch_supplemental_rows(division, existing_rows):
