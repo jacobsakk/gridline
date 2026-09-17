@@ -532,7 +532,7 @@ function WatchListRow({
       </td>
       <td style={{ ...tdStyle, color: "var(--text-muted)" }}>{p.team || "—"}</td>
       <td style={{ ...tdStyle, color: "var(--text-muted)", fontSize: 12.5 }}>{p.division || "—"}</td>
-      <td style={{ ...tdStyle, color: "var(--danger)", fontWeight: 600 }} className="oswald">
+      <td style={{ ...tdStyle, color: "var(--accent)", fontWeight: 600 }} className="oswald">
         {p.position || "—"}
       </td>
       <td style={tdStyle}>
@@ -1587,20 +1587,22 @@ export default function Gridline() {
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap');
         :root {
-          --bg-page: #12171A;
-          --bg-panel: #151B1F;
-          --bg-surface: #1A2126;
-          --border: #2A333A;
-          --border-subtle: #212A2F;
-          --border-faint: #1C2429;
-          --row-hover: #1E262B;
+          --gold: #FBAB18;
+          --maroon: #510F1D;
+          --bg-page: #000000;
+          --bg-panel: #0A0A0A;
+          --bg-surface: #141414;
+          --border: #2A2A2A;
+          --border-subtle: #202020;
+          --border-faint: #181818;
+          --row-hover: #1A1A1A;
           --text-primary: #EDEAE0;
           --text-secondary: #C7CDD1;
           --text-muted: #8B959C;
           --text-faint: #5D666C;
-          --accent: #C89B3C;
-          --accent-bg: #20281F;
-          --accent-hover-tint: rgba(200,155,60,0.18);
+          --accent: var(--gold);
+          --accent-bg: #241B08;
+          --accent-hover-tint: rgba(251,171,24,0.18);
           --success: #8FCB86;
           --success-bg: #1B2A1E;
           --success-border: #33502F;
@@ -1621,9 +1623,9 @@ export default function Gridline() {
           --text-secondary: #4B4740;
           --text-muted: #736E62;
           --text-faint: #948E7E;
-          --accent: #A8761F;
-          --accent-bg: #FBF1D9;
-          --accent-hover-tint: rgba(168,118,31,0.15);
+          --accent: var(--maroon);
+          --accent-bg: #F5E7EA;
+          --accent-hover-tint: rgba(81,15,29,0.10);
           --success: #2B7A39;
           --success-bg: #E5F3E3;
           --success-border: #9FCBA0;
@@ -1652,8 +1654,16 @@ export default function Gridline() {
         }
       `}</style>
 
-      {/* Header */}
-      <div style={{ flexShrink: 0, borderBottom: "1px solid var(--border)", padding: "20px var(--gutter) 16px" }}>
+      {/* Header -- the gold-to-maroon stripe underneath is the school's
+          own colors, kept literal (not the theme-adaptive --accent) so it
+          reads the same in both light and dark mode. */}
+      <div style={{ flexShrink: 0, position: "relative", padding: "20px var(--gutter) 16px" }}>
+        <div
+          style={{
+            position: "absolute", left: 0, right: 0, bottom: 0, height: 3,
+            background: "linear-gradient(90deg, var(--gold), var(--maroon))",
+          }}
+        />
         <div style={{ maxWidth: "100%", margin: 0 }}>
           <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 14, flexWrap: "wrap" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
@@ -2022,7 +2032,7 @@ export default function Gridline() {
                     </td>
                     <td style={{ ...tdStyle, color: "var(--text-muted)" }}>{r.team}</td>
                     <td style={{ ...tdStyle, color: "var(--text-muted)", fontSize: 12.5 }}>{r.conference}</td>
-                    <td style={{ ...tdStyle, color: "var(--danger)", fontWeight: 600 }} className="oswald">
+                    <td style={{ ...tdStyle, color: "var(--accent)", fontWeight: 600 }} className="oswald">
                       {r.position}
                     </td>
                     {cat.columns.map((col) => (
