@@ -1738,9 +1738,11 @@ export default function Gridline() {
       )}
       {selectedPlayer && <PlayerDetailModal sel={selectedPlayer} onClose={() => setSelectedPlayer(null)} watchlist={watchlist} />}
 
+      {/* Division tabs -- frozen along with the header above; everything
+          below (breakout strip, live banner, filters, table) scrolls as
+          one region beneath this. */}
       <div style={{ flexShrink: 0, padding: "16px var(--gutter) 0" }}>
-        {/* Division tabs */}
-        <div style={{ display: "flex", gap: 4, borderBottom: "1px solid var(--border)", marginBottom: 14 }}>
+        <div style={{ display: "flex", gap: 4, borderBottom: "1px solid var(--border)" }}>
           {DIVISIONS.map((d) => (
             <button
               key={d}
@@ -1763,7 +1765,14 @@ export default function Gridline() {
             </button>
           ))}
         </div>
+      </div>
 
+      {/* Everything from here down (breakout strip, live banner, weekly
+          leaders, filters, and the table itself) scrolls together as one
+          region, so the table's own sticky header (see Th's sticky prop)
+          takes over freezing the column headers once scrolled past the
+          rest of this chrome. */}
+      <div style={{ flex: 1, minHeight: 0, overflow: "auto", padding: "16px var(--gutter) var(--gutter)" }}>
         {/* Breakout performers -- scoped to the currently open division tab,
             scanning for whoever actually had the best week most recently */}
         <div style={{ marginBottom: 14 }}>
@@ -1924,13 +1933,14 @@ export default function Gridline() {
             {rows.length} player{rows.length !== 1 ? "s" : ""}
           </span>
         </div>
-      </div>
 
-      {/* Table -- a full-width grid that scrolls in place, spreadsheet-style,
-          with the header row pinned via `position: sticky` on each <th>
-          (sticky on <thead> itself is unreliable across browsers). */}
-      <div style={{ flex: 1, minHeight: 0, padding: "0 var(--gutter) 16px", display: "flex", flexDirection: "column" }}>
-        <div style={{ flex: 1, minHeight: 0, border: "1px solid var(--border)", borderRadius: 6, overflow: "auto" }}>
+        {/* Table -- a full-width grid, spreadsheet-style, with the header
+            row pinned via `position: sticky` on each <th>. Its scrolling
+            ancestor is the outer region above (no overflow set on this
+            div itself), so the header freezes there once scrolled past
+            the breakout strip/banner/filters, not at this div's own
+            bounds. */}
+        <div style={{ border: "1px solid var(--border)", borderRadius: 6 }}>
           <table style={{ width: "100%", borderCollapse: "collapse" }}>
             <thead>
               <tr style={{ background: "var(--bg-surface)" }}>
