@@ -458,6 +458,25 @@ def main():
         updates = {"enrichedAt": datetime.datetime.now(datetime.timezone.utc).isoformat()}
 
         x_link, film_link = find_social_links(results)
+
+        # A second, Hudl-targeted search only when the first one found
+        # nothing and none is already on file -- confirmed directly that
+        # appending "hudl" to the query can surface a real profile Tavily
+        # otherwise misses entirely (its own index just doesn't rank it
+        # the way Google does for the same name), but also confirmed
+        # directly that adding "hudl" to every query is unsafe -- it once
+        # buried a player's already-findable profile under generic Hudl
+        # app-store/marketing pages instead. Safe as a fallback rather
+        # than a general query change: it only ever replaces "nothing
+        # found" with something, since the result still has to pass the
+        # same strict hudl.com domain check below.
+        if not film_link and not p.get("filmLink"):
+            hudl_query = f"{query} hudl"
+            hudl_results = search_results(hudl_query, api_key)
+            if hudl_results:
+                _, retry_film_link = find_social_links(hudl_results)
+                film_link = retry_film_link
+
         if film_link and not p.get("filmLink"):
             updates["filmLink"] = film_link
             found["filmLink"] += 1

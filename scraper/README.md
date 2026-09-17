@@ -163,6 +163,16 @@ access the front-end itself has).
     Self-reported by the athlete, so treated as a strong but not infallible source — cross-checked
     directly: one player's Hudl-reported Twitter handle matched what an independent web search had
     separately found, giving real confidence rather than assumed reliability.
+  - **A second, Hudl-targeted search fires only when the primary one found no Hudl link at all**
+    (and none is already on file). Confirmed directly that Tavily's own index doesn't always agree
+    with Google's — one real player's Hudl profile was Google's #1 result for a plain name search,
+    but didn't appear in Tavily's top 10 for the same query at all, since Tavily crawls and ranks
+    independently rather than proxying Google. Appending "hudl" to the query surfaces a profile
+    Tavily otherwise misses, but confirmed directly this isn't safe as a permanent change to the
+    main query — for a different player whose profile the primary query already found cleanly,
+    adding "hudl" buried it under generic Hudl app-store/marketing pages instead. Safe specifically
+    as a fallback rather than a general query change: it only ever replaces "nothing found" with
+    something, since the retry's result still has to pass the same strict `hudl.com` domain check.
   - Also requests `include_raw_content` from Tavily (free, no extra credit cost) as a second data
     source for the generic (non-Hudl) tiers above — confirmed directly this matters: several
     school athletics bio pages return HTTP 405 to this script's own direct fetch specifically from
