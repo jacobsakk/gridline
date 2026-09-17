@@ -1721,11 +1721,11 @@ export default function Gridline() {
         overflow: "hidden",
         background: "var(--bg-page)",
         color: "var(--text-primary)",
-        fontFamily: "'Inter', 'Helvetica Neue', Arial, sans-serif",
+        fontFamily: "'Century Gothic', 'Jost', 'Helvetica Neue', Arial, sans-serif",
       }}
     >
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap');
         :root {
           --gold: #FBAB18;
           --maroon: #510F1D;
@@ -1775,7 +1775,7 @@ export default function Gridline() {
           --warning-border: #E8C98A;
         }
         * { box-sizing: border-box; }
-        .oswald { font-family: 'Oswald', sans-serif; }
+        .oswald { font-family: 'Century Gothic', 'Jost', sans-serif; }
         .tabular { font-variant-numeric: tabular-nums; }
         ::selection { background: var(--accent); color: var(--bg-page); }
         tbody tr:hover { background: var(--row-hover) !important; }
