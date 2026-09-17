@@ -1772,10 +1772,15 @@ export default function Gridline() {
           region, so the table's own sticky header (see Th's sticky prop)
           takes over freezing the column headers once scrolled past the
           rest of this chrome. */}
-      <div style={{ flex: 1, minHeight: 0, overflow: "auto", padding: "16px var(--gutter) var(--gutter)" }}>
+      <div style={{ flex: 1, minHeight: 0, overflow: "auto", padding: "0 var(--gutter) var(--gutter)" }}>
         {/* Breakout performers -- scoped to the currently open division tab,
-            scanning for whoever actually had the best week most recently */}
-        <div style={{ marginBottom: 14 }}>
+            scanning for whoever actually had the best week most recently.
+            The top spacing lives here (not as padding-top on the scroll
+            container above) because a sticky element's top:0 resolves
+            against the container's padding edge -- padding-top there would
+            leave a gap the size of that padding once scrolled past it,
+            since that padding-top has already scrolled out of view. */}
+        <div style={{ marginBottom: 14, paddingTop: 16 }}>
           <span style={{ fontSize: 11, color: "var(--text-faint)", letterSpacing: "0.03em", display: "flex", alignItems: "center", gap: 5, marginBottom: 6 }}>
             <TrendingUp size={12} color="var(--accent)" />
             {DIVISION_LABEL[division]} breakout this week{breakoutPerformers.week ? ` — ${weekLabel(breakoutPerformers.week)}` : ""}
