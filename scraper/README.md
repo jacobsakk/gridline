@@ -127,21 +127,28 @@ access the front-end itself has).
     X only server-renders bio content for a handful of huge/cached accounts; 3 real recruit
     accounts tested all came back as an empty JS shell with zero bio text in a plain HTTP fetch.)
   - **Height / Weight / Hometown**: these tend to sit in the same bio block (e.g. "Height 6-3
-    Weight 205 Class Senior Hometown Selby, S.D."), and Tavily's response already includes a short
-    content snippet per result which very often already contains that whole line — confirmed
-    directly against multiple real players' real bio pages (Sidearm, PrestoSports, MaxPreps,
-    247Sports, etc.), no extra fetch needed. Falls back to fetching a result's actual page (in
-    ranked order) only if a snippet didn't have it. Two real false-positive bugs were caught and
-    fixed by testing against the live watch list rather than assumed safe: a poor search match
-    once produced a bogus "weight: 700" from an unrelated number on an irrelevant page (fixed with
-    sanity bounds: weight 140-400, height 4'0"-7'11"), and a fetched page's own inline `<style>`
-    CSS text once matched as "weight: 100" from a literal `font-weight:100` declaration (fixed by
+    Weight 205 Class Senior Hometown Selby, S.D."), so all three are extracted together in one
+    pass. Three tiers, in order, stopping as soon as all three are found: (1) any result shaped
+    like the player's *own school athletics bio page* — `.../roster/player-name/12345` or
+    `.../bios/player_name_id`, a pattern confirmed directly to hold across multiple real
+    schools/divisions regardless of the actual domain — gets its actual page fetched right away,
+    since that's the most authoritative, current source available; (2) everyone else's Tavily
+    content snippet (already fetched, no extra network call — confirmed directly these often
+    already contain the bio line verbatim); (3) everyone else's actual page, fetched as a last
+    resort since a snippet can be truncated before reaching the bio line. Tier 1 exists because of
+    a real, confirmed bug it fixes: without it, a QB's actual current roster page (6'3"/205) lost
+    to a stale 2023 high-school recruiting profile (6'2") simply because the recruiting site's
+    Tavily snippet happened to mention the number and got checked in tier 2 before the real bio
+    page's page content ever got fetched in tier 3. A roster-list URL (ending exactly at
+    `/roster`, no player slug) is deliberately excluded from tier 1 — that's dozens of players on
+    one page, and our own first-match regex could otherwise grab a different player's numbers.
+    Three real false-positive bugs were caught and fixed by testing against the live watch list
+    rather than assumed safe: the tier-ordering bug above, a poor search match that once produced
+    a bogus "weight: 700" from an unrelated number on an irrelevant page (fixed with sanity
+    bounds: weight 140-400, height 4'0"-7'11"), and a fetched page's own inline `<style>` CSS text
+    that once matched as "weight: 100" from a literal `font-weight:100` declaration (fixed by
     stripping `<script>`/`<style>` blocks *with* their content, not just the tags, plus a
-    word-boundary guard so "font-weight"/"line-height" can't match at all). Known limitation:
-    since this takes whichever ranked result matches first, it can occasionally surface an older
-    measurement (e.g. a stale high-school recruiting profile) instead of a current one if that
-    ranks above the player's actual current roster page — same "never overwrites a manual entry"
-    rule means a person can always correct it once, permanently.
+    word-boundary guard so "font-weight"/"line-height" can't match at all).
 - **Never overwrites a manual entry** — only fills a field that's currently empty. A doc's
   `enrichedAt` timestamp marks it as tried (whether or not anything was found) so the same player
   isn't re-queried every single day, burning quota for no reason; it's eligible again after 14

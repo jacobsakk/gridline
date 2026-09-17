@@ -257,29 +257,60 @@ def _page_text(url):
     return re.sub(r"<[^>]+>", " ", html)
 
 
+def _looks_like_player_bio_page(url):
+    """True for a URL shaped like a school athletics site's own
+    player-specific roster/bio subpage -- confirmed directly across
+    multiple real schools/divisions this shape holds regardless of the
+    actual domain: ".../roster/player-name/12345" or
+    ".../bios/player_name_id". Explicitly excludes a URL that IS a full
+    team roster listing (path ending exactly at "/roster") rather than
+    one player's own page -- that's a page listing dozens of players, and
+    scanning it with our own first-match regex risks grabbing a
+    completely different player's height/weight off the same page."""
+    path = urllib.parse.urlparse(url).path.lower().rstrip("/")
+    if path.endswith("/roster"):
+        return False
+    return "/roster/" in path or "/bios/" in path or "/bio/" in path
+
+
 def find_bio_fields(results):
     """Height, Weight, and Hometown all tend to sit in the same bio block
-    (e.g. "Height 6-3 Weight 205 Class Senior Hometown Selby, S.D.") so
-    this scans for all three together instead of running separate passes
-    that would each re-fetch the same pages."""
-    height = weight = hometown = None
+    (e.g. "Height 6-3 Weight 205 Class Senior Hometown Selby, S.D.").
+    Three tiers, in order, stopping as soon as all three fields are found:
 
-    # First pass: the search snippets themselves (already fetched, no extra
-    # network calls) -- confirmed directly that these often already contain
-    # the bio line verbatim.
-    for r in results:
+      1. Any result that looks like the player's own school athletics
+         bio page -- fetch its actual page right away (not just its
+         snippet, which can be an uninformative boilerplate summary)
+         since this is the most authoritative, current source available.
+         Confirmed directly this matters: a QB's real current roster page
+         listed 6'3"/205, but without this tier a stale 2023 high-school
+         recruiting profile's snippet (6'2") got checked first purely
+         because it happened to have richer boilerplate text, and won.
+      2. Everyone else's snippets (already fetched, no extra network
+         calls).
+      3. Everyone else's actual pages, as a last resort, since a snippet
+         can be truncated before reaching the bio line.
+    """
+    height = weight = hometown = None
+    bio_pages = [r for r in results if _looks_like_player_bio_page(r.get("url", ""))]
+    other_results = [r for r in results if not _looks_like_player_bio_page(r.get("url", ""))]
+
+    for r in bio_pages:
+        if height and weight and hometown:
+            return height, weight, hometown
+        h, w, ht = _extract_bio(_page_text(r.get("url", "")))
+        height, weight, hometown = height or h, weight or w, hometown or ht
+
+    for r in other_results:
         if height and weight and hometown:
             return height, weight, hometown
         h, w, ht = _extract_bio(r.get("content", ""))
         height, weight, hometown = height or h, weight or w, hometown or ht
 
-    # Fallback: fetch each result's actual page in ranked order, since a
-    # snippet can be truncated before reaching the bio line.
-    for r in results:
+    for r in other_results:
         if height and weight and hometown:
             break
-        text = _page_text(r.get("url", ""))
-        h, w, ht = _extract_bio(text)
+        h, w, ht = _extract_bio(_page_text(r.get("url", "")))
         height, weight, hometown = height or h, weight or w, hometown or ht
 
     return height, weight, hometown
