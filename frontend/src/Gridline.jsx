@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect, useRef, Fragment } from "react";
-import { ChevronUp, ChevronDown, ChevronsUpDown, Crown, BadgeCheck, FlaskConical, Star, X, Plus, ExternalLink, Search, Download, Columns3, TrendingUp, GripVertical, Sun, Moon, CheckCircle2, AlertTriangle } from "lucide-react";
+import { ChevronUp, ChevronDown, ChevronsUpDown, Crown, BadgeCheck, FlaskConical, Star, X, Plus, ExternalLink, Search, Download, Columns3, TrendingUp, GripVertical, Sun, Moon, CheckCircle2, AlertTriangle, ArrowLeft } from "lucide-react";
 import { collection, doc, addDoc, updateDoc, onSnapshot, query, orderBy } from "firebase/firestore";
 import { db } from "./firebase";
 import L from "leaflet";
@@ -1562,13 +1562,13 @@ function CompareModal({ players, onClose }) {
 
 // ---------- Component ----------
 
-export default function Gridline() {
+export default function Gridline({ onBack, initialSearch }) {
   const [division, setDivision] = useState("NAIA");
   const [category, setCategory] = useState("passing");
   const [week, setWeek] = useState("total");
   const [position, setPosition] = useState("All");
   const [conference, setConference] = useState("All");
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState(initialSearch || "");
   const [sortKey, setSortKey] = useState("yards");
   const [sortDir, setSortDir] = useState("desc");
   const [watchlistOpen, setWatchlistOpen] = useState(false);
@@ -1724,76 +1724,6 @@ export default function Gridline() {
         fontFamily: "'Century Gothic', 'Jost', 'Helvetica Neue', Arial, sans-serif",
       }}
     >
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap');
-        :root {
-          --gold: #FBAB18;
-          --maroon: #510F1D;
-          --bg-page: #000000;
-          --bg-panel: #0A0A0A;
-          --bg-surface: #141414;
-          --border: #2A2A2A;
-          --border-subtle: #202020;
-          --border-faint: #181818;
-          --row-hover: #1A1A1A;
-          --text-primary: #EDEAE0;
-          --text-secondary: #C7CDD1;
-          --text-muted: #8B959C;
-          --text-faint: #5D666C;
-          --accent: var(--gold);
-          --accent-bg: #241B08;
-          --accent-hover-tint: rgba(251,171,24,0.18);
-          --success: #8FCB86;
-          --success-bg: #1B2A1E;
-          --success-border: #33502F;
-          --danger: #A23B3B;
-          --warning: #D9A85C;
-          --warning-bg: #241D16;
-          --warning-border: #4A3A22;
-        }
-        .app-shell[data-theme="light"] {
-          --bg-page: #F6F3EC;
-          --bg-panel: #FFFFFF;
-          --bg-surface: #EFEAE0;
-          --border: #DCD5C4;
-          --border-subtle: #E6E0D2;
-          --border-faint: #EAE4D6;
-          --row-hover: #EFE9DB;
-          --text-primary: #211E17;
-          --text-secondary: #4B4740;
-          --text-muted: #736E62;
-          --text-faint: #948E7E;
-          --accent: var(--maroon);
-          --accent-bg: #F5E7EA;
-          --accent-hover-tint: rgba(81,15,29,0.10);
-          --success: #2B7A39;
-          --success-bg: #E5F3E3;
-          --success-border: #9FCBA0;
-          --danger: #A23B3B;
-          --warning: #9C6B1F;
-          --warning-bg: #FBF0DD;
-          --warning-border: #E8C98A;
-        }
-        * { box-sizing: border-box; }
-        .oswald { font-family: 'Century Gothic', 'Jost', sans-serif; }
-        .tabular { font-variant-numeric: tabular-nums; }
-        ::selection { background: var(--accent); color: var(--bg-page); }
-        tbody tr:hover { background: var(--row-hover) !important; }
-        .player-name { cursor: pointer; color: inherit; text-decoration: none; }
-        .player-name:hover { color: var(--accent); text-decoration: underline; }
-        .watch-toggle:hover { background: var(--accent-hover-tint); }
-        /* 100vh on mobile browsers includes the address-bar area, cutting
-           content off underneath it -- 100dvh tracks the real visible
-           viewport. Kept as a progressive override, not the only rule, for
-           the handful of browsers that don't support dvh yet. */
-        .app-shell { height: 100vh; --gutter: 32px; }
-        @supports (height: 100dvh) { .app-shell { height: 100dvh; } }
-        @media (max-width: 480px) {
-          .app-shell { --gutter: 16px; }
-          .app-title { font-size: 19px !important; }
-        }
-      `}</style>
-
       {/* Header -- the gold-to-maroon stripe underneath is the school's
           own colors, kept literal (not the theme-adaptive --accent) so it
           reads the same in both light and dark mode. */}
@@ -1807,6 +1737,19 @@ export default function Gridline() {
         <div style={{ maxWidth: "100%", margin: 0 }}>
           <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 14, flexWrap: "wrap" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+              {onBack && (
+                <button
+                  onClick={onBack}
+                  title="Back to dashboard"
+                  style={{
+                    display: "flex", alignItems: "center", gap: 6, flexShrink: 0,
+                    background: "var(--bg-surface)", border: "1px solid var(--border)", color: "var(--text-secondary)",
+                    borderRadius: 5, padding: "8px 12px", fontSize: 13, fontWeight: 600, cursor: "pointer",
+                  }}
+                >
+                  <ArrowLeft size={15} /> Dashboard
+                </button>
+              )}
               <img src={cmuHelmet} alt="Central Michigan Chippewas helmet" style={{ height: 34, width: "auto", flexShrink: 0 }} />
               <div style={{ display: "flex", alignItems: "baseline", gap: 14, flexWrap: "wrap" }}>
                 <h1 className="oswald app-title" style={{ fontSize: 26, fontWeight: 700, margin: 0, letterSpacing: "0.01em" }}>
@@ -1849,15 +1792,15 @@ export default function Gridline() {
             </div>
           </div>
 
-          <div style={{ position: "relative", marginTop: 14, maxWidth: 420 }}>
-            <Search size={15} color="var(--text-faint)" style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} />
+          <div style={{ position: "relative", marginTop: 14, maxWidth: 640 }}>
+            <Search size={18} color="var(--text-faint)" style={{ position: "absolute", left: 16, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} />
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search player or school…"
               style={{
                 width: "100%", background: "var(--bg-surface)", border: "1px solid var(--border)", color: "var(--text-primary)",
-                borderRadius: 5, padding: "9px 32px", fontSize: 13.5, fontFamily: "inherit",
+                borderRadius: 8, padding: "13px 42px", fontSize: 15.5, fontFamily: "inherit",
               }}
             />
             {search && (

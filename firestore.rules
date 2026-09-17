@@ -11,6 +11,9 @@ service cloud.firestore {
     match /portalStatus/{docId} {
       allow read, write: if true;
     }
+    match /accounts/{docId} {
+      allow read, write: if true;
+    }
     match /{document=**} {
       allow read, write: if false;
     }
