@@ -149,6 +149,28 @@ access the front-end itself has).
     that once matched as "weight: 100" from a literal `font-weight:100` declaration (fixed by
     stripping `<script>`/`<style>` blocks *with* their content, not just the tags, plus a
     word-boundary guard so "font-weight"/"line-height" can't match at all).
+  - **A Hudl profile gets special treatment**, checked ahead of the generic tiers above whenever
+    one is known (freshly found this run, or already stored in `filmLink` from a previous one).
+    Rather than scanning visible text, this parses the page's own embedded page-state JSON
+    directly (`extract_hudl_bio()`) — confirmed directly against two real profiles that Hudl
+    embeds a clean `overview` object (height, weight, a self-reported Twitter handle) and a
+    `teams` array (each with a location + `startYear`) for the specific profile owner, scoped by
+    matching their numeric Hudl user id from the URL (the page also embeds other, unrelated
+    athletes' summaries in sidebar widgets, so an unscoped search risks grabbing the wrong
+    person's data). The *earliest* team's location stands in for hometown — the same signal a
+    human would read off the page's own "Team History" list, oldest entry (this was the owner's
+    own idea, from noticing a real player's Hudl page listed his high school's town this way).
+    Self-reported by the athlete, so treated as a strong but not infallible source — cross-checked
+    directly: one player's Hudl-reported Twitter handle matched what an independent web search had
+    separately found, giving real confidence rather than assumed reliability.
+  - Also requests `include_raw_content` from Tavily (free, no extra credit cost) as a second data
+    source for the generic (non-Hudl) tiers above — confirmed directly this matters: several
+    school athletics bio pages return HTTP 405 to this script's own direct fetch specifically from
+    GitHub Actions' runner IPs (the identical URL fetches fine from a normal residential IP), while
+    Tavily's own crawler isn't blocked the same way. Tavily's "cleaned" extraction can itself drop
+    a bio widget entirely though (confirmed on one real page — full stat tables came through with
+    no Height/Weight/Hometown block), so this script's own fetch stays as a fallback rather than
+    being replaced outright.
 - **Never overwrites a manual entry** — only fills a field that's currently empty. A doc's
   `enrichedAt` timestamp marks it as tried (whether or not anything was found) so the same player
   isn't re-queried every single day, burning quota for no reason; it's eligible again after 14

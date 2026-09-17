@@ -245,20 +245,28 @@ def _extract_bio(text):
     return height, weight, hometown
 
 
-def _page_text(url):
-    """Best-effort plain-text fetch -- returns None on any failure (dead
+def _fetch_html(url):
+    """Raw HTML fetch, no cleanup -- returns None on any failure (dead
     link, timeout, non-HTML content, site blocking the request) rather
     than raising, since this is a best-effort scan of pages we don't
     control."""
     try:
         req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
         with urllib.request.urlopen(req, timeout=PAGE_FETCH_TIMEOUT) as resp:
-            html = resp.read(MAX_PAGE_BYTES).decode("utf-8", errors="replace")
+            return resp.read(MAX_PAGE_BYTES).decode("utf-8", errors="replace")
     except Exception as e:
         # Logged rather than silently swallowed -- local testing kept
         # succeeding on pages that failed from the actual GitHub Actions
         # runner, and there was no way to tell why without this.
         print(f"    page fetch failed for {url}: {type(e).__name__}: {e}")
+        return None
+
+
+def _page_text(url):
+    """Plain-text version of _fetch_html, for the generic bio-line regex
+    scan."""
+    html = _fetch_html(url)
+    if not html:
         return None
     # Strip <script>/<style> blocks *with* their text content first -- a
     # generic tag-strip alone leaves inline CSS/JS text behind (confirmed
@@ -266,6 +274,74 @@ def _page_text(url):
     # weight regex and produced a bogus 100 lb reading for a real player).
     html = re.sub(r"<(script|style)\b[^>]*>.*?</\1>", " ", html, flags=re.S | re.I)
     return re.sub(r"<[^>]+>", " ", html)
+
+
+HUDL_PROFILE_ID_RE = re.compile(r'hudl\.com/profile/(\d+)', re.I)
+
+
+def extract_hudl_bio(hudl_url):
+    """Best-effort structured extraction from a Hudl athlete profile's
+    embedded page-state JSON (not the visible HTML text, which is why
+    this needs the raw fetch rather than _page_text's script-stripped
+    one). Confirmed directly against two real profiles: the page embeds
+    a clean "overview" object (height, weight, a self-reported Twitter
+    handle) and a "teams" array (each with a location + startYear) for
+    the specific profile owner, scoped by matching their numeric Hudl
+    user id from the URL -- the page also embeds other, unrelated
+    athletes' summaries in sidebar widgets, so searching without this
+    anchor risks grabbing the wrong person's data. The earliest team's
+    location stands in for hometown (the same signal a human would read
+    off the page's own "Team History" list, oldest entry). Self-reported
+    by the athlete, so treated as a strong but not infallible source --
+    cross-checked directly: one player's Hudl-reported Twitter handle
+    matched what an independent web search separately found, giving real
+    confidence rather than assumed reliability.
+    Returns a dict with whichever of height/weight/hometown/xLink were
+    found -- empty if the URL isn't a Hudl profile, the fetch failed, or
+    the page structure didn't match what was confirmed above."""
+    m = HUDL_PROFILE_ID_RE.search(hudl_url or "")
+    if not m:
+        return {}
+    user_id = m.group(1)
+    html = _fetch_html(hudl_url)
+    if not html:
+        return {}
+
+    idx = html.find(f'"userId":"{user_id}"')
+    if idx == -1:
+        return {}
+    block = html[idx : idx + 6000]
+    decoder = json.JSONDecoder()
+    found = {}
+
+    overview_idx = block.find('"overview":')
+    if overview_idx != -1:
+        try:
+            overview, _ = decoder.raw_decode(block, overview_idx + len('"overview":'))
+            height = _normalize_height(overview.get("height") or "")
+            if height:
+                found["height"] = height
+            weight_match = re.match(r"(\d{2,3})", str(overview.get("weight") or ""))
+            if weight_match and _valid_weight(weight_match.group(1)):
+                found["weight"] = weight_match.group(1)
+            if overview.get("twitter"):
+                found["xLink"] = f"https://x.com/{overview['twitter']}"
+        except json.JSONDecodeError:
+            pass
+
+    teams_idx = block.find('"teams":')
+    if teams_idx != -1:
+        try:
+            teams, _ = decoder.raw_decode(block, teams_idx + len('"teams":'))
+            dated = [t for t in teams if isinstance(t, dict) and t.get("location") and t.get("startYear")]
+            if dated:
+                earliest = min(dated, key=lambda t: t["startYear"])
+                if _valid_hometown(earliest["location"]):
+                    found["hometown"] = earliest["location"]
+        except json.JSONDecodeError:
+            pass
+
+    return found
 
 
 def _looks_like_player_bio_page(url):
@@ -382,24 +458,43 @@ def main():
         updates = {"enrichedAt": datetime.datetime.now(datetime.timezone.utc).isoformat()}
 
         x_link, film_link = find_social_links(results)
-        if x_link and not p.get("xLink"):
-            updates["xLink"] = x_link
-            found["xLink"] += 1
         if film_link and not p.get("filmLink"):
             updates["filmLink"] = film_link
             found["filmLink"] += 1
 
-        if not p.get("height") or not p.get("weight") or not p.get("hometown"):
-            height, weight, hometown = find_bio_fields(results)
-            if height and not p.get("height"):
-                updates["height"] = height
-                found["height"] += 1
-            if weight and not p.get("weight"):
-                updates["weight"] = weight
-                found["weight"] += 1
-            if hometown and not p.get("hometown"):
-                updates["hometown"] = hometown
-                found["hometown"] += 1
+        # A Hudl profile is self-reported by the athlete, so it's checked
+        # ahead of the generic web scan below -- confirmed directly it
+        # carries height/weight/a Twitter handle/team history, which is
+        # more than a plain bio page usually states in one place. Reuse
+        # an already-known filmLink too, not just one freshly found this
+        # run, so a player added before this feature existed still
+        # benefits from it.
+        hudl_data = extract_hudl_bio(film_link or p.get("filmLink") or "")
+
+        x_link = x_link or hudl_data.get("xLink")
+        if x_link and not p.get("xLink"):
+            updates["xLink"] = x_link
+            found["xLink"] += 1
+
+        height, weight, hometown = hudl_data.get("height"), hudl_data.get("weight"), hudl_data.get("hometown")
+        still_missing = (
+            (not height and not p.get("height"))
+            or (not weight and not p.get("weight"))
+            or (not hometown and not p.get("hometown"))
+        )
+        if still_missing:
+            h, w, ht = find_bio_fields(results)
+            height, weight, hometown = height or h, weight or w, hometown or ht
+
+        if height and not p.get("height"):
+            updates["height"] = height
+            found["height"] += 1
+        if weight and not p.get("weight"):
+            updates["weight"] = weight
+            found["weight"] += 1
+        if hometown and not p.get("hometown"):
+            updates["hometown"] = hometown
+            found["hometown"] += 1
 
         patch_player(p["id"], updates)
         filled = [k for k in ("height", "weight", "hometown", "xLink", "filmLink") if k in updates]
