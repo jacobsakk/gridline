@@ -1232,11 +1232,14 @@ function PlayerDetailModal({ sel, onClose, watchlist, portalStatus }) {
             </div>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
-            <ToggleSwitch
-              checked={portalStatus.isInPortal(sel.player, sel.team)}
-              onChange={(val) => portalStatus.setInPortal(sel.player, sel.team, val)}
-              title="Mark this player as having entered the transfer portal"
-            />
+            <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+              <span style={{ fontSize: 12.5, color: "var(--text-muted)", whiteSpace: "nowrap" }}>Entered Portal?</span>
+              <ToggleSwitch
+                checked={portalStatus.isInPortal(sel.player, sel.team)}
+                onChange={(val) => portalStatus.setInPortal(sel.player, sel.team, val)}
+                title="Mark this player as having entered the transfer portal"
+              />
+            </div>
             <a
               href={playerSearchUrl(sel.player, sel.team, first?.position || sel.position)}
               target="_blank"
