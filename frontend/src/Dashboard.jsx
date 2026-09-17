@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Search, Settings, Sun, Moon, ClipboardList, ChevronRight } from "lucide-react";
+import { Settings, Sun, Moon, ClipboardList, ChevronRight } from "lucide-react";
 import cmuHelmet from "./assets/cmu-helmet.png";
 
 // The main hub -- everything else (the Pre-Portal Tracker today, more
@@ -19,19 +19,12 @@ export default function Dashboard({ onOpenTracker, onOpenSettings }) {
     const saved = typeof window !== "undefined" && window.localStorage.getItem("gridline-theme");
     return saved === "light" || saved === "dark" ? saved : "dark";
   });
-  const [search, setSearch] = useState("");
-
   function toggleTheme() {
     setTheme((t) => {
       const next = t === "dark" ? "light" : "dark";
       window.localStorage.setItem("gridline-theme", next);
       return next;
     });
-  }
-
-  function handleSearchSubmit(e) {
-    e.preventDefault();
-    onOpenTracker(search.trim());
   }
 
   return (
@@ -87,22 +80,7 @@ export default function Dashboard({ onOpenTracker, onOpenSettings }) {
         </div>
       </div>
 
-      <div style={{ flex: 1, minHeight: 0, overflow: "auto", padding: "8px var(--gutter) var(--gutter)" }}>
-        <form onSubmit={handleSearchSubmit} style={{ maxWidth: 720, margin: "24px auto 40px" }}>
-          <div style={{ position: "relative" }}>
-            <Search size={20} color="var(--text-faint)" style={{ position: "absolute", left: 20, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} />
-            <input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search players, teams…"
-              style={{
-                width: "100%", background: "var(--bg-surface)", border: "1px solid var(--border)", color: "var(--text-primary)",
-                borderRadius: 999, padding: "18px 24px 18px 52px", fontSize: 17, fontFamily: "inherit",
-              }}
-            />
-          </div>
-        </form>
-
+      <div style={{ flex: 1, minHeight: 0, overflow: "auto", padding: "24px var(--gutter) var(--gutter)" }}>
         <div style={{ maxWidth: 1100, margin: "0 auto" }}>
           <h2 className="oswald" style={{ fontSize: 26, fontWeight: 700, margin: "0 0 20px", letterSpacing: "0.01em" }}>
             Dashboard
