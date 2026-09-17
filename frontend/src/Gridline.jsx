@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect, useRef, Fragment } from "react";
-import { ChevronUp, ChevronDown, ChevronsUpDown, Crown, BadgeCheck, FlaskConical, Star, X, Plus, ExternalLink, Search, Download, Columns3, TrendingUp, GripVertical, Sun, Moon, CheckCircle2 } from "lucide-react";
+import { ChevronUp, ChevronDown, ChevronsUpDown, Crown, BadgeCheck, FlaskConical, Star, X, Plus, ExternalLink, Search, Download, Columns3, TrendingUp, GripVertical, Sun, Moon, CheckCircle2, AlertTriangle } from "lucide-react";
 import { collection, doc, addDoc, updateDoc, onSnapshot, query, orderBy } from "firebase/firestore";
 import { db } from "./firebase";
 import L from "leaflet";
@@ -264,6 +264,18 @@ function useWatchlist() {
 // on a watchlist doc.
 function usePortalStatus() {
   const [docs, setDocs] = useState([]);
+  // The switch flips immediately on click rather than waiting on a round
+  // trip to Firestore -- otherwise a slow connection (or a write that
+  // fails, e.g. security rules not yet covering this collection) makes
+  // the switch look completely unresponsive. Cleared once the snapshot
+  // listener confirms the real value, or on failure so it snaps back to
+  // whatever's actually saved instead of lying about it forever.
+  const [optimistic, setOptimistic] = useState(() => new Map());
+  // Which player+team keys just failed to save -- surfaced in the UI so
+  // a failed write (e.g. Firestore rules not deployed for this
+  // collection yet) doesn't just look like the switch silently ignoring
+  // the click.
+  const [errorKeys, setErrorKeys] = useState(() => new Set());
 
   useEffect(() => {
     const unsubscribe = onSnapshot(collection(db, "portalStatus"), (snap) => {
@@ -279,19 +291,44 @@ function usePortalStatus() {
   }, [docs]);
 
   function isInPortal(player, team) {
-    return byKey.get(`${player}::${team}`)?.inPortal === true;
+    const key = `${player}::${team}`;
+    if (optimistic.has(key)) return optimistic.get(key);
+    return byKey.get(key)?.inPortal === true;
+  }
+
+  function saveFailed(player, team) {
+    return errorKeys.has(`${player}::${team}`);
   }
 
   async function setInPortal(player, team, value) {
-    const existing = byKey.get(`${player}::${team}`);
-    if (existing) {
-      await updateDoc(doc(db, "portalStatus", existing.id), { inPortal: value });
-    } else {
-      await addDoc(collection(db, "portalStatus"), { player, team, inPortal: value });
+    const key = `${player}::${team}`;
+    setOptimistic((prev) => new Map(prev).set(key, value));
+    setErrorKeys((prev) => {
+      if (!prev.has(key)) return prev;
+      const next = new Set(prev);
+      next.delete(key);
+      return next;
+    });
+    try {
+      const existing = byKey.get(key);
+      if (existing) {
+        await updateDoc(doc(db, "portalStatus", existing.id), { inPortal: value });
+      } else {
+        await addDoc(collection(db, "portalStatus"), { player, team, inPortal: value });
+      }
+    } catch (err) {
+      console.error("Failed to save portal status -- check Firestore rules cover the portalStatus collection", err);
+      setErrorKeys((prev) => new Set(prev).add(key));
+    } finally {
+      setOptimistic((prev) => {
+        const next = new Map(prev);
+        next.delete(key);
+        return next;
+      });
     }
   }
 
-  return { isInPortal, setInPortal };
+  return { isInPortal, setInPortal, saveFailed };
 }
 
 // Manual on/off switch -- used for "entered the portal", which is
@@ -1239,6 +1276,11 @@ function PlayerDetailModal({ sel, onClose, watchlist, portalStatus }) {
                 onChange={(val) => portalStatus.setInPortal(sel.player, sel.team, val)}
                 title="Mark this player as having entered the transfer portal"
               />
+              {portalStatus.saveFailed(sel.player, sel.team) && (
+                <span title="Couldn't save -- the site's database isn't set up to store this yet" style={{ display: "inline-flex", color: "var(--danger)", lineHeight: 0 }}>
+                  <AlertTriangle size={15} />
+                </span>
+              )}
             </div>
             <a
               href={playerSearchUrl(sel.player, sel.team, first?.position || sel.position)}
