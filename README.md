@@ -169,13 +169,15 @@ suggested architecture.
       server-side per-player lookup would need a paid Firebase Cloud Functions tier or a bulk
       scrape too expensive to run for every player — not attempted.
 - [x] Auto-fill Height, Weight, X (Twitter), and Film Link for watch list players — a daily
-      GitHub Actions job (`scraper/watchlist_enrich.py`, see `scraper/README.md`) runs one Google
-      Custom Search per player (same query the front-end's own "Search" button builds) and checks
-      the top results for an x.com/twitter.com or hudl.com link, plus a Height/Weight bio line on
-      whichever result looks like a roster page — fills in whichever fields are still empty,
-      never overwriting a manual entry. Requires the repo owner to add two API secrets one time
-      (`GOOGLE_SEARCH_API_KEY`, `GOOGLE_SEARCH_CX`) — the workflow no-ops harmlessly until they
-      exist.
+      GitHub Actions job (`scraper/watchlist_enrich.py`, see `scraper/README.md`) runs one Tavily
+      search per player (same query the front-end's own "Search" button builds) and checks the
+      top results for an x.com/twitter.com or hudl.com link, plus a Height/Weight bio line in
+      whichever result's content snippet (or page) looks like a roster page — fills in whichever
+      fields are still empty, never overwriting a manual entry. (Google's Custom Search API was
+      the original plan, but turned out to be closed to new accounts entirely — confirmed
+      directly, not assumed — so this uses Tavily instead, which needs no credit card.) Requires
+      the repo owner to add one API secret one time (`TAVILY_API_KEY`) — the workflow no-ops
+      harmlessly until it exists.
 - [ ] Big Ten and SoCon aren't in the conference cross-reference yet — both use a different,
       newer stats platform (a JSON API behind a game-by-game CMS, not the simple leaderboard
       endpoint the other 32 conferences have), which needs its own dedicated scraper.

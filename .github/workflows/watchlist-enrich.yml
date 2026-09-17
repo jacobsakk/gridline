@@ -1,18 +1,19 @@
 name: Watch list bio / link lookup
 
 # Fills in Height, Weight, X (Twitter), and Film Link for watch list
-# players who don't have them yet, using Google's Custom Search API on
-# the same query the front-end's own "Search" button already builds
+# players who don't have them yet, using the Tavily Search API on the
+# same query the front-end's own "Search" button already builds
 # (player + team + position + "football"). Writes straight to Firestore
 # over its public REST API (no service account needed -- firestore.rules
 # already allows open read/write on the watchlist collection). Never
 # touches a field someone already filled in by hand.
 #
-# Needs two repo secrets: GOOGLE_SEARCH_API_KEY and GOOGLE_SEARCH_CX (see
-# scraper/watchlist_enrich.py for where to get them). Runs daily rather
-# than weekly since the watch list changes whenever someone adds a
-# player, and the script self-limits well under the free 100-queries/day
-# Custom Search quota.
+# Needs one repo secret: TAVILY_API_KEY (see scraper/watchlist_enrich.py
+# for where to get it -- no credit card required, unlike Google's Custom
+# Search API, which turned out to no longer be available to new Google
+# Cloud projects at all). Runs daily rather than weekly since the watch
+# list changes whenever someone adds a player, and the script self-
+# limits well under the free 1,000-searches/month Tavily quota.
 on:
   schedule:
     - cron: "0 12 * * *"
@@ -32,6 +33,5 @@ jobs:
       - name: Look up bio info / links for watch list players
         working-directory: scraper
         env:
-          GOOGLE_SEARCH_API_KEY: ${{ secrets.GOOGLE_SEARCH_API_KEY }}
-          GOOGLE_SEARCH_CX: ${{ secrets.GOOGLE_SEARCH_CX }}
+          TAVILY_API_KEY: ${{ secrets.TAVILY_API_KEY }}
         run: python3 watchlist_enrich.py

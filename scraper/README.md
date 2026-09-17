@@ -96,7 +96,7 @@ field abbreviations for almost everything), but simpler:
   receiving/tackles/TFL/INT/PBU) was checked against real player data across every division after
   finding this and came back clean — this was an isolated, single-field bug.
 
-## Watch list bio / link lookup — Google Custom Search API — **done**
+## Watch list bio / link lookup — Tavily Search API — **done**
 
 `watchlist_enrich.py` fills in the watch list's Height, Weight, X, and Film Link fields
 automatically for players who don't have them yet, instead of leaving everything purely manual.
@@ -105,33 +105,43 @@ reads/writes the live Firestore watch list directly over its public REST API (no
 needed — `firestore.rules` already allows open read/write on the `watchlist` collection, so a
 plain unauthenticated HTTP request works, same access the front-end itself has).
 
+- **Why Tavily, not Google**: Google's Custom Search JSON API was the original choice, but turned
+  out to be a dead end confirmed directly, not assumed — it's no longer available to *new* Google
+  Cloud projects at all (`PERMISSION_DENIED` even with the API enabled, billing active, and a
+  valid key; Google's own developer forum confirms this is expected, legacy customers only, full
+  shutdown January 2027), and its "Search the entire web" Programmable Search Engine setting is
+  likewise locked for any engine created after January 20, 2026. Tavily has no such new-customer
+  wall and needs no credit card for its free tier (1,000 searches/month).
 - **One search covers all four fields** — the same query the front-end's own "Search" button
-  already builds (`{player} {team} {position} football`), read programmatically via Google's
-  official Custom Search JSON API instead of scraping Google's results page directly (which would
-  violate Google's ToS and, confirmed by this project's own experience with other bot-protected
-  sites, would likely get an automated runner's IP blocked or CAPTCHA'd within a handful of
-  requests anyway).
+  already builds (`{player} {team} {position} football`).
   - **X / Film Link**: checked by domain — the first `x.com`/`twitter.com` result becomes `xLink`,
     the first `hudl.com` result becomes `filmLink`, since in practice a real recruit's X or Hudl
-    profile shows up near the top far more often than not.
-  - **Height / Weight**: most school bio/roster pages (Sidearm, PrestoSports, MaxPreps,
-    247Sports, etc.) print a "Height"/"Weight" or combined "HT/WT" line. This fetches each of the
-    top results in ranked order and regex-scans the page's plain text for that pattern, stopping
-    at the first page that has it — confirmed directly against a real, live school athletics
-    roster page (Dakota State's `dsuathletics.com` bio page for a real NAIA player), which the
-    parser correctly pulled `6'3"` / `205` from a whitespace-heavy bio table, not a guess.
+    profile shows up near the top far more often than not. (Explicitly *not* scraping a recruit's
+    actual X bio text for this, even though many put a Hudl link there — confirmed directly that
+    X only server-renders bio content for a handful of huge/cached accounts; 3 real recruit
+    accounts tested all came back as an empty JS shell with zero bio text in a plain HTTP fetch.)
+  - **Height / Weight**: Tavily's response already includes a short content snippet per result,
+    which for a school bio/roster page (Sidearm, PrestoSports, MaxPreps, 247Sports, etc.) very
+    often already contains the "Height"/"Weight" line directly — confirmed directly with a real
+    query for a real NAIA player, which returned "Height 6-3 Weight 205" right in the snippet, no
+    extra page fetch needed. Falls back to fetching a result's actual page (in ranked order) only
+    if no snippet had it. Every parsed value is sanity-bounded (weight 100-400, height 4'0"-7'11")
+    after a bad search match once produced a bogus "weight: 700" from an unrelated number on an
+    irrelevant page — caught by testing against the real live watch list, not assumed safe.
+    Known limitation: since this takes whichever ranked result matches first, it can occasionally
+    surface an older measurement (e.g. a stale high-school recruiting profile) instead of a
+    current one if that ranks above the player's actual current roster page — same "never
+    overwrites a manual entry" rule means a person can always correct it once, permanently.
 - **Never overwrites a manual entry** — only fills a field that's currently empty. A doc's
   `enrichedAt` timestamp marks it as tried (whether or not anything was found) so the same player
   isn't re-queried every single day, burning quota for no reason; it's eligible again after 14
   days in case new info shows up later.
 - **Runs daily**, not weekly like the stats scrapers, since the watch list changes whenever
   someone adds a player rather than on a season schedule — see
-  `.github/workflows/watchlist-enrich.yml`. Capped at 40 lookups/run to stay well under the free
-  Custom Search tier's 100 queries/day.
-- **Setup** (one-time, by the project owner — this needs a Google account, so it can't be
-  automated): enable the Custom Search API and create an API key at
-  [Google Cloud Console](https://console.cloud.google.com/apis/library/customsearch.googleapis.com),
-  create a search engine at [Programmable Search Engine](https://programmablesearchengine.google.com/)
-  set to "Search the entire web" (not just specific sites), then add both values as repo secrets
-  (`GOOGLE_SEARCH_API_KEY`, `GOOGLE_SEARCH_CX`) under Settings → Secrets and variables → Actions.
-  Until those secrets exist, the workflow runs and exits immediately without doing anything.
+  `.github/workflows/watchlist-enrich.yml`. Capped at 30 lookups/run to stay comfortably under the
+  free 1,000-searches/month Tavily quota even if every daily run maxes out.
+- **Setup** (one-time, by the project owner — this needs an account, so it can't be automated):
+  sign up at [tavily.com](https://tavily.com) (no credit card needed), copy the API key from the
+  dashboard (starts with `tvly-`), then add it as a repo secret named `TAVILY_API_KEY` under
+  Settings → Secrets and variables → Actions. Until that secret exists, the workflow runs and
+  exits immediately without doing anything.

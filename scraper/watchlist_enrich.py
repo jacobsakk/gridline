@@ -1,20 +1,32 @@
 """
 Fills in Height, Weight, X (Twitter), and Film Link for watch list
-players who don't have them yet, using Google's Custom Search JSON API --
-the same query the front-end's own "Search" button already builds (see
+players who don't have them yet, using the Tavily Search API on the same
+query the front-end's own "Search" button already builds (see
 playerSearchUrl() in Gridline.jsx: "{player} {team} {position} football"),
 just read programmatically instead of clicked by a human.
 
 One search per player covers all four fields, so this doesn't burn any
-extra Custom Search quota per field:
+extra quota per field:
   - X / Film Link: checked by domain -- an x.com/twitter.com link becomes
     xLink, a hudl.com link becomes filmLink, since in practice one of
     those is usually near the top of the results for a real recruit.
-  - Height / Weight: most school bio/roster pages (Sidearm, PrestoSports,
-    MaxPreps, 247Sports, etc.) print a "Height"/"Weight" or combined
-    "HT/WT" line near the top of the page. This fetches each of the top
-    results in ranked order and regex-scans the page's plain text for
-    that pattern, stopping at the first page that has it.
+  - Height / Weight: Tavily's response already includes a short content
+    snippet per result, which for a school bio/roster page (Sidearm,
+    PrestoSports, MaxPreps, 247Sports, etc.) very often already contains
+    the "Height"/"Weight" line -- confirmed directly (a real query for a
+    real NAIA player returned "Height 6-3 Weight 205" right in the
+    snippet, no extra fetch needed). This checks those snippets first,
+    in ranked order, and only falls back to fetching a result's actual
+    page if no snippet had it (snippets can be truncated).
+
+Why Tavily and not Google: Google's Custom Search JSON API is no longer
+available to new Google Cloud projects at all (confirmed directly --
+PERMISSION_DENIED on a freshly created project, and Google's own
+developer forum confirms this is expected: the API is being phased out,
+legacy customers only, full shutdown January 2027) and its companion
+"Search the entire web" Programmable Search Engine setting is likewise
+locked for engines created after January 20, 2026. Tavily has no such
+new-customer restriction and needs no credit card for its free tier.
 
 Runs against the live Firestore watch list directly over its public REST
 API -- no service account needed, since firestore.rules already allows
@@ -23,25 +35,20 @@ front-end itself uses, just from Python instead of the Firebase JS SDK).
 Never overwrites a field someone already filled in by hand; only fills
 genuinely empty ones.
 
-Requires two GitHub Actions secrets (see
-.github/workflows/watchlist-enrich.yml): GOOGLE_SEARCH_API_KEY and
-GOOGLE_SEARCH_CX.
+Requires one GitHub Actions secret (see
+.github/workflows/watchlist-enrich.yml): TAVILY_API_KEY.
 
-  1. https://console.cloud.google.com/apis/library/customsearch.googleapis.com
-     -- enable the "Custom Search API" on a Google Cloud project, then
-     create an API key under "Credentials" (that's GOOGLE_SEARCH_API_KEY).
-  2. https://programmablesearchengine.google.com/ -- create a new search
-     engine, set it to "Search the entire web" (not just specific sites),
-     and copy its Search engine ID (that's GOOGLE_SEARCH_CX).
-  3. Add both as repo secrets: Settings -> Secrets and variables ->
-     Actions -> New repository secret. (Or `gh secret set NAME` from a
-     terminal -- either way, keep the key out of the repo and out of
-     chat.)
+  1. https://tavily.com -- sign up (no credit card needed).
+  2. Copy the API key from your dashboard (starts with "tvly-").
+  3. Add it as a repo secret: Settings -> Secrets and variables ->
+     Actions -> New repository secret, named TAVILY_API_KEY. (Or
+     `gh secret set TAVILY_API_KEY` from a terminal -- either way, keep
+     the key out of the repo and out of chat.)
 
-Free tier is 100 queries/day. This caps itself at MAX_PER_RUN and skips
-anyone already tried in the last RECHECK_AFTER_DAYS days (whether or not
-anything was found), so it won't burn quota re-querying the same player
-every day.
+Free tier is 1,000 searches/month, no card required. This caps itself at
+MAX_PER_RUN and skips anyone already tried in the last RECHECK_AFTER_DAYS
+days (whether or not anything was found), so it won't burn quota
+re-querying the same player every day.
 """
 
 import datetime
@@ -56,9 +63,9 @@ import urllib.request
 
 PROJECT_ID = "gridline-6afe6"
 FIRESTORE_BASE = f"https://firestore.googleapis.com/v1/projects/{PROJECT_ID}/databases/(default)/documents/watchlist"
-SEARCH_URL = "https://www.googleapis.com/customsearch/v1"
+SEARCH_URL = "https://api.tavily.com/search"
 
-MAX_PER_RUN = 40  # stays well under the 100/day free Custom Search quota
+MAX_PER_RUN = 30  # keeps a daily job comfortably under the 1,000/month free Tavily quota
 RECHECK_AFTER_DAYS = 14
 RESULTS_TO_SCAN = 5
 REQUEST_PAUSE_SECONDS = 0.3
@@ -115,36 +122,73 @@ def needs_lookup(p):
     return (datetime.datetime.now(datetime.timezone.utc) - last_dt).days >= RECHECK_AFTER_DAYS
 
 
-def search_top_links(query, api_key, cx):
-    """Returns a list of result URLs, or None if the request itself failed
-    (e.g. daily quota exhausted) -- distinct from a successful search that
-    just found nothing, since only the latter should count as "attempted"."""
-    url = f"{SEARCH_URL}?{urllib.parse.urlencode({'key': api_key, 'cx': cx, 'q': query, 'num': RESULTS_TO_SCAN})}"
+def search_results(query, api_key):
+    """Returns Tavily's list of result dicts ({url, content, ...}), or None
+    if the request itself failed (e.g. monthly credits exhausted) --
+    distinct from a successful search that just found nothing, since only
+    the latter should count as "attempted"."""
+    body = json.dumps({"query": query, "max_results": RESULTS_TO_SCAN}).encode("utf-8")
+    req = urllib.request.Request(
+        SEARCH_URL,
+        data=body,
+        method="POST",
+        headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
+    )
     try:
-        result = _get_json(url)
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            result = json.loads(resp.read().decode("utf-8"))
     except urllib.error.HTTPError as e:
         print(f"    search request failed ({e.code}): {e.reason}")
         return None
-    return [item.get("link", "") for item in result.get("items", [])]
+    return result.get("results", [])
 
 
-def find_social_links(links):
+def find_social_links(results):
     x_link, film_link = None, None
-    for link in links:
-        domain = urllib.parse.urlparse(link).netloc.lower()
+    for r in results:
+        url = r.get("url", "")
+        domain = urllib.parse.urlparse(url).netloc.lower()
         if x_link is None and ("twitter.com" in domain or domain.endswith("x.com")):
-            x_link = link
+            x_link = url
         if film_link is None and "hudl.com" in domain:
-            film_link = link
+            film_link = url
     return x_link, film_link
 
 
 def _normalize_height(raw):
     match = re.match(r"(\d)[\'\-](\d{1,2})", raw)
     if not match:
-        return raw
-    feet, inches = match.groups()
-    return f"{feet}'{int(inches)}\""
+        return None
+    feet, inches = int(match.group(1)), int(match.group(2))
+    # Sanity bounds -- rejects a coincidental regex hit on an unrelated page
+    # (confirmed directly: a poor-match search result for an obscure player
+    # once produced a bogus "weight: 700" from an unrelated number on an
+    # irrelevant page, so every parsed value is bounds-checked before use).
+    if not (4 <= feet <= 7 and 0 <= inches <= 11):
+        return None
+    return f"{feet}'{inches}\""
+
+
+def _valid_weight(raw):
+    try:
+        return 100 <= int(raw) <= 400
+    except (TypeError, ValueError):
+        return False
+
+
+def _extract_hw(text):
+    if not text:
+        return None, None
+    combined = COMBINED_HW_RE.search(text)
+    if combined:
+        height = _normalize_height(combined.group(1))
+        weight = combined.group(2) if _valid_weight(combined.group(2)) else None
+        return height, weight
+    h = HEIGHT_RE.search(text)
+    w = WEIGHT_RE.search(text)
+    height = _normalize_height(h.group(1)) if h else None
+    weight = w.group(1) if w and _valid_weight(w.group(1)) else None
+    return height, weight
 
 
 def _page_text(url):
@@ -161,29 +205,29 @@ def _page_text(url):
     return re.sub(r"<[^>]+>", " ", html)
 
 
-def find_height_weight(links):
-    height, weight = None, None
-    for link in links:
+def find_height_weight(results):
+    height = weight = None
+
+    # First pass: the search snippets themselves (already fetched, no extra
+    # network calls) -- confirmed directly that these often already contain
+    # a "Height ... Weight ..." bio line verbatim.
+    for r in results:
+        if height and weight:
+            return height, weight
+        h, w = _extract_hw(r.get("content", ""))
+        height = height or h
+        weight = weight or w
+
+    # Fallback: fetch each result's actual page in ranked order, since a
+    # snippet can be truncated before reaching the bio line.
+    for r in results:
         if height and weight:
             break
-        text = _page_text(link)
-        if not text:
-            continue
-        combined = COMBINED_HW_RE.search(text)
-        if combined:
-            if not height:
-                height = _normalize_height(combined.group(1))
-            if not weight:
-                weight = combined.group(2)
-            continue
-        if not height:
-            h = HEIGHT_RE.search(text)
-            if h:
-                height = _normalize_height(h.group(1))
-        if not weight:
-            w = WEIGHT_RE.search(text)
-            if w:
-                weight = w.group(1)
+        text = _page_text(r.get("url", ""))
+        h, w = _extract_hw(text)
+        height = height or h
+        weight = weight or w
+
     return height, weight
 
 
@@ -202,10 +246,9 @@ def patch_player(doc_id, updates):
 
 
 def main():
-    api_key = os.environ.get("GOOGLE_SEARCH_API_KEY")
-    cx = os.environ.get("GOOGLE_SEARCH_CX")
-    if not api_key or not cx:
-        print("GOOGLE_SEARCH_API_KEY / GOOGLE_SEARCH_CX not set -- skipping this run.")
+    api_key = os.environ.get("TAVILY_API_KEY")
+    if not api_key:
+        print("TAVILY_API_KEY not set -- skipping this run.")
         return
 
     players = fetch_watchlist()
@@ -216,15 +259,15 @@ def main():
     attempted = 0
     for p in candidates:
         query = " ".join(filter(None, [p.get("player"), p.get("team"), p.get("position"), "football"]))
-        links = search_top_links(query, api_key, cx)
-        if links is None:
-            print("  stopping early -- search API call failed, likely quota exhausted for today.")
+        results = search_results(query, api_key)
+        if results is None:
+            print("  stopping early -- search API call failed, likely credits exhausted for the month.")
             break
 
         attempted += 1
         updates = {"enrichedAt": datetime.datetime.now(datetime.timezone.utc).isoformat()}
 
-        x_link, film_link = find_social_links(links)
+        x_link, film_link = find_social_links(results)
         if x_link and not p.get("xLink"):
             updates["xLink"] = x_link
             found["xLink"] += 1
@@ -233,7 +276,7 @@ def main():
             found["filmLink"] += 1
 
         if not p.get("height") or not p.get("weight"):
-            height, weight = find_height_weight(links)
+            height, weight = find_height_weight(results)
             if height and not p.get("height"):
                 updates["height"] = height
                 found["height"] += 1
