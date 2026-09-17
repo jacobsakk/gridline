@@ -1394,10 +1394,7 @@ export default function Gridline() {
   const [selectedPlayer, setSelectedPlayer] = useState(null);
   const [theme, setTheme] = useState(() => {
     const saved = typeof window !== "undefined" && window.localStorage.getItem("gridline-theme");
-    if (saved === "light" || saved === "dark") return saved;
-    return typeof window !== "undefined" && window.matchMedia("(prefers-color-scheme: light)").matches
-      ? "light"
-      : "dark";
+    return saved === "light" || saved === "dark" ? saved : "dark";
   });
   useEffect(() => {
     window.localStorage.setItem("gridline-theme", theme);
