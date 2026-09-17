@@ -175,7 +175,12 @@ suggested architecture.
       "Search" button builds) and checks
       the top results for an x.com/twitter.com or hudl.com link, plus a Height/Weight/Hometown bio
       line in whichever result's content snippet (or page) looks like a roster page — fills in
-      whichever fields are still empty, never overwriting a manual entry. Eligibility is
+      whichever fields are still empty, never overwriting a manual entry. **FBS/FCS players get a
+      PFF Ultimate link in Film Link instead of Hudl** — by that level a findable Hudl profile is
+      almost always a stale high-school one, so instead this finds the player's numeric PFF id via
+      another indexed `pff.com` page (PFF reuses the same id everywhere, confirmed directly) and
+      constructs the `ultimate.pff.com` URL directly, with no Hudl fallback if PFF doesn't have
+      them. Eligibility is
       deliberately excluded — it means years remaining, which a bio's "Class" label doesn't
       reliably map to (redshirts, transfers, COVID-year rules), so a wrong guess there risked
       being worse than an empty box; left manual. (Google's Custom Search API was the original

@@ -181,6 +181,25 @@ access the front-end itself has).
     a bio widget entirely though (confirmed on one real page — full stat tables came through with
     no Height/Weight/Hometown block), so this script's own fetch stays as a fallback rather than
     being replaced outright.
+  - Requires the Hudl match to be an individual player page (`/profile/` or `/video/` in the URL
+    path), not just any `hudl.com` domain — confirmed directly a plain domain check let a team's
+    full roster listing (`fan.hudl.com/.../roster`, no player-specific path at all) through as a
+    "film link" once.
+  - **FBS/FCS players get PFF Ultimate, not Hudl, in Film Link** — by the time someone's playing at
+    that level, any Hudl profile still findable for them is almost always a stale high-school-era
+    one (the same dynamic the `extract_hudl_bio()` docs above describe), so a real, current PFF
+    grade page is preferred instead, per the project owner's own call. PFF Ultimate itself
+    (`ultimate.pff.com`) is still behind PFF's login wall and isn't indexed by search, so this
+    never tries to fetch it — instead it searches for the player's numeric PFF id via whichever
+    *other* `pff.com` page search does index (`premium.pff.com/ncaa/players/.../{id}/...` and
+    `www.pff.com/ncaa/players/.../{id}` both surfaced it in testing), since PFF reuses that same
+    id across every subdomain and URL shape — confirmed directly against two real FBS starters.
+    The id is then used to construct `ultimate.pff.com/ncaa/players/{id}/snaps_and_grades`, exactly
+    the URL a human would land on themselves, for their own logged-in view to open. Deliberately
+    **no fallback to Hudl** for these two divisions if PFF doesn't have the player — an empty Film
+    Link beats a misleadingly old high-school one, same reasoning as the "never overwrite" rule
+    below. Best-effort like everything else here: confirmed working for two real Power-conference
+    starters, but PFF's own coverage thins out fast for backups and smaller FCS programs.
 - **Never overwrites a manual entry** — only fills a field that's currently empty. A doc's
   `enrichedAt` timestamp marks it as tried (whether or not anything was found) so the same player
   isn't re-queried every single day, burning quota for no reason; it's eligible again after 14

@@ -168,10 +168,15 @@ def find_social_links(results):
     x_link, film_link = None, None
     for r in results:
         url = r.get("url", "")
-        domain = urllib.parse.urlparse(url).netloc.lower()
+        parsed = urllib.parse.urlparse(url)
+        domain, path = parsed.netloc.lower(), parsed.path.lower()
         if x_link is None and ("twitter.com" in domain or domain.endswith("x.com")):
             x_link = url
-        if film_link is None and "hudl.com" in domain:
+        # Requires an individual player page (/profile/ or /video/), not
+        # just any hudl.com URL -- confirmed directly a plain domain check
+        # let a team's full roster listing (fan.hudl.com/.../roster, no
+        # player-specific path at all) through as a "film link" once.
+        if film_link is None and "hudl.com" in domain and ("/profile/" in path or "/video/" in path):
             film_link = url
     return x_link, film_link
 
@@ -378,6 +383,45 @@ def _extract_from_result(r):
     return height or h, weight or w, hometown or ht
 
 
+PFF_PLAYER_URL_RE = re.compile(r'pff\.com/ncaa/players/([^\s"\'<>]+)', re.I)
+
+
+def _extract_pff_id(url):
+    """PFF reuses one stable numeric player id across its own subdomains
+    and URL shapes -- confirmed directly against two real FBS starters:
+    premium.pff.com/ncaa/players/2025/REGPO/jayden-maiava/158135/passing
+    and www.pff.com/ncaa/players/arch-manning/173162 both carry the same
+    id that ultimate.pff.com/ncaa/players/{id}/... uses. That matters
+    because ultimate.pff.com itself isn't indexed by search (it's behind
+    PFF's login wall, same as ever -- this never tries to fetch it, only
+    to construct the right URL for a human to click through to their own
+    logged-in view), but these other pff.com pages carrying the same id
+    are. Picks the longest numeric path segment rather than the first,
+    since a 4-digit season year (e.g. "2025") can appear in the same
+    path before the real 5-7 digit player id."""
+    m = PFF_PLAYER_URL_RE.search(url)
+    if not m:
+        return None
+    numeric_segments = [s for s in re.split(r"[/?#]", m.group(1)) if s.isdigit() and len(s) >= 5]
+    return numeric_segments[-1] if numeric_segments else None
+
+
+def find_pff_link(query, api_key):
+    """FBS/FCS only (see main()) -- searches for the player's PFF numeric
+    id and, if found anywhere in the results, returns the constructed PFF
+    Ultimate profile URL. Returns None on no match; deliberately no
+    further fallback here, per the project owner's own call (see the
+    division check in main())."""
+    results = search_results(f"{query} pff.com", api_key)
+    if not results:
+        return None
+    for r in results:
+        pff_id = _extract_pff_id(r.get("url", ""))
+        if pff_id:
+            return f"https://ultimate.pff.com/ncaa/players/{pff_id}/snaps_and_grades"
+    return None
+
+
 def find_bio_fields(results):
     """Height, Weight, and Hometown all tend to sit in the same bio block
     (e.g. "Height 6-3 Weight 205 Class Senior Hometown Selby, S.D.").
@@ -457,25 +501,37 @@ def main():
         attempted += 1
         updates = {"enrichedAt": datetime.datetime.now(datetime.timezone.utc).isoformat()}
 
-        x_link, film_link = find_social_links(results)
+        x_link, hudl_film_link = find_social_links(results)
 
-        # A second, Hudl-targeted search only when the first one found
-        # nothing and none is already on file -- confirmed directly that
-        # appending "hudl" to the query can surface a real profile Tavily
-        # otherwise misses entirely (its own index just doesn't rank it
-        # the way Google does for the same name), but also confirmed
-        # directly that adding "hudl" to every query is unsafe -- it once
-        # buried a player's already-findable profile under generic Hudl
-        # app-store/marketing pages instead. Safe as a fallback rather
-        # than a general query change: it only ever replaces "nothing
-        # found" with something, since the result still has to pass the
-        # same strict hudl.com domain check below.
-        if not film_link and not p.get("filmLink"):
-            hudl_query = f"{query} hudl"
-            hudl_results = search_results(hudl_query, api_key)
-            if hudl_results:
-                _, retry_film_link = find_social_links(hudl_results)
-                film_link = retry_film_link
+        if p.get("division") in ("FBS", "FCS"):
+            # PFF Ultimate, not Hudl, is the right Film Link for these
+            # divisions -- by the time a player is playing FBS/FCS ball,
+            # any Hudl profile still findable for them is almost always a
+            # stale high-school-era one (the same dynamic extract_hudl_bio
+            # already accounts for), so a real, current PFF grade page is
+            # preferred. Deliberately no fallback to Hudl if PFF doesn't
+            # have them, per the project owner's own call: an empty Film
+            # Link beats a misleadingly old high-school one.
+            film_link = p.get("filmLink") or find_pff_link(query, api_key)
+        else:
+            film_link = hudl_film_link
+            # A second, Hudl-targeted search only when the first one found
+            # nothing and none is already on file -- confirmed directly that
+            # appending "hudl" to the query can surface a real profile Tavily
+            # otherwise misses entirely (its own index just doesn't rank it
+            # the way Google does for the same name), but also confirmed
+            # directly that adding "hudl" to every query is unsafe -- it once
+            # buried a player's already-findable profile under generic Hudl
+            # app-store/marketing pages instead. Safe as a fallback rather
+            # than a general query change: it only ever replaces "nothing
+            # found" with something, since the result still has to pass the
+            # same strict hudl.com domain check below.
+            if not film_link and not p.get("filmLink"):
+                hudl_query = f"{query} hudl"
+                hudl_results = search_results(hudl_query, api_key)
+                if hudl_results:
+                    _, retry_film_link = find_social_links(hudl_results)
+                    film_link = retry_film_link
 
         if film_link and not p.get("filmLink"):
             updates["filmLink"] = film_link
