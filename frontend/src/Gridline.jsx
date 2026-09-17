@@ -32,6 +32,10 @@ function playerSearchUrl(player, team, position) {
   return `https://www.google.com/search?q=${encodeURIComponent(q)}`;
 }
 
+// Sort keys that need alphabetical (not numeric) comparison, and default
+// to ascending on first click rather than the stat columns' descending.
+const STRING_SORT_KEYS = new Set(["team", "conference"]);
+
 // leaderKey = the stat used to rank "leader" for this category
 const CATEGORIES = {
   passing: {
@@ -637,8 +641,26 @@ function WatchListRow({
 
 const WATCHLIST_COLUMNS = ["", "", "Player", "Team", "Division", "Pos", "Ht", "Wt", "Eligibility", "Pipelined?", "Hometown", "X", "Film Link", "Notes", ""];
 // Which of the columns above can be clicked to sort the watch list --
-// keyed by the doc field each one reads.
-const WATCHLIST_SORTABLE = { Eligibility: "eligibility" };
+// keyed by the doc field each one reads. Only active on the "All"
+// position tab (see positionTab check in WatchListPanel) -- sorting by
+// Position, for instance, is meaningless once already filtered to one.
+const WATCHLIST_SORTABLE = {
+  Team: "team",
+  Division: "division",
+  Pos: "position",
+  Ht: "height",
+  Wt: "weight",
+  Eligibility: "eligibility",
+  "Pipelined?": "pipelined",
+};
+// Alphabetical (not numeric) comparison, defaulting to ascending on
+// first click rather than the numeric fields' descending.
+const WATCHLIST_STRING_SORT_KEYS = new Set(["team", "division", "position"]);
+
+function heightToInches(height) {
+  const m = /^(\d)'(\d{1,2})/.exec(height || "");
+  return m ? parseInt(m[1], 10) * 12 + parseInt(m[2], 10) : 0;
+}
 
 // Full-screen overlay -- same spreadsheet grid language as the main stats
 // table (sticky header, gridlines) instead of a narrow sidebar, so editing
@@ -710,23 +732,43 @@ function WatchListPanel({ watchlist, onClose, onSelectPlayer }) {
     return p.sortOrder ?? (p.addedAt ? new Date(p.addedAt).getTime() : 0);
   }
 
+  // Sorting only applies on the "All" tab -- once already filtered to one
+  // position, Position/Team/Division sorting either does nothing or is
+  // ambiguous, so a filtered tab always falls back to manual board order
+  // (this also re-enables drag reordering there, see draggable below).
+  const wlSortActive = positionTab === "All" ? wlSortKey : null;
+
   const visiblePlayers = useMemo(() => {
-    if (!wlSortKey) return [...byPosition].sort((a, b) => orderValue(a) - orderValue(b));
+    if (!wlSortActive) return [...byPosition].sort((a, b) => orderValue(a) - orderValue(b));
     const sorted = [...byPosition].sort((a, b) => {
-      const av = parseFloat(a[wlSortKey]) || 0;
-      const bv = parseFloat(b[wlSortKey]) || 0;
+      if (WATCHLIST_STRING_SORT_KEYS.has(wlSortActive)) {
+        const av = (a[wlSortActive] || "").toString();
+        const bv = (b[wlSortActive] || "").toString();
+        return wlSortDir === "desc" ? bv.localeCompare(av) : av.localeCompare(bv);
+      }
+      let av, bv;
+      if (wlSortActive === "height") {
+        av = heightToInches(a.height);
+        bv = heightToInches(b.height);
+      } else if (wlSortActive === "pipelined") {
+        av = a.pipelined === true ? 1 : a.pipelined === false ? -1 : 0;
+        bv = b.pipelined === true ? 1 : b.pipelined === false ? -1 : 0;
+      } else {
+        av = parseFloat(a[wlSortActive]) || 0;
+        bv = parseFloat(b[wlSortActive]) || 0;
+      }
       return wlSortDir === "desc" ? bv - av : av - bv;
     });
     return sorted;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [byPosition, wlSortKey, wlSortDir]);
+  }, [byPosition, wlSortActive, wlSortDir]);
 
   function handleWlSort(field) {
     if (wlSortKey === field) {
       setWlSortDir((d) => (d === "desc" ? "asc" : "desc"));
     } else {
       setWlSortKey(field);
-      setWlSortDir("desc");
+      setWlSortDir(WATCHLIST_STRING_SORT_KEYS.has(field) ? "asc" : "desc");
     }
   }
 
@@ -963,14 +1005,14 @@ function WatchListPanel({ watchlist, onClose, onSelectPlayer }) {
                 <thead>
                   <tr style={{ background: "var(--bg-surface)" }}>
                     {WATCHLIST_COLUMNS.map((label, i) => {
-                      const sortField = WATCHLIST_SORTABLE[label];
+                      const sortField = positionTab === "All" ? WATCHLIST_SORTABLE[label] : null;
                       return (
                         <Th
                           key={i}
                           label={label}
                           sticky
                           sortable={!!sortField}
-                          active={wlSortKey === sortField}
+                          active={wlSortActive === sortField}
                           dir={wlSortDir}
                           onClick={sortField ? () => handleWlSort(sortField) : undefined}
                         />
@@ -989,7 +1031,7 @@ function WatchListPanel({ watchlist, onClose, onSelectPlayer }) {
                       onSelect={onSelectPlayer}
                       compareSelected={compareIds.has(p.id)}
                       onToggleCompare={() => toggleCompare(p.id)}
-                      draggable={!wlSortKey}
+                      draggable={!wlSortActive}
                       isDragging={dragId === p.id}
                       dropIndicator={dropTarget && dropTarget.id === p.id ? dropTarget.position : null}
                       onDragHandlePointerDown={(e) => handleDragHandlePointerDown(e, p.id)}
@@ -1415,6 +1457,11 @@ export default function Gridline() {
     if (q) filtered = filtered.filter((r) => r.player.toLowerCase().includes(q) || r.team.toLowerCase().includes(q));
 
     filtered = [...filtered].sort((a, b) => {
+      if (STRING_SORT_KEYS.has(sortKey)) {
+        const av = (a[sortKey] || "").toString();
+        const bv = (b[sortKey] || "").toString();
+        return sortDir === "desc" ? bv.localeCompare(av) : av.localeCompare(bv);
+      }
       const av = parseFloat(a[sortKey]) || 0;
       const bv = parseFloat(b[sortKey]) || 0;
       return sortDir === "desc" ? bv - av : av - bv;
@@ -1491,7 +1538,7 @@ export default function Gridline() {
       setSortDir((d) => (d === "desc" ? "asc" : "desc"));
     } else {
       setSortKey(key);
-      setSortDir("desc");
+      setSortDir(STRING_SORT_KEYS.has(key) ? "asc" : "desc");
     }
   }
 
@@ -1888,8 +1935,8 @@ export default function Gridline() {
             <thead>
               <tr style={{ background: "var(--bg-surface)" }}>
                 <Th label="Player" sticky />
-                <Th label="Team" sticky />
-                <Th label="Conf" sticky />
+                <Th label="Team" sticky sortable active={sortKey === "team"} dir={sortDir} onClick={() => handleSort("team")} />
+                <Th label="Conf" sticky sortable active={sortKey === "conference"} dir={sortDir} onClick={() => handleSort("conference")} />
                 <Th label="Pos" sticky />
                 {cat.columns.map((col) => (
                   <Th
