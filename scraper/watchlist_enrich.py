@@ -1,23 +1,33 @@
 """
-Fills in Height, Weight, X (Twitter), and Film Link for watch list
-players who don't have them yet, using the Tavily Search API on the same
-query the front-end's own "Search" button already builds (see
+Fills in Height, Weight, Hometown, X (Twitter), and Film Link for watch
+list players who don't have them yet, using the Tavily Search API on the
+same query the front-end's own "Search" button already builds (see
 playerSearchUrl() in Gridline.jsx: "{player} {team} {position} football"),
 just read programmatically instead of clicked by a human.
 
-One search per player covers all four fields, so this doesn't burn any
+Deliberately NOT covering Eligibility here, even though a bio page often
+shows a "Class: Senior" line right next to Height/Weight -- the watch
+list's Eligibility field means years of eligibility REMAINING, which
+"Class" doesn't reliably map to (redshirts, JUCO transfers, grad
+transfers, and COVID-year extensions all break a simple Fr/So/Jr/Sr ->
+4/3/2/1 guess), and a wrong auto-filled guess there is worse than an
+empty box since it's the field most likely to actually inform a
+recruiting decision. Left purely manual by the owner's own call.
+
+One search per player covers all five fields, so this doesn't burn any
 extra quota per field:
   - X / Film Link: checked by domain -- an x.com/twitter.com link becomes
     xLink, a hudl.com link becomes filmLink, since in practice one of
     those is usually near the top of the results for a real recruit.
-  - Height / Weight: Tavily's response already includes a short content
-    snippet per result, which for a school bio/roster page (Sidearm,
-    PrestoSports, MaxPreps, 247Sports, etc.) very often already contains
-    the "Height"/"Weight" line -- confirmed directly (a real query for a
-    real NAIA player returned "Height 6-3 Weight 205" right in the
-    snippet, no extra fetch needed). This checks those snippets first,
-    in ranked order, and only falls back to fetching a result's actual
-    page if no snippet had it (snippets can be truncated).
+  - Height / Weight / Hometown: these tend to sit in the same bio block
+    (e.g. "Height 6-3 Weight 205 Class Senior Hometown Selby, S.D."), and
+    Tavily's response already includes a short content snippet per
+    result which very often already contains that whole line -- confirmed
+    directly against real players' real bio pages (Sidearm, PrestoSports,
+    MaxPreps, 247Sports, etc.), no extra fetch needed. Checks those
+    snippets first, in ranked order, and only falls back to fetching a
+    result's actual page if a snippet didn't have it (snippets can be
+    truncated).
 
 Why Tavily and not Google: Google's Custom Search JSON API is no longer
 available to new Google Cloud projects at all (confirmed directly --
@@ -81,8 +91,12 @@ USER_AGENT = (
 # separate "Height: 6'2\"" / "Weight: 210 lbs" lines (PrestoSports,
 # MaxPreps, 247Sports, and most school CMS bio pages).
 COMBINED_HW_RE = re.compile(r'H(?:ei)?T\s*/\s*W(?:ei)?T\s*:?\s*(\d[\'\-]\d{1,2}"?)\s*/\s*(\d{2,3})', re.I)
-HEIGHT_RE = re.compile(r'Height\s*:?\s*(\d[\'\-]\d{1,2}"?)', re.I)
-WEIGHT_RE = re.compile(r'Weight\s*:?\s*(\d{2,3})\s*(?:lbs?|pounds)?', re.I)
+# (?<!-) guards against a compound CSS/JS word like "font-weight" or
+# "line-height" matching -- confirmed directly as a real false-positive
+# source, not just theoretical (see _page_text's <style>-stripping note).
+HEIGHT_RE = re.compile(r'(?<!-)\bHeight\s*:?\s*(\d[\'\-]\d{1,2}"?)', re.I)
+WEIGHT_RE = re.compile(r'(?<!-)\bWeight\s*:?\s*(\d{2,3})\s*(?:lbs?|pounds)?', re.I)
+HOMETOWN_RE = re.compile(r'Hometown\s*:?\s*([A-Za-z .\'-]+,\s*[A-Za-z.]{2,20})', re.I)
 
 
 def _get_json(url):
@@ -110,7 +124,7 @@ def fetch_watchlist():
 def needs_lookup(p):
     if p.get("removed"):
         return False
-    if p.get("xLink") and p.get("filmLink") and p.get("height") and p.get("weight"):
+    if p.get("xLink") and p.get("filmLink") and p.get("height") and p.get("weight") and p.get("hometown"):
         return False  # already has everything -- nothing left to fill in
     last = p.get("enrichedAt")
     if not last:
@@ -171,7 +185,11 @@ def _normalize_height(raw):
 
 def _valid_weight(raw):
     try:
-        return 100 <= int(raw) <= 400
+        # 140 lbs is already a light punter/kicker -- nobody on a football
+        # roster is realistically below that, so this is a tighter bound
+        # than "any 3-digit number" to catch the class of bug where a
+        # regex match slips through from unrelated page content.
+        return 140 <= int(raw) <= 400
     except (TypeError, ValueError):
         return False
 
@@ -191,6 +209,35 @@ def _extract_hw(text):
     return height, weight
 
 
+def _valid_hometown(raw):
+    if not raw:
+        return False
+    raw = raw.strip()
+    # Reject obvious junk rather than trust an odd-shaped match -- a real
+    # "City, ST" is short and always has the comma the regex already
+    # requires, so this just guards against a stray trailing sentence.
+    return 3 <= len(raw) <= 40 and "," in raw
+
+
+def _extract_hometown(text):
+    if not text:
+        return None
+    m = HOMETOWN_RE.search(text)
+    if not m:
+        return None
+    value = m.group(1).strip().rstrip(",")
+    return value if _valid_hometown(value) else None
+
+
+def _extract_bio(text):
+    """One text blob (a search snippet or a fetched page) -> whatever of
+    height/weight/hometown it contains, so the same page is only scanned
+    once instead of once per field."""
+    height, weight = _extract_hw(text)
+    hometown = _extract_hometown(text)
+    return height, weight, hometown
+
+
 def _page_text(url):
     """Best-effort plain-text fetch -- returns None on any failure (dead
     link, timeout, non-HTML content, site blocking the request) rather
@@ -202,33 +249,40 @@ def _page_text(url):
             html = resp.read(MAX_PAGE_BYTES).decode("utf-8", errors="replace")
     except Exception:
         return None
+    # Strip <script>/<style> blocks *with* their text content first -- a
+    # generic tag-strip alone leaves inline CSS/JS text behind (confirmed
+    # directly: "font-weight:100" in a <style> block once matched our own
+    # weight regex and produced a bogus 100 lb reading for a real player).
+    html = re.sub(r"<(script|style)\b[^>]*>.*?</\1>", " ", html, flags=re.S | re.I)
     return re.sub(r"<[^>]+>", " ", html)
 
 
-def find_height_weight(results):
-    height = weight = None
+def find_bio_fields(results):
+    """Height, Weight, and Hometown all tend to sit in the same bio block
+    (e.g. "Height 6-3 Weight 205 Class Senior Hometown Selby, S.D.") so
+    this scans for all three together instead of running separate passes
+    that would each re-fetch the same pages."""
+    height = weight = hometown = None
 
     # First pass: the search snippets themselves (already fetched, no extra
     # network calls) -- confirmed directly that these often already contain
-    # a "Height ... Weight ..." bio line verbatim.
+    # the bio line verbatim.
     for r in results:
-        if height and weight:
-            return height, weight
-        h, w = _extract_hw(r.get("content", ""))
-        height = height or h
-        weight = weight or w
+        if height and weight and hometown:
+            return height, weight, hometown
+        h, w, ht = _extract_bio(r.get("content", ""))
+        height, weight, hometown = height or h, weight or w, hometown or ht
 
     # Fallback: fetch each result's actual page in ranked order, since a
     # snippet can be truncated before reaching the bio line.
     for r in results:
-        if height and weight:
+        if height and weight and hometown:
             break
         text = _page_text(r.get("url", ""))
-        h, w = _extract_hw(text)
-        height = height or h
-        weight = weight or w
+        h, w, ht = _extract_bio(text)
+        height, weight, hometown = height or h, weight or w, hometown or ht
 
-    return height, weight
+    return height, weight, hometown
 
 
 def patch_player(doc_id, updates):
@@ -255,7 +309,7 @@ def main():
     candidates = [p for p in players if needs_lookup(p)][:MAX_PER_RUN]
     print(f"{len(players)} watch list players total, {len(candidates)} up for a lookup this run.")
 
-    found = {"height": 0, "weight": 0, "xLink": 0, "filmLink": 0}
+    found = {"height": 0, "weight": 0, "hometown": 0, "xLink": 0, "filmLink": 0}
     attempted = 0
     for p in candidates:
         query = " ".join(filter(None, [p.get("player"), p.get("team"), p.get("position"), "football"]))
@@ -275,23 +329,26 @@ def main():
             updates["filmLink"] = film_link
             found["filmLink"] += 1
 
-        if not p.get("height") or not p.get("weight"):
-            height, weight = find_height_weight(results)
+        if not p.get("height") or not p.get("weight") or not p.get("hometown"):
+            height, weight, hometown = find_bio_fields(results)
             if height and not p.get("height"):
                 updates["height"] = height
                 found["height"] += 1
             if weight and not p.get("weight"):
                 updates["weight"] = weight
                 found["weight"] += 1
+            if hometown and not p.get("hometown"):
+                updates["hometown"] = hometown
+                found["hometown"] += 1
 
         patch_player(p["id"], updates)
-        filled = [k for k in ("height", "weight", "xLink", "filmLink") if k in updates]
+        filled = [k for k in ("height", "weight", "hometown", "xLink", "filmLink") if k in updates]
         print(f"  {p.get('player')} ({p.get('team')}): filled {', '.join(filled) if filled else 'nothing'}")
         time.sleep(REQUEST_PAUSE_SECONDS)
 
     print(
         f"\nDone: checked {attempted} players -- "
-        f"filled in {found['height']} heights, {found['weight']} weights, "
+        f"filled in {found['height']} heights, {found['weight']} weights, {found['hometown']} hometowns, "
         f"{found['xLink']} X links, {found['filmLink']} film links."
     )
 

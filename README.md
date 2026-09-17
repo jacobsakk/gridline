@@ -168,15 +168,18 @@ suggested architecture.
       sites is blocked by CORS (confirmed directly, no `Access-Control-Allow-Origin` header). A
       server-side per-player lookup would need a paid Firebase Cloud Functions tier or a bulk
       scrape too expensive to run for every player — not attempted.
-- [x] Auto-fill Height, Weight, X (Twitter), and Film Link for watch list players — a daily
-      GitHub Actions job (`scraper/watchlist_enrich.py`, see `scraper/README.md`) runs one Tavily
-      search per player (same query the front-end's own "Search" button builds) and checks the
-      top results for an x.com/twitter.com or hudl.com link, plus a Height/Weight bio line in
-      whichever result's content snippet (or page) looks like a roster page — fills in whichever
-      fields are still empty, never overwriting a manual entry. (Google's Custom Search API was
-      the original plan, but turned out to be closed to new accounts entirely — confirmed
-      directly, not assumed — so this uses Tavily instead, which needs no credit card.) Requires
-      the repo owner to add one API secret one time (`TAVILY_API_KEY`) — the workflow no-ops
+- [x] Auto-fill Height, Weight, Hometown, X (Twitter), and Film Link for watch list players — a
+      daily GitHub Actions job (`scraper/watchlist_enrich.py`, see `scraper/README.md`) runs one
+      Tavily search per player (same query the front-end's own "Search" button builds) and checks
+      the top results for an x.com/twitter.com or hudl.com link, plus a Height/Weight/Hometown bio
+      line in whichever result's content snippet (or page) looks like a roster page — fills in
+      whichever fields are still empty, never overwriting a manual entry. Eligibility is
+      deliberately excluded — it means years remaining, which a bio's "Class" label doesn't
+      reliably map to (redshirts, transfers, COVID-year rules), so a wrong guess there risked
+      being worse than an empty box; left manual. (Google's Custom Search API was the original
+      plan, but turned out to be closed to new accounts entirely — confirmed directly, not
+      assumed — so this uses Tavily instead, which needs no credit card.) Requires the repo owner
+      to add one API secret one time (`TAVILY_API_KEY`) — the workflow no-ops
       harmlessly until it exists.
 - [ ] Big Ten and SoCon aren't in the conference cross-reference yet — both use a different,
       newer stats platform (a JSON API behind a game-by-game CMS, not the simple leaderboard

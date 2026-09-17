@@ -98,12 +98,18 @@ field abbreviations for almost everything), but simpler:
 
 ## Watch list bio / link lookup — Tavily Search API — **done**
 
-`watchlist_enrich.py` fills in the watch list's Height, Weight, X, and Film Link fields
+`watchlist_enrich.py` fills in the watch list's Height, Weight, Hometown, X, and Film Link fields
 automatically for players who don't have them yet, instead of leaving everything purely manual.
-Different shape from every other pipeline here: it doesn't touch `real-stats.json` at all, and it
-reads/writes the live Firestore watch list directly over its public REST API (no service account
-needed — `firestore.rules` already allows open read/write on the `watchlist` collection, so a
-plain unauthenticated HTTP request works, same access the front-end itself has).
+Deliberately does **not** cover Eligibility, even though a bio page often shows a "Class: Senior"
+line right next to Height/Weight — the field means years of eligibility *remaining*, which "Class"
+doesn't reliably map to (redshirts, JUCO transfers, grad transfers, COVID-year extensions all
+break a simple Fr/So/Jr/Sr → 4/3/2/1 guess), and a wrong auto-filled guess there is worse than an
+empty box since it's the field most likely to actually inform a recruiting decision — left manual
+by the owner's own call. Different shape from every other pipeline here in one other way too: it
+doesn't touch `real-stats.json` at all, and it reads/writes the live Firestore watch list directly
+over its public REST API (no service account needed — `firestore.rules` already allows open
+read/write on the `watchlist` collection, so a plain unauthenticated HTTP request works, same
+access the front-end itself has).
 
 - **Why Tavily, not Google**: Google's Custom Search JSON API was the original choice, but turned
   out to be a dead end confirmed directly, not assumed — it's no longer available to *new* Google
@@ -112,7 +118,7 @@ plain unauthenticated HTTP request works, same access the front-end itself has).
   shutdown January 2027), and its "Search the entire web" Programmable Search Engine setting is
   likewise locked for any engine created after January 20, 2026. Tavily has no such new-customer
   wall and needs no credit card for its free tier (1,000 searches/month).
-- **One search covers all four fields** — the same query the front-end's own "Search" button
+- **One search covers all five fields** — the same query the front-end's own "Search" button
   already builds (`{player} {team} {position} football`).
   - **X / Film Link**: checked by domain — the first `x.com`/`twitter.com` result becomes `xLink`,
     the first `hudl.com` result becomes `filmLink`, since in practice a real recruit's X or Hudl
@@ -120,18 +126,22 @@ plain unauthenticated HTTP request works, same access the front-end itself has).
     actual X bio text for this, even though many put a Hudl link there — confirmed directly that
     X only server-renders bio content for a handful of huge/cached accounts; 3 real recruit
     accounts tested all came back as an empty JS shell with zero bio text in a plain HTTP fetch.)
-  - **Height / Weight**: Tavily's response already includes a short content snippet per result,
-    which for a school bio/roster page (Sidearm, PrestoSports, MaxPreps, 247Sports, etc.) very
-    often already contains the "Height"/"Weight" line directly — confirmed directly with a real
-    query for a real NAIA player, which returned "Height 6-3 Weight 205" right in the snippet, no
-    extra page fetch needed. Falls back to fetching a result's actual page (in ranked order) only
-    if no snippet had it. Every parsed value is sanity-bounded (weight 100-400, height 4'0"-7'11")
-    after a bad search match once produced a bogus "weight: 700" from an unrelated number on an
-    irrelevant page — caught by testing against the real live watch list, not assumed safe.
-    Known limitation: since this takes whichever ranked result matches first, it can occasionally
-    surface an older measurement (e.g. a stale high-school recruiting profile) instead of a
-    current one if that ranks above the player's actual current roster page — same "never
-    overwrites a manual entry" rule means a person can always correct it once, permanently.
+  - **Height / Weight / Hometown**: these tend to sit in the same bio block (e.g. "Height 6-3
+    Weight 205 Class Senior Hometown Selby, S.D."), and Tavily's response already includes a short
+    content snippet per result which very often already contains that whole line — confirmed
+    directly against multiple real players' real bio pages (Sidearm, PrestoSports, MaxPreps,
+    247Sports, etc.), no extra fetch needed. Falls back to fetching a result's actual page (in
+    ranked order) only if a snippet didn't have it. Two real false-positive bugs were caught and
+    fixed by testing against the live watch list rather than assumed safe: a poor search match
+    once produced a bogus "weight: 700" from an unrelated number on an irrelevant page (fixed with
+    sanity bounds: weight 140-400, height 4'0"-7'11"), and a fetched page's own inline `<style>`
+    CSS text once matched as "weight: 100" from a literal `font-weight:100` declaration (fixed by
+    stripping `<script>`/`<style>` blocks *with* their content, not just the tags, plus a
+    word-boundary guard so "font-weight"/"line-height" can't match at all). Known limitation:
+    since this takes whichever ranked result matches first, it can occasionally surface an older
+    measurement (e.g. a stale high-school recruiting profile) instead of a current one if that
+    ranks above the player's actual current roster page — same "never overwrites a manual entry"
+    rule means a person can always correct it once, permanently.
 - **Never overwrites a manual entry** — only fills a field that's currently empty. A doc's
   `enrichedAt` timestamp marks it as tried (whether or not anything was found) so the same player
   isn't re-queried every single day, burning quota for no reason; it's eligible again after 14
