@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect, useRef, Fragment } from "react";
-import { ChevronUp, ChevronDown, ChevronsUpDown, Crown, BadgeCheck, FlaskConical, Star, X, Plus, ExternalLink, Search, Download, Columns3, TrendingUp, GripVertical, Sun, Moon } from "lucide-react";
+import { ChevronUp, ChevronDown, ChevronsUpDown, Crown, BadgeCheck, FlaskConical, Star, X, Plus, ExternalLink, Search, Download, Columns3, TrendingUp, GripVertical, Sun, Moon, CheckCircle2 } from "lucide-react";
 import { collection, doc, addDoc, updateDoc, onSnapshot, query, orderBy } from "firebase/firestore";
 import { db } from "./firebase";
 import L from "leaflet";
@@ -223,6 +223,7 @@ function useWatchlist() {
       division: division || "",
       position: position || "",
       pipelined: false,
+      inPortal: false,
       notes: "",
       hometown: "",
       height: "",
@@ -255,6 +256,46 @@ function useWatchlist() {
   }
 
   return { available, checkedAvailability: ready, players, addPlayer, removePlayer, updateField, markSeen, isWatched };
+}
+
+// Manual on/off switch -- used for "entered the portal", which is
+// something the user flips themselves rather than data that comes from
+// a scraper, so it reads as a deliberate action rather than a filled-in
+// field like the other watch list inputs.
+function ToggleSwitch({ checked, onChange, title }) {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      title={title}
+      onClick={() => onChange(!checked)}
+      style={{
+        position: "relative",
+        width: 40,
+        height: 22,
+        borderRadius: 999,
+        border: `1px solid ${checked ? "var(--accent)" : "var(--border)"}`,
+        background: checked ? "var(--accent)" : "var(--bg-surface)",
+        cursor: "pointer",
+        padding: 0,
+        flexShrink: 0,
+      }}
+    >
+      <span
+        style={{
+          position: "absolute",
+          top: 1,
+          left: checked ? 19 : 1,
+          width: 18,
+          height: 18,
+          borderRadius: "50%",
+          background: checked ? "var(--bg-page)" : "var(--text-faint)",
+          transition: "left 0.15s ease",
+        }}
+      />
+    </button>
+  );
 }
 
 const pillStyle = (active) => ({
@@ -519,6 +560,11 @@ function WatchListRow({
           <span className="player-name" onClick={() => onSelect(p)} title="View full stats">
             {p.player}
           </span>
+          {p.inPortal && (
+            <span title="Entered the transfer portal" style={{ display: "inline-flex", color: "var(--success)", lineHeight: 0 }}>
+              <CheckCircle2 size={18} />
+            </span>
+          )}
           {hasUpdate && (
             <span
               title="This player's stats have changed since you last viewed them"
@@ -1128,6 +1174,11 @@ function PlayerDetailModal({ sel, onClose, watchlist }) {
               <h2 className="oswald" style={{ fontSize: 20, margin: 0, fontWeight: 700 }}>
                 {sel.player}
               </h2>
+              {watched?.inPortal && (
+                <span title="Entered the transfer portal" style={{ display: "inline-flex", color: "var(--success)", lineHeight: 0 }}>
+                  <CheckCircle2 size={24} />
+                </span>
+              )}
               <button
                 className="watch-toggle"
                 onClick={() => (watched ? watchlist.removePlayer(watched.id) : watchlist.addPlayer(sel))}
@@ -1217,6 +1268,16 @@ function PlayerDetailModal({ sel, onClose, watchlist }) {
                     <button style={pillStyle(watched.pipelined === false)} onClick={() => watchlist.updateField(watched.id, "pipelined", false)}>
                       No
                     </button>
+                  </div>
+                </div>
+                <div>
+                  <label style={fieldLabelStyle}>Entered Portal?</label>
+                  <div style={{ display: "flex", alignItems: "center", height: 30 }}>
+                    <ToggleSwitch
+                      checked={watched.inPortal === true}
+                      onChange={(val) => watchlist.updateField(watched.id, "inPortal", val)}
+                      title="Mark this player as having entered the transfer portal"
+                    />
                   </div>
                 </div>
                 <div>
