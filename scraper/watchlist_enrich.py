@@ -247,7 +247,11 @@ def _page_text(url):
         req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
         with urllib.request.urlopen(req, timeout=PAGE_FETCH_TIMEOUT) as resp:
             html = resp.read(MAX_PAGE_BYTES).decode("utf-8", errors="replace")
-    except Exception:
+    except Exception as e:
+        # Logged rather than silently swallowed -- local testing kept
+        # succeeding on pages that failed from the actual GitHub Actions
+        # runner, and there was no way to tell why without this.
+        print(f"    page fetch failed for {url}: {type(e).__name__}: {e}")
         return None
     # Strip <script>/<style> blocks *with* their text content first -- a
     # generic tag-strip alone leaves inline CSS/JS text behind (confirmed
