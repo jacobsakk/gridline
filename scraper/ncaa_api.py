@@ -319,6 +319,16 @@ def normalize_position(raw_position):
 
 
 def transform_row(division, category, conference_lookup, raw, row_id):
+    # Confirmed directly against the live API: leaderboard rows below
+    # roughly national rank ~100 come back with only Name/Team/Cl/Position
+    # and no stat columns at all (e.g. Trey Cornist, UConn, rank 102 on
+    # the FBS rushing board -- no "G"/"Rush"/"Rush Yds" keys whatsoever,
+    # even though he has real production this season). Defaulting those
+    # missing fields to 0 fabricated a false "0 yards" line for a real
+    # player instead of leaving him for the conference cross-reference
+    # step (fetch_supplemental_rows) to pick up with real numbers.
+    if "G" not in raw:
+        return None
     position = normalize_position(raw.get("Position"))
     base = {
         "id": row_id,
@@ -510,7 +520,13 @@ def build_defense_rows(division_slug, division_label, conference_lookup):
             }
         return merged[key]
 
+    # Same missing-columns issue as transform_row (see its comment) can hit
+    # any of these five leaderboards individually -- skip a raw row with no
+    # "G" rather than merging in fabricated zeros for whichever stat that
+    # particular leaderboard was supposed to supply.
     for raw in fetch_all_pages(division_slug, STAT_IDS_DEFENSE_MERGE["tackles"]):
+        if "G" not in raw:
+            continue
         row = get_or_create(raw)
         row["solo"] = _to_int(raw.get("Solo Tack"))
         row["ast"] = _to_int(raw.get("Asst Tack"))
@@ -518,24 +534,32 @@ def build_defense_rows(division_slug, division_label, conference_lookup):
     time.sleep(REQUEST_PAUSE_SECONDS)
 
     for raw in fetch_all_pages(division_slug, STAT_IDS_DEFENSE_MERGE["tfl"]):
+        if "G" not in raw:
+            continue
         row = get_or_create(raw)
         row["tfl"] = raw.get("TTFL", "0")  # e.g. "8.5" -- half-TFLs are real (split between two players)
         row["games"] = max(row["games"], _to_int(raw.get("G")))
     time.sleep(REQUEST_PAUSE_SECONDS)
 
     for raw in fetch_all_pages(division_slug, STAT_IDS_DEFENSE_MERGE["pbu"]):
+        if "G" not in raw:
+            continue
         row = get_or_create(raw)
         row["pbu"] = _to_int(raw.get("PBU"))
         row["games"] = max(row["games"], _to_int(raw.get("G")))
     time.sleep(REQUEST_PAUSE_SECONDS)
 
     for raw in fetch_all_pages(division_slug, STAT_IDS_DEFENSE_MERGE["int"]):
+        if "G" not in raw:
+            continue
         row = get_or_create(raw)
         row["int"] = _to_int(raw.get("Int"))
         row["games"] = max(row["games"], _to_int(raw.get("G")))
     time.sleep(REQUEST_PAUSE_SECONDS)
 
     for raw in fetch_all_pages(division_slug, STAT_IDS_DEFENSE_MERGE["sacks"]):
+        if "G" not in raw:
+            continue
         row = get_or_create(raw)
         row["soloSacks"] = _to_int(raw.get("Solo Sack"))
         row["astSacks"] = _to_int(raw.get("Asst Sack"))
@@ -555,7 +579,9 @@ def build_division_rows(division_slug, division_label, conference_lookup):
         raw_rows = fetch_all_pages(division_slug, stat_id)
         for i, raw in enumerate(raw_rows):
             row_id = f"real-{division_slug}-{category}-{i}"
-            rows.append(transform_row(division_label, category, conference_lookup, raw, row_id))
+            row = transform_row(division_label, category, conference_lookup, raw, row_id)
+            if row is not None:
+                rows.append(row)
         time.sleep(REQUEST_PAUSE_SECONDS)
     rows.extend(build_defense_rows(division_slug, division_label, conference_lookup))
     return rows

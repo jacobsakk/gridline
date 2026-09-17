@@ -223,7 +223,6 @@ function useWatchlist() {
       division: division || "",
       position: position || "",
       pipelined: false,
-      inPortal: false,
       notes: "",
       hometown: "",
       height: "",
@@ -256,6 +255,43 @@ function useWatchlist() {
   }
 
   return { available, checkedAvailability: ready, players, addPlayer, removePlayer, updateField, markSeen, isWatched };
+}
+
+// Separate from the watch list on purpose -- "entered the portal" is
+// something worth flagging for any player in the whole dataset, not
+// just the handful someone has explicitly added to their watch list, so
+// it's its own tiny collection keyed by player+team rather than a field
+// on a watchlist doc.
+function usePortalStatus() {
+  const [docs, setDocs] = useState([]);
+
+  useEffect(() => {
+    const unsubscribe = onSnapshot(collection(db, "portalStatus"), (snap) => {
+      setDocs(snap.docs.map((d) => ({ id: d.id, ...(d.data() || {}) })));
+    });
+    return unsubscribe;
+  }, []);
+
+  const byKey = useMemo(() => {
+    const m = new Map();
+    docs.forEach((d) => m.set(`${d.player}::${d.team}`, d));
+    return m;
+  }, [docs]);
+
+  function isInPortal(player, team) {
+    return byKey.get(`${player}::${team}`)?.inPortal === true;
+  }
+
+  async function setInPortal(player, team, value) {
+    const existing = byKey.get(`${player}::${team}`);
+    if (existing) {
+      await updateDoc(doc(db, "portalStatus", existing.id), { inPortal: value });
+    } else {
+      await addDoc(collection(db, "portalStatus"), { player, team, inPortal: value });
+    }
+  }
+
+  return { isInPortal, setInPortal };
 }
 
 // Manual on/off switch -- used for "entered the portal", which is
@@ -504,6 +540,7 @@ function WatchListRow({
   dropIndicator,
   onDragHandlePointerDown,
   rowRef,
+  portalStatus,
 }) {
   const [notes, setNotes] = useState(p.notes || "");
   const [height, setHeight] = useState(p.height || "");
@@ -560,7 +597,7 @@ function WatchListRow({
           <span className="player-name" onClick={() => onSelect(p)} title="View full stats">
             {p.player}
           </span>
-          {p.inPortal && (
+          {portalStatus.isInPortal(p.player, p.team) && (
             <span title="Entered the transfer portal" style={{ display: "inline-flex", color: "var(--success)", lineHeight: 0 }}>
               <CheckCircle2 size={18} />
             </span>
@@ -746,7 +783,7 @@ function exportWatchListCsv(players) {
   URL.revokeObjectURL(url);
 }
 
-function WatchListPanel({ watchlist, onClose, onSelectPlayer }) {
+function WatchListPanel({ watchlist, onClose, onSelectPlayer, portalStatus }) {
   const [name, setName] = useState("");
   const [team, setTeam] = useState("");
   const [position, setPosition] = useState(WATCH_POSITIONS[0]);
@@ -1077,6 +1114,7 @@ function WatchListPanel({ watchlist, onClose, onSelectPlayer }) {
                       onSelect={onSelectPlayer}
                       compareSelected={compareIds.has(p.id)}
                       onToggleCompare={() => toggleCompare(p.id)}
+                      portalStatus={portalStatus}
                       draggable={!wlSortActive}
                       isDragging={dragId === p.id}
                       dropIndicator={dropTarget && dropTarget.id === p.id ? dropTarget.position : null}
@@ -1098,7 +1136,7 @@ function WatchListPanel({ watchlist, onClose, onSelectPlayer }) {
 // Shows every tracked stat line for one player across all categories they
 // appear in (a QB who also carries the ball shows both Passing and Rushing,
 // for example) -- opened by clicking a player's name in the main grid.
-function PlayerDetailModal({ sel, onClose, watchlist }) {
+function PlayerDetailModal({ sel, onClose, watchlist, portalStatus }) {
   const rows = useMemo(
     () => DATA.filter((r) => r.player === sel.player && r.team === sel.team && r.division === sel.division),
     [sel.player, sel.team, sel.division]
@@ -1174,7 +1212,7 @@ function PlayerDetailModal({ sel, onClose, watchlist }) {
               <h2 className="oswald" style={{ fontSize: 20, margin: 0, fontWeight: 700 }}>
                 {sel.player}
               </h2>
-              {watched?.inPortal && (
+              {portalStatus.isInPortal(sel.player, sel.team) && (
                 <span title="Entered the transfer portal" style={{ display: "inline-flex", color: "var(--success)", lineHeight: 0 }}>
                   <CheckCircle2 size={24} />
                 </span>
@@ -1194,6 +1232,11 @@ function PlayerDetailModal({ sel, onClose, watchlist }) {
             </div>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
+            <ToggleSwitch
+              checked={portalStatus.isInPortal(sel.player, sel.team)}
+              onChange={(val) => portalStatus.setInPortal(sel.player, sel.team, val)}
+              title="Mark this player as having entered the transfer portal"
+            />
             <a
               href={playerSearchUrl(sel.player, sel.team, first?.position || sel.position)}
               target="_blank"
@@ -1268,16 +1311,6 @@ function PlayerDetailModal({ sel, onClose, watchlist }) {
                     <button style={pillStyle(watched.pipelined === false)} onClick={() => watchlist.updateField(watched.id, "pipelined", false)}>
                       No
                     </button>
-                  </div>
-                </div>
-                <div>
-                  <label style={fieldLabelStyle}>Entered Portal?</label>
-                  <div style={{ display: "flex", alignItems: "center", height: 30 }}>
-                    <ToggleSwitch
-                      checked={watched.inPortal === true}
-                      onChange={(val) => watchlist.updateField(watched.id, "inPortal", val)}
-                      title="Mark this player as having entered the transfer portal"
-                    />
                   </div>
                 </div>
                 <div>
@@ -1503,6 +1536,7 @@ export default function Gridline() {
     window.localStorage.setItem("gridline-theme", theme);
   }, [theme]);
   const watchlist = useWatchlist();
+  const portalStatus = usePortalStatus();
 
   const cat = CATEGORIES[category];
   const isLiveView = LIVE_DIVISIONS.has(division);
@@ -1800,6 +1834,7 @@ export default function Gridline() {
       {watchlistOpen && (
         <WatchListPanel
           watchlist={watchlist}
+          portalStatus={portalStatus}
           onClose={() => setWatchlistOpen(false)}
           onSelectPlayer={(p) => {
             watchlist.markSeen(p.id, p.player, p.team);
@@ -1807,7 +1842,9 @@ export default function Gridline() {
           }}
         />
       )}
-      {selectedPlayer && <PlayerDetailModal sel={selectedPlayer} onClose={() => setSelectedPlayer(null)} watchlist={watchlist} />}
+      {selectedPlayer && (
+        <PlayerDetailModal sel={selectedPlayer} onClose={() => setSelectedPlayer(null)} watchlist={watchlist} portalStatus={portalStatus} />
+      )}
 
       {/* Division tabs -- frozen along with the header above; everything
           below (breakout strip, live banner, filters, table) scrolls as
@@ -2073,6 +2110,11 @@ export default function Gridline() {
                         >
                           {r.player}
                         </span>
+                        {portalStatus.isInPortal(r.player, r.team) && (
+                          <span title="Entered the transfer portal" style={{ display: "inline-flex", color: "var(--success)", lineHeight: 0 }}>
+                            <CheckCircle2 size={16} />
+                          </span>
+                        )}
                         {r.sample && (
                           <span
                             title="Sample data"

@@ -8,6 +8,9 @@ service cloud.firestore {
     match /watchlist/{docId} {
       allow read, write: if true;
     }
+    match /portalStatus/{docId} {
+      allow read, write: if true;
+    }
     match /{document=**} {
       allow read, write: if false;
     }
