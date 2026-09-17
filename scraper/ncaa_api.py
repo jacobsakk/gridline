@@ -216,6 +216,15 @@ D2_KNOWN_CONFERENCES = {
     'Winston-Salem': 'CIAA',
 }
 
+# D3's own conference-standings endpoint is broken the same way D2's is
+# (confirmed directly, HTTP 500), and D3 has roughly 250 football
+# programs -- too many to hand-verify against Wikipedia in one sitting
+# the way D2_KNOWN_CONFERENCES above was. Starting empty (every team
+# tagged "Independent" via d3_conference_for's fallback) rather than
+# blocking a D3 tab on that: real stats now, real conference tags
+# filled in incrementally the same way, verified team by team.
+D3_KNOWN_CONFERENCES = {}
+
 
 def _get(path, params=None):
     url = f"{API_BASE}{path}"
@@ -270,6 +279,10 @@ def fetch_conference_map(division_slug):
 
 def d2_conference_for(team_name):
     return D2_KNOWN_CONFERENCES.get(team_name, "Independent")
+
+
+def d3_conference_for(team_name):
+    return D3_KNOWN_CONFERENCES.get(team_name, "Independent")
 
 
 def _to_int(value, default=0):

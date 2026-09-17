@@ -27,6 +27,7 @@ from ncaa_api import (
     build_division_rows,
     build_weekly_delta_rows,
     d2_conference_for,
+    d3_conference_for,
     fetch_conference_map,
     load_previous_snapshot,
     save_snapshot,
@@ -105,7 +106,24 @@ def build_ncaa_api_divisions(run_date):
             f"and were tagged 'Independent' (e.g. {', '.join(unmapped_d2_teams[:5])}...)"
         )
 
-    return fbs_rows + fcs_rows + d2_rows
+    print("Fetching D3 stat leaders (passing/rushing/receiving/tackling/sacks)...")
+    d3_rows = build_division(
+        "d3", "D3", run_date,
+        lambda: build_division_rows("d3", "D3", d3_conference_for),
+    )
+    # No conference cross-referencing yet for D3 -- conference_sites.py
+    # doesn't have D3 conference site domains mapped yet (that's the
+    # planned follow-up, same as D3_KNOWN_CONFERENCES in ncaa_api.py).
+
+    unmapped_d3_teams = sorted({r["team"] for r in d3_rows if r["conference"] == "Independent"})
+    if unmapped_d3_teams:
+        print(
+            f"  Note: {len(unmapped_d3_teams)} D3 teams have no known conference yet "
+            f"and were tagged 'Independent' -- expected for now, D3_KNOWN_CONFERENCES "
+            f"in ncaa_api.py starts empty (e.g. {', '.join(unmapped_d3_teams[:5])}...)"
+        )
+
+    return fbs_rows + fcs_rows + d2_rows + d3_rows
 
 
 def _run_with_browser(build_fn):

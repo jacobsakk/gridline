@@ -7,7 +7,7 @@ import "leaflet/dist/leaflet.css";
 import realStats from "./data/real-stats.json";
 import cmuHelmet from "./assets/cmu-helmet.png";
 
-const DIVISIONS = ["NAIA", "JUCO", "D2", "FCS", "FBS"];
+const DIVISIONS = ["NAIA", "JUCO", "D2", "D3", "FCS", "FBS"];
 
 // Same canonical 9-value set every scraper normalizes to (see
 // POSITION_MAP in scraper/ncaa_api.py) -- the watch list groups by these.
@@ -124,8 +124,8 @@ for (const r of DATA) {
   }
 }
 
-const DIVISION_LABEL = { NAIA: "NAIA", JUCO: "Junior College", D2: "NCAA Division II", FCS: "FCS", FBS: "FBS" };
-const LIVE_DIVISIONS = new Set(["NAIA", "JUCO", "D2", "FCS", "FBS"]); // all five are real data now
+const DIVISION_LABEL = { NAIA: "NAIA", JUCO: "Junior College", D2: "NCAA Division II", D3: "NCAA Division III", FCS: "FCS", FBS: "FBS" };
+const LIVE_DIVISIONS = new Set(["NAIA", "JUCO", "D2", "D3", "FCS", "FBS"]); // all six are real data now
 
 // A cheap fingerprint of everything real-stats.json currently says about
 // one player -- not a hash, just a stable string that changes whenever
@@ -1662,7 +1662,7 @@ export default function Gridline() {
                 <h1 className="oswald app-title" style={{ fontSize: 26, fontWeight: 700, margin: 0, letterSpacing: "0.01em" }}>
                   Central Michigan Pre-Portal Tracker
                 </h1>
-                <span style={{ color: "var(--text-muted)", fontSize: 14 }}>weekly stats — NAIA · JUCO · D2 · FCS · FBS</span>
+                <span style={{ color: "var(--text-muted)", fontSize: 14 }}>weekly stats — NAIA · JUCO · D2 · D3 · FCS · FBS</span>
               </div>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
