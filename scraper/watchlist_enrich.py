@@ -141,7 +141,14 @@ def search_results(query, api_key):
     if the request itself failed (e.g. monthly credits exhausted) --
     distinct from a successful search that just found nothing, since only
     the latter should count as "attempted"."""
-    body = json.dumps({"query": query, "max_results": RESULTS_TO_SCAN}).encode("utf-8")
+    # include_raw_content asks Tavily to fetch each page's full text itself
+    # (free -- doesn't change credit cost) rather than just a short
+    # snippet. Confirmed directly this matters: several school athletics
+    # bio pages return HTTP 405 to our own direct fetch from GitHub
+    # Actions' runner IPs specifically (still fetch fine from a normal
+    # residential IP), while Tavily's own crawler isn't blocked the same
+    # way.
+    body = json.dumps({"query": query, "max_results": RESULTS_TO_SCAN, "include_raw_content": "text"}).encode("utf-8")
     req = urllib.request.Request(
         SEARCH_URL,
         data=body,
@@ -277,6 +284,24 @@ def _looks_like_player_bio_page(url):
     return "/roster/" in path or "/bios/" in path or "/bio/" in path
 
 
+def _extract_from_result(r):
+    """Best-effort bio extraction for one result: try Tavily's own
+    already-fetched raw_content first (free, and confirmed not blocked by
+    sites that reject our own direct fetch -- several school athletics
+    bio pages return HTTP 405 to a fetch from GitHub Actions' runner IPs
+    specifically), then fall back to fetching the page ourselves for
+    whatever's still missing, since a site's own "cleaned" content
+    extraction can drop a bio widget entirely (confirmed directly on one
+    real page, which Tavily returned with full stat tables but without
+    its Height/Weight/Hometown block) that our simpler tag-stripped fetch
+    still picks up when it isn't blocked."""
+    height, weight, hometown = _extract_bio(r.get("raw_content"))
+    if height and weight and hometown:
+        return height, weight, hometown
+    h, w, ht = _extract_bio(_page_text(r.get("url", "")))
+    return height or h, weight or w, hometown or ht
+
+
 def find_bio_fields(results):
     """Height, Weight, and Hometown all tend to sit in the same bio block
     (e.g. "Height 6-3 Weight 205 Class Senior Hometown Selby, S.D.").
@@ -302,7 +327,7 @@ def find_bio_fields(results):
     for r in bio_pages:
         if height and weight and hometown:
             return height, weight, hometown
-        h, w, ht = _extract_bio(_page_text(r.get("url", "")))
+        h, w, ht = _extract_from_result(r)
         height, weight, hometown = height or h, weight or w, hometown or ht
 
     for r in other_results:
@@ -314,7 +339,7 @@ def find_bio_fields(results):
     for r in other_results:
         if height and weight and hometown:
             break
-        h, w, ht = _extract_bio(_page_text(r.get("url", "")))
+        h, w, ht = _extract_from_result(r)
         height, weight, hometown = height or h, weight or w, hometown or ht
 
     return height, weight, hometown
