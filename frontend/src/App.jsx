@@ -3,6 +3,7 @@ import Dashboard from "./Dashboard.jsx";
 import Gridline from "./Gridline.jsx";
 import SettingsPage from "./SettingsPage.jsx";
 import OfferTracker from "./OfferTracker.jsx";
+import Colleges from "./Colleges.jsx";
 import { ConfirmHost } from "./ConfirmDialog.jsx";
 import CardTransition from "./CardTransition.jsx";
 
@@ -37,6 +38,7 @@ function Screens() {
   let screen;
   if (view.name === "tracker") screen = <Gridline onBack={toDashboard} initialSearch={view.search} />;
   else if (view.name === "offers") screen = <OfferTracker onBack={toDashboard} />;
+  else if (view.name === "colleges") screen = <Colleges onBack={toDashboard} />;
   else if (view.name === "settings") screen = <SettingsPage onBack={toDashboard} />;
   else {
     screen = (

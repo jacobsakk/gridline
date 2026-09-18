@@ -167,7 +167,7 @@ function weeksFor(division) {
 // isn't present there, so this degrades to "feature hidden" rather than
 // erroring.
 
-function useWatchlist() {
+export function useWatchlist() {
   // Every doc ever added, including ones the owner has since "removed" --
   // those just get removed:true rather than actually deleted, so their
   // notes/hometown/eligibility/filmLink survive and come back automatically
@@ -263,7 +263,7 @@ function useWatchlist() {
 // just the handful someone has explicitly added to their watch list, so
 // it's its own tiny collection keyed by player+team rather than a field
 // on a watchlist doc.
-function usePortalStatus() {
+export function usePortalStatus() {
   const [docs, setDocs] = useState([]);
   // The switch flips immediately on click rather than waiting on a round
   // trip to Firestore -- otherwise a slow connection (or a write that
@@ -1182,7 +1182,7 @@ function WatchListPanel({ watchlist, onClose, onSelectPlayer, portalStatus }) {
 // Shows every tracked stat line for one player across all categories they
 // appear in (a QB who also carries the ball shows both Passing and Rushing,
 // for example) -- opened by clicking a player's name in the main grid.
-function PlayerDetailModal({ sel, onClose, watchlist, portalStatus }) {
+export function PlayerDetailModal({ sel, onClose, watchlist, portalStatus }) {
   const rows = useMemo(
     () => DATA.filter((r) => r.player === sel.player && r.team === sel.team && r.division === sel.division),
     [sel.player, sel.team, sel.division]

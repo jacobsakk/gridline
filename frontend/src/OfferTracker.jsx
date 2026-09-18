@@ -23,7 +23,7 @@ const FIELDS = [
 // entered). Actually reformatting the string is the only way to get a
 // normal-looking "Aaron Pegues" instead of "AARON PEGUES", matching
 // how names read in the Pre-Portal Tracker.
-function toTitleCase(text) {
+export function toTitleCase(text) {
   return (text || "").toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
@@ -34,7 +34,7 @@ const filterSelectStyle = {
   borderRadius: 5, padding: "7px 10px", fontSize: 13, fontFamily: "inherit", cursor: "pointer",
 };
 
-function statusStyle(status) {
+export function statusStyle(status) {
   const s = (status || "").toUpperCase();
   if (s.includes("CENTRAL MICHIGAN")) {
     return { background: "var(--accent-bg)", color: "var(--accent)", border: "1px solid var(--accent)" };
@@ -92,7 +92,7 @@ function lightenForDark(hex, minLum = 135) {
 // On the light theme the problem flips: pale school colors (gold, tan,
 // light blue) wash out on white, so the team's own primary is used and
 // darkened only if it's too light to read.
-const ThemeContext = createContext("dark");
+export const ThemeContext = createContext("dark");
 
 function darkenForLight(hex, maxLum = 140) {
   const rgb = hexToRgb(hex);
@@ -415,7 +415,7 @@ function AddOfferForm({ teamLabel, onAdd, onClose }) {
   );
 }
 
-function PlayerProfileModal({ player, classYear, tracker, onClose }) {
+export function PlayerProfileModal({ player, classYear, tracker, onClose }) {
   const theme = useContext(ThemeContext);
   const rows = useMemo(() => tracker.rowsForPlayer(classYear, player), [tracker, classYear, player]);
   const first = rows[0];

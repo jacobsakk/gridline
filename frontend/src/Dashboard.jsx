@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Settings, Sun, Moon, ClipboardList, ChevronRight, FileSpreadsheet } from "lucide-react";
+import { Settings, Sun, Moon, ClipboardList, ChevronRight, FileSpreadsheet, GraduationCap } from "lucide-react";
 import cmuHelmet from "./assets/cmu-helmet.png";
 
 // The main hub -- everything else (the Pre-Portal Tracker and Offer
@@ -18,6 +18,12 @@ const CARDS = [
     label: "Offer Tracker",
     description: "Offers by class year, conference and team, with position/area trends",
     icon: FileSpreadsheet,
+  },
+  {
+    key: "colleges",
+    label: "Colleges",
+    description: "Every FBS and FCS team: standings, schedules, recruiting, rosters and depth charts",
+    icon: GraduationCap,
   },
 ];
 

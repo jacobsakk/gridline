@@ -108,7 +108,7 @@ const SYNCED_FIELDS = new Set(["player", "highSchool", "state", "position", "sta
 // correctly -- so E and L are treated as the same letter when deciding
 // whether two rows are the same recruit. Suffixes (Jr./III) are kept:
 // "Andrew Davis" and "Andrew Davis Jr." are different players.
-function normalizePlayerKey(player) {
+export function normalizePlayerKey(player) {
   return (player || "")
     .toUpperCase()
     .replace(/[^A-Z ]/g, "")
@@ -133,7 +133,7 @@ export function normalizeStatus(status) {
 
 // A commitment is a fact about the recruit, not about whose board you're
 // looking at.
-function isCommitment(status) {
+export function isCommitment(status) {
   return /^COMMITTED TO /.test(normalizeStatus(status));
 }
 

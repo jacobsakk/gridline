@@ -1,0 +1,45 @@
+name: Colleges refresh
+
+# Every morning (6am America/Detroit = 10:00 UTC), re-scrapes the data behind
+# the Colleges section -- standings, polls, and the Ourlads depth charts --
+# commits it, and asks the Pages workflow to redeploy. (A push made with the
+# built-in token doesn't trigger other workflows on its own, hence the
+# explicit dispatch.) Also runnable by hand from the Actions tab.
+on:
+  schedule:
+    - cron: "0 10 * * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+  actions: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Scrape colleges, standings and depth charts
+        working-directory: scraper
+        run: python3 colleges.py
+
+      - name: Commit and redeploy if anything changed
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git config user.name "gridline-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add frontend/src/data/colleges.json frontend/src/data/standings.json frontend/src/data/depth-charts.json
+          if git diff --cached --quiet; then
+            echo "No changes -- nothing to commit."
+          else
+            git commit -m "Colleges data refresh ($(date -u +%Y-%m-%d))"
+            git push
+            gh workflow run deploy-pages.yml
+          fi
