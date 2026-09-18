@@ -3,6 +3,7 @@ import { Settings, Sun, Moon, ClipboardList, ChevronRight, FileSpreadsheet, Grad
 import actionC from "./assets/cmu-action-c.png";
 import actionCDark from "./assets/cmu-action-c-dark.png";
 import riseLogo from "./assets/rise-logo.png";
+import anniversaryLogo from "./assets/anniversary-125.png";
 
 // The main hub -- everything else (the Pre-Portal Tracker and Offer
 // Tracker today, more tools later) is a card here rather than its own
@@ -70,6 +71,7 @@ export default function Dashboard({ onOpenCard, onOpenSettings }) {
             </h1>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
+            <img src={anniversaryLogo} alt="Central Michigan football 125th anniversary" style={{ height: 46, width: "auto", flexShrink: 0 }} />
             <button
               onClick={onOpenSettings}
               style={{
