@@ -3,6 +3,7 @@ import { Settings, ClipboardList, ChevronRight, FileSpreadsheet, GraduationCap }
 import { ThemeSwitcher, useTheme } from "./theme.jsx";
 import actionCDark from "./assets/cmu-action-c-dark.png";
 import anniversaryLogo from "./assets/anniversary-125.png";
+import HubSchedule from "./HubSchedule.jsx";
 
 // The main hub -- everything else (the Pre-Portal Tracker and Offer
 // Tracker today, more tools later) is a card here rather than its own
@@ -75,7 +76,7 @@ export default function Dashboard({ onOpenCard, onOpenSettings }) {
         </div>
       </div>
 
-      <div style={{ flex: 1, minHeight: 0, overflow: "auto", padding: "24px var(--gutter) var(--gutter)" }}>
+      <div style={{ flex: 1, minHeight: 0, overflow: "auto", padding: "24px var(--gutter) var(--gutter)", display: "flex", flexDirection: "column" }}>
         <div style={{ maxWidth: 1100, width: "100%", margin: "0 auto" }}>
           <h2 className="oswald" style={{ fontSize: 26, fontWeight: 700, margin: "0 0 20px", letterSpacing: "0.01em" }}>
             Dashboard
@@ -105,6 +106,10 @@ export default function Dashboard({ onOpenCard, onOpenSettings }) {
               </button>
             ))}
           </div>
+        </div>
+
+        <div style={{ maxWidth: 1100, width: "100%", margin: "auto auto 0" }}>
+          <HubSchedule theme={theme} />
         </div>
       </div>
     </div>

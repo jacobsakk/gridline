@@ -1185,8 +1185,11 @@ function WatchListPanel({ watchlist, onClose, onSelectPlayer, portalStatus }) {
 // for example) -- opened by clicking a player's name in the main grid.
 export function PlayerDetailModal({ sel, onClose, watchlist, portalStatus }) {
   const rows = useMemo(
-    () => DATA.filter((r) => r.player === sel.player && r.team === sel.team && r.division === sel.division),
-    [sel.player, sel.team, sel.division]
+    () =>
+      sel.variants
+        ? DATA.filter((r) => r.division === sel.division && sel.variants.some((v) => v.player === r.player && v.team === r.team))
+        : DATA.filter((r) => r.player === sel.player && r.team === sel.team && r.division === sel.division),
+    [sel.player, sel.team, sel.division, sel.variants]
   );
   const first = rows[0];
   const watched = watchlist.players.find((p) => p.player === sel.player && p.team === sel.team);

@@ -271,16 +271,106 @@ export function teamKey(name) {
 
 // Pre-Portal Tracker players (FBS and FCS only -- the only levels the
 // colleges section lists), grouped under the college they play for.
+// Player names arrive in many shapes: "Reginald Vick, Jr.", "Jr.,Terrance
+// Shelton", 'Jayden "Duke" Scott', "Trae'shawn", "J.J. Hill". Boil them down
+// to bare lowercase words: nicknames in quotes/parentheses dropped, commas
+// treated as breaks, periods/apostrophes/hyphens removed, suffixes removed.
 export function nameKey(name) {
   return (name || "")
-    .toLowerCase()
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z ]/g, "")
-    .replace(/\b(jr|sr|ii|iii|iv|v)\b/g, "")
+    .toLowerCase()
+    .replace(/["\u201c\u201d][^"\u201c\u201d]*["\u201c\u201d]/g, " ")
+    .replace(/\([^)]*\)/g, " ")
+    .replace(/,/g, " ")
+    .replace(/[.'\u2019\u2018`-]/g, "")
+    .replace(/[^a-z ]/g, " ")
+    .replace(/\b(jr|sr|ii|iii|iv|v)\b/g, " ")
     .replace(/\s+/g, " ")
     .trim();
 }
+
+const compact = (name) => nameKey(name).replace(/ /g, "");
+
+// First names that are the same person: identical, a prefix of the other
+// (Sam/Samuel, Dom/Dominique, Matt/Matthew), a tail of it (Quan/Jiquan), or a
+// known nickname pair that isn't a prefix (Ike/Isaac).
+const NICKNAMES = { ike: "isaac", bo: "beau", jon: "jonathan", zach: "zachary", tj: "", dj: "" };
+function firstNamesMatch(a, b) {
+  if (a === b) return true;
+  const [short, long] = a.length <= b.length ? [a, b] : [b, a];
+  if (short.length >= 3 && long.startsWith(short)) return true;
+  if (short.length >= 4 && long.endsWith(short)) return true;
+  return NICKNAMES[short] === long;
+}
+
+// Ourlads position labels (WR-X, LCB, SS...) against the tracker's nine
+// positions -- used only to break ties between two same-name candidates.
+function positionGroup(label) {
+  const p = (label || "").toUpperCase();
+  if (/^QB/.test(p)) return "QB";
+  if (/^(RB|FB|HB)/.test(p)) return "RB";
+  if (/^(WR|SL)/.test(p)) return "WR";
+  if (/^TE|^H$|^Y$/.test(p)) return "TE";
+  if (/^(LT|LG|RG|RT|OL|OT|OG|C)$/.test(p)) return "OL";
+  if (/^(DE|DT|NT|DL|EDGE|WOLF|BUCK|LEO|JACK|RUSH)/.test(p)) return "DL";
+  if (/^(MLB|WLB|SLB|OLB|ILB|LB|MIKE|WILL|SAM|STING)/.test(p)) return "LB";
+  if (/^(CB|LCB|RCB|NB|NICKEL|HUSKY)/.test(p)) return "CB";
+  if (/^(S|SS|FS|SAF|DB|ROV)/.test(p)) return "SAF";
+  return null;
+}
+
+// Matches every player on a team's depth chart to that team's players in the
+// Pre-Portal Tracker. Exact names (after normalizing) are linked first; the
+// rest are matched by last name plus a compatible first name, and only when
+// that leaves exactly one candidate (position breaks a tie) -- a wrong link
+// is worse than a missing one. Returns Map(compact depth name -> tracker player).
+export function linkDepthChart(team, roster) {
+  const depthPlayers = new Map();
+  team.sections.forEach((section) =>
+    section.positions.forEach((pos) =>
+      pos.players.forEach((pl) => {
+        const k = compact(pl.name);
+        if (!depthPlayers.has(k)) depthPlayers.set(k, { name: pl.name, pos: pos.pos });
+      })
+    )
+  );
+  const links = new Map();
+  const used = new Set();
+  const rosterByKey = new Map(roster.map((p) => [compact(p.player), p]));
+
+  depthPlayers.forEach((dp, k) => {
+    const hit = rosterByKey.get(k);
+    if (hit) {
+      links.set(k, hit);
+      used.add(hit.id);
+    }
+  });
+
+  depthPlayers.forEach((dp, k) => {
+    if (links.has(k)) return;
+    const words = nameKey(dp.name).split(" ");
+    const last = words[words.length - 1];
+    const first = words[0];
+    let candidates = roster.filter((p) => {
+      if (used.has(p.id)) return false;
+      const w = nameKey(p.player).split(" ");
+      return w[w.length - 1] === last && firstNamesMatch(first, w[0]);
+    });
+    if (candidates.length > 1) {
+      const group = positionGroup(dp.pos);
+      const byPosition = candidates.filter((p) => !group || !p.position || p.position === group || p.position === "ATH");
+      if (byPosition.length) candidates = byPosition;
+    }
+    if (candidates.length === 1) {
+      links.set(k, candidates[0]);
+      used.add(candidates[0].id);
+    }
+  });
+  return links;
+}
+
+export const depthKey = compact;
 
 let playersByCollegeKey = null;
 function buildPlayerIndex() {
@@ -296,15 +386,58 @@ function buildPlayerIndex() {
   });
 }
 
+// One row per real player. The tracker can list the same person under two
+// spellings of the school ("Arkansas St." / "Arkansas State") or of their name
+// ("Reginald Vick, Jr." / "Jr.,Reginald Vick"), so those are merged: the row
+// keeps every original (player, team) pair in `variants`, so opening it shows
+// all of that player's stats.
 export function rosterFor(college) {
   if (!playersByCollegeKey) buildPlayerIndex();
   const keys = new Set([teamKey(college.name), teamKey(college.displayName)]);
-  const out = [];
+  const merged = new Map();
   keys.forEach((k) => {
     const players = playersByCollegeKey.get(k);
-    if (players) players.forEach((p) => out.push(p));
+    if (!players) return;
+    players.forEach((p) => {
+      const mergeKey = `${p.division}|${compact(p.player)}`;
+      const existing = merged.get(mergeKey);
+      if (!existing) {
+        merged.set(mergeKey, { ...p, id: mergeKey, categories: new Set(p.categories), variants: [{ player: p.player, team: p.team }] });
+        return;
+      }
+      p.categories.forEach((c) => existing.categories.add(c));
+      if (!existing.variants.some((v) => v.player === p.player && v.team === p.team)) existing.variants.push({ player: p.player, team: p.team });
+      if (!existing.position && p.position) existing.position = p.position;
+      // Prefer the cleanly formatted spelling for display.
+      if (/,/.test(existing.player) && !/,/.test(p.player)) {
+        existing.player = p.player;
+        existing.team = p.team;
+      }
+    });
   });
-  return [...new Map(out.map((p) => [p.id, p])).values()].sort((a, b) => a.player.localeCompare(b.player));
+  // Same person under a short and a full first name (Sam / Samuel Pickett):
+  // same team, same last name, compatible first names, same position.
+  const people = [];
+  [...merged.values()]
+    .sort((a, b) => a.player.localeCompare(b.player))
+    .forEach((p) => {
+      const w = nameKey(p.player).split(" ");
+      const twin = people.find((q) => {
+        const x = nameKey(q.player).split(" ");
+        return q.division === p.division && x[x.length - 1] === w[w.length - 1] && firstNamesMatch(x[0], w[0]) && (!q.position || !p.position || q.position === p.position);
+      });
+      if (!twin) {
+        people.push(p);
+        return;
+      }
+      p.categories.forEach((c) => twin.categories.add(c));
+      p.variants.forEach((v) => twin.variants.push(v));
+      if (nameKey(p.player).length > nameKey(twin.player).length) {
+        twin.player = p.player;
+        twin.team = p.team;
+      }
+    });
+  return people.sort((a, b) => a.player.localeCompare(b.player));
 }
 
 // The college behind an Offer Tracker team (matched by school name), so the

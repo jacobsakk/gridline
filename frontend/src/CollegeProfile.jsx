@@ -11,9 +11,10 @@ import {
   fetchTeamStats,
   fetchTeamSummary,
   getGithubToken,
+  depthKey,
   lazyDepthCharts,
+  linkDepthChart,
   logoFor,
-  nameKey,
   rankFor,
   refreshDepthCharts,
   saveGithubToken,
@@ -420,7 +421,7 @@ function RosterTab({ college }) {
             {players.map((p) => (
               <tr key={p.id}>
                 <td style={{ ...tdStyle, fontWeight: 600, color: "var(--text-primary)" }}>
-                  <span className="player-name" onClick={() => setSelected({ player: p.player, team: p.team, division: p.division, position: p.position })}>{p.player}</span>
+                  <span className="player-name" onClick={() => setSelected({ player: p.player, team: p.team, division: p.division, position: p.position, variants: p.variants })}>{p.player}</span>
                 </td>
                 <td style={{ ...tdStyle, color: "var(--accent)", fontWeight: 700 }}>{p.position || "—"}</td>
                 <td style={tdStyle}>
@@ -555,7 +556,6 @@ function DepthChartTab({ college }) {
   const watchlist = useWatchlist();
   const portalStatus = usePortalStatus();
   const roster = useMemo(() => rosterFor(college), [college]);
-  const rosterByName = useMemo(() => new Map(roster.map((p) => [nameKey(p.player), p])), [roster]);
 
   // The daily scrape commits to the repo before the site is redeployed, so
   // quietly check whether GitHub already has something newer.
@@ -572,6 +572,7 @@ function DepthChartTab({ college }) {
 
   const data = live || charts.data;
   const team = data?.teams?.[college.id];
+  const links = useMemo(() => (team ? linkDepthChart(team, roster) : new Map()), [team, roster]);
 
   async function runRefresh(token) {
     setRefresh({ running: true, message: "Starting…", error: "" });
@@ -657,13 +658,13 @@ function DepthChartTab({ college }) {
                       <div style={{ color: "var(--text-faint)", fontSize: 12 }}>—</div>
                     ) : (
                       pos.players.map((pl, j) => {
-                        const match = rosterByName.get(nameKey(pl.name));
+                        const match = links.get(depthKey(pl.name));
                         return (
                           <DepthChip
                             key={j}
                             player={pl}
                             linked={!!match}
-                            onOpen={() => setSelected({ player: match.player, team: match.team, division: match.division, position: match.position })}
+                            onOpen={() => setSelected({ player: match.player, team: match.team, division: match.division, position: match.position, variants: match.variants })}
                           />
                         );
                       })
