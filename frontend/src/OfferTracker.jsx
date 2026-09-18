@@ -3,15 +3,6 @@ import { ArrowLeft, Sun, Moon, Upload, X, Loader2, ChevronUp, ChevronDown, Chevr
 import cmuHelmet from "./assets/cmu-helmet.png";
 import { CONFERENCE_ORDER, TEAM_CONFERENCE, normalizePosition, useOfferTracker } from "./offerData.js";
 
-// Pulls the target school out of a status like "COMMITTED TO OHIO
-// STATE" (the source data also has the typo "COMMITED TO X" in
-// places, so both are matched) -- used to build the "Committed To"
-// filter's option list from whatever's actually in the data.
-function extractCommittedSchool(status) {
-  const m = /^COMMI?TT?ED TO (.+)$/i.exec((status || "").trim());
-  return m ? m[1].trim() : null;
-}
-
 const CONFERENCE_LABEL = { MAC: "MAC", MVC: "MVC / MVFC", IVY: "Ivy League" };
 
 const FIELDS = [
@@ -65,6 +56,43 @@ function contrastOn(hex) {
   const b = parseInt(h.slice(4, 6), 16) || 0;
   const brightness = (r * 299 + g * 587 + b * 114) / 1000;
   return brightness > 150 ? "#141414" : "#F5F3EE";
+}
+
+function hexToRgb(hex) {
+  const h = (hex || "#000000").replace("#", "");
+  return { r: parseInt(h.slice(0, 2), 16) || 0, g: parseInt(h.slice(2, 4), 16) || 0, b: parseInt(h.slice(4, 6), 16) || 0 };
+}
+function rgbLuminance({ r, g, b }) {
+  return (r * 299 + g * 587 + b * 114) / 1000;
+}
+function rgbToHex({ r, g, b }) {
+  const c = (n) => Math.round(Math.max(0, Math.min(255, n))).toString(16).padStart(2, "0");
+  return `#${c(r)}${c(g)}${c(b)}`;
+}
+
+// Some school colors (navy and royal blue especially) are close to
+// invisible as text on the site's near-black surfaces. Blends toward
+// white only as far as needed to clear a readable brightness, so a dark
+// navy becomes a lighter navy-blue instead of jumping to some unrelated
+// color.
+function lightenForDark(hex, minLum = 135) {
+  const rgb = hexToRgb(hex);
+  const lum = rgbLuminance(rgb);
+  if (lum >= minLum) return hex;
+  const t = Math.min(1, (minLum - lum) / (255 - lum || 1));
+  return rgbToHex({ r: rgb.r + (255 - rgb.r) * t, g: rgb.g + (255 - rgb.g) * t, b: rgb.b + (255 - rgb.b) * t });
+}
+
+// The team color to use as *text* (Position column, Trends labels):
+// whichever of the school's two colors is brighter -- e.g. Kent State's
+// gold over its navy -- lightened further if it's still too dark
+// (Buffalo's blue, whose other color is black). Backgrounds and borders
+// keep the real primary color; only text needs to be readable.
+function textAccentFor(meta) {
+  if (!meta || !meta.color) return null;
+  const primary = rgbLuminance(hexToRgb(meta.color));
+  const secondary = rgbLuminance(hexToRgb(meta.colorSecondary));
+  return lightenForDark(secondary > primary ? meta.colorSecondary : meta.color);
 }
 
 function EditableCell({ value, onCommit, width, upper, titleCase, normalize, style }) {
@@ -438,10 +466,10 @@ function SortableBreakdownTable({ title, rowLabel, rows, teams, maxHeight, defau
                   {rowLabel} <SortIcon active={sortKey === "label"} dir={sortDir} />
                 </span>
               </th>
-              {teams.map(({ team, label, color }) => (
-                <th key={team} style={{ ...thStyle, color, borderBottom: `2px solid ${color || "var(--border)"}` }} onClick={() => handleSort(team)}>
+              {teams.map((t) => (
+                <th key={t.team} style={{ ...thStyle, color: textAccentFor(t) || undefined, borderBottom: `2px solid ${t.color || "var(--border)"}` }} onClick={() => handleSort(t.team)}>
                   <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
-                    {label} <SortIcon active={sortKey === team} dir={sortDir} />
+                    {t.label} <SortIcon active={sortKey === t.team} dir={sortDir} />
                   </span>
                 </th>
               ))}
@@ -469,9 +497,9 @@ function SortableBreakdownTable({ title, rowLabel, rows, teams, maxHeight, defau
             })}
             <tr style={{ borderTop: "2px solid var(--border)", background: "var(--bg-surface)" }}>
               <td style={rowLabelStyle}>Totals</td>
-              {teams.map(({ team, color }) => (
-                <td key={team} style={{ textAlign: "right", padding: "8px 10px", fontSize: 13.5, fontWeight: 700, color: color || "var(--accent)" }} className="tabular">
-                  {rows.reduce((sum, row) => sum + (row.counts[team] || 0), 0)}
+              {teams.map((t) => (
+                <td key={t.team} style={{ textAlign: "right", padding: "8px 10px", fontSize: 13.5, fontWeight: 700, color: textAccentFor(t) || "var(--accent)" }} className="tabular">
+                  {rows.reduce((sum, row) => sum + (row.counts[t.team] || 0), 0)}
                 </td>
               ))}
               <td style={{ textAlign: "right", padding: "8px 10px", fontSize: 13.5, fontWeight: 700, color: "var(--accent)" }} className="tabular">
@@ -491,9 +519,9 @@ function BreakdownTables({ classYear, conference, tracker }) {
 
   const topTeamPos = useMemo(() => {
     let best = { team: null, label: "", color: null, n: -1 };
-    posData.teams.forEach(({ team, label, color }) => {
-      const n = posData.totals[team] || 0;
-      if (n > best.n) best = { team, label, color, n };
+    posData.teams.forEach((t) => {
+      const n = posData.totals[t.team] || 0;
+      if (n > best.n) best = { team: t.team, label: t.label, color: textAccentFor(t), n };
     });
     return best;
   }, [posData]);
@@ -564,7 +592,7 @@ function SortIcon({ active, dir }) {
   return dir === "desc" ? <ChevronDown size={13} /> : <ChevronUp size={13} />;
 }
 
-function TeamOffersTable({ rows, onEdit, onOpenProfile, sortKey, sortDir, onSort, teamColor }) {
+function TeamOffersTable({ rows, onEdit, onOpenProfile, sortKey, sortDir, onSort, teamColor, teamTextColor }) {
   const tdStyle = { padding: "4px 10px", fontSize: 13.5, color: "var(--text-secondary)", borderRight: "1px solid var(--border-faint)" };
   const headerBackground = teamColor ? `color-mix(in srgb, ${teamColor} 22%, var(--bg-surface))` : "var(--bg-surface)";
   // Sticky against the nearest scrolling ancestor -- the caller wraps
@@ -647,7 +675,7 @@ function TeamOffersTable({ rows, onEdit, onOpenProfile, sortKey, sortDir, onSort
                   key={key}
                   style={{
                     ...tdStyle,
-                    ...(key === "position" ? { color: teamColor || "var(--accent)", fontWeight: 700 } : null),
+                    ...(key === "position" ? { color: teamTextColor || "var(--accent)", fontWeight: 700 } : null),
                   }}
                   className={key === "dateOffered" ? "tabular" : undefined}
                 >
@@ -699,7 +727,6 @@ export default function OfferTracker({ onBack }) {
   const [sortDir, setSortDir] = useState("asc");
   const [search, setSearch] = useState("");
   const [stateFilter, setStateFilter] = useState("");
-  const [committedFilter, setCommittedFilter] = useState("");
   const [profilePlayer, setProfilePlayer] = useState(null);
 
   const tracker = useOfferTracker();
@@ -721,26 +748,23 @@ export default function OfferTracker({ onBack }) {
     () => [...new Set(allTeamRows.map((r) => r.state).filter(Boolean))].sort(),
     [allTeamRows]
   );
-  const committedOptions = useMemo(
-    () => [...new Set(allTeamRows.map((r) => extractCommittedSchool(r.status)).filter(Boolean))].sort((a, b) => a.localeCompare(b)),
-    [allTeamRows]
-  );
 
   const teamRows = useMemo(() => {
     const q = search.trim().toLowerCase();
     let rows = allTeamRows;
     if (q) {
-      rows = rows.filter((r) => (r.player || "").toLowerCase().includes(q) || (r.highSchool || "").toLowerCase().includes(q));
+      // Status is searched too, so typing a school ("ohio state")
+      // finds everyone committed there -- that's the "committed to X"
+      // text -- without a separate dropdown.
+      rows = rows.filter(
+        (r) =>
+          (r.player || "").toLowerCase().includes(q) ||
+          (r.highSchool || "").toLowerCase().includes(q) ||
+          (r.status || "").toLowerCase().includes(q)
+      );
     }
     if (stateFilter) {
       rows = rows.filter((r) => r.state === stateFilter);
-    }
-    if (committedFilter === "__uncommitted") {
-      rows = rows.filter((r) => !r.status);
-    } else if (committedFilter === "__offered") {
-      rows = rows.filter((r) => (r.status || "").trim().toUpperCase() === "OFFERED");
-    } else if (committedFilter) {
-      rows = rows.filter((r) => (extractCommittedSchool(r.status) || "").toLowerCase() === committedFilter.toLowerCase());
     }
     return [...rows].sort((a, b) => {
       if (sortKey === "dateOffered") {
@@ -756,7 +780,7 @@ export default function OfferTracker({ onBack }) {
       const cmp = STRING_SORT_KEYS.has(sortKey) ? av.localeCompare(bv) : (parseFloat(av) || 0) - (parseFloat(bv) || 0);
       return sortDir === "desc" ? -cmp : cmp;
     });
-  }, [allTeamRows, search, stateFilter, committedFilter, sortKey, sortDir]);
+  }, [allTeamRows, search, stateFilter, sortKey, sortDir]);
 
   function handleSort(key) {
     if (key === sortKey) {
@@ -776,6 +800,7 @@ export default function OfferTracker({ onBack }) {
   }
 
   const teamAccent = activeTeamMeta?.color;
+  const teamTextAccent = textAccentFor(activeTeamMeta);
 
   return (
     <div
@@ -877,7 +902,6 @@ export default function OfferTracker({ onBack }) {
                       setConference(c);
                       setSelectedTeam(null);
                       setStateFilter("");
-                      setCommittedFilter("");
                     }}
                     style={{
                       background: c === conference ? "var(--accent-bg)" : "var(--bg-surface)",
@@ -919,7 +943,6 @@ export default function OfferTracker({ onBack }) {
                         onClick={() => {
                           setSelectedTeam(team);
                           setStateFilter("");
-                          setCommittedFilter("");
                         }}
                         style={{
                           background: active ? color || "var(--accent)" : "var(--bg-surface)",
@@ -941,7 +964,7 @@ export default function OfferTracker({ onBack }) {
                     <input
                       value={search}
                       onChange={(e) => setSearch(e.target.value)}
-                      placeholder="Search name or high school…"
+                      placeholder="Search name, high school or school committed to…"
                       style={{
                         width: "100%", background: "var(--bg-surface)", border: "1px solid var(--border)", color: "var(--text-primary)",
                         borderRadius: 5, padding: "7px 10px 7px 30px", fontSize: 13, fontFamily: "inherit",
@@ -952,14 +975,6 @@ export default function OfferTracker({ onBack }) {
                     <option value="">All States</option>
                     {stateOptions.map((s) => (
                       <option key={s} value={s}>{s}</option>
-                    ))}
-                  </select>
-                  <select value={committedFilter} onChange={(e) => setCommittedFilter(e.target.value)} style={filterSelectStyle}>
-                    <option value="">Any Status</option>
-                    <option value="__uncommitted">Uncommitted</option>
-                    <option value="__offered">Offered</option>
-                    {committedOptions.map((s) => (
-                      <option key={s} value={s}>Committed to {toTitleCase(s)}</option>
                     ))}
                   </select>
                   <span style={{ fontSize: 12.5, color: "var(--text-faint)", marginLeft: "auto" }}>
@@ -976,6 +991,7 @@ export default function OfferTracker({ onBack }) {
                     sortDir={sortDir}
                     onSort={handleSort}
                     teamColor={teamAccent}
+                    teamTextColor={teamTextAccent}
                   />
                 </div>
               </>
