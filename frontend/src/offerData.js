@@ -5,6 +5,7 @@ import {
   getDocs,
   onSnapshot,
   query,
+  updateDoc,
   where,
   writeBatch,
 } from "firebase/firestore";
@@ -12,43 +13,45 @@ import { db } from "./firebase";
 import { useEffect, useMemo, useState } from "react";
 
 // Sheet name (as it appears in the workbook, case-insensitive) -> which
-// conference it belongs to and how to display it. Hand-maintained the
-// same way D2_KNOWN_CONFERENCES/CONFERENCE_CORRECTIONS are in the
+// conference it belongs to, how to display it, and its school colors
+// (hand-picked approximations, not official brand assets -- close
+// enough to theme the page when that team's selected). Hand-maintained
+// the same way D2_KNOWN_CONFERENCES/CONFERENCE_CORRECTIONS are in the
 // scraper -- add a line here when a new team gets its own tab.
 export const TEAM_CONFERENCE = {
-  CMU: { conference: "MAC", label: "Central Michigan" },
-  BGSU: { conference: "MAC", label: "Bowling Green" },
-  WMU: { conference: "MAC", label: "Western Michigan" },
-  EMU: { conference: "MAC", label: "Eastern Michigan" },
-  NIU: { conference: "MAC", label: "Northern Illinois" },
-  "BALL STATE": { conference: "MAC", label: "Ball State" },
-  AKRON: { conference: "MAC", label: "Akron" },
-  OHIO: { conference: "MAC", label: "Ohio" },
-  TOLEDO: { conference: "MAC", label: "Toledo" },
-  "MIAMI (OH)": { conference: "MAC", label: "Miami (OH)" },
-  "KENT STATE": { conference: "MAC", label: "Kent State" },
-  UMASS: { conference: "MAC", label: "UMass" },
-  BUFFALO: { conference: "MAC", label: "Buffalo" },
+  CMU: { conference: "MAC", label: "Central Michigan", color: "#6A0032", colorSecondary: "#FFC72C" },
+  BGSU: { conference: "MAC", label: "Bowling Green", color: "#4F2C1D", colorSecondary: "#FE5000" },
+  WMU: { conference: "MAC", label: "Western Michigan", color: "#532E1F", colorSecondary: "#FFC629" },
+  EMU: { conference: "MAC", label: "Eastern Michigan", color: "#006633", colorSecondary: "#046A38" },
+  NIU: { conference: "MAC", label: "Northern Illinois", color: "#C8102E", colorSecondary: "#000000" },
+  "BALL STATE": { conference: "MAC", label: "Ball State", color: "#BA0C2F", colorSecondary: "#1C1C1C" },
+  AKRON: { conference: "MAC", label: "Akron", color: "#00285E", colorSecondary: "#A89968" },
+  OHIO: { conference: "MAC", label: "Ohio", color: "#00694E", colorSecondary: "#707372" },
+  TOLEDO: { conference: "MAC", label: "Toledo", color: "#003663", colorSecondary: "#FFCD00" },
+  "MIAMI (OH)": { conference: "MAC", label: "Miami (OH)", color: "#C41230", colorSecondary: "#1C1C1C" },
+  "KENT STATE": { conference: "MAC", label: "Kent State", color: "#002D65", colorSecondary: "#EAAB00" },
+  UMASS: { conference: "MAC", label: "UMass", color: "#881C1C", colorSecondary: "#1C1C1C" },
+  BUFFALO: { conference: "MAC", label: "Buffalo", color: "#005BBB", colorSecondary: "#000000" },
 
-  "NORTH DAKOTA STATE": { conference: "MVC", label: "North Dakota State" },
-  "SOUTH DAKOTA STATE": { conference: "MVC", label: "South Dakota State" },
-  "SOUTH DAKOTA": { conference: "MVC", label: "South Dakota" },
-  "NORTH DAKOTA": { conference: "MVC", label: "North Dakota" },
-  "ILLINOIS STATE": { conference: "MVC", label: "Illinois State" },
-  "SOUTHERN ILLINOIS": { conference: "MVC", label: "Southern Illinois" },
-  "INDIANA STATE": { conference: "MVC", label: "Indiana State" },
-  "YOUNGSTOWN STATE": { conference: "MVC", label: "Youngstown State" },
-  "NORTHERN IOWA": { conference: "MVC", label: "Northern Iowa" },
-  "MURRAY STATE": { conference: "MVC", label: "Murray State" },
+  "NORTH DAKOTA STATE": { conference: "MVC", label: "North Dakota State", color: "#076A31", colorSecondary: "#FFC82E" },
+  "SOUTH DAKOTA STATE": { conference: "MVC", label: "South Dakota State", color: "#0033A0", colorSecondary: "#FFD100" },
+  "SOUTH DAKOTA": { conference: "MVC", label: "South Dakota", color: "#CC0000", colorSecondary: "#1C1C1C" },
+  "NORTH DAKOTA": { conference: "MVC", label: "North Dakota", color: "#009A44", colorSecondary: "#000000" },
+  "ILLINOIS STATE": { conference: "MVC", label: "Illinois State", color: "#CE1126", colorSecondary: "#000000" },
+  "SOUTHERN ILLINOIS": { conference: "MVC", label: "Southern Illinois", color: "#720C20", colorSecondary: "#1C1C1C" },
+  "INDIANA STATE": { conference: "MVC", label: "Indiana State", color: "#041E42", colorSecondary: "#CE1126" },
+  "YOUNGSTOWN STATE": { conference: "MVC", label: "Youngstown State", color: "#B01E24", colorSecondary: "#1C1C1C" },
+  "NORTHERN IOWA": { conference: "MVC", label: "Northern Iowa", color: "#4B116F", colorSecondary: "#FFDD00" },
+  "MURRAY STATE": { conference: "MVC", label: "Murray State", color: "#002144", colorSecondary: "#FDB827" },
 
-  COLUMBIA: { conference: "IVY", label: "Columbia" },
-  CORNELL: { conference: "IVY", label: "Cornell" },
-  YALE: { conference: "IVY", label: "Yale" },
-  PRINCETON: { conference: "IVY", label: "Princeton" },
-  HARVARD: { conference: "IVY", label: "Harvard" },
-  DARTMOUTH: { conference: "IVY", label: "Dartmouth" },
-  PENN: { conference: "IVY", label: "Penn" },
-  BROWN: { conference: "IVY", label: "Brown" },
+  COLUMBIA: { conference: "IVY", label: "Columbia", color: "#71A9DE", colorSecondary: "#000000" },
+  CORNELL: { conference: "IVY", label: "Cornell", color: "#B31B1B", colorSecondary: "#1C1C1C" },
+  YALE: { conference: "IVY", label: "Yale", color: "#00356B", colorSecondary: "#A7A9AC" },
+  PRINCETON: { conference: "IVY", label: "Princeton", color: "#FF8F1C", colorSecondary: "#000000" },
+  HARVARD: { conference: "IVY", label: "Harvard", color: "#A51C30", colorSecondary: "#1C1C1C" },
+  DARTMOUTH: { conference: "IVY", label: "Dartmouth", color: "#00693E", colorSecondary: "#1C1C1C" },
+  PENN: { conference: "IVY", label: "Penn", color: "#990000", colorSecondary: "#011F5B" },
+  BROWN: { conference: "IVY", label: "Brown", color: "#4E3629", colorSecondary: "#B7302E" },
 };
 
 export const CONFERENCE_ORDER = ["MAC", "MVC", "IVY"];
@@ -61,6 +64,19 @@ const SKIP_SHEET_SUBSTRING = /BREAKDOWN|OLD /i;
 
 const OFFENSE_POSITIONS = new Set(["QB", "RB", "WR", "TE", "OL"]);
 const DEFENSE_POSITIONS = new Set(["DL", "LB", "CB", "SAF"]);
+
+// A recruit who's shown up on more than one competing school's board is
+// the same real person -- editing these fields on one team's row keeps
+// them in sync everywhere that player appears (same class year),
+// instead of every team's tab drifting into its own version of the
+// truth. dateOffered/pipelineStatus/notes stay per-team on purpose:
+// each school offers on its own date and tracks its own internal read
+// on the recruit.
+const SYNCED_FIELDS = new Set(["player", "highSchool", "state", "position", "status"]);
+
+function normalizePlayerKey(player) {
+  return (player || "").trim().toUpperCase();
+}
 
 function normalizeTeamKey(sheetName) {
   return sheetName.trim().toUpperCase();
@@ -213,12 +229,30 @@ export function useOfferTracker() {
   function teamsForConference(classYear, conference) {
     return Object.entries(TEAM_CONFERENCE)
       .filter(([, meta]) => meta.conference === conference)
-      .map(([team, meta]) => ({ team, label: meta.label }))
+      .map(([team, meta]) => ({ team, label: meta.label, color: meta.color, colorSecondary: meta.colorSecondary }))
       .sort((a, b) => a.label.localeCompare(b.label));
   }
 
   function rowsForTeam(classYear, team) {
     return docs.filter((d) => d.classYear === classYear && d.team === team);
+  }
+
+  // Edits one field on one row. For a synced field (see SYNCED_FIELDS
+  // above), also applies it to every other row in the same class year
+  // whose player name matches -- found from the already-loaded `docs`
+  // rather than a fresh query, since the whole collection is already
+  // held here via the snapshot listener.
+  async function updateOfferField(row, field, value) {
+    const updatedAt = new Date().toISOString();
+    if (!SYNCED_FIELDS.has(field)) {
+      await updateDoc(doc(db, "offers", row.id), { [field]: value, updatedAt });
+      return;
+    }
+    const key = normalizePlayerKey(row.player);
+    const siblings = docs.filter((d) => d.classYear === row.classYear && normalizePlayerKey(d.player) === key);
+    const batch = writeBatch(db);
+    siblings.forEach((d) => batch.update(doc(db, "offers", d.id), { [field]: value, updatedAt }));
+    await batch.commit();
   }
 
   // {positions: [...], teams: [{team,label}], counts: {position: {team: n}}, totals: {team: n}, offTotals, defTotals}
@@ -262,5 +296,5 @@ export function useOfferTracker() {
     return { teams, states, counts, stateTotals };
   }
 
-  return { ready, classYears, teamsForConference, rowsForTeam, positionBreakdown, areaBreakdown, importWorkbook };
+  return { ready, classYears, teamsForConference, rowsForTeam, positionBreakdown, areaBreakdown, importWorkbook, updateOfferField };
 }

@@ -64,6 +64,18 @@ tbody tr:hover { background: var(--row-hover) !important; }
 .dashboard-card:hover .dashboard-card-arrow { transform: translateX(4px); }
 @keyframes spin { to { transform: rotate(360deg); } }
 .spin { animation: spin 0.8s linear infinite; }
+.offer-cell-input {
+  background: transparent;
+  border: 1px solid transparent;
+  color: inherit;
+  font-family: inherit;
+  font-size: inherit;
+  padding: 5px 7px;
+  border-radius: 4px;
+  min-width: 0;
+}
+.offer-cell-input:hover { border-color: var(--border); }
+.offer-cell-input:focus { border-color: var(--accent); outline: none; background: var(--bg-page); }
 /* 100vh on mobile browsers includes the address-bar area, cutting
    content off underneath it -- 100dvh tracks the real visible
    viewport. Kept as a progressive override, not the only rule, for

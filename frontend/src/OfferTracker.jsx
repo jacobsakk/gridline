@@ -1,9 +1,20 @@
 import { useMemo, useState } from "react";
-import { ArrowLeft, Sun, Moon, Upload, X, Loader2 } from "lucide-react";
+import { ArrowLeft, Sun, Moon, Upload, X, Loader2, ChevronUp, ChevronDown, ChevronsUpDown, TrendingUp, MapPin } from "lucide-react";
 import cmuHelmet from "./assets/cmu-helmet.png";
 import { CONFERENCE_ORDER, useOfferTracker } from "./offerData.js";
 
 const CONFERENCE_LABEL = { MAC: "MAC", MVC: "MVC / MVFC", IVY: "Ivy League" };
+
+const FIELDS = [
+  { key: "player", label: "Player", width: 160 },
+  { key: "highSchool", label: "High School", width: 160 },
+  { key: "state", label: "State", width: 70, upper: true },
+  { key: "position", label: "Pos", width: 64, upper: true },
+  { key: "dateOffered", label: "Date Offered", width: 110 },
+  { key: "status", label: "Status", width: 220 },
+  { key: "pipelineStatus", label: "Pipeline", width: 150 },
+  { key: "notes", label: "Notes", width: 180 },
+];
 
 function statusStyle(status) {
   const s = (status || "").toUpperCase();
@@ -16,17 +27,46 @@ function statusStyle(status) {
   if (s === "OFFERED") {
     return { background: "var(--success-bg)", color: "var(--success)", border: "1px solid var(--success-border)" };
   }
-  return null;
+  return { background: "transparent", color: "var(--text-secondary)", border: "1px solid transparent" };
 }
 
-function StatusBadge({ status }) {
-  if (!status) return <span style={{ color: "var(--text-faint)" }}>—</span>;
-  const style = statusStyle(status);
-  if (!style) return <span style={{ fontSize: 12.5 }}>{status}</span>;
+// Perceived brightness of a hex color, used to pick readable text
+// (white or near-black) on top of an arbitrary school color.
+function contrastOn(hex) {
+  const h = (hex || "#000000").replace("#", "");
+  const r = parseInt(h.slice(0, 2), 16) || 0;
+  const g = parseInt(h.slice(2, 4), 16) || 0;
+  const b = parseInt(h.slice(4, 6), 16) || 0;
+  const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+  return brightness > 150 ? "#141414" : "#F5F3EE";
+}
+
+function EditableCell({ value, onCommit, width, upper, style }) {
+  const [text, setText] = useState(value || "");
+  const [dirty, setDirty] = useState(false);
+
+  if (!dirty && (value || "") !== text) setText(value || "");
+
+  function commit() {
+    const next = upper ? text.trim().toUpperCase() : text.trim();
+    setDirty(false);
+    if (next !== (value || "")) onCommit(next);
+  }
+
   return (
-    <span style={{ ...style, borderRadius: 4, padding: "2px 8px", fontSize: 11.5, fontWeight: 600, whiteSpace: "nowrap" }}>
-      {status}
-    </span>
+    <input
+      value={text}
+      onChange={(e) => {
+        setDirty(true);
+        setText(e.target.value);
+      }}
+      onBlur={commit}
+      onKeyDown={(e) => {
+        if (e.key === "Enter") e.target.blur();
+      }}
+      className="offer-cell-input"
+      style={{ width, ...style }}
+    />
   );
 }
 
@@ -138,18 +178,78 @@ function UploadModal({ classYears, onClose, onImport }) {
   );
 }
 
+function HeatCell({ value, max, align, bold, isTop }) {
+  const ratio = max > 0 ? value / max : 0;
+  return (
+    <td
+      className="tabular"
+      style={{
+        textAlign: align || "right",
+        padding: "7px 10px",
+        fontSize: 13,
+        color: isTop ? "var(--accent)" : "var(--text-secondary)",
+        fontWeight: bold || isTop ? 700 : 400,
+        background: value > 0 ? `color-mix(in srgb, var(--accent) ${Math.round(ratio * 55)}%, transparent)` : "transparent",
+      }}
+    >
+      {value || 0}
+    </td>
+  );
+}
+
+function TrendCard({ icon: Icon, label, value, sub }) {
+  return (
+    <div
+      style={{
+        display: "flex", flexDirection: "column", gap: 4, background: "var(--accent-bg)",
+        border: "1px solid var(--accent)", borderRadius: 8, padding: "14px 18px", minWidth: 170,
+      }}
+    >
+      <span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, color: "var(--accent)", letterSpacing: "0.03em", textTransform: "uppercase" }}>
+        <Icon size={13} /> {label}
+      </span>
+      <span className="oswald" style={{ fontSize: 22, fontWeight: 700, color: "var(--text-primary)" }}>{sub}</span>
+      <span className="tabular" style={{ fontSize: 12.5, color: "var(--text-muted)" }}>{value}</span>
+    </div>
+  );
+}
+
 function BreakdownTables({ classYear, conference, tracker }) {
   const posData = useMemo(() => tracker.positionBreakdown(classYear, conference), [classYear, conference, tracker]);
   const areaData = useMemo(() => tracker.areaBreakdown(classYear, conference), [classYear, conference, tracker]);
 
-  const thStyle = { textAlign: "right", padding: "6px 10px", fontSize: 11, color: "var(--text-faint)", textTransform: "uppercase", whiteSpace: "nowrap" };
-  const tdStyle = { textAlign: "right", padding: "6px 10px", fontSize: 13, color: "var(--text-secondary)" };
-  const rowLabelStyle = { textAlign: "left", padding: "6px 10px", fontSize: 13, fontWeight: 600, color: "var(--text-primary)" };
+  const topTeamPos = useMemo(() => {
+    let best = { team: null, label: "", n: -1 };
+    posData.teams.forEach(({ team, label }) => {
+      const n = posData.totals[team] || 0;
+      if (n > best.n) best = { team, label, n };
+    });
+    return best;
+  }, [posData]);
+
+  const topState = areaData.states[0];
+  const topPosition = useMemo(() => {
+    let best = { pos: null, n: -1 };
+    posData.positions.forEach((pos) => {
+      const n = Object.values(posData.counts[pos] || {}).reduce((a, b) => a + b, 0);
+      if (n > best.n) best = { pos, n };
+    });
+    return best;
+  }, [posData]);
+
+  const thStyle = { textAlign: "right", padding: "7px 10px", fontSize: 11, color: "var(--text-faint)", textTransform: "uppercase", whiteSpace: "nowrap" };
+  const rowLabelStyle = { textAlign: "left", padding: "7px 10px", fontSize: 13, fontWeight: 700, color: "var(--text-primary)" };
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: 28 }}>
+      <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+        <TrendCard icon={TrendingUp} label="Most Active" value={`${topTeamPos.n} offers`} sub={topTeamPos.label || "—"} />
+        <TrendCard icon={MapPin} label="Top State" value={`${areaData.stateTotals[topState] || 0} offers`} sub={topState || "—"} />
+        <TrendCard icon={TrendingUp} label="Top Position" value={`${topPosition.n} offers`} sub={topPosition.pos || "—"} />
+      </div>
+
       <div>
-        <h3 className="oswald" style={{ fontSize: 15, fontWeight: 700, margin: "0 0 10px" }}>Position Breakdown</h3>
+        <h3 className="oswald" style={{ fontSize: 17, fontWeight: 700, margin: "0 0 12px", color: "var(--accent)" }}>Position Breakdown</h3>
         <div style={{ overflowX: "auto", border: "1px solid var(--border)", borderRadius: 6 }}>
           <table style={{ width: "100%", borderCollapse: "collapse" }}>
             <thead>
@@ -161,18 +261,24 @@ function BreakdownTables({ classYear, conference, tracker }) {
               </tr>
             </thead>
             <tbody>
-              {posData.positions.map((pos) => (
-                <tr key={pos} style={{ borderTop: "1px solid var(--border-subtle)" }}>
-                  <td style={rowLabelStyle}>{pos}</td>
-                  {posData.teams.map(({ team }) => (
-                    <td key={team} style={tdStyle} className="tabular">{posData.counts[pos]?.[team] || 0}</td>
-                  ))}
-                </tr>
-              ))}
+              {posData.positions.map((pos) => {
+                const rowMax = Math.max(...posData.teams.map(({ team }) => posData.counts[pos]?.[team] || 0), 1);
+                return (
+                  <tr key={pos} style={{ borderTop: "1px solid var(--border-subtle)" }}>
+                    <td style={rowLabelStyle}>{pos}</td>
+                    {posData.teams.map(({ team }) => {
+                      const v = posData.counts[pos]?.[team] || 0;
+                      return <HeatCell key={team} value={v} max={rowMax} isTop={v === rowMax && v > 0} />;
+                    })}
+                  </tr>
+                );
+              })}
               <tr style={{ borderTop: "2px solid var(--border)", background: "var(--bg-surface)" }}>
                 <td style={rowLabelStyle}>Totals</td>
                 {posData.teams.map(({ team }) => (
-                  <td key={team} style={{ ...tdStyle, fontWeight: 700 }} className="tabular">{posData.totals[team] || 0}</td>
+                  <td key={team} style={{ textAlign: "right", padding: "8px 10px", fontSize: 13.5, fontWeight: 700, color: "var(--accent)" }} className="tabular">
+                    {posData.totals[team] || 0}
+                  </td>
                 ))}
               </tr>
             </tbody>
@@ -181,7 +287,7 @@ function BreakdownTables({ classYear, conference, tracker }) {
       </div>
 
       <div>
-        <h3 className="oswald" style={{ fontSize: 15, fontWeight: 700, margin: "0 0 10px" }}>Offer Area Breakdown</h3>
+        <h3 className="oswald" style={{ fontSize: 17, fontWeight: 700, margin: "0 0 12px", color: "var(--accent)" }}>Offer Area Breakdown</h3>
         <div style={{ overflowX: "auto", border: "1px solid var(--border)", borderRadius: 6, maxHeight: 420, overflowY: "auto" }}>
           <table style={{ width: "100%", borderCollapse: "collapse" }}>
             <thead>
@@ -194,15 +300,21 @@ function BreakdownTables({ classYear, conference, tracker }) {
               </tr>
             </thead>
             <tbody>
-              {areaData.states.map((state) => (
-                <tr key={state} style={{ borderTop: "1px solid var(--border-subtle)" }}>
-                  <td style={rowLabelStyle}>{state}</td>
-                  {areaData.teams.map(({ team }) => (
-                    <td key={team} style={tdStyle} className="tabular">{areaData.counts[state]?.[team] || 0}</td>
-                  ))}
-                  <td style={{ ...tdStyle, fontWeight: 700 }} className="tabular">{areaData.stateTotals[state]}</td>
-                </tr>
-              ))}
+              {areaData.states.map((state) => {
+                const rowMax = Math.max(...areaData.teams.map(({ team }) => areaData.counts[state]?.[team] || 0), 1);
+                return (
+                  <tr key={state} style={{ borderTop: "1px solid var(--border-subtle)" }}>
+                    <td style={rowLabelStyle}>{state}</td>
+                    {areaData.teams.map(({ team }) => {
+                      const v = areaData.counts[state]?.[team] || 0;
+                      return <HeatCell key={team} value={v} max={rowMax} isTop={v === rowMax && v > 0} />;
+                    })}
+                    <td style={{ textAlign: "right", padding: "8px 10px", fontSize: 13.5, fontWeight: 700, color: "var(--accent)" }} className="tabular">
+                      {areaData.stateTotals[state]}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
@@ -211,8 +323,17 @@ function BreakdownTables({ classYear, conference, tracker }) {
   );
 }
 
-function TeamOffersTable({ rows }) {
-  const tdStyle = { padding: "9px 12px", fontSize: 13.5, color: "var(--text-secondary)", borderRight: "1px solid var(--border-faint)" };
+function SortIcon({ active, dir }) {
+  if (!active) return <ChevronsUpDown size={12} style={{ opacity: 0.4 }} />;
+  return dir === "desc" ? <ChevronDown size={13} /> : <ChevronUp size={13} />;
+}
+
+function TeamOffersTable({ rows, onEdit, sortKey, sortDir, onSort, teamColor }) {
+  const tdStyle = { padding: "4px 10px", fontSize: 13.5, color: "var(--text-secondary)", borderRight: "1px solid var(--border-faint)" };
+  const thStyle = {
+    textAlign: "left", padding: "9px 10px", fontSize: 11, color: "var(--text-faint)", textTransform: "uppercase",
+    whiteSpace: "nowrap", cursor: "pointer", userSelect: "none",
+  };
 
   if (rows.length === 0) {
     return <div style={{ fontSize: 13, color: "var(--text-faint)", padding: "20px 0" }}>No offers on file for this team yet.</div>;
@@ -222,10 +343,18 @@ function TeamOffersTable({ rows }) {
     <div style={{ border: "1px solid var(--border)", borderRadius: 6, overflowX: "auto" }}>
       <table style={{ width: "100%", borderCollapse: "collapse" }}>
         <thead>
-          <tr style={{ background: "var(--bg-surface)" }}>
-            {["Player", "High School", "State", "Pos", "Date Offered", "Status", "Pipeline", "Notes"].map((h) => (
-              <th key={h} style={{ textAlign: "left", padding: "9px 12px", fontSize: 11, color: "var(--text-faint)", textTransform: "uppercase", whiteSpace: "nowrap" }}>
-                {h}
+          <tr
+            style={{
+              background: teamColor ? `color-mix(in srgb, ${teamColor} 22%, var(--bg-surface))` : "var(--bg-surface)",
+              transition: "background 0.2s ease",
+            }}
+          >
+            {FIELDS.map(({ key, label }) => (
+              <th key={key} style={thStyle} onClick={() => onSort(key)}>
+                <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
+                  {label}
+                  <SortIcon active={sortKey === key} dir={sortDir} />
+                </span>
               </th>
             ))}
           </tr>
@@ -233,20 +362,57 @@ function TeamOffersTable({ rows }) {
         <tbody>
           {rows.map((r) => (
             <tr key={r.id} style={{ borderTop: "1px solid var(--border-subtle)" }}>
-              <td style={{ ...tdStyle, fontWeight: 600, color: "var(--text-primary)" }}>{r.player}</td>
-              <td style={tdStyle}>{r.highSchool || "—"}</td>
-              <td style={tdStyle}>{r.state || "—"}</td>
-              <td style={{ ...tdStyle, color: "var(--accent)", fontWeight: 600 }} className="oswald">{r.position || "—"}</td>
-              <td style={tdStyle} className="tabular">{r.dateOffered || "—"}</td>
-              <td style={tdStyle}><StatusBadge status={r.status} /></td>
-              <td style={tdStyle}>{r.pipelineStatus || "—"}</td>
-              <td style={{ ...tdStyle, borderRight: "none" }}>{r.notes || "—"}</td>
+              {FIELDS.map(({ key, width, upper }) => {
+                if (key === "status") {
+                  const style = statusStyle(r.status);
+                  return (
+                    <td key={key} style={tdStyle}>
+                      <EditableCell
+                        value={r.status}
+                        upper={upper}
+                        width={width}
+                        onCommit={(v) => onEdit(r, key, v)}
+                        style={{ ...style, borderRadius: 4, fontWeight: 600, fontSize: 12 }}
+                      />
+                    </td>
+                  );
+                }
+                return (
+                  <td
+                    key={key}
+                    style={{
+                      ...tdStyle,
+                      ...(key === "player" ? { fontWeight: 600, color: "var(--text-primary)" } : null),
+                      ...(key === "position" ? { color: teamColor || "var(--accent)", fontWeight: 700 } : null),
+                    }}
+                    className={key === "dateOffered" ? "tabular" : undefined}
+                  >
+                    <EditableCell value={r[key]} upper={upper} width={width} onCommit={(v) => onEdit(r, key, v)} />
+                  </td>
+                );
+              })}
             </tr>
           ))}
         </tbody>
       </table>
     </div>
   );
+}
+
+const STRING_SORT_KEYS = new Set(["player", "highSchool", "state", "position", "status", "pipelineStatus", "notes"]);
+
+// Dates come in as free text (M/D/YY, sometimes M/D/YYYY) rather than
+// real Date values, so a plain string sort gets it wrong -- "2/2/26"
+// sorts after "2/10/26" alphabetically even though Feb 2 is earlier.
+// Parsed to a timestamp for sorting only; the display value is
+// untouched.
+function parseOfferDate(value) {
+  const m = /^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/.exec((value || "").trim());
+  if (!m) return null;
+  let [, mo, da, yr] = m;
+  if (yr.length === 2) yr = (Number(yr) < 50 ? "20" : "19") + yr;
+  const t = new Date(Number(yr), Number(mo) - 1, Number(da)).getTime();
+  return Number.isNaN(t) ? null : t;
 }
 
 export default function OfferTracker({ onBack }) {
@@ -259,6 +425,8 @@ export default function OfferTracker({ onBack }) {
   const [conference, setConference] = useState("MAC");
   const [subView, setSubView] = useState("teams"); // "teams" | "trends"
   const [selectedTeam, setSelectedTeam] = useState(null);
+  const [sortKey, setSortKey] = useState("player");
+  const [sortDir, setSortDir] = useState("asc");
 
   const tracker = useOfferTracker();
   const activeClassYear = classYear || tracker.classYears[tracker.classYears.length - 1] || null;
@@ -268,10 +436,34 @@ export default function OfferTracker({ onBack }) {
     [activeClassYear, conference, tracker]
   );
   const activeTeam = selectedTeam && teams.some((t) => t.team === selectedTeam) ? selectedTeam : teams[0]?.team;
-  const teamRows = useMemo(
-    () => (activeClassYear && activeTeam ? tracker.rowsForTeam(activeClassYear, activeTeam) : []),
-    [activeClassYear, activeTeam, tracker]
-  );
+  const activeTeamMeta = teams.find((t) => t.team === activeTeam);
+
+  const teamRows = useMemo(() => {
+    const rows = activeClassYear && activeTeam ? tracker.rowsForTeam(activeClassYear, activeTeam) : [];
+    return [...rows].sort((a, b) => {
+      if (sortKey === "dateOffered") {
+        const at = parseOfferDate(a.dateOffered);
+        const bt = parseOfferDate(b.dateOffered);
+        if (at == null && bt == null) return 0;
+        if (at == null) return 1;
+        if (bt == null) return -1;
+        return sortDir === "desc" ? bt - at : at - bt;
+      }
+      const av = (a[sortKey] || "").toString();
+      const bv = (b[sortKey] || "").toString();
+      const cmp = STRING_SORT_KEYS.has(sortKey) ? av.localeCompare(bv) : (parseFloat(av) || 0) - (parseFloat(bv) || 0);
+      return sortDir === "desc" ? -cmp : cmp;
+    });
+  }, [activeClassYear, activeTeam, tracker, sortKey, sortDir]);
+
+  function handleSort(key) {
+    if (key === sortKey) {
+      setSortDir((d) => (d === "desc" ? "asc" : "desc"));
+    } else {
+      setSortKey(key);
+      setSortDir("asc");
+    }
+  }
 
   function toggleTheme() {
     setTheme((t) => {
@@ -280,6 +472,8 @@ export default function OfferTracker({ onBack }) {
       return next;
     });
   }
+
+  const teamAccent = activeTeamMeta?.color;
 
   return (
     <div
@@ -410,22 +604,33 @@ export default function OfferTracker({ onBack }) {
             {subView === "teams" ? (
               <>
                 <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 16 }}>
-                  {teams.map(({ team, label }) => (
-                    <button
-                      key={team}
-                      onClick={() => setSelectedTeam(team)}
-                      style={{
-                        background: team === activeTeam ? "var(--accent)" : "var(--bg-surface)",
-                        border: team === activeTeam ? "1px solid var(--accent)" : "1px solid var(--border)",
-                        color: team === activeTeam ? "var(--bg-page)" : "var(--text-secondary)",
-                        borderRadius: 999, padding: "6px 14px", fontSize: 13, fontWeight: 600, cursor: "pointer",
-                      }}
-                    >
-                      {label}
-                    </button>
-                  ))}
+                  {teams.map(({ team, label, color }) => {
+                    const active = team === activeTeam;
+                    return (
+                      <button
+                        key={team}
+                        onClick={() => setSelectedTeam(team)}
+                        style={{
+                          background: active ? color || "var(--accent)" : "var(--bg-surface)",
+                          border: `1px solid ${active ? color || "var(--accent)" : "var(--border)"}`,
+                          color: active ? contrastOn(color) : "var(--text-secondary)",
+                          borderRadius: 999, padding: "6px 14px", fontSize: 13, fontWeight: 600, cursor: "pointer",
+                          transition: "background 0.15s ease, color 0.15s ease, border-color 0.15s ease",
+                        }}
+                      >
+                        {label}
+                      </button>
+                    );
+                  })}
                 </div>
-                <TeamOffersTable rows={teamRows} />
+                <TeamOffersTable
+                  rows={teamRows}
+                  onEdit={(row, field, value) => tracker.updateOfferField(row, field, value)}
+                  sortKey={sortKey}
+                  sortDir={sortDir}
+                  onSort={handleSort}
+                  teamColor={teamAccent}
+                />
               </>
             ) : (
               <BreakdownTables classYear={activeClassYear} conference={conference} tracker={tracker} />
