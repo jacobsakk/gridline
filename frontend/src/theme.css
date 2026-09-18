@@ -62,6 +62,8 @@ tbody tr:hover { background: var(--row-hover) !important; }
 .dashboard-card-icon, .dashboard-card-arrow { transition: transform 0.18s ease; }
 .dashboard-card:hover .dashboard-card-icon { transform: scale(1.12) rotate(-4deg); }
 .dashboard-card:hover .dashboard-card-arrow { transform: translateX(4px); }
+@keyframes spin { to { transform: rotate(360deg); } }
+.spin { animation: spin 0.8s linear infinite; }
 /* 100vh on mobile browsers includes the address-bar area, cutting
    content off underneath it -- 100dvh tracks the real visible
    viewport. Kept as a progressive override, not the only rule, for

@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { Settings, Sun, Moon, ClipboardList, ChevronRight } from "lucide-react";
+import { Settings, Sun, Moon, ClipboardList, ChevronRight, FileSpreadsheet } from "lucide-react";
 import cmuHelmet from "./assets/cmu-helmet.png";
 
-// The main hub -- everything else (the Pre-Portal Tracker today, more
-// tools later) is a card here rather than its own standalone page, so
-// there's one consistent place to land and navigate from.
+// The main hub -- everything else (the Pre-Portal Tracker and Offer
+// Tracker today, more tools later) is a card here rather than its own
+// standalone page, so there's one consistent place to land and
+// navigate from.
 const CARDS = [
   {
     key: "tracker",
@@ -12,9 +13,15 @@ const CARDS = [
     description: "Weekly stats across NAIA, JUCO, D3, D2, FCS and FBS",
     icon: ClipboardList,
   },
+  {
+    key: "offers",
+    label: "Offer Tracker",
+    description: "Offers by class year, conference and team, with position/area trends",
+    icon: FileSpreadsheet,
+  },
 ];
 
-export default function Dashboard({ onOpenTracker, onOpenSettings }) {
+export default function Dashboard({ onOpenTracker, onOpenOfferTracker, onOpenSettings }) {
   const [theme, setTheme] = useState(() => {
     const saved = typeof window !== "undefined" && window.localStorage.getItem("gridline-theme");
     return saved === "light" || saved === "dark" ? saved : "dark";
@@ -90,7 +97,7 @@ export default function Dashboard({ onOpenTracker, onOpenSettings }) {
               <button
                 key={key}
                 className="dashboard-card"
-                onClick={() => onOpenTracker()}
+                onClick={() => (key === "offers" ? onOpenOfferTracker() : onOpenTracker())}
                 style={{
                   display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 10,
                   background: "linear-gradient(135deg, var(--gold), #C9860E)",
