@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Settings, Sun, Moon, ClipboardList, ChevronRight, FileSpreadsheet, GraduationCap } from "lucide-react";
+import { Settings, ClipboardList, ChevronRight, FileSpreadsheet, GraduationCap } from "lucide-react";
+import { ThemeSwitcher, useTheme } from "./theme.jsx";
 import actionC from "./assets/cmu-action-c.png";
 import actionCDark from "./assets/cmu-action-c-dark.png";
 import anniversaryLogo from "./assets/anniversary-125.png";
@@ -30,18 +31,7 @@ const CARDS = [
 ];
 
 export default function Dashboard({ onOpenCard, onOpenSettings }) {
-  const [theme, setTheme] = useState(() => {
-    const saved = typeof window !== "undefined" && window.localStorage.getItem("gridline-theme");
-    return saved === "light" || saved === "dark" ? saved : "dark";
-  });
-  function toggleTheme() {
-    setTheme((t) => {
-      const next = t === "dark" ? "light" : "dark";
-      window.localStorage.setItem("gridline-theme", next);
-      return next;
-    });
-  }
-
+  const [theme, setTheme] = useTheme();
   return (
     <div
       className="app-shell"
@@ -64,7 +54,7 @@ export default function Dashboard({ onOpenCard, onOpenSettings }) {
         />
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 14, flexWrap: "wrap" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-            <img src={theme === "dark" ? actionCDark : actionC} alt="Central Michigan Action C" style={{ height: 36, width: "auto", flexShrink: 0 }} />
+            <img src={theme !== "light" ? actionCDark : actionC} alt="Central Michigan Action C" style={{ height: 36, width: "auto", flexShrink: 0 }} />
             <h1 className="oswald app-title" style={{ fontSize: 22, fontWeight: 700, margin: 0, letterSpacing: "0.01em" }}>
               Central Michigan Coach Hub
             </h1>
@@ -81,17 +71,7 @@ export default function Dashboard({ onOpenCard, onOpenSettings }) {
             >
               <Settings size={15} /> Settings
             </button>
-            <button
-              onClick={toggleTheme}
-              title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
-              style={{
-                display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-                background: "var(--bg-surface)", border: "1px solid var(--border)", color: "var(--text-primary)",
-                borderRadius: 5, width: 34, height: 34, cursor: "pointer",
-              }}
-            >
-              {theme === "dark" ? <Sun size={15} /> : <Moon size={15} />}
-            </button>
+            <ThemeSwitcher theme={theme} onChange={setTheme} />
           </div>
         </div>
       </div>

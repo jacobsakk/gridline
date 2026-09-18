@@ -1,11 +1,12 @@
 import { confirmAction } from "./ConfirmDialog.jsx";
 import { useState, useMemo, useEffect, useRef, Fragment } from "react";
-import { ChevronUp, ChevronDown, ChevronsUpDown, Crown, BadgeCheck, FlaskConical, Star, X, Plus, ExternalLink, Search, Download, Columns3, TrendingUp, GripVertical, Sun, Moon, CheckCircle2, AlertTriangle, ArrowLeft } from "lucide-react";
+import { ChevronUp, ChevronDown, ChevronsUpDown, Crown, BadgeCheck, FlaskConical, Star, X, Plus, ExternalLink, Search, Download, Columns3, TrendingUp, GripVertical, CheckCircle2, AlertTriangle, ArrowLeft } from "lucide-react";
 import { collection, doc, addDoc, updateDoc, onSnapshot, query, orderBy } from "firebase/firestore";
 import { db } from "./firebase";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import realStats from "./data/real-stats.json";
+import { ThemeSwitcher, useTheme } from "./theme.jsx";
 import cmuHelmet from "./assets/cmu-helmet.png";
 
 const DIVISIONS = ["NAIA", "JUCO", "D3", "D2", "FCS", "FBS"];
@@ -1582,13 +1583,7 @@ export default function Gridline({ onBack, initialSearch }) {
   const [sortDir, setSortDir] = useState("desc");
   const [watchlistOpen, setWatchlistOpen] = useState(false);
   const [selectedPlayer, setSelectedPlayer] = useState(null);
-  const [theme, setTheme] = useState(() => {
-    const saved = typeof window !== "undefined" && window.localStorage.getItem("gridline-theme");
-    return saved === "light" || saved === "dark" ? saved : "dark";
-  });
-  useEffect(() => {
-    window.localStorage.setItem("gridline-theme", theme);
-  }, [theme]);
+  const [theme, setTheme] = useTheme();
   const watchlist = useWatchlist();
   const portalStatus = usePortalStatus();
 
@@ -1787,17 +1782,7 @@ export default function Gridline({ onBack, initialSearch }) {
                   </span>
                 )}
               </button>
-              <button
-                onClick={() => setTheme((t) => (t === "dark" ? "light" : "dark"))}
-                title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
-                style={{
-                  display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-                  background: "var(--bg-surface)", border: "1px solid var(--border)", color: "var(--text-primary)",
-                  borderRadius: 5, width: 34, height: 34, cursor: "pointer",
-                }}
-              >
-                {theme === "dark" ? <Sun size={15} /> : <Moon size={15} />}
-              </button>
+              <ThemeSwitcher theme={theme} onChange={setTheme} />
             </div>
           </div>
 

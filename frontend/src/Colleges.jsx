@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
-import { ArrowLeft, Sun, Moon, Search, ChevronUp, ChevronDown, ChevronsUpDown, Trophy } from "lucide-react";
+import { ArrowLeft, Search, ChevronUp, ChevronDown, ChevronsUpDown, Trophy } from "lucide-react";
+import { ThemeSwitcher, useTheme } from "./theme.jsx";
 import cmuHelmet from "./assets/cmu-helmet.png";
 import { ThemeContext } from "./OfferTracker.jsx";
 import CollegeProfile from "./CollegeProfile.jsx";
@@ -370,23 +371,12 @@ function FragmentGroup({ name, children }) {
 }
 
 export default function Colleges({ onBack }) {
-  const [theme, setTheme] = useState(() => {
-    const saved = typeof window !== "undefined" && window.localStorage.getItem("gridline-theme");
-    return saved === "light" || saved === "dark" ? saved : "dark";
-  });
+  const [theme, setTheme] = useTheme();
   const [selectedId, setSelectedId] = useState(null);
   // A stack so "Back" from a team you reached by clicking an opponent
   // returns to the team you came from.
   const [history, setHistory] = useState([]);
   const college = selectedId ? COLLEGE_BY_ID.get(selectedId) : null;
-
-  function toggleTheme() {
-    setTheme((t) => {
-      const next = t === "dark" ? "light" : "dark";
-      window.localStorage.setItem("gridline-theme", next);
-      return next;
-    });
-  }
 
   function openTeam(id) {
     if (!COLLEGE_BY_ID.has(id)) return;
@@ -433,16 +423,7 @@ export default function Colleges({ onBack }) {
               <img src={cmuHelmet} alt="Central Michigan Chippewas helmet" style={{ height: 34, width: "auto", flexShrink: 0 }} />
               <h1 className="oswald app-title" style={{ fontSize: 22, fontWeight: 700, margin: 0, letterSpacing: "0.01em" }}>Colleges</h1>
             </div>
-            <button
-              onClick={toggleTheme}
-              title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
-              style={{
-                display: "flex", alignItems: "center", justifyContent: "center", background: "var(--bg-surface)", border: "1px solid var(--border)",
-                color: "var(--text-primary)", borderRadius: 5, width: 34, height: 34, cursor: "pointer",
-              }}
-            >
-              {theme === "dark" ? <Sun size={15} /> : <Moon size={15} />}
-            </button>
+            <ThemeSwitcher theme={theme} onChange={setTheme} />
           </div>
         </div>
 

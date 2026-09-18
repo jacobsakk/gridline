@@ -1,7 +1,8 @@
 import { useState, useEffect, useMemo } from "react";
 import { collection, addDoc, deleteDoc, doc, onSnapshot, orderBy, query } from "firebase/firestore";
 import { db } from "./firebase";
-import { ArrowLeft, UserPlus, Trash2, Sun, Moon } from "lucide-react";
+import { ArrowLeft, UserPlus, Trash2 } from "lucide-react";
+import { ThemeSwitcher, useTheme } from "./theme.jsx";
 import cmuHelmet from "./assets/cmu-helmet.png";
 
 const ROLES = ["Head Coach", "Assistant Coach", "Director of Player Personnel", "Recruiting Coordinator", "Analyst"];
@@ -45,22 +46,11 @@ function useAccounts() {
 }
 
 export default function SettingsPage({ onBack }) {
-  const [theme, setTheme] = useState(() => {
-    const saved = typeof window !== "undefined" && window.localStorage.getItem("gridline-theme");
-    return saved === "light" || saved === "dark" ? saved : "dark";
-  });
+  const [theme, setTheme] = useTheme();
   const { accounts, addAccount, removeAccount } = useAccounts();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [role, setRole] = useState(ROLES[0]);
-
-  function toggleTheme() {
-    setTheme((t) => {
-      const next = t === "dark" ? "light" : "dark";
-      window.localStorage.setItem("gridline-theme", next);
-      return next;
-    });
-  }
 
   function handleAdd(e) {
     e.preventDefault();
@@ -122,17 +112,7 @@ export default function SettingsPage({ onBack }) {
               Settings
             </h1>
           </div>
-          <button
-            onClick={toggleTheme}
-            title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
-            style={{
-              display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-              background: "var(--bg-surface)", border: "1px solid var(--border)", color: "var(--text-primary)",
-              borderRadius: 5, width: 34, height: 34, cursor: "pointer",
-            }}
-          >
-            {theme === "dark" ? <Sun size={15} /> : <Moon size={15} />}
-          </button>
+          <ThemeSwitcher theme={theme} onChange={setTheme} />
         </div>
       </div>
 

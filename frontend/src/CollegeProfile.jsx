@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 import { ExternalLink, RefreshCw, Trophy } from "lucide-react";
 import { PlayerDetailModal, useWatchlist, usePortalStatus } from "./Gridline.jsx";
-import { PlayerProfileModal, statusStyle, toTitleCase } from "./OfferTracker.jsx";
+import { PlayerProfileModal, ThemeContext, statusStyle, toTitleCase } from "./OfferTracker.jsx";
 import { TEAM_CONFERENCE, isCommitment, normalizePlayerKey, useOfferTracker } from "./offerData.js";
 import {
   COLLEGE_BY_ID,
@@ -12,6 +12,7 @@ import {
   fetchTeamSummary,
   getGithubToken,
   lazyDepthCharts,
+  logoFor,
   nameKey,
   rankFor,
   refreshDepthCharts,
@@ -94,6 +95,7 @@ function formatKickoff(game) {
 function ProfileHeader({ college, onOpenTeam }) {
   const summary = useAsync(() => fetchTeamSummary(college.id), [college.id]);
   const stats = useAsync(() => fetchTeamStats(college.id), [college.id]);
+  const theme = useContext(ThemeContext);
   const rank = rankFor(college);
   const record = summary.data?.record || standingFor(college.id)?.overall || "";
   const next = summary.data?.next;
@@ -103,7 +105,7 @@ function ProfileHeader({ college, onOpenTeam }) {
   return (
     <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: "22px 32px", padding: "8px 0 22px" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 18, flex: "1 1 320px", minWidth: 0 }}>
-        <Logo src={college.logo} size={76} />
+        <Logo src={logoFor(college, theme)} size={76} />
         <div style={{ minWidth: 0 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
             <h2 className="oswald" style={{ margin: 0, fontSize: 34, fontWeight: 700, letterSpacing: "0.01em" }}>{college.name}</h2>

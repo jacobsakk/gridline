@@ -1,7 +1,8 @@
 import { createContext, useContext, useMemo, useState } from "react";
-import { ArrowLeft, Sun, Moon, Upload, X, Loader2, ChevronUp, ChevronDown, ChevronsUpDown, TrendingUp, MapPin, Search, Plus } from "lucide-react";
+import { ArrowLeft, Upload, X, Loader2, ChevronUp, ChevronDown, ChevronsUpDown, TrendingUp, MapPin, Search, Plus } from "lucide-react";
 import { confirmAction } from "./ConfirmDialog.jsx";
 import { collegeForLabel, logoFor } from "./collegeData.js";
+import { ThemeSwitcher, useTheme } from "./theme.jsx";
 import cmuHelmet from "./assets/cmu-helmet.png";
 import { CONFERENCE_ORDER, TEAM_CONFERENCE, normalizePosition, useOfferTracker } from "./offerData.js";
 
@@ -949,10 +950,7 @@ function parseOfferDate(value) {
 }
 
 export default function OfferTracker({ onBack }) {
-  const [theme, setTheme] = useState(() => {
-    const saved = typeof window !== "undefined" && window.localStorage.getItem("gridline-theme");
-    return saved === "light" || saved === "dark" ? saved : "dark";
-  });
+  const [theme, setTheme] = useTheme();
   const [uploadOpen, setUploadOpen] = useState(false);
   const [classYear, setClassYear] = useState(null);
   const [conference, setConference] = useState("MAC");
@@ -1041,14 +1039,6 @@ export default function OfferTracker({ onBack }) {
     }
   }
 
-  function toggleTheme() {
-    setTheme((t) => {
-      const next = t === "dark" ? "light" : "dark";
-      window.localStorage.setItem("gridline-theme", next);
-      return next;
-    });
-  }
-
   const teamAccent = searching ? undefined : activeTeamMeta?.color;
   const teamTextAccent = searching ? null : textAccentFor(activeTeamMeta, theme);
 
@@ -1094,17 +1084,7 @@ export default function OfferTracker({ onBack }) {
             >
               <Upload size={15} /> Upload
             </button>
-            <button
-              onClick={toggleTheme}
-              title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
-              style={{
-                display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-                background: "var(--bg-surface)", border: "1px solid var(--border)", color: "var(--text-primary)",
-                borderRadius: 5, width: 34, height: 34, cursor: "pointer",
-              }}
-            >
-              {theme === "dark" ? <Sun size={15} /> : <Moon size={15} />}
-            </button>
+            <ThemeSwitcher theme={theme} onChange={setTheme} />
           </div>
         </div>
       </div>

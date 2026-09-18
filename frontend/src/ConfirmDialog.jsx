@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { readTheme } from "./theme.jsx";
 import { Trash2 } from "lucide-react";
 
 // A single app-wide "are you sure?" box. Any screen calls
@@ -11,14 +12,6 @@ let openDialog = null;
 export function confirmAction({ title, message, confirmLabel = "Remove" }) {
   if (!openDialog) return Promise.resolve(window.confirm(message || title));
   return new Promise((resolve) => openDialog({ title, message, confirmLabel, resolve }));
-}
-
-function savedTheme() {
-  try {
-    return window.localStorage.getItem("gridline-theme") === "light" ? "light" : "dark";
-  } catch {
-    return "dark";
-  }
 }
 
 export function ConfirmHost() {
@@ -48,7 +41,7 @@ export function ConfirmHost() {
     // its own (the saved theme) or the light palette wouldn't apply.
     <div
       className="app-shell"
-      data-theme={savedTheme()}
+      data-theme={readTheme()}
       onClick={() => close(false)}
       onKeyDown={(e) => e.key === "Escape" && close(false)}
       style={{

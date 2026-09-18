@@ -323,5 +323,5 @@ export function collegeForLabel(label) {
 }
 
 export function logoFor(college, theme) {
-  return theme === "dark" ? `https://a.espncdn.com/i/teamlogos/ncaa/500-dark/${college.id}.png` : college.logo;
+  return theme !== "light" ? `https://a.espncdn.com/i/teamlogos/ncaa/500-dark/${college.id}.png` : college.logo;
 }
