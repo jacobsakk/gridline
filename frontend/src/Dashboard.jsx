@@ -2,7 +2,6 @@ import { useState } from "react";
 import { Settings, Sun, Moon, ClipboardList, ChevronRight, FileSpreadsheet, GraduationCap } from "lucide-react";
 import actionC from "./assets/cmu-action-c.png";
 import actionCDark from "./assets/cmu-action-c-dark.png";
-import riseLogo from "./assets/rise-logo.png";
 import anniversaryLogo from "./assets/anniversary-125.png";
 
 // The main hub -- everything else (the Pre-Portal Tracker and Offer
@@ -97,7 +96,7 @@ export default function Dashboard({ onOpenCard, onOpenSettings }) {
         </div>
       </div>
 
-      <div style={{ flex: 1, minHeight: 0, overflow: "auto", padding: "24px var(--gutter) var(--gutter)", display: "flex", flexDirection: "column" }}>
+      <div style={{ flex: 1, minHeight: 0, overflow: "auto", padding: "24px var(--gutter) var(--gutter)" }}>
         <div style={{ maxWidth: 1100, width: "100%", margin: "0 auto" }}>
           <h2 className="oswald" style={{ fontSize: 26, fontWeight: 700, margin: "0 0 20px", letterSpacing: "0.01em" }}>
             Dashboard
@@ -127,14 +126,6 @@ export default function Dashboard({ onOpenCard, onOpenSettings }) {
               </button>
             ))}
           </div>
-        </div>
-
-        <div style={{ flex: 1, minHeight: 190, display: "flex", alignItems: "center", justifyContent: "center", padding: "36px 0 12px" }}>
-          <img
-            src={riseLogo}
-            alt="RISE"
-            style={{ width: "min(240px, 58%)", height: "auto", animation: "card-rise 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) 450ms backwards" }}
-          />
         </div>
       </div>
     </div>
