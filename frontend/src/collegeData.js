@@ -254,7 +254,7 @@ const ALIASES = {
   "stephen f austin state": "stephen f austin", "north carolina a and t state": "north carolina a and t",
   "california berkeley": "california", "north carolina charlotte": "charlotte", "tennessee chattanooga": "chattanooga",
   "tennessee martin": "ut martin", "virginia military institute": "vmi", "austin peay state": "austin peay",
-  "lindenwood missouri": "lindenwood", "robert morris pa": "robert morris", "california davis": "uc davis", "albany suny": "ualbany",
+  "lindenwood missouri": "lindenwood", "robert morris pa": "robert morris", "california davis": "uc davis", "albany suny": "ualbany", "penn": "pennsylvania",
 };
 
 export function teamKey(name) {
@@ -305,4 +305,23 @@ export function rosterFor(college) {
     if (players) players.forEach((p) => out.push(p));
   });
   return [...new Map(out.map((p) => [p.id, p])).values()].sort((a, b) => a.player.localeCompare(b.player));
+}
+
+// The college behind an Offer Tracker team (matched by school name), so the
+// tracker can show its logo. ESPN publishes a light-background and a
+// dark-background version of each logo.
+let collegeByKey = null;
+export function collegeForLabel(label) {
+  if (!collegeByKey) {
+    collegeByKey = new Map();
+    colleges.forEach((c) => {
+      collegeByKey.set(teamKey(c.name), c);
+      collegeByKey.set(teamKey(c.displayName), c);
+    });
+  }
+  return collegeByKey.get(teamKey(label)) || null;
+}
+
+export function logoFor(college, theme) {
+  return theme === "dark" ? `https://a.espncdn.com/i/teamlogos/ncaa/500-dark/${college.id}.png` : college.logo;
 }

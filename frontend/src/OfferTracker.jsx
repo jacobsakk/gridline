@@ -1,6 +1,7 @@
 import { createContext, useContext, useMemo, useState } from "react";
 import { ArrowLeft, Sun, Moon, Upload, X, Loader2, ChevronUp, ChevronDown, ChevronsUpDown, TrendingUp, MapPin, Search, Plus } from "lucide-react";
 import { confirmAction } from "./ConfirmDialog.jsx";
+import { collegeForLabel, logoFor } from "./collegeData.js";
 import cmuHelmet from "./assets/cmu-helmet.png";
 import { CONFERENCE_ORDER, TEAM_CONFERENCE, normalizePosition, useOfferTracker } from "./offerData.js";
 
@@ -974,6 +975,7 @@ export default function OfferTracker({ onBack }) {
   );
   const activeTeam = selectedTeam && teams.some((t) => t.team === selectedTeam) ? selectedTeam : teams[0]?.team;
   const activeTeamMeta = teams.find((t) => t.team === activeTeam);
+  const activeCollege = useMemo(() => (activeTeamMeta ? collegeForLabel(activeTeamMeta.label) : null), [activeTeamMeta]);
 
   // Typing in the search box searches every team in every conference
   // for the class year; with it empty you browse the selected team.
@@ -1211,6 +1213,18 @@ export default function OfferTracker({ onBack }) {
                 </div>
 
                 <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center", marginBottom: 12, flexShrink: 0 }}>
+                  {!searching && activeCollege && (
+                    <img
+                      key={`${activeCollege.id}-${theme}`}
+                      src={logoFor(activeCollege, theme)}
+                      alt={`${activeTeamMeta.label} logo`}
+                      title={activeTeamMeta.label}
+                      style={{ width: 42, height: 42, objectFit: "contain", flexShrink: 0, marginRight: 4 }}
+                      onError={(e) => {
+                        e.currentTarget.style.display = "none";
+                      }}
+                    />
+                  )}
                   <div style={{ position: "relative", flex: "1 1 240px", minWidth: 200 }}>
                     <Search size={14} color="var(--text-faint)" style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} />
                     <input
