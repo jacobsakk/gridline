@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { COLLEGES, fetchSchedule } from "./collegeData.js";
+import { COLLEGES, fetchSchedule, fetchTeamSummary } from "./collegeData.js";
 
 const SEASON = 2026;
 const CMU = COLLEGES.find((c) => c.name === "Central Michigan");
@@ -25,6 +25,23 @@ function splitDuration(ms) {
     minutes: Math.floor((total % 3600) / 60),
     seconds: total % 60,
   };
+}
+
+// Live record ("2-0") plus conference standing ("1st in MAC") for one team.
+function useRecord(teamId) {
+  const [info, setInfo] = useState(null);
+  useEffect(() => {
+    if (!teamId) return;
+    let live = true;
+    setInfo(null);
+    fetchTeamSummary(teamId)
+      .then((s) => live && setInfo({ record: s.record, standing: s.standingSummary }))
+      .catch(() => {});
+    return () => {
+      live = false;
+    };
+  }, [teamId]);
+  return info;
 }
 
 const two = (n) => String(n).padStart(2, "0");
@@ -130,6 +147,7 @@ export default function HubSchedule({ theme }) {
   const scroller = useRef(null);
   const nextRef = useRef(null);
   const now = useNow(60 * 1000);
+  const ourRecord = useRecord(CMU?.id);
 
   useEffect(() => {
     if (!CMU) return;
@@ -146,6 +164,8 @@ export default function HubSchedule({ theme }) {
     () => (games || []).find((g) => !g.completed && new Date(g.date).getTime() + GAME_WINDOW_MS > now) || null,
     [games, now]
   );
+
+  const theirRecord = useRecord(next?.id);
 
   // Start the strip scrolled so the next game is the first card in view.
   useEffect(() => {
@@ -164,7 +184,18 @@ export default function HubSchedule({ theme }) {
   return (
     <section style={{ paddingTop: 40 }} aria-label="Central Michigan 2026 schedule">
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16, gap: 12 }}>
-        <h2 className="oswald" style={{ margin: 0, fontSize: 20, fontWeight: 700, letterSpacing: "0.02em" }}>Central Michigan · {SEASON} Schedule</h2>
+        <div style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap", minWidth: 0 }}>
+          <h2 className="oswald" style={{ margin: 0, fontSize: 20, fontWeight: 700, letterSpacing: "0.02em" }}>Central Michigan · {SEASON} Schedule</h2>
+          {ourRecord?.record && (
+            <span
+              title="Central Michigan's record this season"
+              style={{ display: "inline-flex", alignItems: "baseline", gap: 8, background: "var(--accent-bg)", border: "1px solid var(--accent)", borderRadius: 999, padding: "3px 12px" }}
+            >
+              <span className="oswald tabular" style={{ fontSize: 17, fontWeight: 700, color: "var(--text-primary)" }}>{ourRecord.record}</span>
+              {ourRecord.standing && <span style={{ fontSize: 11.5, color: "var(--text-muted)" }}>{ourRecord.standing}</span>}
+            </span>
+          )}
+        </div>
         <div style={{ display: "flex", gap: 6 }}>
           <button onClick={() => scrollBy(-1)} aria-label="Scroll schedule left" style={arrow}><ChevronLeft size={16} /></button>
           <button onClick={() => scrollBy(1)} aria-label="Scroll schedule right" style={arrow}><ChevronRight size={16} /></button>
@@ -183,6 +214,12 @@ export default function HubSchedule({ theme }) {
                   {next.rank && <span style={{ color: "var(--accent)" }}>#{next.rank} </span>}
                   {next.name}
                 </div>
+                {theirRecord?.record && (
+                  <div className="tabular" style={{ fontSize: 13, color: "var(--text-secondary)", marginTop: 2 }}>
+                    <strong style={{ color: "var(--text-primary)" }}>{theirRecord.record}</strong>
+                    {theirRecord.standing && <span style={{ color: "var(--text-muted)" }}> · {theirRecord.standing}</span>}
+                  </div>
+                )}
                 <div style={{ fontSize: 12.5, color: "var(--text-muted)", marginTop: 3 }}>
                   {new Date(next.date).toLocaleDateString([], { weekday: "long", month: "long", day: "numeric" })}
                   {next.timeValid && ` · ${new Date(next.date).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}`}
