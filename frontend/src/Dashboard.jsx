@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Settings, ClipboardList, ChevronRight, FileSpreadsheet, GraduationCap } from "lucide-react";
 import { ThemeSwitcher, useTheme } from "./theme.jsx";
-import actionC from "./assets/cmu-action-c.png";
 import actionCDark from "./assets/cmu-action-c-dark.png";
 import anniversaryLogo from "./assets/anniversary-125.png";
 
@@ -54,7 +53,7 @@ export default function Dashboard({ onOpenCard, onOpenSettings }) {
         />
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 14, flexWrap: "wrap" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-            <img src={theme !== "light" ? actionCDark : actionC} alt="Central Michigan Action C" style={{ height: 36, width: "auto", flexShrink: 0 }} />
+            <img src={actionCDark} alt="Central Michigan Action C" style={{ height: 36, width: "auto", flexShrink: 0 }} />
             <h1 className="oswald app-title" style={{ fontSize: 22, fontWeight: 700, margin: 0, letterSpacing: "0.01em" }}>
               Central Michigan Coach Hub
             </h1>
