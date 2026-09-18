@@ -218,11 +218,29 @@ function UploadModal({ classYears, onClose, onImport }) {
   );
 }
 
+const MEDALS = ["🥇", "🥈", "🥉"];
+
+// Ranks every team's value in one row (one position, or one state) and
+// returns a team -> medal-index (0/1/2) lookup for that row. Ties share
+// a medal rather than one team winning it by row order -- ranked by
+// distinct value, not by team, so two teams both sitting on the row's
+// top count both get gold.
+function medalsForRow(counts, teamKeys) {
+  const tierValues = [...new Set(teamKeys.map((t) => counts[t] || 0).filter((v) => v > 0))]
+    .sort((a, b) => b - a)
+    .slice(0, 3);
+  const medalByValue = new Map(tierValues.map((v, i) => [v, i]));
+  return (team) => {
+    const v = counts[team] || 0;
+    return v > 0 && medalByValue.has(v) ? medalByValue.get(v) : null;
+  };
+}
+
 // Shaded (and, for the column's leader, colored) in that TEAM's own
 // school color rather than one flat accent wash for every column --
 // makes each team's column scannable at a glance instead of every cell
 // blending into the same tint regardless of whose column it's in.
-function HeatCell({ value, max, color }) {
+function HeatCell({ value, max, color, medal }) {
   const ratio = max > 0 ? value / max : 0;
   const isTop = value > 0 && value === max;
   const c = color || "var(--accent)";
@@ -239,6 +257,7 @@ function HeatCell({ value, max, color }) {
         transition: "background 0.2s ease",
       }}
     >
+      {medal != null && <span style={{ marginRight: 4 }}>{MEDALS[medal]}</span>}
       {value || 0}
     </td>
   );
@@ -259,6 +278,98 @@ function TrendCard({ icon: Icon, label, value, sub, color }) {
       </span>
       <span className="oswald" style={{ fontSize: 22, fontWeight: 700, color: "var(--text-primary)" }}>{sub}</span>
       <span className="tabular" style={{ fontSize: 12.5, color: "var(--text-muted)" }}>{value}</span>
+    </div>
+  );
+}
+
+// One row per position (or state), sortable by clicking its own label
+// column, any team's column, or Total -- same click-to-sort, click-
+// again-to-flip pattern as the Teams table.
+function SortableBreakdownTable({ title, rowLabel, rows, teams, maxHeight, defaultSortKey = "total", defaultSortDir = "desc" }) {
+  const [sortKey, setSortKey] = useState(defaultSortKey);
+  const [sortDir, setSortDir] = useState(defaultSortDir);
+
+  function handleSort(key) {
+    if (key === sortKey) {
+      setSortDir((d) => (d === "desc" ? "asc" : "desc"));
+    } else {
+      setSortKey(key);
+      setSortDir(key === "label" ? "asc" : "desc");
+    }
+  }
+
+  const sortedRows = useMemo(() => {
+    return [...rows].sort((a, b) => {
+      const av = sortKey === "label" ? a.label : sortKey === "total" ? a.total : a.counts[sortKey] || 0;
+      const bv = sortKey === "label" ? b.label : sortKey === "total" ? b.total : b.counts[sortKey] || 0;
+      const cmp = sortKey === "label" ? av.localeCompare(bv) : av - bv;
+      return sortDir === "desc" ? -cmp : cmp;
+    });
+  }, [rows, sortKey, sortDir]);
+
+  const thStyle = {
+    textAlign: "right", padding: "7px 10px", fontSize: 11, color: "var(--text-faint)", textTransform: "uppercase",
+    whiteSpace: "nowrap", cursor: "pointer", userSelect: "none",
+  };
+  const rowLabelStyle = { textAlign: "left", padding: "7px 10px", fontSize: 13, fontWeight: 700, color: "var(--text-primary)" };
+  const teamKeys = teams.map((t) => t.team);
+
+  return (
+    <div>
+      <h3 className="oswald" style={{ fontSize: 17, fontWeight: 700, margin: "0 0 12px", color: "var(--accent)" }}>{title}</h3>
+      <div style={{ overflowX: "auto", border: "1px solid var(--border)", borderRadius: 6, maxHeight, overflowY: maxHeight ? "auto" : undefined }}>
+        <table style={{ width: "100%", borderCollapse: "collapse" }}>
+          <thead>
+            <tr style={{ background: "var(--bg-surface)" }}>
+              <th style={{ ...thStyle, textAlign: "left" }} onClick={() => handleSort("label")}>
+                <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
+                  {rowLabel} <SortIcon active={sortKey === "label"} dir={sortDir} />
+                </span>
+              </th>
+              {teams.map(({ team, label, color }) => (
+                <th key={team} style={{ ...thStyle, color, borderBottom: `2px solid ${color || "var(--border)"}` }} onClick={() => handleSort(team)}>
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
+                    {label} <SortIcon active={sortKey === team} dir={sortDir} />
+                  </span>
+                </th>
+              ))}
+              <th style={thStyle} onClick={() => handleSort("total")}>
+                <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
+                  Total <SortIcon active={sortKey === "total"} dir={sortDir} />
+                </span>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {sortedRows.map((row) => {
+              const rowMax = Math.max(...teamKeys.map((t) => row.counts[t] || 0), 1);
+              const medalFor = medalsForRow(row.counts, teamKeys);
+              return (
+                <tr key={row.key} style={{ borderTop: "1px solid var(--border-subtle)" }}>
+                  <td style={rowLabelStyle}>{row.label}</td>
+                  {teams.map(({ team, color }) => (
+                    <HeatCell key={team} value={row.counts[team] || 0} max={rowMax} color={color} medal={medalFor(team)} />
+                  ))}
+                  <td style={{ textAlign: "right", padding: "8px 10px", fontSize: 13.5, fontWeight: 700, color: "var(--accent)" }} className="tabular">
+                    {row.total}
+                  </td>
+                </tr>
+              );
+            })}
+            <tr style={{ borderTop: "2px solid var(--border)", background: "var(--bg-surface)" }}>
+              <td style={rowLabelStyle}>Totals</td>
+              {teams.map(({ team, color }) => (
+                <td key={team} style={{ textAlign: "right", padding: "8px 10px", fontSize: 13.5, fontWeight: 700, color: color || "var(--accent)" }} className="tabular">
+                  {rows.reduce((sum, row) => sum + (row.counts[team] || 0), 0)}
+                </td>
+              ))}
+              <td style={{ textAlign: "right", padding: "8px 10px", fontSize: 13.5, fontWeight: 700, color: "var(--accent)" }} className="tabular">
+                {rows.reduce((sum, row) => sum + row.total, 0)}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
@@ -286,8 +397,26 @@ function BreakdownTables({ classYear, conference, tracker }) {
     return best;
   }, [posData]);
 
-  const thStyle = { textAlign: "right", padding: "7px 10px", fontSize: 11, color: "var(--text-faint)", textTransform: "uppercase", whiteSpace: "nowrap" };
-  const rowLabelStyle = { textAlign: "left", padding: "7px 10px", fontSize: 13, fontWeight: 700, color: "var(--text-primary)" };
+  const positionRows = useMemo(
+    () =>
+      posData.positions.map((pos) => ({
+        key: pos,
+        label: pos,
+        counts: posData.counts[pos] || {},
+        total: Object.values(posData.counts[pos] || {}).reduce((a, b) => a + b, 0),
+      })),
+    [posData]
+  );
+  const areaRows = useMemo(
+    () =>
+      areaData.states.map((state) => ({
+        key: state,
+        label: state,
+        counts: areaData.counts[state] || {},
+        total: areaData.stateTotals[state] || 0,
+      })),
+    [areaData]
+  );
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 28 }}>
@@ -297,77 +426,24 @@ function BreakdownTables({ classYear, conference, tracker }) {
         <TrendCard icon={TrendingUp} label="Top Position" value={`${topPosition.n} offers`} sub={topPosition.pos || "—"} />
       </div>
 
-      <div>
-        <h3 className="oswald" style={{ fontSize: 17, fontWeight: 700, margin: "0 0 12px", color: "var(--accent)" }}>Position Breakdown</h3>
-        <div style={{ overflowX: "auto", border: "1px solid var(--border)", borderRadius: 6 }}>
-          <table style={{ width: "100%", borderCollapse: "collapse" }}>
-            <thead>
-              <tr style={{ background: "var(--bg-surface)" }}>
-                <th style={{ ...thStyle, textAlign: "left" }}>Position</th>
-                {posData.teams.map(({ team, label, color }) => (
-                  <th key={team} style={{ ...thStyle, color, borderBottom: `2px solid ${color || "var(--border)"}` }}>{label}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {posData.positions.map((pos) => {
-                const rowMax = Math.max(...posData.teams.map(({ team }) => posData.counts[pos]?.[team] || 0), 1);
-                return (
-                  <tr key={pos} style={{ borderTop: "1px solid var(--border-subtle)" }}>
-                    <td style={rowLabelStyle}>{pos}</td>
-                    {posData.teams.map(({ team, color }) => {
-                      const v = posData.counts[pos]?.[team] || 0;
-                      return <HeatCell key={team} value={v} max={rowMax} color={color} />;
-                    })}
-                  </tr>
-                );
-              })}
-              <tr style={{ borderTop: "2px solid var(--border)", background: "var(--bg-surface)" }}>
-                <td style={rowLabelStyle}>Totals</td>
-                {posData.teams.map(({ team, color }) => (
-                  <td key={team} style={{ textAlign: "right", padding: "8px 10px", fontSize: 13.5, fontWeight: 700, color: color || "var(--accent)" }} className="tabular">
-                    {posData.totals[team] || 0}
-                  </td>
-                ))}
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
+      <SortableBreakdownTable
+        title="Position Breakdown"
+        rowLabel="Position"
+        rows={positionRows}
+        teams={posData.teams}
+        defaultSortKey="label"
+        defaultSortDir="asc"
+      />
 
-      <div>
-        <h3 className="oswald" style={{ fontSize: 17, fontWeight: 700, margin: "0 0 12px", color: "var(--accent)" }}>Offer Area Breakdown</h3>
-        <div style={{ overflowX: "auto", border: "1px solid var(--border)", borderRadius: 6, maxHeight: 420, overflowY: "auto" }}>
-          <table style={{ width: "100%", borderCollapse: "collapse" }}>
-            <thead>
-              <tr style={{ background: "var(--bg-surface)" }}>
-                <th style={{ ...thStyle, textAlign: "left" }}>State</th>
-                {areaData.teams.map(({ team, label, color }) => (
-                  <th key={team} style={{ ...thStyle, color, borderBottom: `2px solid ${color || "var(--border)"}` }}>{label}</th>
-                ))}
-                <th style={thStyle}>Total</th>
-              </tr>
-            </thead>
-            <tbody>
-              {areaData.states.map((state) => {
-                const rowMax = Math.max(...areaData.teams.map(({ team }) => areaData.counts[state]?.[team] || 0), 1);
-                return (
-                  <tr key={state} style={{ borderTop: "1px solid var(--border-subtle)" }}>
-                    <td style={rowLabelStyle}>{state}</td>
-                    {areaData.teams.map(({ team, color }) => {
-                      const v = areaData.counts[state]?.[team] || 0;
-                      return <HeatCell key={team} value={v} max={rowMax} color={color} />;
-                    })}
-                    <td style={{ textAlign: "right", padding: "8px 10px", fontSize: 13.5, fontWeight: 700, color: "var(--accent)" }} className="tabular">
-                      {areaData.stateTotals[state]}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      </div>
+      <SortableBreakdownTable
+        title="Offer Area Breakdown"
+        rowLabel="State"
+        rows={areaRows}
+        teams={areaData.teams}
+        maxHeight={420}
+        defaultSortKey="total"
+        defaultSortDir="desc"
+      />
     </div>
   );
 }
