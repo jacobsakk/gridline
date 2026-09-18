@@ -1053,7 +1053,7 @@ export default function OfferTracker({ onBack }) {
         fontFamily: "'Century Gothic', 'Jost', 'Helvetica Neue', Arial, sans-serif",
       }}
     >
-      <div style={{ flexShrink: 0, position: "relative", padding: "20px var(--gutter) 16px" }}>
+      <div className="app-header" style={{ flexShrink: 0, position: "relative", padding: "20px var(--gutter) 16px" }}>
         <div style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: 3, background: "linear-gradient(90deg, var(--gold), var(--maroon))" }} />
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 14, flexWrap: "wrap" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 14 }}>

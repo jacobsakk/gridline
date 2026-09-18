@@ -1731,7 +1731,7 @@ export default function Gridline({ onBack, initialSearch }) {
       {/* Header -- the gold-to-maroon stripe underneath is the school's
           own colors, kept literal (not the theme-adaptive --accent) so it
           reads the same in both light and dark mode. */}
-      <div style={{ flexShrink: 0, position: "relative", padding: "20px var(--gutter) 16px" }}>
+      <div className="app-header" style={{ flexShrink: 0, position: "relative", padding: "20px var(--gutter) 16px" }}>
         <div
           style={{
             position: "absolute", left: 0, right: 0, bottom: 0, height: 3,

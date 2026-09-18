@@ -4,7 +4,6 @@ import { Moon, Sun } from "lucide-react";
 export const THEMES = [
   { key: "dark", label: "Dark" },
   { key: "light", label: "Light" },
-  { key: "maroon", label: "Maroon" },
 ];
 
 const STORAGE_KEY = "gridline-theme";
@@ -33,18 +32,8 @@ export function useTheme() {
   return [theme, setTheme];
 }
 
-// Dark and maroon both have dark grounds; only light needs the dark-text treatment.
-export const isLightTheme = (theme) => theme === "light";
-
 export function ThemeSwitcher({ theme, onChange }) {
-  const icon = (key) =>
-    key === "dark" ? (
-      <Moon size={15} />
-    ) : key === "light" ? (
-      <Sun size={15} />
-    ) : (
-      <span style={{ width: 15, height: 15, borderRadius: 999, background: "#510F1D", border: "2px solid #FBAB18", display: "block", boxSizing: "border-box" }} />
-    );
+  const icon = (key) => (key === "dark" ? <Moon size={15} /> : <Sun size={15} />);
   return (
     <div
       role="radiogroup"

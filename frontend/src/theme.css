@@ -51,34 +51,11 @@
   --warning-bg: #FBF0DD;
   --warning-border: #E8C98A;
 }
-.app-shell[data-theme="maroon"] {
-  --bg-page: #510F1D;
-  --bg-panel: #5E1626;
-  --bg-surface: #6F2033;
-  --border: #8A3A4E;
-  --border-subtle: #75283B;
-  --border-faint: #66202F;
-  --row-hover: #74263A;
-  --text-primary: #F7EFE4;
-  --text-secondary: #E6D5CD;
-  --text-muted: #CDAEAC;
-  --text-faint: #A78389;
-  --accent: var(--gold);
-  --accent-bg: #73301F;
-  --accent-hover-tint: rgba(251,171,24,0.2);
-  --success: #9AD892;
-  --success-bg: #2B3B25;
-  --success-border: #4F7047;
-  --danger: #D45C5C;
-  --danger-bg: #2E0B11;
-  --danger-text: #FF9E9E;
-  --warning: #E8B865;
-  --warning-bg: #5A3A1C;
-  --warning-border: #8A6230;
-}
-.app-shell[data-theme="dark"], .app-shell[data-theme="maroon"] { color-scheme: dark; }
+.app-shell[data-theme="dark"] { color-scheme: dark; }
 .app-shell[data-theme="light"] { color-scheme: light; }
-.app-shell[data-theme="maroon"] img[alt*="helmet"] { filter: drop-shadow(0 0 1.5px rgba(255, 244, 224, 0.9)); }
+/* Dark mode: black page, maroon top bar (the maroon helmet gets a light edge so it still shows). */
+.app-shell[data-theme="dark"] .app-header { background: var(--maroon); }
+.app-shell[data-theme="dark"] .app-header img[alt*="helmet"] { filter: drop-shadow(0 0 1.5px rgba(255, 244, 224, 0.9)); }
 * { box-sizing: border-box; }
 body { margin: 0; }
 .oswald { font-family: 'Century Gothic', 'Jost', sans-serif; }
