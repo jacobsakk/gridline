@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Settings, Sun, Moon, ClipboardList, ChevronRight, FileSpreadsheet } from "lucide-react";
 import cmuHelmet from "./assets/cmu-helmet.png";
+import { TRANSITION_OPTIONS, getTransitionStyle, saveTransitionStyle } from "./CardTransition.jsx";
 
 // The main hub -- everything else (the Pre-Portal Tracker and Offer
 // Tracker today, more tools later) is a card here rather than its own
@@ -21,11 +22,12 @@ const CARDS = [
   },
 ];
 
-export default function Dashboard({ onOpenTracker, onOpenOfferTracker, onOpenSettings }) {
+export default function Dashboard({ onOpenCard, onOpenSettings }) {
   const [theme, setTheme] = useState(() => {
     const saved = typeof window !== "undefined" && window.localStorage.getItem("gridline-theme");
     return saved === "light" || saved === "dark" ? saved : "dark";
   });
+  const [transitionStyle, setTransitionStyle] = useState(getTransitionStyle);
   function toggleTheme() {
     setTheme((t) => {
       const next = t === "dark" ? "light" : "dark";
@@ -62,6 +64,24 @@ export default function Dashboard({ onOpenTracker, onOpenOfferTracker, onOpenSet
             </h1>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
+            <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: "var(--text-muted)" }}>
+              Animation
+              <select
+                value={transitionStyle}
+                onChange={(e) => {
+                  setTransitionStyle(e.target.value);
+                  saveTransitionStyle(e.target.value);
+                }}
+                style={{
+                  background: "var(--bg-surface)", border: "1px solid var(--border)", color: "var(--text-primary)",
+                  borderRadius: 5, padding: "7px 8px", fontSize: 12.5, fontFamily: "inherit", cursor: "pointer",
+                }}
+              >
+                {TRANSITION_OPTIONS.map((o) => (
+                  <option key={o.key} value={o.key}>{o.label}</option>
+                ))}
+              </select>
+            </label>
             <button
               onClick={onOpenSettings}
               style={{
@@ -93,12 +113,13 @@ export default function Dashboard({ onOpenTracker, onOpenOfferTracker, onOpenSet
             Dashboard
           </h2>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 16 }}>
-            {CARDS.map(({ key, label, description, icon: Icon }) => (
+            {CARDS.map(({ key, label, description, icon: Icon }, i) => (
               <button
                 key={key}
                 className="dashboard-card"
-                onClick={() => (key === "offers" ? onOpenOfferTracker() : onOpenTracker())}
+                onClick={(e) => onOpenCard(key, e.currentTarget.getBoundingClientRect(), label)}
                 style={{
+                  animation: `card-rise 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) ${120 + i * 80}ms backwards`,
                   display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 10,
                   background: "linear-gradient(135deg, var(--gold), #C9860E)",
                   border: "none", borderRadius: 10, padding: 20, cursor: "pointer", textAlign: "left",

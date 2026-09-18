@@ -66,6 +66,12 @@ tbody tr:hover { background: var(--row-hover) !important; }
 .dashboard-card-icon, .dashboard-card-arrow { transition: transform 0.18s ease; }
 .dashboard-card:hover .dashboard-card-icon { transform: scale(1.12) rotate(-4deg); }
 .dashboard-card:hover .dashboard-card-arrow { transform: translateX(4px); }
+@keyframes screen-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes card-rise { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
+.screen-enter { animation: screen-fade 0.35s ease-out; }
+@media (prefers-reduced-motion: reduce) {
+  .screen-enter, .dashboard-card { animation: none !important; }
+}
 @keyframes spin { to { transform: rotate(360deg); } }
 .spin { animation: spin 0.8s linear infinite; }
 .offer-cell-input {
