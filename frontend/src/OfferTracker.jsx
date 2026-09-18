@@ -1,5 +1,5 @@
-import { useMemo, useState } from "react";
-import { ArrowLeft, Sun, Moon, Upload, X, Loader2, ChevronUp, ChevronDown, ChevronsUpDown, TrendingUp, MapPin, Search } from "lucide-react";
+import { createContext, useContext, useMemo, useState } from "react";
+import { ArrowLeft, Sun, Moon, Upload, X, Loader2, ChevronUp, ChevronDown, ChevronsUpDown, TrendingUp, MapPin, Search, Plus } from "lucide-react";
 import cmuHelmet from "./assets/cmu-helmet.png";
 import { CONFERENCE_ORDER, TEAM_CONFERENCE, normalizePosition, useOfferTracker } from "./offerData.js";
 
@@ -39,7 +39,7 @@ function statusStyle(status) {
     return { background: "var(--accent-bg)", color: "var(--accent)", border: "1px solid var(--accent)" };
   }
   if (s.startsWith("COMMIT")) {
-    return { background: "var(--danger-bg, #241414)", color: "var(--danger)", border: "1px solid var(--danger)", textDecoration: "line-through" };
+    return { background: "var(--danger-bg)", color: "var(--danger-text)", border: "1px solid var(--danger)", textDecoration: "line-through" };
   }
   if (s === "OFFERED") {
     return { background: "var(--success-bg)", color: "var(--success)", border: "1px solid var(--success-border)" };
@@ -88,8 +88,22 @@ function lightenForDark(hex, minLum = 135) {
 // gold over its navy -- lightened further if it's still too dark
 // (Buffalo's blue, whose other color is black). Backgrounds and borders
 // keep the real primary color; only text needs to be readable.
-function textAccentFor(meta) {
+// On the light theme the problem flips: pale school colors (gold, tan,
+// light blue) wash out on white, so the team's own primary is used and
+// darkened only if it's too light to read.
+const ThemeContext = createContext("dark");
+
+function darkenForLight(hex, maxLum = 140) {
+  const rgb = hexToRgb(hex);
+  const lum = rgbLuminance(rgb);
+  if (lum <= maxLum) return hex;
+  const t = (lum - maxLum) / (lum || 1);
+  return rgbToHex({ r: rgb.r * (1 - t), g: rgb.g * (1 - t), b: rgb.b * (1 - t) });
+}
+
+function textAccentFor(meta, theme = "dark") {
   if (!meta || !meta.color) return null;
+  if (theme === "light") return darkenForLight(meta.color);
   const primary = rgbLuminance(hexToRgb(meta.color));
   const secondary = rgbLuminance(hexToRgb(meta.colorSecondary));
   return lightenForDark(secondary > primary ? meta.colorSecondary : meta.color);
@@ -325,12 +339,103 @@ function UploadModal({ classYears, onClose, onImport }) {
 // else is after the same recruit -- this shows every team (any
 // conference, not just the one currently open) with a row for this
 // player in this class year.
+// One team's offer turned out to be wrong. Confirms first, since it
+// hides the row everywhere (and keeps it out of future uploads).
+function RemoveOfferButton({ row, onRemove }) {
+  const label = TEAM_CONFERENCE[row.team]?.label || row.team;
+  return (
+    <button
+      onClick={() => {
+        if (window.confirm(`Remove ${toTitleCase(row.player)} from ${label}'s board?\n\nUse this when the offer is inaccurate. It won't come back on future uploads.`)) {
+          onRemove(row);
+        }
+      }}
+      title={`Remove this offer from ${label}'s board (inaccurate)`}
+      style={{ background: "none", border: "none", color: "var(--text-faint)", cursor: "pointer", padding: 4, lineHeight: 0 }}
+    >
+      <X size={15} />
+    </button>
+  );
+}
+
+function AddOfferForm({ teamLabel, onAdd, onClose }) {
+  const [f, setF] = useState({ player: "", highSchool: "", state: "", position: "", dateOffered: "", notes: "" });
+  const [error, setError] = useState(null);
+  const [saving, setSaving] = useState(false);
+  const set = (k) => (e) => setF((prev) => ({ ...prev, [k]: e.target.value }));
+  const inputStyle = {
+    background: "var(--bg-page)", border: "1px solid var(--border)", color: "var(--text-primary)",
+    borderRadius: 5, padding: "6px 8px", fontSize: 13, fontFamily: "inherit",
+  };
+
+  async function submit(e) {
+    e.preventDefault();
+    setSaving(true);
+    setError(null);
+    try {
+      await onAdd(f);
+      onClose();
+    } catch (err) {
+      setError(err.message || "Couldn't add that offer.");
+      setSaving(false);
+    }
+  }
+
+  return (
+    <form onSubmit={submit} style={{ flexShrink: 0, marginBottom: 12, padding: 12, background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 6 }}>
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "flex-end" }}>
+        <input autoFocus placeholder="Player name *" value={f.player} onChange={set("player")} style={{ ...inputStyle, width: 170 }} />
+        <input placeholder="High school" value={f.highSchool} onChange={set("highSchool")} style={{ ...inputStyle, width: 170 }} />
+        <input placeholder="State" value={f.state} onChange={set("state")} maxLength={2} style={{ ...inputStyle, width: 60 }} />
+        <input placeholder="Pos" value={f.position} onChange={set("position")} style={{ ...inputStyle, width: 60 }} />
+        <input placeholder="Date offered" value={f.dateOffered} onChange={set("dateOffered")} style={{ ...inputStyle, width: 120 }} />
+        <input placeholder="Notes" value={f.notes} onChange={set("notes")} style={{ ...inputStyle, flex: "1 1 140px" }} />
+        <button
+          type="submit"
+          disabled={!f.player.trim() || saving}
+          style={{
+            background: "var(--accent-bg)", border: "1px solid var(--accent)", color: "var(--accent)", borderRadius: 5,
+            padding: "7px 14px", fontSize: 13, fontWeight: 700, cursor: f.player.trim() ? "pointer" : "not-allowed", opacity: f.player.trim() ? 1 : 0.5,
+          }}
+        >
+          Add to {teamLabel}
+        </button>
+        <button type="button" onClick={onClose} style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer", fontSize: 13 }}>
+          Cancel
+        </button>
+      </div>
+      <div style={{ fontSize: 11.5, color: "var(--text-faint)", marginTop: 8 }}>
+        If this recruit is already on another team's board, their school, state and position are filled in for you.
+      </div>
+      {error && <div style={{ fontSize: 12.5, color: "var(--danger)", marginTop: 6 }}>{error}</div>}
+    </form>
+  );
+}
+
 function PlayerProfileModal({ player, classYear, tracker, onClose }) {
+  const theme = useContext(ThemeContext);
   const rows = useMemo(() => tracker.rowsForPlayer(classYear, player), [tracker, classYear, player]);
   const first = rows[0];
   if (!first) return null;
 
   const tdStyle = { padding: "9px 12px", fontSize: 13.5, color: "var(--text-secondary)", borderRight: "1px solid var(--border-faint)" };
+  const sectionLabel = { fontSize: 11, color: "var(--text-faint)", letterSpacing: "0.03em", textTransform: "uppercase", marginBottom: 8 };
+
+  // Status and pipeline are the same recruit-wide (they sync across
+  // teams), so they're shown once. Notes are per team, so identical
+  // ones collapse to one line and differing ones list which team wrote them.
+  const status = (rows.find((r) => /^COMMI?TT?ED TO /i.test((r.status || "").trim())) || rows.find((r) => (r.status || "").trim()) || {}).status || "";
+  const pipeline = ((rows.find((r) => (r.pipelineStatus || "").trim()) || {}).pipelineStatus || "").trim();
+  const noteGroups = new Map();
+  rows.forEach((r) => {
+    const text = (r.notes || "").trim();
+    if (!text) return;
+    const k = text.toLowerCase();
+    if (!noteGroups.has(k)) noteGroups.set(k, { text, teams: [] });
+    noteGroups.get(k).teams.push(TEAM_CONFERENCE[r.team]?.label || r.team);
+  });
+  const notes = [...noteGroups.values()].map((n) => ({ text: n.text, teams: noteGroups.size > 1 && rows.length > 1 ? n.teams.join(", ") : "" }));
+  const otherOffers = (rows.find((r) => r.otherOffers?.length) || {}).otherOffers || [];
 
   return (
     <div
@@ -359,47 +464,97 @@ function PlayerProfileModal({ player, classYear, tracker, onClose }) {
           </button>
         </div>
 
-        <div style={{ padding: 20 }}>
-          <div style={{ fontSize: 11, color: "var(--text-faint)", letterSpacing: "0.03em", textTransform: "uppercase", marginBottom: 10 }}>
-            Tracked by {rows.length} team{rows.length === 1 ? "" : "s"}
+        <div style={{ padding: 20, display: "flex", flexDirection: "column", gap: 20 }}>
+          <div>
+            <div style={sectionLabel}>
+              Offers from tracked teams ({rows.length})
+            </div>
+            <div style={{ border: "1px solid var(--border)", borderRadius: 6, overflowX: "auto" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                <thead>
+                  <tr style={{ background: "var(--bg-surface)" }}>
+                    {["Team", "Date Offered", ""].map((h, i) => (
+                      <th key={i} style={{ textAlign: "left", padding: "9px 12px", fontSize: 11, color: "var(--text-faint)", textTransform: "uppercase", whiteSpace: "nowrap" }}>
+                        {h}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {rows.map((r) => {
+                    const meta = TEAM_CONFERENCE[r.team];
+                    return (
+                      <tr key={r.id} style={{ borderTop: "1px solid var(--border-subtle)" }}>
+                        <td style={{ ...tdStyle, fontWeight: 700, color: meta ? textAccentFor(meta, theme) : "var(--text-primary)" }}>{meta?.label || r.team}</td>
+                        <td style={tdStyle} className="tabular">{r.dateOffered || "—"}</td>
+                        <td style={{ ...tdStyle, borderRight: "none", textAlign: "center", width: 40 }}>
+                          <RemoveOfferButton row={r} onRemove={(row) => tracker.removeOffer(row)} />
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
           </div>
-          <div style={{ border: "1px solid var(--border)", borderRadius: 6, overflowX: "auto" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse" }}>
-              <thead>
-                <tr style={{ background: "var(--bg-surface)" }}>
-                  {["Team", "Date Offered", "Status", "Pipeline", "Notes"].map((h) => (
-                    <th key={h} style={{ textAlign: "left", padding: "9px 12px", fontSize: 11, color: "var(--text-faint)", textTransform: "uppercase", whiteSpace: "nowrap" }}>
-                      {h}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {rows.map((r) => {
-                  const meta = TEAM_CONFERENCE[r.team];
-                  const style = statusStyle(r.status);
-                  return (
-                    <tr key={r.id} style={{ borderTop: "1px solid var(--border-subtle)" }}>
-                      <td style={{ ...tdStyle, fontWeight: 700, color: meta?.color || "var(--text-primary)" }}>{meta?.label || r.team}</td>
-                      <td style={tdStyle} className="tabular">{r.dateOffered || "—"}</td>
-                      <td style={tdStyle}>
-                        {r.status ? (
-                          <span style={{ ...style, borderRadius: 4, padding: "2px 8px", fontSize: 11.5, fontWeight: 600, whiteSpace: "nowrap" }}>
-                            {toTitleCase(r.status)}
-                          </span>
-                        ) : (
-                          <span style={{ color: "var(--text-faint)" }}>—</span>
-                        )}
-                      </td>
-                      <td style={tdStyle}>
-                        {PIPELINE_OPTIONS.find((o) => o.toLowerCase() === (r.pipelineStatus || "").trim().toLowerCase()) || r.pipelineStatus || "—"}
-                      </td>
-                      <td style={{ ...tdStyle, borderRight: "none" }}>{toTitleCase(r.notes) || "—"}</td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 16 }}>
+            <div>
+              <div style={sectionLabel}>Status</div>
+              {status ? (
+                <span style={{ ...statusStyle(status), borderRadius: 4, padding: "3px 9px", fontSize: 12, fontWeight: 600, display: "inline-block" }}>
+                  {toTitleCase(status)}
+                </span>
+              ) : (
+                <span style={{ color: "var(--text-faint)" }}>—</span>
+              )}
+            </div>
+            <div>
+              <div style={sectionLabel}>Pipeline</div>
+              <span style={{ fontSize: 13.5, color: "var(--text-secondary)" }}>
+                {PIPELINE_OPTIONS.find((o) => o.toLowerCase() === pipeline.toLowerCase()) || pipeline || "—"}
+              </span>
+            </div>
+          </div>
+
+          <div>
+            <div style={sectionLabel}>Notes</div>
+            {notes.length === 0 ? (
+              <span style={{ color: "var(--text-faint)" }}>—</span>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: 4, fontSize: 13.5, color: "var(--text-secondary)" }}>
+                {notes.map((n) => (
+                  <div key={n.text}>
+                    {toTitleCase(n.text)}
+                    {n.teams && <span style={{ color: "var(--text-faint)" }}> ({n.teams})</span>}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div>
+            <div style={sectionLabel}>
+              Other offers{otherOffers.length ? ` (${otherOffers.length})` : ""}
+              <span style={{ textTransform: "none", letterSpacing: 0 }}> — schools outside the conferences we track</span>
+            </div>
+            {otherOffers.length === 0 ? (
+              <span style={{ color: "var(--text-faint)" }}>None on file — load an activity feed to fill this in.</span>
+            ) : (
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                {otherOffers.map((school) => (
+                  <span
+                    key={school}
+                    style={{
+                      fontSize: 12, padding: "3px 9px", borderRadius: 999, color: "var(--text-secondary)",
+                      background: "var(--bg-surface)", border: "1px solid var(--border)",
+                    }}
+                  >
+                    {school}
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -477,6 +632,7 @@ function TrendCard({ icon: Icon, label, value, sub, color }) {
 // column, any team's column, or Total -- same click-to-sort, click-
 // again-to-flip pattern as the Teams table.
 function SortableBreakdownTable({ title, rowLabel, rows, teams, maxHeight, defaultSortKey = "total", defaultSortDir = "desc" }) {
+  const theme = useContext(ThemeContext);
   const [sortKey, setSortKey] = useState(defaultSortKey);
   const [sortDir, setSortDir] = useState(defaultSortDir);
 
@@ -530,7 +686,7 @@ function SortableBreakdownTable({ title, rowLabel, rows, teams, maxHeight, defau
                 </span>
               </th>
               {teams.map((t) => (
-                <th key={t.team} style={{ ...thStyle, color: textAccentFor(t) || undefined, borderBottom: `2px solid ${t.color || "var(--border)"}` }} onClick={() => handleSort(t.team)}>
+                <th key={t.team} style={{ ...thStyle, color: textAccentFor(t, theme) || undefined, borderBottom: `2px solid ${t.color || "var(--border)"}` }} onClick={() => handleSort(t.team)}>
                   <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
                     {t.label} <SortIcon active={sortKey === t.team} dir={sortDir} />
                   </span>
@@ -561,7 +717,7 @@ function SortableBreakdownTable({ title, rowLabel, rows, teams, maxHeight, defau
             <tr style={{ borderTop: "2px solid var(--border)", background: "var(--bg-surface)" }}>
               <td style={rowLabelStyle}>Totals</td>
               {teams.map((t) => (
-                <td key={t.team} style={{ textAlign: "right", padding: "8px 10px", fontSize: 13.5, fontWeight: 700, color: textAccentFor(t) || "var(--accent)" }} className="tabular">
+                <td key={t.team} style={{ textAlign: "right", padding: "8px 10px", fontSize: 13.5, fontWeight: 700, color: textAccentFor(t, theme) || "var(--accent)" }} className="tabular">
                   {rows.reduce((sum, row) => sum + (row.counts[t.team] || 0), 0)}
                 </td>
               ))}
@@ -577,6 +733,7 @@ function SortableBreakdownTable({ title, rowLabel, rows, teams, maxHeight, defau
 }
 
 function BreakdownTables({ classYear, conference, tracker }) {
+  const theme = useContext(ThemeContext);
   const posData = useMemo(() => tracker.positionBreakdown(classYear, conference), [classYear, conference, tracker]);
   const areaData = useMemo(() => tracker.areaBreakdown(classYear, conference), [classYear, conference, tracker]);
 
@@ -584,7 +741,7 @@ function BreakdownTables({ classYear, conference, tracker }) {
     let best = { team: null, label: "", color: null, n: -1 };
     posData.teams.forEach((t) => {
       const n = posData.totals[t.team] || 0;
-      if (n > best.n) best = { team: t.team, label: t.label, color: textAccentFor(t), n };
+      if (n > best.n) best = { team: t.team, label: t.label, color: textAccentFor(t, theme), n };
     });
     return best;
   }, [posData]);
@@ -655,7 +812,7 @@ function SortIcon({ active, dir }) {
   return dir === "desc" ? <ChevronDown size={13} /> : <ChevronUp size={13} />;
 }
 
-function TeamOffersTable({ rows, onEdit, onOpenProfile, sortKey, sortDir, onSort, teamColor, teamTextColor }) {
+function TeamOffersTable({ rows, onEdit, onOpenProfile, onRemove, sortKey, sortDir, onSort, teamColor, teamTextColor }) {
   const tdStyle = { padding: "4px 10px", fontSize: 13.5, color: "var(--text-secondary)", borderRight: "1px solid var(--border-faint)" };
   const headerBackground = teamColor ? `color-mix(in srgb, ${teamColor} 22%, var(--bg-surface))` : "var(--bg-surface)";
   // Sticky against the nearest scrolling ancestor -- the caller wraps
@@ -684,6 +841,7 @@ function TeamOffersTable({ rows, onEdit, onOpenProfile, sortKey, sortDir, onSort
               </span>
             </th>
           ))}
+          <th style={{ ...thStyle, cursor: "default" }} />
         </tr>
       </thead>
       <tbody>
@@ -744,6 +902,9 @@ function TeamOffersTable({ rows, onEdit, onOpenProfile, sortKey, sortDir, onSort
                 </td>
               );
             })}
+            <td style={{ ...tdStyle, borderRight: "none", textAlign: "center" }}>
+              <RemoveOfferButton row={r} onRemove={onRemove} />
+            </td>
           </tr>
         ))}
       </tbody>
@@ -781,7 +942,9 @@ export default function OfferTracker({ onBack }) {
   const [sortDir, setSortDir] = useState("asc");
   const [search, setSearch] = useState("");
   const [stateFilter, setStateFilter] = useState("");
+  const [positionFilter, setPositionFilter] = useState("");
   const [profilePlayer, setProfilePlayer] = useState(null);
+  const [adding, setAdding] = useState(false);
 
   const tracker = useOfferTracker();
   const activeClassYear = classYear || tracker.classYears[tracker.classYears.length - 1] || null;
@@ -803,6 +966,11 @@ export default function OfferTracker({ onBack }) {
     [allTeamRows]
   );
 
+  const positionOptions = useMemo(() => {
+    const present = new Set(allTeamRows.map((r) => normalizePosition(r.position)));
+    return ["QB", "RB", "WR", "TE", "OL", "DL", "LB", "CB", "SAF", "ATH"].filter((p) => present.has(p));
+  }, [allTeamRows]);
+
   const teamRows = useMemo(() => {
     const q = search.trim().toLowerCase();
     let rows = allTeamRows;
@@ -820,6 +988,9 @@ export default function OfferTracker({ onBack }) {
     if (stateFilter) {
       rows = rows.filter((r) => r.state === stateFilter);
     }
+    if (positionFilter) {
+      rows = rows.filter((r) => normalizePosition(r.position) === positionFilter);
+    }
     return [...rows].sort((a, b) => {
       if (sortKey === "dateOffered") {
         const at = parseOfferDate(a.dateOffered);
@@ -834,7 +1005,7 @@ export default function OfferTracker({ onBack }) {
       const cmp = STRING_SORT_KEYS.has(sortKey) ? av.localeCompare(bv) : (parseFloat(av) || 0) - (parseFloat(bv) || 0);
       return sortDir === "desc" ? -cmp : cmp;
     });
-  }, [allTeamRows, search, stateFilter, sortKey, sortDir]);
+  }, [allTeamRows, search, stateFilter, positionFilter, sortKey, sortDir]);
 
   function handleSort(key) {
     if (key === sortKey) {
@@ -854,9 +1025,10 @@ export default function OfferTracker({ onBack }) {
   }
 
   const teamAccent = activeTeamMeta?.color;
-  const teamTextAccent = textAccentFor(activeTeamMeta);
+  const teamTextAccent = textAccentFor(activeTeamMeta, theme);
 
   return (
+    <ThemeContext.Provider value={theme}>
     <div
       className="app-shell"
       data-theme={theme}
@@ -956,6 +1128,7 @@ export default function OfferTracker({ onBack }) {
                       setConference(c);
                       setSelectedTeam(null);
                       setStateFilter("");
+                      setPositionFilter("");
                     }}
                     style={{
                       background: c === conference ? "var(--accent-bg)" : "var(--bg-surface)",
@@ -997,6 +1170,7 @@ export default function OfferTracker({ onBack }) {
                         onClick={() => {
                           setSelectedTeam(team);
                           setStateFilter("");
+                      setPositionFilter("");
                         }}
                         style={{
                           background: active ? color || "var(--accent)" : "var(--bg-surface)",
@@ -1031,16 +1205,40 @@ export default function OfferTracker({ onBack }) {
                       <option key={s} value={s}>{s}</option>
                     ))}
                   </select>
+                  <select value={positionFilter} onChange={(e) => setPositionFilter(e.target.value)} style={filterSelectStyle}>
+                    <option value="">All Positions</option>
+                    {positionOptions.map((p) => (
+                      <option key={p} value={p}>{p}</option>
+                    ))}
+                  </select>
                   <span style={{ fontSize: 12.5, color: "var(--text-faint)", marginLeft: "auto" }}>
                     {teamRows.length} of {allTeamRows.length}
                   </span>
+                  <button
+                    onClick={() => setAdding((a) => !a)}
+                    style={{
+                      display: "flex", alignItems: "center", gap: 6, background: "var(--accent-bg)", border: "1px solid var(--accent)",
+                      color: "var(--accent)", borderRadius: 5, padding: "7px 12px", fontSize: 13, fontWeight: 700, cursor: "pointer",
+                    }}
+                  >
+                    <Plus size={14} /> Add offer
+                  </button>
                 </div>
+
+                {adding && (
+                  <AddOfferForm
+                    teamLabel={activeTeamMeta?.label || ""}
+                    onAdd={(fields) => tracker.addOffer(activeClassYear, activeTeam, fields)}
+                    onClose={() => setAdding(false)}
+                  />
+                )}
 
                 <div style={{ flex: 1, minHeight: 0, overflow: "auto", border: "1px solid var(--border)", borderRadius: 6, marginBottom: "var(--gutter)" }}>
                   <TeamOffersTable
                     rows={teamRows}
                     onEdit={(row, field, value) => tracker.updateOfferField(row, field, value)}
                     onOpenProfile={(player) => setProfilePlayer(player)}
+                    onRemove={(row) => tracker.removeOffer(row)}
                     sortKey={sortKey}
                     sortDir={sortDir}
                     onSort={handleSort}
@@ -1084,5 +1282,6 @@ export default function OfferTracker({ onBack }) {
         />
       )}
     </div>
+    </ThemeContext.Provider>
   );
 }

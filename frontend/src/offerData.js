@@ -5,6 +5,7 @@ import {
   getDocs,
   onSnapshot,
   query,
+  setDoc,
   updateDoc,
   where,
   writeBatch,
@@ -209,10 +210,15 @@ export async function importWorkbook(file, classYear) {
     const existingQuery = query(collection(db, "offers"), where("classYear", "==", classYear), where("team", "==", teamKey));
     const existingSnap = await getDocs(existingQuery);
     const staleIds = new Set(existingSnap.docs.map((d) => d.id));
+    // An offer someone removed as inaccurate stays removed: it isn't
+    // deleted (so we still know to skip it) and isn't re-imported.
+    const removedIds = new Set(existingSnap.docs.filter((d) => d.data().removed).map((d) => d.id));
+    removedIds.forEach((id) => staleIds.delete(id));
 
     for (const record of records) {
       const id = offerDocId(classYear, teamKey, record.player);
       staleIds.delete(id);
+      if (removedIds.has(id)) continue;
       operations.push({
         type: "set",
         id,
@@ -258,6 +264,30 @@ const FEED_COLLEGE_TO_TEAM = {
   "CENTRAL MICHIGAN": "CMU",
 };
 
+// How the feed's "All Offer Schools" column spells every school we already
+// track (MAC, MVC, Ivy). Matched exactly, not fuzzily -- "Toledo (Spain)"
+// is a different school from Toledo. Anything not listed is an "other
+// offer": a school outside the conferences we track.
+const TRACKED_SCHOOL_NAMES = new Set([
+  "Central Michigan University", "Bowling Green", "Western Michigan University", "Eastern Michigan University",
+  "California State University - Sacramento", "Ball State University", "University of Akron", "Ohio", "Toledo",
+  "Miami University (OH)", "Kent State University", "University of Massachusetts", "University at Buffalo",
+  "North Dakota State University", "South Dakota State University", "University of South Dakota",
+  "University of North Dakota", "Illinois State University", "Southern Illinois University Carbondale",
+  "Indiana State University", "Youngstown State University", "University of Northern Iowa", "Murray State University",
+  "Columbia University", "Cornell University", "Yale University", "Princeton University", "Harvard University",
+  "Dartmouth College", "University of Pennsylvania", "Brown University",
+].map((n) => n.toUpperCase()));
+
+function otherOffersFromFeed(allOfferSchools) {
+  const seen = new Set();
+  return (allOfferSchools || "")
+    .split(",")
+    .map((n) => n.trim())
+    .filter((n) => n && !TRACKED_SCHOOL_NAMES.has(n.toUpperCase()) && !seen.has(n.toUpperCase()) && seen.add(n.toUpperCase()))
+    .sort((a, b) => a.localeCompare(b));
+}
+
 // "2026-09-18T00:00:00+00:00" -> "9/18/2026", the same M/D/YYYY text the
 // boards already use (the date part is taken as written, so no timezone
 // shift can move it a day).
@@ -285,7 +315,7 @@ export async function importActivityFeed(file, { dryRun = false } = {}) {
     throw new Error("This doesn't look like an activity feed -- expected Name, Grad Year and Recruiting College columns.");
   }
 
-  const summary = { created: 0, updated: 0, commitmentsApplied: 0, years: [], skippedColleges: [] };
+  const summary = { created: 0, updated: 0, commitmentsApplied: 0, otherOffersUpdated: 0, years: [], skippedColleges: [] };
   const skipped = new Set();
 
   const events = [];
@@ -299,6 +329,18 @@ export async function importActivityFeed(file, { dryRun = false } = {}) {
     events.push({ ...r, team, classYear: r["Grad Year"], day: r["Date"].slice(0, 10) });
   });
   summary.skippedColleges = [...skipped];
+
+  // Each row's "All Offer Schools" is that recruit's full offer list as of
+  // the row's date, so the most recent row per player has the freshest one.
+  const otherOffersByPlayer = new Map(); // key -> { day, list }
+  feedRows.forEach((r) => {
+    if (!r["Name"] || !r["Grad Year"] || !r["All Offer Schools"]) return;
+    const k = `${r["Grad Year"]}|${normalizePlayerKey(r["Name"])}`;
+    const day = r["Date"].slice(0, 10);
+    const cur = otherOffersByPlayer.get(k);
+    if (!cur || day >= cur.day) otherOffersByPlayer.set(k, { day, list: otherOffersFromFeed(r["All Offer Schools"]) });
+  });
+
   const years = [...new Set(events.map((e) => e.classYear))].sort();
   summary.years = years;
   if (!events.length) return summary;
@@ -359,6 +401,7 @@ export async function importActivityFeed(file, { dryRun = false } = {}) {
     const position = normalizePosition(e["Position"]);
     const dateText = feedDateToText(e.offerDay || e.day);
     const found = existingByTeamPlayer.get(k);
+    if (found && found.removed) return;
     if (found) {
       const fill = {};
       if (!found.highSchool && cleanSchool) fill.highSchool = cleanSchool.toUpperCase();
@@ -397,7 +440,7 @@ export async function importActivityFeed(file, { dryRun = false } = {}) {
   // theirs (any team, including ones this feed doesn't cover) and
   // every row created above.
   commitmentByPlayer.forEach((status, pk) => {
-    (existingByPlayer.get(pk) || []).forEach((d) => {
+    (existingByPlayer.get(pk) || []).filter((d) => !d.removed).forEach((d) => {
       const current = (d.status || "").trim().toUpperCase();
       if (current !== status && (status || isCommitment(current))) {
         patch(d.id, { status, updatedAt: now });
@@ -406,6 +449,21 @@ export async function importActivityFeed(file, { dryRun = false } = {}) {
     });
     newDocs.forEach((doc0) => {
       if (`${doc0.classYear}|${normalizePlayerKey(doc0.player)}` === pk) doc0.status = status;
+    });
+  });
+
+  // Other offers are a fact about the recruit too: every row of theirs
+  // (existing or just created) carries the same list.
+  const sameList = (a, b) => (a || []).join("|") === (b || []).join("|");
+  otherOffersByPlayer.forEach(({ list }, pk) => {
+    (existingByPlayer.get(pk) || []).filter((d) => !d.removed).forEach((d) => {
+      if (!sameList(d.otherOffers, list)) {
+        patch(d.id, { otherOffers: list, updatedAt: now });
+        summary.otherOffersUpdated += 1;
+      }
+    });
+    newDocs.forEach((doc0) => {
+      if (`${doc0.classYear}|${normalizePlayerKey(doc0.player)}` === pk) doc0.otherOffers = list;
     });
   });
 
@@ -436,7 +494,7 @@ export function useOfferTracker() {
     const unsubscribe = onSnapshot(
       collection(db, "offers"),
       (snap) => {
-        setDocs(snap.docs.map((d) => ({ id: d.id, ...(d.data() || {}) })));
+        setDocs(snap.docs.map((d) => ({ id: d.id, ...(d.data() || {}) })).filter((d) => !d.removed));
         setReady(true);
       },
       () => setReady(true)
@@ -492,6 +550,44 @@ export function useOfferTracker() {
   function rowsForPlayer(classYear, player) {
     const key = normalizePlayerKey(player);
     return effectiveDocs.filter((d) => d.classYear === classYear && normalizePlayerKey(d.player) === key);
+  }
+
+  // Hides one team's offer for a recruit -- for when that school's
+  // offer turns out to be inaccurate. Kept in the database, flagged
+  // removed, rather than deleted: otherwise the next upload would just
+  // bring it back, and this way both uploads know to skip it.
+  async function removeOffer(row) {
+    await updateDoc(doc(db, "offers", row.id), { removed: true, removedAt: new Date().toISOString() });
+  }
+
+  // Adds an offer by hand. If the recruit is already on another team's
+  // board, their school/state/position are reused so the two can't
+  // disagree. Adding back an offer that was removed brings it back.
+  async function addOffer(classYear, team, fields) {
+    const meta = TEAM_CONFERENCE[team];
+    const player = (fields.player || "").trim();
+    if (!meta || !player) throw new Error("A name is required.");
+    const id = offerDocId(classYear, team, player);
+    if (docs.some((d) => d.id === id || (d.classYear === classYear && d.team === team && normalizePlayerKey(d.player) === normalizePlayerKey(player)))) {
+      throw new Error(`${player} is already on ${meta.label}'s board.`);
+    }
+    const sibling = docs.find((d) => d.classYear === classYear && normalizePlayerKey(d.player) === normalizePlayerKey(player));
+    await setDoc(doc(db, "offers", id), {
+      player: player.toUpperCase(),
+      highSchool: (fields.highSchool || sibling?.highSchool || "").trim().toUpperCase(),
+      state: (fields.state || sibling?.state || "").trim().toUpperCase(),
+      position: normalizePosition(fields.position || sibling?.position || ""),
+      dateOffered: (fields.dateOffered || "").trim(),
+      status: "",
+      pipelineStatus: "",
+      notes: (fields.notes || "").trim(),
+      ...(sibling?.otherOffers ? { otherOffers: sibling.otherOffers } : {}),
+      classYear,
+      team,
+      teamLabel: meta.label,
+      conference: meta.conference,
+      updatedAt: new Date().toISOString(),
+    });
   }
 
   // Edits one field on one row. For a synced field (see SYNCED_FIELDS
@@ -560,5 +656,5 @@ export function useOfferTracker() {
     return { teams, states, counts, stateTotals };
   }
 
-  return { ready, classYears, teamsForConference, rowsForTeam, rowsForPlayer, positionBreakdown, areaBreakdown, importWorkbook, importActivityFeed, updateOfferField };
+  return { ready, classYears, teamsForConference, rowsForTeam, rowsForPlayer, positionBreakdown, areaBreakdown, importWorkbook, importActivityFeed, updateOfferField, removeOffer, addOffer };
 }

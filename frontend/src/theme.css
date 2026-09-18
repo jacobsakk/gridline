@@ -20,6 +20,8 @@
   --success-bg: #1B2A1E;
   --success-border: #33502F;
   --danger: #A23B3B;
+  --danger-bg: #2A1414;
+  --danger-text: #F08A8A;
   --warning: #D9A85C;
   --warning-bg: #241D16;
   --warning-border: #4A3A22;
@@ -43,6 +45,8 @@
   --success-bg: #E5F3E3;
   --success-border: #9FCBA0;
   --danger: #A23B3B;
+  --danger-bg: #FBE6E6;
+  --danger-text: #8A2323;
   --warning: #9C6B1F;
   --warning-bg: #FBF0DD;
   --warning-border: #E8C98A;
