@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { ArrowLeft, Sun, Moon, Upload, X, Loader2, ChevronUp, ChevronDown, ChevronsUpDown, TrendingUp, MapPin, Search, UserSearch } from "lucide-react";
+import { ArrowLeft, Sun, Moon, Upload, X, Loader2, ChevronUp, ChevronDown, ChevronsUpDown, TrendingUp, MapPin, Search } from "lucide-react";
 import cmuHelmet from "./assets/cmu-helmet.png";
 import { CONFERENCE_ORDER, TEAM_CONFERENCE, normalizePosition, useOfferTracker } from "./offerData.js";
 
@@ -95,7 +95,7 @@ function textAccentFor(meta) {
   return lightenForDark(secondary > primary ? meta.colorSecondary : meta.color);
 }
 
-function EditableCell({ value, onCommit, width, upper, titleCase, normalize, style }) {
+function EditableCell({ value, onCommit, width, upper, titleCase, normalize, style, autoFocus, onDone }) {
   const display = (v) => (titleCase ? toTitleCase(v) : v || "");
   const [text, setText] = useState(display(value));
   const [dirty, setDirty] = useState(false);
@@ -107,6 +107,7 @@ function EditableCell({ value, onCommit, width, upper, titleCase, normalize, sty
     // anything -- otherwise a display-only reformat like title-casing
     // would look like a change on every blur and fire a write (and,
     // for a synced field, a cross-team write) with nothing to say.
+    if (onDone) onDone();
     if (!dirty) return;
     setDirty(false);
     let next = text.trim();
@@ -117,6 +118,7 @@ function EditableCell({ value, onCommit, width, upper, titleCase, normalize, sty
 
   return (
     <input
+      autoFocus={autoFocus}
       value={text}
       onChange={(e) => {
         setDirty(true);
@@ -132,9 +134,44 @@ function EditableCell({ value, onCommit, width, upper, titleCase, normalize, sty
   );
 }
 
+// A click opens the recruit's cross-team profile (same as clicking a
+// name in the Pre-Portal Tracker); double-click swaps in a text box to
+// fix a typo, and it drops back to the link when you click away.
+function PlayerNameCell({ player, width, onOpenProfile, onCommit }) {
+  const [editing, setEditing] = useState(false);
+
+  if (editing) {
+    return (
+      <EditableCell
+        value={player}
+        titleCase
+        width={width}
+        autoFocus
+        onCommit={onCommit}
+        onDone={() => setEditing(false)}
+      />
+    );
+  }
+  return (
+    <span
+      className="player-name"
+      onClick={onOpenProfile}
+      onDoubleClick={() => setEditing(true)}
+      title="Click to view this recruit across every team -- double-click to edit the name"
+      style={{ display: "inline-block", width, padding: "5px 7px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
+    >
+      {toTitleCase(player)}
+    </span>
+  );
+}
+
 function PipelineSelect({ value, onCommit, width }) {
-  const current = (value || "").trim();
-  const isKnown = !current || PIPELINE_OPTIONS.some((o) => o.toLowerCase() === current.toLowerCase());
+  const raw = (value || "").trim();
+  // Imported data is all caps ("1 - SOLID STARTER") and a <select> only
+  // matches an option's exact text, so point it at the canonical option.
+  const canonical = PIPELINE_OPTIONS.find((o) => o.toLowerCase() === raw.toLowerCase());
+  const current = canonical || raw;
+  const isKnown = !raw || !!canonical;
 
   return (
     <select
@@ -330,7 +367,9 @@ function PlayerProfileModal({ player, classYear, tracker, onClose }) {
                           <span style={{ color: "var(--text-faint)" }}>—</span>
                         )}
                       </td>
-                      <td style={tdStyle}>{r.pipelineStatus || "—"}</td>
+                      <td style={tdStyle}>
+                        {PIPELINE_OPTIONS.find((o) => o.toLowerCase() === (r.pipelineStatus || "").trim().toLowerCase()) || r.pipelineStatus || "—"}
+                      </td>
                       <td style={{ ...tdStyle, borderRight: "none" }}>{toTitleCase(r.notes) || "—"}</td>
                     </tr>
                   );
@@ -652,21 +691,12 @@ function TeamOffersTable({ rows, onEdit, onOpenProfile, sortKey, sortDir, onSort
               if (key === "player") {
                 return (
                   <td key={key} style={{ ...tdStyle, fontWeight: 600, color: "var(--text-primary)" }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                      <EditableCell
-                        value={r.player}
-                        titleCase={titleCase}
-                        width={width}
-                        onCommit={(v) => onEdit(r, key, v)}
-                      />
-                      <button
-                        onClick={() => onOpenProfile(r.player)}
-                        title="View this recruit's profile across every team"
-                        style={{ background: "none", border: "none", color: "var(--text-faint)", cursor: "pointer", padding: 3, lineHeight: 0, flexShrink: 0 }}
-                      >
-                        <UserSearch size={14} />
-                      </button>
-                    </div>
+                    <PlayerNameCell
+                      player={r.player}
+                      width={width}
+                      onOpenProfile={() => onOpenProfile(r.player)}
+                      onCommit={(v) => onEdit(r, key, v)}
+                    />
                   </td>
                 );
               }

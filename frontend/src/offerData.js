@@ -92,10 +92,11 @@ export function normalizePosition(rawPosition) {
 // the same real person -- editing these fields on one team's row keeps
 // them in sync everywhere that player appears (same class year),
 // instead of every team's tab drifting into its own version of the
-// truth. dateOffered/pipelineStatus/notes stay per-team on purpose:
-// each school offers on its own date and tracks its own internal read
-// on the recruit.
-const SYNCED_FIELDS = new Set(["player", "highSchool", "state", "position", "status"]);
+// truth. Pipeline is synced too -- it's our own read on the recruit, not
+// that school's, so it shouldn't differ by whose board you're looking
+// at. dateOffered/notes stay per-team on purpose: each school offers
+// on its own date and has its own outreach notes.
+const SYNCED_FIELDS = new Set(["player", "highSchool", "state", "position", "status", "pipelineStatus"]);
 
 function normalizePlayerKey(player) {
   return (player || "").trim().toUpperCase();
@@ -256,8 +257,25 @@ export function useOfferTracker() {
       .sort((a, b) => a.label.localeCompare(b.label));
   }
 
+  // A row with no pipeline of its own takes the one set on the same
+  // recruit's row on another team's sheet, so existing data (where it
+  // was only ever filled in on one sheet) reads consistently without a
+  // migration. A row's own value always wins; editing writes it to
+  // every sheet (see updateOfferField), which removes any conflict.
+  const effectiveDocs = useMemo(() => {
+    const byPlayer = new Map();
+    docs.forEach((d) => {
+      const p = (d.pipelineStatus || "").trim();
+      const key = `${d.classYear}|${normalizePlayerKey(d.player)}`;
+      if (p && !byPlayer.has(key)) byPlayer.set(key, p);
+    });
+    return docs.map((d) =>
+      (d.pipelineStatus || "").trim() ? d : { ...d, pipelineStatus: byPlayer.get(`${d.classYear}|${normalizePlayerKey(d.player)}`) || "" }
+    );
+  }, [docs]);
+
   function rowsForTeam(classYear, team) {
-    return docs.filter((d) => d.classYear === classYear && d.team === team);
+    return effectiveDocs.filter((d) => d.classYear === classYear && d.team === team);
   }
 
   // Every team's row for one recruit -- the whole point of tracking
@@ -266,7 +284,7 @@ export function useOfferTracker() {
   // open.
   function rowsForPlayer(classYear, player) {
     const key = normalizePlayerKey(player);
-    return docs.filter((d) => d.classYear === classYear && normalizePlayerKey(d.player) === key);
+    return effectiveDocs.filter((d) => d.classYear === classYear && normalizePlayerKey(d.player) === key);
   }
 
   // Edits one field on one row. For a synced field (see SYNCED_FIELDS
