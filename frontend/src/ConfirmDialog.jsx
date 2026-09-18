@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from "react";
 import { Trash2 } from "lucide-react";
-import cmuHelmet from "./assets/cmu-helmet.png";
 
 // A single app-wide "are you sure?" box. Any screen calls
 // confirmAction({...}) and awaits true/false; <ConfirmHost /> (mounted
@@ -84,9 +83,7 @@ export function ConfirmHost() {
             {req.message && <p style={{ fontSize: 13.5, color: "var(--text-muted)", margin: "8px 0 0", lineHeight: 1.55 }}>{req.message}</p>}
           </div>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 24 }}>
-          <img src={cmuHelmet} alt="" style={{ width: 26, height: 26, objectFit: "contain", opacity: 0.9 }} />
-          <div style={{ flex: 1 }} />
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 8, marginTop: 24 }}>
           <button
             ref={cancelRef}
             onClick={() => close(false)}
