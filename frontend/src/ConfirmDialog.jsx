@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from "react";
+import { Trash2 } from "lucide-react";
+import cmuHelmet from "./assets/cmu-helmet.png";
 
 // A single app-wide "are you sure?" box. Any screen calls
 // confirmAction({...}) and awaits true/false; <ConfirmHost /> (mounted
@@ -62,28 +64,44 @@ export function ConfirmHost() {
         aria-labelledby="confirm-title"
         onClick={(e) => e.stopPropagation()}
         style={{
-          background: "var(--bg-panel)", border: "1px solid var(--border)", borderRadius: 8, width: 400, maxWidth: "100%",
-          padding: 22, color: "var(--text-primary)", boxShadow: "0 16px 40px rgba(0,0,0,0.45)",
+          position: "relative", overflow: "hidden", background: "var(--bg-panel)", border: "1px solid var(--border)",
+          borderRadius: 10, width: 420, maxWidth: "100%", padding: "28px 24px 22px", color: "var(--text-primary)",
+          boxShadow: "0 18px 48px rgba(0,0,0,0.5)",
         }}
       >
-        <h2 id="confirm-title" className="oswald" style={{ fontSize: 18, margin: 0, fontWeight: 700 }}>{req.title}</h2>
-        {req.message && <p style={{ fontSize: 13.5, color: "var(--text-muted)", margin: "10px 0 0", lineHeight: 1.5 }}>{req.message}</p>}
-        <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 20 }}>
+        <div style={{ position: "absolute", left: 0, right: 0, top: 0, height: 4, background: "linear-gradient(90deg, var(--gold), var(--maroon))" }} />
+        <div style={{ display: "flex", gap: 14, alignItems: "flex-start" }}>
+          <div
+            style={{
+              flexShrink: 0, width: 44, height: 44, borderRadius: 999, display: "flex", alignItems: "center", justifyContent: "center",
+              background: "var(--accent-bg)", border: "1px solid var(--accent)", color: "var(--accent)",
+            }}
+          >
+            <Trash2 size={19} />
+          </div>
+          <div style={{ minWidth: 0 }}>
+            <h2 id="confirm-title" className="oswald" style={{ fontSize: 19, margin: 0, fontWeight: 700 }}>{req.title}</h2>
+            {req.message && <p style={{ fontSize: 13.5, color: "var(--text-muted)", margin: "8px 0 0", lineHeight: 1.55 }}>{req.message}</p>}
+          </div>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 24 }}>
+          <img src={cmuHelmet} alt="" style={{ width: 26, height: 26, objectFit: "contain", opacity: 0.9 }} />
+          <div style={{ flex: 1 }} />
           <button
             ref={cancelRef}
             onClick={() => close(false)}
             style={{
-              background: "var(--bg-surface)", border: "1px solid var(--border)", color: "var(--text-primary)",
-              borderRadius: 5, padding: "8px 16px", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
+              background: "transparent", border: "1px solid var(--border)", color: "var(--text-primary)",
+              borderRadius: 6, padding: "9px 18px", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
             }}
           >
-            Cancel
+            Keep
           </button>
           <button
             onClick={() => close(true)}
             style={{
-              background: "var(--danger)", border: "1px solid var(--danger)", color: "#fff",
-              borderRadius: 5, padding: "8px 16px", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit",
+              background: "var(--maroon)", border: "1px solid var(--gold)", color: "var(--gold)",
+              borderRadius: 6, padding: "9px 18px", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit",
             }}
           >
             {req.confirmLabel}
