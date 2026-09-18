@@ -260,6 +260,15 @@ export function useOfferTracker() {
     return docs.filter((d) => d.classYear === classYear && d.team === team);
   }
 
+  // Every team's row for one recruit -- the whole point of tracking
+  // competing schools' boards is seeing who else is after the same
+  // player, so this spans every conference, not just the one currently
+  // open.
+  function rowsForPlayer(classYear, player) {
+    const key = normalizePlayerKey(player);
+    return docs.filter((d) => d.classYear === classYear && normalizePlayerKey(d.player) === key);
+  }
+
   // Edits one field on one row. For a synced field (see SYNCED_FIELDS
   // above), also applies it to every other row in the same class year
   // whose player name matches -- found from the already-loaded `docs`
@@ -326,5 +335,5 @@ export function useOfferTracker() {
     return { teams, states, counts, stateTotals };
   }
 
-  return { ready, classYears, teamsForConference, rowsForTeam, positionBreakdown, areaBreakdown, importWorkbook, updateOfferField };
+  return { ready, classYears, teamsForConference, rowsForTeam, rowsForPlayer, positionBreakdown, areaBreakdown, importWorkbook, updateOfferField };
 }

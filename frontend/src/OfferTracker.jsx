@@ -1,7 +1,16 @@
 import { useMemo, useState } from "react";
-import { ArrowLeft, Sun, Moon, Upload, X, Loader2, ChevronUp, ChevronDown, ChevronsUpDown, TrendingUp, MapPin } from "lucide-react";
+import { ArrowLeft, Sun, Moon, Upload, X, Loader2, ChevronUp, ChevronDown, ChevronsUpDown, TrendingUp, MapPin, Search, UserSearch } from "lucide-react";
 import cmuHelmet from "./assets/cmu-helmet.png";
-import { CONFERENCE_ORDER, normalizePosition, useOfferTracker } from "./offerData.js";
+import { CONFERENCE_ORDER, TEAM_CONFERENCE, normalizePosition, useOfferTracker } from "./offerData.js";
+
+// Pulls the target school out of a status like "COMMITTED TO OHIO
+// STATE" (the source data also has the typo "COMMITED TO X" in
+// places, so both are matched) -- used to build the "Committed To"
+// filter's option list from whatever's actually in the data.
+function extractCommittedSchool(status) {
+  const m = /^COMMI?TT?ED TO (.+)$/i.exec((status || "").trim());
+  return m ? m[1].trim() : null;
+}
 
 const CONFERENCE_LABEL = { MAC: "MAC", MVC: "MVC / MVFC", IVY: "Ivy League" };
 
@@ -27,6 +36,11 @@ function toTitleCase(text) {
 }
 
 const PIPELINE_OPTIONS = ["Reject", "Recruit", "0 - Partial", "1 - Solid Starter", "2 - All Mac Player"];
+
+const filterSelectStyle = {
+  background: "var(--bg-surface)", border: "1px solid var(--border)", color: "var(--text-primary)",
+  borderRadius: 5, padding: "7px 10px", fontSize: 13, fontFamily: "inherit", cursor: "pointer",
+};
 
 function statusStyle(status) {
   const s = (status || "").toUpperCase();
@@ -218,20 +232,106 @@ function UploadModal({ classYears, onClose, onImport }) {
   );
 }
 
+// The whole point of tracking competing schools' boards is seeing who
+// else is after the same recruit -- this shows every team (any
+// conference, not just the one currently open) with a row for this
+// player in this class year.
+function PlayerProfileModal({ player, classYear, tracker, onClose }) {
+  const rows = useMemo(() => tracker.rowsForPlayer(classYear, player), [tracker, classYear, player]);
+  const first = rows[0];
+  if (!first) return null;
+
+  const tdStyle = { padding: "9px 12px", fontSize: 13.5, color: "var(--text-secondary)", borderRight: "1px solid var(--border-faint)" };
+
+  return (
+    <div
+      onClick={onClose}
+      style={{
+        position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", display: "flex",
+        alignItems: "center", justifyContent: "center", padding: 20, zIndex: 60,
+      }}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          background: "var(--bg-panel)", border: "1px solid var(--border)", borderRadius: 8,
+          width: 720, maxWidth: "100%", maxHeight: "85vh", overflowY: "auto",
+        }}
+      >
+        <div style={{ padding: "18px 22px", borderBottom: "1px solid var(--border)", display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
+          <div>
+            <h2 className="oswald" style={{ fontSize: 20, margin: 0, fontWeight: 700 }}>{toTitleCase(first.player)}</h2>
+            <div style={{ fontSize: 13, color: "var(--text-muted)", marginTop: 4 }}>
+              {toTitleCase(first.highSchool) || "—"} · {first.state || "—"} · <span style={{ color: "var(--accent)", fontWeight: 700 }}>{first.position}</span>
+            </div>
+          </div>
+          <button onClick={onClose} style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer", padding: 4, lineHeight: 0 }}>
+            <X size={18} />
+          </button>
+        </div>
+
+        <div style={{ padding: 20 }}>
+          <div style={{ fontSize: 11, color: "var(--text-faint)", letterSpacing: "0.03em", textTransform: "uppercase", marginBottom: 10 }}>
+            Tracked by {rows.length} team{rows.length === 1 ? "" : "s"}
+          </div>
+          <div style={{ border: "1px solid var(--border)", borderRadius: 6, overflowX: "auto" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse" }}>
+              <thead>
+                <tr style={{ background: "var(--bg-surface)" }}>
+                  {["Team", "Date Offered", "Status", "Pipeline", "Notes"].map((h) => (
+                    <th key={h} style={{ textAlign: "left", padding: "9px 12px", fontSize: 11, color: "var(--text-faint)", textTransform: "uppercase", whiteSpace: "nowrap" }}>
+                      {h}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((r) => {
+                  const meta = TEAM_CONFERENCE[r.team];
+                  const style = statusStyle(r.status);
+                  return (
+                    <tr key={r.id} style={{ borderTop: "1px solid var(--border-subtle)" }}>
+                      <td style={{ ...tdStyle, fontWeight: 700, color: meta?.color || "var(--text-primary)" }}>{meta?.label || r.team}</td>
+                      <td style={tdStyle} className="tabular">{r.dateOffered || "—"}</td>
+                      <td style={tdStyle}>
+                        {r.status ? (
+                          <span style={{ ...style, borderRadius: 4, padding: "2px 8px", fontSize: 11.5, fontWeight: 600, whiteSpace: "nowrap" }}>
+                            {toTitleCase(r.status)}
+                          </span>
+                        ) : (
+                          <span style={{ color: "var(--text-faint)" }}>—</span>
+                        )}
+                      </td>
+                      <td style={tdStyle}>{r.pipelineStatus || "—"}</td>
+                      <td style={{ ...tdStyle, borderRight: "none" }}>{toTitleCase(r.notes) || "—"}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 const MEDALS = ["🥇", "🥈", "🥉"];
 
-// Ranks every team's value in one row (one position, or one state) and
-// returns a team -> medal-index (0/1/2) lookup for that row. Ties share
-// a medal rather than one team winning it by row order -- ranked by
-// distinct value, not by team, so two teams both sitting on the row's
-// top count both get gold.
-function medalsForRow(counts, teamKeys) {
-  const tierValues = [...new Set(teamKeys.map((t) => counts[t] || 0).filter((v) => v > 0))]
+// Ranks one TEAM's own values down every row (their own top 3
+// positions, or their own top 3 states) and returns a row-key ->
+// medal-index (0/1/2) lookup -- this is per column, not per row: two
+// teams can each have their own gold position, and a team's #1
+// position has nothing to do with what any other team offers most.
+// Ties share a medal rather than one row winning it by row order.
+function medalsForColumn(rows, team) {
+  const valueByRowKey = new Map(rows.map((r) => [r.key, r.counts[team] || 0]));
+  const tierValues = [...new Set([...valueByRowKey.values()].filter((v) => v > 0))]
     .sort((a, b) => b - a)
     .slice(0, 3);
   const medalByValue = new Map(tierValues.map((v, i) => [v, i]));
-  return (team) => {
-    const v = counts[team] || 0;
+  return (rowKey) => {
+    const v = valueByRowKey.get(rowKey) || 0;
     return v > 0 && medalByValue.has(v) ? medalByValue.get(v) : null;
   };
 }
@@ -314,6 +414,18 @@ function SortableBreakdownTable({ title, rowLabel, rows, teams, maxHeight, defau
   const rowLabelStyle = { textAlign: "left", padding: "7px 10px", fontSize: 13, fontWeight: 700, color: "var(--text-primary)" };
   const teamKeys = teams.map((t) => t.team);
 
+  // One medal lookup per team, each ranking that team's OWN values
+  // across every row -- computed from the full row set, not whatever
+  // order sorting currently shows, so a team's top 3 don't shuffle
+  // depending on how the table happens to be sorted.
+  const medalByTeam = useMemo(() => {
+    const m = {};
+    teamKeys.forEach((team) => {
+      m[team] = medalsForColumn(rows, team);
+    });
+    return m;
+  }, [rows, teamKeys.join("|")]);
+
   return (
     <div>
       <h3 className="oswald" style={{ fontSize: 17, fontWeight: 700, margin: "0 0 12px", color: "var(--accent)" }}>{title}</h3>
@@ -343,12 +455,11 @@ function SortableBreakdownTable({ title, rowLabel, rows, teams, maxHeight, defau
           <tbody>
             {sortedRows.map((row) => {
               const rowMax = Math.max(...teamKeys.map((t) => row.counts[t] || 0), 1);
-              const medalFor = medalsForRow(row.counts, teamKeys);
               return (
                 <tr key={row.key} style={{ borderTop: "1px solid var(--border-subtle)" }}>
                   <td style={rowLabelStyle}>{row.label}</td>
                   {teams.map(({ team, color }) => (
-                    <HeatCell key={team} value={row.counts[team] || 0} max={rowMax} color={color} medal={medalFor(team)} />
+                    <HeatCell key={team} value={row.counts[team] || 0} max={rowMax} color={color} medal={medalByTeam[team](row.key)} />
                   ))}
                   <td style={{ textAlign: "right", padding: "8px 10px", fontSize: 13.5, fontWeight: 700, color: "var(--accent)" }} className="tabular">
                     {row.total}
@@ -453,89 +564,108 @@ function SortIcon({ active, dir }) {
   return dir === "desc" ? <ChevronDown size={13} /> : <ChevronUp size={13} />;
 }
 
-function TeamOffersTable({ rows, onEdit, sortKey, sortDir, onSort, teamColor }) {
+function TeamOffersTable({ rows, onEdit, onOpenProfile, sortKey, sortDir, onSort, teamColor }) {
   const tdStyle = { padding: "4px 10px", fontSize: 13.5, color: "var(--text-secondary)", borderRight: "1px solid var(--border-faint)" };
+  const headerBackground = teamColor ? `color-mix(in srgb, ${teamColor} 22%, var(--bg-surface))` : "var(--bg-surface)";
+  // Sticky against the nearest scrolling ancestor -- the caller wraps
+  // this table in the one div that actually scrolls, with no overflow
+  // (or padding-top -- see Gridline.jsx's own header/table split) on
+  // anything between here and there, so this resolves cleanly.
   const thStyle = {
     textAlign: "left", padding: "9px 10px", fontSize: 11, color: "var(--text-faint)", textTransform: "uppercase",
     whiteSpace: "nowrap", cursor: "pointer", userSelect: "none",
+    position: "sticky", top: 0, background: headerBackground, zIndex: 1,
   };
 
   if (rows.length === 0) {
-    return <div style={{ fontSize: 13, color: "var(--text-faint)", padding: "20px 0" }}>No offers on file for this team yet.</div>;
+    return <div style={{ fontSize: 13, color: "var(--text-faint)", padding: "20px 0" }}>No offers match.</div>;
   }
 
   return (
-    <div style={{ border: "1px solid var(--border)", borderRadius: 6, overflowX: "auto" }}>
-      <table style={{ width: "100%", borderCollapse: "collapse" }}>
-        <thead>
-          <tr
-            style={{
-              background: teamColor ? `color-mix(in srgb, ${teamColor} 22%, var(--bg-surface))` : "var(--bg-surface)",
-              transition: "background 0.2s ease",
-            }}
-          >
-            {FIELDS.map(({ key, label }) => (
-              <th key={key} style={thStyle} onClick={() => onSort(key)}>
-                <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
-                  {label}
-                  <SortIcon active={sortKey === key} dir={sortDir} />
-                </span>
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((r) => (
-            <tr key={r.id} style={{ borderTop: "1px solid var(--border-subtle)" }}>
-              {FIELDS.map(({ key, width, upper, titleCase }) => {
-                if (key === "status") {
-                  const style = statusStyle(r.status);
-                  return (
-                    <td key={key} style={tdStyle}>
-                      <EditableCell
-                        value={r.status}
-                        upper={upper}
-                        titleCase={titleCase}
-                        width={width}
-                        onCommit={(v) => onEdit(r, key, v)}
-                        style={{ ...style, borderRadius: 4, fontWeight: 600, fontSize: 12 }}
-                      />
-                    </td>
-                  );
-                }
-                if (key === "pipelineStatus") {
-                  return (
-                    <td key={key} style={tdStyle}>
-                      <PipelineSelect value={r.pipelineStatus} width={width} onCommit={(v) => onEdit(r, key, v)} />
-                    </td>
-                  );
-                }
+    <table style={{ width: "100%", borderCollapse: "collapse" }}>
+      <thead>
+        <tr>
+          {FIELDS.map(({ key, label }) => (
+            <th key={key} style={thStyle} onClick={() => onSort(key)}>
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
+                {label}
+                <SortIcon active={sortKey === key} dir={sortDir} />
+              </span>
+            </th>
+          ))}
+        </tr>
+      </thead>
+      <tbody>
+        {rows.map((r) => (
+          <tr key={r.id} style={{ borderTop: "1px solid var(--border-subtle)", background: "var(--bg-panel)" }}>
+            {FIELDS.map(({ key, width, upper, titleCase }) => {
+              if (key === "status") {
+                const style = statusStyle(r.status);
                 return (
-                  <td
-                    key={key}
-                    style={{
-                      ...tdStyle,
-                      ...(key === "player" ? { fontWeight: 600, color: "var(--text-primary)" } : null),
-                      ...(key === "position" ? { color: teamColor || "var(--accent)", fontWeight: 700 } : null),
-                    }}
-                    className={key === "dateOffered" ? "tabular" : undefined}
-                  >
+                  <td key={key} style={tdStyle}>
                     <EditableCell
-                      value={key === "position" ? normalizePosition(r[key]) : r[key]}
+                      value={r.status}
                       upper={upper}
                       titleCase={titleCase}
-                      normalize={key === "position" ? normalizePosition : null}
                       width={width}
                       onCommit={(v) => onEdit(r, key, v)}
+                      style={{ ...style, borderRadius: 4, fontWeight: 600, fontSize: 12 }}
                     />
                   </td>
                 );
-              })}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+              }
+              if (key === "pipelineStatus") {
+                return (
+                  <td key={key} style={tdStyle}>
+                    <PipelineSelect value={r.pipelineStatus} width={width} onCommit={(v) => onEdit(r, key, v)} />
+                  </td>
+                );
+              }
+              if (key === "player") {
+                return (
+                  <td key={key} style={{ ...tdStyle, fontWeight: 600, color: "var(--text-primary)" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                      <EditableCell
+                        value={r.player}
+                        titleCase={titleCase}
+                        width={width}
+                        onCommit={(v) => onEdit(r, key, v)}
+                      />
+                      <button
+                        onClick={() => onOpenProfile(r.player)}
+                        title="View this recruit's profile across every team"
+                        style={{ background: "none", border: "none", color: "var(--text-faint)", cursor: "pointer", padding: 3, lineHeight: 0, flexShrink: 0 }}
+                      >
+                        <UserSearch size={14} />
+                      </button>
+                    </div>
+                  </td>
+                );
+              }
+              return (
+                <td
+                  key={key}
+                  style={{
+                    ...tdStyle,
+                    ...(key === "position" ? { color: teamColor || "var(--accent)", fontWeight: 700 } : null),
+                  }}
+                  className={key === "dateOffered" ? "tabular" : undefined}
+                >
+                  <EditableCell
+                    value={key === "position" ? normalizePosition(r[key]) : r[key]}
+                    upper={upper}
+                    titleCase={titleCase}
+                    normalize={key === "position" ? normalizePosition : null}
+                    width={width}
+                    onCommit={(v) => onEdit(r, key, v)}
+                  />
+                </td>
+              );
+            })}
+          </tr>
+        ))}
+      </tbody>
+    </table>
   );
 }
 
@@ -567,6 +697,10 @@ export default function OfferTracker({ onBack }) {
   const [selectedTeam, setSelectedTeam] = useState(null);
   const [sortKey, setSortKey] = useState("player");
   const [sortDir, setSortDir] = useState("asc");
+  const [search, setSearch] = useState("");
+  const [stateFilter, setStateFilter] = useState("");
+  const [committedFilter, setCommittedFilter] = useState("");
+  const [profilePlayer, setProfilePlayer] = useState(null);
 
   const tracker = useOfferTracker();
   const activeClassYear = classYear || tracker.classYears[tracker.classYears.length - 1] || null;
@@ -578,8 +712,36 @@ export default function OfferTracker({ onBack }) {
   const activeTeam = selectedTeam && teams.some((t) => t.team === selectedTeam) ? selectedTeam : teams[0]?.team;
   const activeTeamMeta = teams.find((t) => t.team === activeTeam);
 
+  const allTeamRows = useMemo(
+    () => (activeClassYear && activeTeam ? tracker.rowsForTeam(activeClassYear, activeTeam) : []),
+    [activeClassYear, activeTeam, tracker]
+  );
+
+  const stateOptions = useMemo(
+    () => [...new Set(allTeamRows.map((r) => r.state).filter(Boolean))].sort(),
+    [allTeamRows]
+  );
+  const committedOptions = useMemo(
+    () => [...new Set(allTeamRows.map((r) => extractCommittedSchool(r.status)).filter(Boolean))].sort((a, b) => a.localeCompare(b)),
+    [allTeamRows]
+  );
+
   const teamRows = useMemo(() => {
-    const rows = activeClassYear && activeTeam ? tracker.rowsForTeam(activeClassYear, activeTeam) : [];
+    const q = search.trim().toLowerCase();
+    let rows = allTeamRows;
+    if (q) {
+      rows = rows.filter((r) => (r.player || "").toLowerCase().includes(q) || (r.highSchool || "").toLowerCase().includes(q));
+    }
+    if (stateFilter) {
+      rows = rows.filter((r) => r.state === stateFilter);
+    }
+    if (committedFilter === "__uncommitted") {
+      rows = rows.filter((r) => !r.status);
+    } else if (committedFilter === "__offered") {
+      rows = rows.filter((r) => (r.status || "").trim().toUpperCase() === "OFFERED");
+    } else if (committedFilter) {
+      rows = rows.filter((r) => (extractCommittedSchool(r.status) || "").toLowerCase() === committedFilter.toLowerCase());
+    }
     return [...rows].sort((a, b) => {
       if (sortKey === "dateOffered") {
         const at = parseOfferDate(a.dateOffered);
@@ -594,7 +756,7 @@ export default function OfferTracker({ onBack }) {
       const cmp = STRING_SORT_KEYS.has(sortKey) ? av.localeCompare(bv) : (parseFloat(av) || 0) - (parseFloat(bv) || 0);
       return sortDir === "desc" ? -cmp : cmp;
     });
-  }, [activeClassYear, activeTeam, tracker, sortKey, sortDir]);
+  }, [allTeamRows, search, stateFilter, committedFilter, sortKey, sortDir]);
 
   function handleSort(key) {
     if (key === sortKey) {
@@ -705,13 +867,18 @@ export default function OfferTracker({ onBack }) {
             ))}
           </div>
 
-          <div style={{ flex: 1, minHeight: 0, overflow: "auto", padding: "16px var(--gutter) var(--gutter)" }}>
-            <div style={{ display: "flex", gap: 8, marginBottom: 16, flexWrap: "wrap", alignItems: "center", justifyContent: "space-between" }}>
+          <div style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column", padding: "16px var(--gutter) 0" }}>
+            <div style={{ display: "flex", gap: 8, marginBottom: 16, flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", flexShrink: 0 }}>
               <div style={{ display: "flex", gap: 6 }}>
                 {CONFERENCE_ORDER.map((c) => (
                   <button
                     key={c}
-                    onClick={() => { setConference(c); setSelectedTeam(null); }}
+                    onClick={() => {
+                      setConference(c);
+                      setSelectedTeam(null);
+                      setStateFilter("");
+                      setCommittedFilter("");
+                    }}
                     style={{
                       background: c === conference ? "var(--accent-bg)" : "var(--bg-surface)",
                       border: c === conference ? "1px solid var(--accent)" : "1px solid var(--border)",
@@ -743,13 +910,17 @@ export default function OfferTracker({ onBack }) {
 
             {subView === "teams" ? (
               <>
-                <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 16 }}>
+                <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 12, flexShrink: 0 }}>
                   {teams.map(({ team, label, color }) => {
                     const active = team === activeTeam;
                     return (
                       <button
                         key={team}
-                        onClick={() => setSelectedTeam(team)}
+                        onClick={() => {
+                          setSelectedTeam(team);
+                          setStateFilter("");
+                          setCommittedFilter("");
+                        }}
                         style={{
                           background: active ? color || "var(--accent)" : "var(--bg-surface)",
                           border: `1px solid ${active ? color || "var(--accent)" : "var(--border)"}`,
@@ -763,20 +934,67 @@ export default function OfferTracker({ onBack }) {
                     );
                   })}
                 </div>
-                <TeamOffersTable
-                  rows={teamRows}
-                  onEdit={(row, field, value) => tracker.updateOfferField(row, field, value)}
-                  sortKey={sortKey}
-                  sortDir={sortDir}
-                  onSort={handleSort}
-                  teamColor={teamAccent}
-                />
+
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center", marginBottom: 12, flexShrink: 0 }}>
+                  <div style={{ position: "relative", flex: "1 1 240px", minWidth: 200 }}>
+                    <Search size={14} color="var(--text-faint)" style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} />
+                    <input
+                      value={search}
+                      onChange={(e) => setSearch(e.target.value)}
+                      placeholder="Search name or high school…"
+                      style={{
+                        width: "100%", background: "var(--bg-surface)", border: "1px solid var(--border)", color: "var(--text-primary)",
+                        borderRadius: 5, padding: "7px 10px 7px 30px", fontSize: 13, fontFamily: "inherit",
+                      }}
+                    />
+                  </div>
+                  <select value={stateFilter} onChange={(e) => setStateFilter(e.target.value)} style={filterSelectStyle}>
+                    <option value="">All States</option>
+                    {stateOptions.map((s) => (
+                      <option key={s} value={s}>{s}</option>
+                    ))}
+                  </select>
+                  <select value={committedFilter} onChange={(e) => setCommittedFilter(e.target.value)} style={filterSelectStyle}>
+                    <option value="">Any Status</option>
+                    <option value="__uncommitted">Uncommitted</option>
+                    <option value="__offered">Offered</option>
+                    {committedOptions.map((s) => (
+                      <option key={s} value={s}>Committed to {toTitleCase(s)}</option>
+                    ))}
+                  </select>
+                  <span style={{ fontSize: 12.5, color: "var(--text-faint)", marginLeft: "auto" }}>
+                    {teamRows.length} of {allTeamRows.length}
+                  </span>
+                </div>
+
+                <div style={{ flex: 1, minHeight: 0, overflow: "auto", border: "1px solid var(--border)", borderRadius: 6, marginBottom: "var(--gutter)" }}>
+                  <TeamOffersTable
+                    rows={teamRows}
+                    onEdit={(row, field, value) => tracker.updateOfferField(row, field, value)}
+                    onOpenProfile={(player) => setProfilePlayer(player)}
+                    sortKey={sortKey}
+                    sortDir={sortDir}
+                    onSort={handleSort}
+                    teamColor={teamAccent}
+                  />
+                </div>
               </>
             ) : (
-              <BreakdownTables classYear={activeClassYear} conference={conference} tracker={tracker} />
+              <div style={{ flex: 1, minHeight: 0, overflow: "auto", paddingBottom: "var(--gutter)" }}>
+                <BreakdownTables classYear={activeClassYear} conference={conference} tracker={tracker} />
+              </div>
             )}
           </div>
         </>
+      )}
+
+      {profilePlayer && (
+        <PlayerProfileModal
+          player={profilePlayer}
+          classYear={activeClassYear}
+          tracker={tracker}
+          onClose={() => setProfilePlayer(null)}
+        />
       )}
 
       {uploadOpen && (
