@@ -117,10 +117,24 @@ function normalizePlayerKey(player) {
     .trim();
 }
 
-// "COMMITTED TO X" (the source also has "COMMITED"). A commitment is a
-// fact about the recruit, not about whose board you're looking at.
+// The source spells "committed" many ways (COMITTED, COMMITED, COMTTED,
+// COMMMITTED...), sometimes drops the "TO", and a misspelled one never
+// gets the red commitment styling. Anything that reads as a commitment
+// is rewritten to the canonical "COMMITTED TO SCHOOL"; every other
+// status is left alone.
+const COMMITTED_WORD = /^\s*C+O+M{1,3}I{0,2}T{1,3}E{0,2}D{1,2}\b\s*(?:TOO?\b\s*)?(.*)$/i;
+
+export function normalizeStatus(status) {
+  const text = (status || "").trim();
+  const m = COMMITTED_WORD.exec(text);
+  if (!m || !m[1].trim()) return text;
+  return `COMMITTED TO ${m[1].trim().replace(/\s+/g, " ").toUpperCase()}`;
+}
+
+// A commitment is a fact about the recruit, not about whose board you're
+// looking at.
 function isCommitment(status) {
-  return /^COMMI?TT?ED TO /i.test((status || "").trim());
+  return /^COMMITTED TO /.test(normalizeStatus(status));
 }
 
 function normalizeTeamKey(sheetName) {
@@ -172,7 +186,7 @@ function parseTeamSheet(sheet, teamKey) {
       state: (row[3] || "").toString().trim().toUpperCase(),
       position: normalizePosition((row[4] || "").toString()),
       dateOffered: excelDateToIso(row[5]),
-      status: (row[6] || "").toString().trim(),
+      status: normalizeStatus((row[6] || "").toString()),
       pipelineStatus: (row[7] || "").toString().trim(),
       notes: (row[8] || "").toString().trim(),
     });
@@ -494,7 +508,26 @@ export function useOfferTracker() {
     const unsubscribe = onSnapshot(
       collection(db, "offers"),
       (snap) => {
-        setDocs(snap.docs.map((d) => ({ id: d.id, ...(d.data() || {}) })).filter((d) => !d.removed));
+        setDocs(
+          snap.docs
+            .map((d) => {
+              const data = d.data() || {};
+              return { id: d.id, ...data, status: normalizeStatus(data.status) };
+            })
+            .filter((d) => !d.removed)
+        );
+        // Misspelled commitments already in the database get rewritten
+        // once (shown corrected either way; this keeps the stored value
+        // clean too). Idempotent: nothing is left to fix afterwards.
+        const misspelled = snap.docs.filter((d) => {
+          const raw = (d.data().status || "").trim();
+          return raw && normalizeStatus(raw) !== raw;
+        });
+        for (let i = 0; i < misspelled.length; i += 450) {
+          const batch = writeBatch(db);
+          misspelled.slice(i, i + 450).forEach((d) => batch.update(d.ref, { status: normalizeStatus(d.data().status) }));
+          batch.commit().catch(() => {});
+        }
         setReady(true);
       },
       () => setReady(true)
@@ -595,7 +628,8 @@ export function useOfferTracker() {
   // whose player name matches -- found from the already-loaded `docs`
   // rather than a fresh query, since the whole collection is already
   // held here via the snapshot listener.
-  async function updateOfferField(row, field, value) {
+  async function updateOfferField(row, field, rawValue) {
+    const value = field === "status" ? normalizeStatus(rawValue) : rawValue;
     const updatedAt = new Date().toISOString();
     if (!SYNCED_FIELDS.has(field)) {
       await updateDoc(doc(db, "offers", row.id), { [field]: value, updatedAt });
