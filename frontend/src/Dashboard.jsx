@@ -89,6 +89,7 @@ export default function Dashboard({ onOpenTracker, onOpenSettings }) {
             {CARDS.map(({ key, label, description, icon: Icon }) => (
               <button
                 key={key}
+                className="dashboard-card"
                 onClick={() => onOpenTracker()}
                 style={{
                   display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 10,
@@ -98,8 +99,8 @@ export default function Dashboard({ onOpenTracker, onOpenSettings }) {
                 }}
               >
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%" }}>
-                  <Icon size={22} />
-                  <ChevronRight size={18} />
+                  <Icon className="dashboard-card-icon" size={22} />
+                  <ChevronRight className="dashboard-card-arrow" size={18} />
                 </div>
                 <div>
                   <div className="oswald" style={{ fontSize: 16, fontWeight: 700, letterSpacing: "0.02em" }}>{label.toUpperCase()}</div>
