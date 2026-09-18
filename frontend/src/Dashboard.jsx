@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Settings, Sun, Moon, ClipboardList, ChevronRight, FileSpreadsheet, GraduationCap } from "lucide-react";
-import cmuHelmet from "./assets/cmu-helmet.png";
+import actionC from "./assets/cmu-action-c.png";
+import actionCDark from "./assets/cmu-action-c-dark.png";
+import riseLogo from "./assets/rise-logo.png";
 
 // The main hub -- everything else (the Pre-Portal Tracker and Offer
 // Tracker today, more tools later) is a card here rather than its own
@@ -62,7 +64,7 @@ export default function Dashboard({ onOpenCard, onOpenSettings }) {
         />
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 14, flexWrap: "wrap" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-            <img src={cmuHelmet} alt="Central Michigan Chippewas helmet" style={{ height: 34, width: "auto", flexShrink: 0 }} />
+            <img src={theme === "dark" ? actionCDark : actionC} alt="Central Michigan Action C" style={{ height: 36, width: "auto", flexShrink: 0 }} />
             <h1 className="oswald app-title" style={{ fontSize: 22, fontWeight: 700, margin: 0, letterSpacing: "0.01em" }}>
               Central Michigan Coach Hub
             </h1>
@@ -93,8 +95,8 @@ export default function Dashboard({ onOpenCard, onOpenSettings }) {
         </div>
       </div>
 
-      <div style={{ flex: 1, minHeight: 0, overflow: "auto", padding: "24px var(--gutter) var(--gutter)" }}>
-        <div style={{ maxWidth: 1100, margin: "0 auto" }}>
+      <div style={{ flex: 1, minHeight: 0, overflow: "auto", padding: "24px var(--gutter) var(--gutter)", display: "flex", flexDirection: "column" }}>
+        <div style={{ maxWidth: 1100, width: "100%", margin: "0 auto" }}>
           <h2 className="oswald" style={{ fontSize: 26, fontWeight: 700, margin: "0 0 20px", letterSpacing: "0.01em" }}>
             Dashboard
           </h2>
@@ -123,6 +125,14 @@ export default function Dashboard({ onOpenCard, onOpenSettings }) {
               </button>
             ))}
           </div>
+        </div>
+
+        <div style={{ flex: 1, minHeight: 190, display: "flex", alignItems: "center", justifyContent: "center", padding: "36px 0 12px" }}>
+          <img
+            src={riseLogo}
+            alt="RISE"
+            style={{ width: "min(240px, 58%)", height: "auto", animation: "card-rise 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) 450ms backwards" }}
+          />
         </div>
       </div>
     </div>
