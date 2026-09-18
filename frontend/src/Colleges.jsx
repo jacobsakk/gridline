@@ -174,7 +174,7 @@ function CollegeListPanel({ onOpen }) {
           </div>
         </div>
         <div style={{ overflow: "auto", flex: 1, minHeight: 0 }}>
-          <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 560 }}>
+          <table style={{ width: "100%", borderCollapse: "separate", borderSpacing: 0, minWidth: 560 }}>
             <thead>
               <tr>
                 {COLUMNS.map(({ key, label }) => (
@@ -320,7 +320,7 @@ function StandingsPanel({ onOpen }) {
       </div>
 
       <div style={{ overflow: "auto", flex: 1, minHeight: 0 }}>
-        <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 420 }}>
+        <table style={{ width: "100%", borderCollapse: "separate", borderSpacing: 0, minWidth: 420 }}>
           <thead>
             <tr>
               <th style={{ ...th, textAlign: "left", paddingLeft: 14 }} colSpan={2}>Team</th>
