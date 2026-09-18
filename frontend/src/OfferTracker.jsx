@@ -1,20 +1,32 @@
 import { useMemo, useState } from "react";
 import { ArrowLeft, Sun, Moon, Upload, X, Loader2, ChevronUp, ChevronDown, ChevronsUpDown, TrendingUp, MapPin } from "lucide-react";
 import cmuHelmet from "./assets/cmu-helmet.png";
-import { CONFERENCE_ORDER, useOfferTracker } from "./offerData.js";
+import { CONFERENCE_ORDER, normalizePosition, useOfferTracker } from "./offerData.js";
 
 const CONFERENCE_LABEL = { MAC: "MAC", MVC: "MVC / MVFC", IVY: "Ivy League" };
 
 const FIELDS = [
-  { key: "player", label: "Player", width: 160 },
-  { key: "highSchool", label: "High School", width: 160 },
+  { key: "player", label: "Player", width: 160, titleCase: true },
+  { key: "highSchool", label: "High School", width: 160, titleCase: true },
   { key: "state", label: "State", width: 70, upper: true },
   { key: "position", label: "Pos", width: 64, upper: true },
   { key: "dateOffered", label: "Date Offered", width: 110 },
-  { key: "status", label: "Status", width: 220 },
-  { key: "pipelineStatus", label: "Pipeline", width: 150 },
-  { key: "notes", label: "Notes", width: 180 },
+  { key: "status", label: "Status", width: 220, titleCase: true },
+  { key: "pipelineStatus", label: "Pipeline", width: 160 },
+  { key: "notes", label: "Notes", width: 180, titleCase: true },
 ];
+
+// CSS text-transform:capitalize only uppercases the first letter of
+// each word -- it can't lowercase the rest, so it does nothing on data
+// that's already ALL CAPS (which is how the source spreadsheet was
+// entered). Actually reformatting the string is the only way to get a
+// normal-looking "Aaron Pegues" instead of "AARON PEGUES", matching
+// how names read in the Pre-Portal Tracker.
+function toTitleCase(text) {
+  return (text || "").toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+const PIPELINE_OPTIONS = ["Reject", "Recruit", "0 - Partial", "1 - Solid Starter", "2 - All Mac Player"];
 
 function statusStyle(status) {
   const s = (status || "").toUpperCase();
@@ -41,15 +53,23 @@ function contrastOn(hex) {
   return brightness > 150 ? "#141414" : "#F5F3EE";
 }
 
-function EditableCell({ value, onCommit, width, upper, style }) {
-  const [text, setText] = useState(value || "");
+function EditableCell({ value, onCommit, width, upper, titleCase, normalize, style }) {
+  const display = (v) => (titleCase ? toTitleCase(v) : v || "");
+  const [text, setText] = useState(display(value));
   const [dirty, setDirty] = useState(false);
 
-  if (!dirty && (value || "") !== text) setText(value || "");
+  if (!dirty && display(value) !== text) setText(display(value));
 
   function commit() {
-    const next = upper ? text.trim().toUpperCase() : text.trim();
+    // Only a real edit (an actual keystroke set `dirty`) should write
+    // anything -- otherwise a display-only reformat like title-casing
+    // would look like a change on every blur and fire a write (and,
+    // for a synced field, a cross-team write) with nothing to say.
+    if (!dirty) return;
     setDirty(false);
+    let next = text.trim();
+    if (upper) next = next.toUpperCase();
+    if (normalize) next = normalize(next);
     if (next !== (value || "")) onCommit(next);
   }
 
@@ -67,6 +87,26 @@ function EditableCell({ value, onCommit, width, upper, style }) {
       className="offer-cell-input"
       style={{ width, ...style }}
     />
+  );
+}
+
+function PipelineSelect({ value, onCommit, width }) {
+  const current = (value || "").trim();
+  const isKnown = !current || PIPELINE_OPTIONS.some((o) => o.toLowerCase() === current.toLowerCase());
+
+  return (
+    <select
+      value={current}
+      onChange={(e) => onCommit(e.target.value)}
+      className="offer-cell-input"
+      style={{ width, cursor: "pointer" }}
+    >
+      <option value="">—</option>
+      {!isKnown && <option value={current}>{current}</option>}
+      {PIPELINE_OPTIONS.map((o) => (
+        <option key={o} value={o}>{o}</option>
+      ))}
+    </select>
   );
 }
 
@@ -178,18 +218,25 @@ function UploadModal({ classYears, onClose, onImport }) {
   );
 }
 
-function HeatCell({ value, max, align, bold, isTop }) {
+// Shaded (and, for the column's leader, colored) in that TEAM's own
+// school color rather than one flat accent wash for every column --
+// makes each team's column scannable at a glance instead of every cell
+// blending into the same tint regardless of whose column it's in.
+function HeatCell({ value, max, color }) {
   const ratio = max > 0 ? value / max : 0;
+  const isTop = value > 0 && value === max;
+  const c = color || "var(--accent)";
   return (
     <td
       className="tabular"
       style={{
-        textAlign: align || "right",
+        textAlign: "right",
         padding: "7px 10px",
         fontSize: 13,
-        color: isTop ? "var(--accent)" : "var(--text-secondary)",
-        fontWeight: bold || isTop ? 700 : 400,
-        background: value > 0 ? `color-mix(in srgb, var(--accent) ${Math.round(ratio * 55)}%, transparent)` : "transparent",
+        color: isTop ? contrastOn(color) : "var(--text-secondary)",
+        fontWeight: isTop ? 700 : 400,
+        background: value > 0 ? `color-mix(in srgb, ${c} ${Math.round(18 + ratio * 65)}%, var(--bg-panel))` : "transparent",
+        transition: "background 0.2s ease",
       }}
     >
       {value || 0}
@@ -197,15 +244,17 @@ function HeatCell({ value, max, align, bold, isTop }) {
   );
 }
 
-function TrendCard({ icon: Icon, label, value, sub }) {
+function TrendCard({ icon: Icon, label, value, sub, color }) {
+  const accent = color || "var(--accent)";
   return (
     <div
       style={{
-        display: "flex", flexDirection: "column", gap: 4, background: "var(--accent-bg)",
-        border: "1px solid var(--accent)", borderRadius: 8, padding: "14px 18px", minWidth: 170,
+        display: "flex", flexDirection: "column", gap: 4,
+        background: color ? `color-mix(in srgb, ${accent} 16%, var(--bg-panel))` : "var(--accent-bg)",
+        border: `1px solid ${accent}`, borderRadius: 8, padding: "14px 18px", minWidth: 170,
       }}
     >
-      <span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, color: "var(--accent)", letterSpacing: "0.03em", textTransform: "uppercase" }}>
+      <span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, color: accent, letterSpacing: "0.03em", textTransform: "uppercase" }}>
         <Icon size={13} /> {label}
       </span>
       <span className="oswald" style={{ fontSize: 22, fontWeight: 700, color: "var(--text-primary)" }}>{sub}</span>
@@ -219,10 +268,10 @@ function BreakdownTables({ classYear, conference, tracker }) {
   const areaData = useMemo(() => tracker.areaBreakdown(classYear, conference), [classYear, conference, tracker]);
 
   const topTeamPos = useMemo(() => {
-    let best = { team: null, label: "", n: -1 };
-    posData.teams.forEach(({ team, label }) => {
+    let best = { team: null, label: "", color: null, n: -1 };
+    posData.teams.forEach(({ team, label, color }) => {
       const n = posData.totals[team] || 0;
-      if (n > best.n) best = { team, label, n };
+      if (n > best.n) best = { team, label, color, n };
     });
     return best;
   }, [posData]);
@@ -243,7 +292,7 @@ function BreakdownTables({ classYear, conference, tracker }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 28 }}>
       <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-        <TrendCard icon={TrendingUp} label="Most Active" value={`${topTeamPos.n} offers`} sub={topTeamPos.label || "—"} />
+        <TrendCard icon={TrendingUp} label="Most Active" value={`${topTeamPos.n} offers`} sub={topTeamPos.label || "—"} color={topTeamPos.color} />
         <TrendCard icon={MapPin} label="Top State" value={`${areaData.stateTotals[topState] || 0} offers`} sub={topState || "—"} />
         <TrendCard icon={TrendingUp} label="Top Position" value={`${topPosition.n} offers`} sub={topPosition.pos || "—"} />
       </div>
@@ -255,8 +304,8 @@ function BreakdownTables({ classYear, conference, tracker }) {
             <thead>
               <tr style={{ background: "var(--bg-surface)" }}>
                 <th style={{ ...thStyle, textAlign: "left" }}>Position</th>
-                {posData.teams.map(({ team, label }) => (
-                  <th key={team} style={thStyle}>{label}</th>
+                {posData.teams.map(({ team, label, color }) => (
+                  <th key={team} style={{ ...thStyle, color, borderBottom: `2px solid ${color || "var(--border)"}` }}>{label}</th>
                 ))}
               </tr>
             </thead>
@@ -266,17 +315,17 @@ function BreakdownTables({ classYear, conference, tracker }) {
                 return (
                   <tr key={pos} style={{ borderTop: "1px solid var(--border-subtle)" }}>
                     <td style={rowLabelStyle}>{pos}</td>
-                    {posData.teams.map(({ team }) => {
+                    {posData.teams.map(({ team, color }) => {
                       const v = posData.counts[pos]?.[team] || 0;
-                      return <HeatCell key={team} value={v} max={rowMax} isTop={v === rowMax && v > 0} />;
+                      return <HeatCell key={team} value={v} max={rowMax} color={color} />;
                     })}
                   </tr>
                 );
               })}
               <tr style={{ borderTop: "2px solid var(--border)", background: "var(--bg-surface)" }}>
                 <td style={rowLabelStyle}>Totals</td>
-                {posData.teams.map(({ team }) => (
-                  <td key={team} style={{ textAlign: "right", padding: "8px 10px", fontSize: 13.5, fontWeight: 700, color: "var(--accent)" }} className="tabular">
+                {posData.teams.map(({ team, color }) => (
+                  <td key={team} style={{ textAlign: "right", padding: "8px 10px", fontSize: 13.5, fontWeight: 700, color: color || "var(--accent)" }} className="tabular">
                     {posData.totals[team] || 0}
                   </td>
                 ))}
@@ -293,8 +342,8 @@ function BreakdownTables({ classYear, conference, tracker }) {
             <thead>
               <tr style={{ background: "var(--bg-surface)" }}>
                 <th style={{ ...thStyle, textAlign: "left" }}>State</th>
-                {areaData.teams.map(({ team, label }) => (
-                  <th key={team} style={thStyle}>{label}</th>
+                {areaData.teams.map(({ team, label, color }) => (
+                  <th key={team} style={{ ...thStyle, color, borderBottom: `2px solid ${color || "var(--border)"}` }}>{label}</th>
                 ))}
                 <th style={thStyle}>Total</th>
               </tr>
@@ -305,9 +354,9 @@ function BreakdownTables({ classYear, conference, tracker }) {
                 return (
                   <tr key={state} style={{ borderTop: "1px solid var(--border-subtle)" }}>
                     <td style={rowLabelStyle}>{state}</td>
-                    {areaData.teams.map(({ team }) => {
+                    {areaData.teams.map(({ team, color }) => {
                       const v = areaData.counts[state]?.[team] || 0;
-                      return <HeatCell key={team} value={v} max={rowMax} isTop={v === rowMax && v > 0} />;
+                      return <HeatCell key={team} value={v} max={rowMax} color={color} />;
                     })}
                     <td style={{ textAlign: "right", padding: "8px 10px", fontSize: 13.5, fontWeight: 700, color: "var(--accent)" }} className="tabular">
                       {areaData.stateTotals[state]}
@@ -362,7 +411,7 @@ function TeamOffersTable({ rows, onEdit, sortKey, sortDir, onSort, teamColor }) 
         <tbody>
           {rows.map((r) => (
             <tr key={r.id} style={{ borderTop: "1px solid var(--border-subtle)" }}>
-              {FIELDS.map(({ key, width, upper }) => {
+              {FIELDS.map(({ key, width, upper, titleCase }) => {
                 if (key === "status") {
                   const style = statusStyle(r.status);
                   return (
@@ -370,10 +419,18 @@ function TeamOffersTable({ rows, onEdit, sortKey, sortDir, onSort, teamColor }) 
                       <EditableCell
                         value={r.status}
                         upper={upper}
+                        titleCase={titleCase}
                         width={width}
                         onCommit={(v) => onEdit(r, key, v)}
                         style={{ ...style, borderRadius: 4, fontWeight: 600, fontSize: 12 }}
                       />
+                    </td>
+                  );
+                }
+                if (key === "pipelineStatus") {
+                  return (
+                    <td key={key} style={tdStyle}>
+                      <PipelineSelect value={r.pipelineStatus} width={width} onCommit={(v) => onEdit(r, key, v)} />
                     </td>
                   );
                 }
@@ -387,7 +444,14 @@ function TeamOffersTable({ rows, onEdit, sortKey, sortDir, onSort, teamColor }) 
                     }}
                     className={key === "dateOffered" ? "tabular" : undefined}
                   >
-                    <EditableCell value={r[key]} upper={upper} width={width} onCommit={(v) => onEdit(r, key, v)} />
+                    <EditableCell
+                      value={key === "position" ? normalizePosition(r[key]) : r[key]}
+                      upper={upper}
+                      titleCase={titleCase}
+                      normalize={key === "position" ? normalizePosition : null}
+                      width={width}
+                      onCommit={(v) => onEdit(r, key, v)}
+                    />
                   </td>
                 );
               })}

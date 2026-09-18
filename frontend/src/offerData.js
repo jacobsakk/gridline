@@ -65,6 +65,29 @@ const SKIP_SHEET_SUBSTRING = /BREAKDOWN|OLD /i;
 const OFFENSE_POSITIONS = new Set(["QB", "RB", "WR", "TE", "OL"]);
 const DEFENSE_POSITIONS = new Set(["DL", "LB", "CB", "SAF"]);
 
+// Same canonical set and mapping as POSITION_MAP in scraper/ncaa_api.py
+// (the Pre-Portal Tracker's own normalization), so the two trackers
+// agree on what a position means. Anything unrecognized -- including a
+// stray state code that leaked into the position column from a
+// data-entry mistake upstream -- buckets into ATH rather than showing
+// up as its own spurious row in the breakdown.
+const POSITION_MAP = {
+  QB: "QB",
+  RB: "RB", FB: "RB",
+  WR: "WR",
+  TE: "TE",
+  OL: "OL", LS: "OL",
+  DL: "DL", DE: "DL", DT: "DL",
+  LB: "LB",
+  CB: "CB",
+  S: "SAF", SAF: "SAF", DB: "SAF",
+  ATH: "ATH",
+};
+
+export function normalizePosition(rawPosition) {
+  return POSITION_MAP[(rawPosition || "").trim().toUpperCase()] || "ATH";
+}
+
 // A recruit who's shown up on more than one competing school's board is
 // the same real person -- editing these fields on one team's row keeps
 // them in sync everywhere that player appears (same class year),
@@ -125,7 +148,7 @@ function parseTeamSheet(sheet, teamKey) {
       player,
       highSchool: (row[2] || "").toString().trim(),
       state: (row[3] || "").toString().trim().toUpperCase(),
-      position: (row[4] || "").toString().trim().toUpperCase(),
+      position: normalizePosition((row[4] || "").toString()),
       dateOffered: excelDateToIso(row[5]),
       status: (row[6] || "").toString().trim(),
       pipelineStatus: (row[7] || "").toString().trim(),
@@ -258,7 +281,14 @@ export function useOfferTracker() {
   // {positions: [...], teams: [{team,label}], counts: {position: {team: n}}, totals: {team: n}, offTotals, defTotals}
   function positionBreakdown(classYear, conference) {
     const teams = teamsForConference(classYear, conference);
-    const rows = docs.filter((d) => d.classYear === classYear && d.conference === conference);
+    // Re-normalized here too (not just at import) as a safety net for
+    // rows imported before this normalization existed -- without a
+    // re-upload, a stray value like a state code sitting in the
+    // position column would otherwise show up as its own row instead
+    // of folding into ATH.
+    const rows = docs
+      .filter((d) => d.classYear === classYear && d.conference === conference)
+      .map((d) => ({ ...d, position: normalizePosition(d.position) }));
     const positions = [...new Set(rows.map((r) => r.position).filter(Boolean))].sort();
     const counts = {};
     const totals = {};
