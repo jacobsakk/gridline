@@ -23,7 +23,7 @@ export const TEAM_CONFERENCE = {
   BGSU: { conference: "MAC", label: "Bowling Green", color: "#4F2C1D", colorSecondary: "#FE5000" },
   WMU: { conference: "MAC", label: "Western Michigan", color: "#532E1F", colorSecondary: "#FFC629" },
   EMU: { conference: "MAC", label: "Eastern Michigan", color: "#006633", colorSecondary: "#046A38" },
-  NIU: { conference: "MAC", label: "Northern Illinois", color: "#C8102E", colorSecondary: "#000000" },
+  "SAC STATE": { conference: "MAC", label: "Sac State", color: "#043927", colorSecondary: "#C4B581" },
   "BALL STATE": { conference: "MAC", label: "Ball State", color: "#BA0C2F", colorSecondary: "#1C1C1C" },
   AKRON: { conference: "MAC", label: "Akron", color: "#00285E", colorSecondary: "#A89968" },
   OHIO: { conference: "MAC", label: "Ohio", color: "#00694E", colorSecondary: "#707372" },
@@ -61,6 +61,10 @@ export const CONFERENCE_ORDER = ["MAC", "MVC", "IVY"];
 // tabs (those get recomputed live from the team rows instead of read).
 const SKIP_SHEET_PATTERN = /^(ASSIGNMENTS|QUESTIONNAIRE)$/i;
 const SKIP_SHEET_SUBSTRING = /BREAKDOWN|OLD /i;
+// Teams that used to be tracked and are deliberately gone (Northern
+// Illinois left the MAC) -- skipped quietly instead of showing up in
+// every upload's "not recognized" list.
+const RETIRED_SHEETS = new Set(["NIU"]);
 
 const OFFENSE_POSITIONS = new Set(["QB", "RB", "WR", "TE", "OL"]);
 const DEFENSE_POSITIONS = new Set(["DL", "LB", "CB", "SAF"]);
@@ -76,11 +80,11 @@ const POSITION_MAP = {
   RB: "RB", FB: "RB",
   WR: "WR",
   TE: "TE",
-  OL: "OL", LS: "OL",
-  DL: "DL", DE: "DL", DT: "DL",
-  LB: "LB",
+  OL: "OL", LS: "OL", OT: "OL", OG: "OL", OC: "OL",
+  DL: "DL", DE: "DL", DT: "DL", EDGE: "DL",
+  LB: "LB", ILB: "LB", OLB: "LB", MLB: "LB",
   CB: "CB",
-  S: "SAF", SAF: "SAF", DB: "SAF",
+  S: "SAF", SAF: "SAF", DB: "SAF", FS: "SAF", SS: "SAF",
   ATH: "ATH",
 };
 
@@ -98,8 +102,24 @@ export function normalizePosition(rawPosition) {
 // on its own date and has its own outreach notes.
 const SYNCED_FIELDS = new Set(["player", "highSchool", "state", "position", "status", "pipelineStatus"]);
 
+// The source workbook has a corrupted-letter problem (an E often comes
+// through as an L: "ANDLRSON"), and a feed spells the same name
+// correctly -- so E and L are treated as the same letter when deciding
+// whether two rows are the same recruit. Suffixes (Jr./III) are kept:
+// "Andrew Davis" and "Andrew Davis Jr." are different players.
 function normalizePlayerKey(player) {
-  return (player || "").trim().toUpperCase();
+  return (player || "")
+    .toUpperCase()
+    .replace(/[^A-Z ]/g, "")
+    .replace(/E/g, "L")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+// "COMMITTED TO X" (the source also has "COMMITED"). A commitment is a
+// fact about the recruit, not about whose board you're looking at.
+function isCommitment(status) {
+  return /^COMMI?TT?ED TO /i.test((status || "").trim());
 }
 
 function normalizeTeamKey(sheetName) {
@@ -177,7 +197,7 @@ export async function importWorkbook(file, classYear) {
 
   for (const sheetName of workbook.SheetNames) {
     const teamKey = normalizeTeamKey(sheetName);
-    if (SKIP_SHEET_PATTERN.test(teamKey) || SKIP_SHEET_SUBSTRING.test(teamKey)) continue;
+    if (SKIP_SHEET_PATTERN.test(teamKey) || SKIP_SHEET_SUBSTRING.test(teamKey) || RETIRED_SHEETS.has(teamKey)) continue;
     const meta = TEAM_CONFERENCE[teamKey];
     if (!meta) {
       summary.skippedSheets.push(sheetName);
@@ -230,6 +250,184 @@ export async function importWorkbook(file, classYear) {
   return summary;
 }
 
+// The feed names schools the way a recruiting site does.
+const FEED_COLLEGE_TO_TEAM = {
+  "MIAMI (OH)": "MIAMI (OH)", "KENT STATE": "KENT STATE", TOLEDO: "TOLEDO", "BOWLING GREEN": "BGSU",
+  "SAC STATE": "SAC STATE", "EASTERN MICHIGAN": "EMU", AKRON: "AKRON", "WESTERN MICHIGAN": "WMU",
+  BUFFALO: "BUFFALO", OHIO: "OHIO", MASSACHUSETTS: "UMASS", UMASS: "UMASS", "BALL STATE": "BALL STATE",
+  "CENTRAL MICHIGAN": "CMU",
+};
+
+// "2026-09-18T00:00:00+00:00" -> "9/18/2026", the same M/D/YYYY text the
+// boards already use (the date part is taken as written, so no timezone
+// shift can move it a day).
+function feedDateToText(iso) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso || "");
+  return m ? `${Number(m[2])}/${Number(m[3])}/${m[1]}` : "";
+}
+
+// Merges a weekly activity feed (one row per player + school, each an
+// offer / commit / de-commit event, with a Grad Year column, so 2027 and
+// 2028 come in together) into the boards. Unlike a workbook upload this
+// never replaces anything: existing rows keep their pipeline, notes and
+// dates, and are only filled in where blank; new offers become new rows;
+// and a commitment (or a de-commit) applies to that recruit on every
+// sheet, since it's a fact about the player.
+export async function importActivityFeed(file, { dryRun = false } = {}) {
+  const text = await file.text();
+  const workbook = XLSX.read(text, { type: "string", raw: true });
+  const feedRows = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { defval: "", raw: true }).map((r) => {
+    const o = {};
+    Object.keys(r).forEach((k) => (o[k.trim()] = String(r[k]).trim()));
+    return o;
+  });
+  if (feedRows.length && !("Recruiting College" in feedRows[0] && "Grad Year" in feedRows[0] && "Name" in feedRows[0])) {
+    throw new Error("This doesn't look like an activity feed -- expected Name, Grad Year and Recruiting College columns.");
+  }
+
+  const summary = { created: 0, updated: 0, commitmentsApplied: 0, years: [], skippedColleges: [] };
+  const skipped = new Set();
+
+  const events = [];
+  feedRows.forEach((r) => {
+    const team = FEED_COLLEGE_TO_TEAM[r["Recruiting College"].toUpperCase()];
+    if (!team) {
+      if (r["Recruiting College"]) skipped.add(r["Recruiting College"]);
+      return;
+    }
+    if (!r["Name"] || !r["Grad Year"]) return;
+    events.push({ ...r, team, classYear: r["Grad Year"], day: r["Date"].slice(0, 10) });
+  });
+  summary.skippedColleges = [...skipped];
+  const years = [...new Set(events.map((e) => e.classYear))].sort();
+  summary.years = years;
+  if (!events.length) return summary;
+
+  const existing = [];
+  for (const year of years) {
+    const snap = await getDocs(query(collection(db, "offers"), where("classYear", "==", year)));
+    snap.docs.forEach((d) => existing.push({ id: d.id, ...d.data() }));
+  }
+  const existingByTeamPlayer = new Map(existing.map((d) => [`${d.classYear}|${d.team}|${normalizePlayerKey(d.player)}`, d]));
+  const existingByPlayer = new Map();
+  existing.forEach((d) => {
+    const k = `${d.classYear}|${normalizePlayerKey(d.player)}`;
+    if (!existingByPlayer.has(k)) existingByPlayer.set(k, []);
+    existingByPlayer.get(k).push(d);
+  });
+
+  // Each recruit's current commitment comes from their most recent
+  // event. On a de-commit row, "Committed" equal to that row's school
+  // means they left it (now uncommitted); a different school is where
+  // they've gone.
+  const eventsByPlayer = new Map();
+  events.forEach((e) => {
+    const k = `${e.classYear}|${normalizePlayerKey(e.Name)}`;
+    if (!eventsByPlayer.has(k)) eventsByPlayer.set(k, []);
+    eventsByPlayer.get(k).push(e);
+  });
+  const commitmentByPlayer = new Map(); // key -> "COMMITTED TO X" | "" (cleared)
+  eventsByPlayer.forEach((list, k) => {
+    const latest = [...list].sort((a, b) => (a.day === b.day ? (a.Type === "offer" ? -1 : 1) : a.day < b.day ? -1 : 1)).pop();
+    const target = latest["Committed"];
+    const decommit = latest["Type"] === "de-commit";
+    if (decommit) {
+      const away = !target || target.toUpperCase() === latest["Recruiting College"].toUpperCase();
+      commitmentByPlayer.set(k, away ? "" : `COMMITTED TO ${target.toUpperCase()}`);
+    } else if (target) {
+      commitmentByPlayer.set(k, `COMMITTED TO ${target.toUpperCase()}`);
+    }
+  });
+
+  const patches = new Map(); // doc id -> fields to update
+  const newDocs = new Map(); // doc id -> full doc
+  const patch = (id, fields) => patches.set(id, { ...(patches.get(id) || {}), ...fields });
+  const now = new Date().toISOString();
+
+  // One board row per player + school: the earliest offer date wins.
+  const teamRows = new Map();
+  events.forEach((e) => {
+    const k = `${e.classYear}|${e.team}|${normalizePlayerKey(e.Name)}`;
+    const cur = teamRows.get(k);
+    const offerDay = e["Type"] === "offer" ? e.day : "";
+    if (!cur) teamRows.set(k, { ...e, offerDay: offerDay || "" });
+    else if (offerDay && (!cur.offerDay || offerDay < cur.offerDay)) cur.offerDay = offerDay;
+  });
+
+  teamRows.forEach((e, k) => {
+    const cleanSchool = e["Current School"].replace(/\s*\([A-Za-z]{2}\)\s*$/, "").trim();
+    const position = normalizePosition(e["Position"]);
+    const dateText = feedDateToText(e.offerDay || e.day);
+    const found = existingByTeamPlayer.get(k);
+    if (found) {
+      const fill = {};
+      if (!found.highSchool && cleanSchool) fill.highSchool = cleanSchool.toUpperCase();
+      if (!found.state && e["School State"]) fill.state = e["School State"].toUpperCase();
+      if (!found.position && position) fill.position = position;
+      if (!found.dateOffered && dateText) fill.dateOffered = dateText;
+      // The feed spells the name correctly; the boards often don't.
+      if (found.player !== e["Name"].toUpperCase()) fill.player = e["Name"].toUpperCase();
+      if (Object.keys(fill).length) {
+        patch(found.id, { ...fill, updatedAt: now });
+        summary.updated += 1;
+      }
+    } else {
+      const id = offerDocId(e.classYear, e.team, e["Name"]);
+      const meta = TEAM_CONFERENCE[e.team];
+      newDocs.set(id, {
+        player: e["Name"].toUpperCase(),
+        highSchool: cleanSchool.toUpperCase(),
+        state: (e["School State"] || "").toUpperCase(),
+        position,
+        dateOffered: dateText,
+        status: "",
+        pipelineStatus: "",
+        notes: "",
+        classYear: e.classYear,
+        team: e.team,
+        teamLabel: meta.label,
+        conference: meta.conference,
+        updatedAt: now,
+      });
+      summary.created += 1;
+    }
+  });
+
+  // Commitments apply to the recruit everywhere: every existing row of
+  // theirs (any team, including ones this feed doesn't cover) and
+  // every row created above.
+  commitmentByPlayer.forEach((status, pk) => {
+    (existingByPlayer.get(pk) || []).forEach((d) => {
+      const current = (d.status || "").trim().toUpperCase();
+      if (current !== status && (status || isCommitment(current))) {
+        patch(d.id, { status, updatedAt: now });
+        summary.commitmentsApplied += 1;
+      }
+    });
+    newDocs.forEach((doc0) => {
+      if (`${doc0.classYear}|${normalizePlayerKey(doc0.player)}` === pk) doc0.status = status;
+    });
+  });
+
+  const operations = [
+    ...[...newDocs].map(([id, data]) => ({ type: "set", id, data })),
+    ...[...patches].map(([id, data]) => ({ type: "update", id, data })),
+  ];
+  if (dryRun) return summary;
+  const commits = [];
+  for (let i = 0; i < operations.length; i += 450) {
+    const batch = writeBatch(db);
+    for (const op of operations.slice(i, i + 450)) {
+      const ref = doc(db, "offers", op.id);
+      if (op.type === "set") batch.set(ref, op.data);
+      else batch.update(ref, op.data);
+    }
+    commits.push(batch.commit());
+  }
+  await Promise.all(commits);
+  return summary;
+}
+
 export function useOfferTracker() {
   const [docs, setDocs] = useState([]);
   const [ready, setReady] = useState(false);
@@ -262,16 +460,25 @@ export function useOfferTracker() {
   // was only ever filled in on one sheet) reads consistently without a
   // migration. A row's own value always wins; editing writes it to
   // every sheet (see updateOfferField), which removes any conflict.
+  //
+  // Same idea for a commitment: if the recruit is "committed to X" on
+  // any sheet, every sheet shows it -- it overrides a blank or a plain
+  // "Offered", but never replaces a commitment a row already has.
   const effectiveDocs = useMemo(() => {
-    const byPlayer = new Map();
+    const pipelineByPlayer = new Map();
+    const commitByPlayer = new Map();
     docs.forEach((d) => {
-      const p = (d.pipelineStatus || "").trim();
       const key = `${d.classYear}|${normalizePlayerKey(d.player)}`;
-      if (p && !byPlayer.has(key)) byPlayer.set(key, p);
+      const p = (d.pipelineStatus || "").trim();
+      if (p && !pipelineByPlayer.has(key)) pipelineByPlayer.set(key, p);
+      if (isCommitment(d.status) && !commitByPlayer.has(key)) commitByPlayer.set(key, d.status.trim());
     });
-    return docs.map((d) =>
-      (d.pipelineStatus || "").trim() ? d : { ...d, pipelineStatus: byPlayer.get(`${d.classYear}|${normalizePlayerKey(d.player)}`) || "" }
-    );
+    return docs.map((d) => {
+      const key = `${d.classYear}|${normalizePlayerKey(d.player)}`;
+      const pipelineStatus = (d.pipelineStatus || "").trim() ? d.pipelineStatus : pipelineByPlayer.get(key) || "";
+      const status = isCommitment(d.status) ? d.status : commitByPlayer.get(key) || d.status;
+      return pipelineStatus === d.pipelineStatus && status === d.status ? d : { ...d, pipelineStatus, status };
+    });
   }, [docs]);
 
   function rowsForTeam(classYear, team) {
@@ -353,5 +560,5 @@ export function useOfferTracker() {
     return { teams, states, counts, stateTotals };
   }
 
-  return { ready, classYears, teamsForConference, rowsForTeam, rowsForPlayer, positionBreakdown, areaBreakdown, importWorkbook, updateOfferField };
+  return { ready, classYears, teamsForConference, rowsForTeam, rowsForPlayer, positionBreakdown, areaBreakdown, importWorkbook, importActivityFeed, updateOfferField };
 }

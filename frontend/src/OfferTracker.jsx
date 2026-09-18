@@ -196,12 +196,15 @@ function UploadModal({ classYears, onClose, onImport }) {
   const [summary, setSummary] = useState(null);
   const [error, setError] = useState(null);
 
+  const isFeed = !!file && /\.csv$/i.test(file.name);
+
   async function handleSubmit(e) {
     e.preventDefault();
-    if (!file || !classYear.trim()) return;
+    if (!file || (!isFeed && !classYear.trim())) return;
     setState("working");
+    setError(null);
     try {
-      const result = await onImport(file, classYear.trim());
+      const result = await onImport(file, classYear.trim(), isFeed);
       setSummary(result);
       setState("done");
     } catch (err) {
@@ -237,13 +240,30 @@ function UploadModal({ classYears, onClose, onImport }) {
 
         {state === "done" ? (
           <div>
-            <p style={{ fontSize: 14, color: "var(--success)", marginTop: 0 }}>
-              Imported {summary.teamsImported} team{summary.teamsImported === 1 ? "" : "s"}, {summary.rowsImported} offer rows.
-            </p>
-            {summary.skippedSheets.length > 0 && (
-              <p style={{ fontSize: 12.5, color: "var(--text-faint)" }}>
-                Skipped sheets not recognized as a team: {summary.skippedSheets.join(", ")}
-              </p>
+            {summary.years ? (
+              <>
+                <p style={{ fontSize: 14, color: "var(--success)", marginTop: 0 }}>
+                  Added {summary.created} new offer row{summary.created === 1 ? "" : "s"} and updated {summary.updated} existing
+                  {summary.commitmentsApplied ? `, and applied ${summary.commitmentsApplied} commitment change${summary.commitmentsApplied === 1 ? "" : "s"} across sheets` : ""}
+                  {" "}(class{summary.years.length === 1 ? "" : "es"} of {summary.years.join(" and ")}).
+                </p>
+                {summary.skippedColleges.length > 0 && (
+                  <p style={{ fontSize: 12.5, color: "var(--text-faint)" }}>
+                    Skipped schools not tracked here: {summary.skippedColleges.join(", ")}
+                  </p>
+                )}
+              </>
+            ) : (
+              <>
+                <p style={{ fontSize: 14, color: "var(--success)", marginTop: 0 }}>
+                  Imported {summary.teamsImported} team{summary.teamsImported === 1 ? "" : "s"}, {summary.rowsImported} offer rows.
+                </p>
+                {summary.skippedSheets.length > 0 && (
+                  <p style={{ fontSize: 12.5, color: "var(--text-faint)" }}>
+                    Skipped sheets not recognized as a team: {summary.skippedSheets.join(", ")}
+                  </p>
+                )}
+              </>
             )}
             <button
               onClick={onClose}
@@ -254,27 +274,31 @@ function UploadModal({ classYears, onClose, onImport }) {
           </div>
         ) : (
           <form onSubmit={handleSubmit}>
-            <label style={{ display: "block", fontSize: 11, color: "var(--text-faint)", marginBottom: 5 }}>Class Year</label>
-            <input
-              value={classYear}
-              onChange={(e) => setClassYear(e.target.value)}
-              placeholder="e.g. 2027"
-              style={{
-                width: "100%", background: "var(--bg-page)", border: "1px solid var(--border)", color: "var(--text-primary)",
-                borderRadius: 5, padding: "8px 10px", fontSize: 14, marginBottom: 16, fontFamily: "inherit",
-              }}
-            />
-            <label style={{ display: "block", fontSize: 11, color: "var(--text-faint)", marginBottom: 5 }}>Workbook (.xlsx)</label>
+            <label style={{ display: "block", fontSize: 11, color: "var(--text-faint)", marginBottom: 5 }}>File (.xlsx workbook or .csv activity feed)</label>
             <input
               type="file"
-              accept=".xlsx"
+              accept=".xlsx,.csv"
               onChange={(e) => setFile(e.target.files?.[0] || null)}
               style={{ width: "100%", fontSize: 13, color: "var(--text-secondary)", marginBottom: 16 }}
             />
+            {!isFeed && (
+              <>
+                <label style={{ display: "block", fontSize: 11, color: "var(--text-faint)", marginBottom: 5 }}>Class Year</label>
+                <input
+                  value={classYear}
+                  onChange={(e) => setClassYear(e.target.value)}
+                  placeholder="e.g. 2027"
+                  style={{
+                    width: "100%", background: "var(--bg-page)", border: "1px solid var(--border)", color: "var(--text-primary)",
+                    borderRadius: 5, padding: "8px 10px", fontSize: 14, marginBottom: 16, fontFamily: "inherit",
+                  }}
+                />
+              </>
+            )}
             <p style={{ fontSize: 12, color: "var(--text-faint)", marginTop: 0 }}>
-              Each recognized team tab replaces that team's rows for this class year -- a player dropped from the
-              export won't linger. Sheets like Assignments, Questionnaire, or the breakdown tabs are skipped
-              automatically.
+              {isFeed
+                ? "Activity feed: every class year in the file is handled together (it has a Grad Year column). Nothing is replaced -- new offers are added, blanks are filled in, and commitments update that recruit on every sheet. Pipeline and notes are left alone."
+                : "Workbook: each recognized team tab replaces that team's rows for this class year, so a player dropped from the export won't linger. Assignments, Questionnaire and breakdown tabs are skipped."}
             </p>
             {error && <p style={{ fontSize: 13, color: "var(--danger)" }}>{error}</p>}
             <button
@@ -1047,7 +1071,12 @@ export default function OfferTracker({ onBack }) {
         <UploadModal
           classYears={tracker.classYears}
           onClose={() => setUploadOpen(false)}
-          onImport={async (file, cy) => {
+          onImport={async (file, cy, isFeed) => {
+            if (isFeed) {
+              const result = await tracker.importActivityFeed(file);
+              if (result.years.length) setClassYear(result.years[0]);
+              return result;
+            }
             const result = await tracker.importWorkbook(file, cy);
             setClassYear(cy);
             return result;
