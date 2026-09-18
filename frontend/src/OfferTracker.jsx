@@ -1,5 +1,6 @@
 import { createContext, useContext, useMemo, useState } from "react";
 import { ArrowLeft, Sun, Moon, Upload, X, Loader2, ChevronUp, ChevronDown, ChevronsUpDown, TrendingUp, MapPin, Search, Plus } from "lucide-react";
+import { confirmAction } from "./ConfirmDialog.jsx";
 import cmuHelmet from "./assets/cmu-helmet.png";
 import { CONFERENCE_ORDER, TEAM_CONFERENCE, normalizePosition, useOfferTracker } from "./offerData.js";
 
@@ -345,10 +346,12 @@ function RemoveOfferButton({ row, onRemove }) {
   const label = TEAM_CONFERENCE[row.team]?.label || row.team;
   return (
     <button
-      onClick={() => {
-        if (window.confirm(`Remove ${toTitleCase(row.player)} from ${label}'s board?\n\nUse this when the offer is inaccurate. It won't come back on future uploads.`)) {
-          onRemove(row);
-        }
+      onClick={async () => {
+        const ok = await confirmAction({
+          title: `Remove ${toTitleCase(row.player)}?`,
+          message: `This takes them off ${label}'s board. Use it when the offer is inaccurate -- it won't come back on future uploads.`,
+        });
+        if (ok) onRemove(row);
       }}
       title={`Remove this offer from ${label}'s board (inaccurate)`}
       style={{ background: "none", border: "none", color: "var(--text-faint)", cursor: "pointer", padding: 4, lineHeight: 0 }}

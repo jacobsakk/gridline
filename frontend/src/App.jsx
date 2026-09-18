@@ -3,11 +3,21 @@ import Dashboard from "./Dashboard.jsx";
 import Gridline from "./Gridline.jsx";
 import SettingsPage from "./SettingsPage.jsx";
 import OfferTracker from "./OfferTracker.jsx";
+import { ConfirmHost } from "./ConfirmDialog.jsx";
 
 // The dashboard is the main hub -- everything else (the tracker today,
 // more tools later per the plan) is a screen you navigate into and back
 // out of, rather than its own separately-hosted page.
 export default function App() {
+  return (
+    <>
+      <Screens />
+      <ConfirmHost />
+    </>
+  );
+}
+
+function Screens() {
   const [view, setView] = useState({ name: "dashboard" });
 
   if (view.name === "tracker") {

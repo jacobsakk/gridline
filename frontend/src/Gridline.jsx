@@ -1,3 +1,4 @@
+import { confirmAction } from "./ConfirmDialog.jsx";
 import { useState, useMemo, useEffect, useRef, Fragment } from "react";
 import { ChevronUp, ChevronDown, ChevronsUpDown, Crown, BadgeCheck, FlaskConical, Star, X, Plus, ExternalLink, Search, Download, Columns3, TrendingUp, GripVertical, Sun, Moon, CheckCircle2, AlertTriangle, ArrowLeft } from "lucide-react";
 import { collection, doc, addDoc, updateDoc, onSnapshot, query, orderBy } from "firebase/firestore";
@@ -558,6 +559,14 @@ function HometownPicker({ value, onCommit }) {
       )}
     </div>
   );
+}
+
+async function confirmRemoveFromWatchlist(watchlist, id, name) {
+  const ok = await confirmAction({
+    title: `Remove ${name}?`,
+    message: "This takes them off your watch list.",
+  });
+  if (ok) watchlist.removePlayer(id);
 }
 
 // One editable row of the watch list grid. Each text field keeps local
@@ -1146,7 +1155,7 @@ function WatchListPanel({ watchlist, onClose, onSelectPlayer, portalStatus }) {
                       key={p.id}
                       p={p}
                       style={{ background: i % 2 === 0 ? "var(--bg-panel)" : "var(--bg-page)", borderTop: "1px solid var(--border-subtle)" }}
-                      onRemove={() => watchlist.removePlayer(p.id)}
+                      onRemove={() => confirmRemoveFromWatchlist(watchlist, p.id, p.player)}
                       onUpdate={(field, value) => watchlist.updateField(p.id, field, value)}
                       onSelect={onSelectPlayer}
                       compareSelected={compareIds.has(p.id)}
@@ -1256,7 +1265,7 @@ function PlayerDetailModal({ sel, onClose, watchlist, portalStatus }) {
               )}
               <button
                 className="watch-toggle"
-                onClick={() => (watched ? watchlist.removePlayer(watched.id) : watchlist.addPlayer(sel))}
+                onClick={() => (watched ? confirmRemoveFromWatchlist(watchlist, watched.id, sel.player) : watchlist.addPlayer(sel))}
                 title={watched ? "Remove from watch list" : "Add to watch list"}
                 style={watchToggleButtonStyle}
               >
@@ -2083,7 +2092,7 @@ export default function Gridline({ onBack, initialSearch }) {
                           onClick={(e) => {
                             e.stopPropagation();
                             const watched = watchlist.players.find((p) => p.player === r.player && p.team === r.team);
-                            if (watched) watchlist.removePlayer(watched.id);
+                            if (watched) confirmRemoveFromWatchlist(watchlist, watched.id, r.player);
                             else watchlist.addPlayer({ player: r.player, team: r.team, division, position: r.position });
                           }}
                           title={watchlist.isWatched(r.player, r.team) ? "Remove from watch list" : "Add to watch list"}
