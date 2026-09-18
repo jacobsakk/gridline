@@ -539,7 +539,7 @@ function PlayerProfileModal({ player, classYear, tracker, onClose }) {
               <span style={{ textTransform: "none", letterSpacing: 0 }}> — schools outside the conferences we track</span>
             </div>
             {otherOffers.length === 0 ? (
-              <span style={{ color: "var(--text-faint)" }}>None on file — load an activity feed to fill this in.</span>
+              <span style={{ color: "var(--text-faint)" }}>Not in any activity feed uploaded so far. This list comes from the feed's All Offer Schools column.</span>
             ) : (
               <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
                 {otherOffers.map((school) => (
