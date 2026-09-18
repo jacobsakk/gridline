@@ -812,7 +812,8 @@ function SortIcon({ active, dir }) {
   return dir === "desc" ? <ChevronDown size={13} /> : <ChevronUp size={13} />;
 }
 
-function TeamOffersTable({ rows, onEdit, onOpenProfile, onRemove, sortKey, sortDir, onSort, teamColor, teamTextColor }) {
+function TeamOffersTable({ rows, onEdit, onOpenProfile, onRemove, sortKey, sortDir, onSort, teamColor, teamTextColor, showTeam }) {
+  const theme = useContext(ThemeContext);
   const tdStyle = { padding: "4px 10px", fontSize: 13.5, color: "var(--text-secondary)", borderRight: "1px solid var(--border-faint)" };
   const headerBackground = teamColor ? `color-mix(in srgb, ${teamColor} 22%, var(--bg-surface))` : "var(--bg-surface)";
   // Sticky against the nearest scrolling ancestor -- the caller wraps
@@ -833,6 +834,14 @@ function TeamOffersTable({ rows, onEdit, onOpenProfile, onRemove, sortKey, sortD
     <table style={{ width: "100%", borderCollapse: "collapse" }}>
       <thead>
         <tr>
+          {showTeam && (
+            <th style={thStyle} onClick={() => onSort("teamLabel")}>
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
+                Team
+                <SortIcon active={sortKey === "teamLabel"} dir={sortDir} />
+              </span>
+            </th>
+          )}
           {FIELDS.map(({ key, label }) => (
             <th key={key} style={thStyle} onClick={() => onSort(key)}>
               <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
@@ -847,6 +856,11 @@ function TeamOffersTable({ rows, onEdit, onOpenProfile, onRemove, sortKey, sortD
       <tbody>
         {rows.map((r) => (
           <tr key={r.id} style={{ borderTop: "1px solid var(--border-subtle)", background: "var(--bg-panel)" }}>
+            {showTeam && (
+              <td style={{ ...tdStyle, fontWeight: 700, whiteSpace: "nowrap", color: textAccentFor(TEAM_CONFERENCE[r.team], theme) || "var(--text-primary)" }}>
+                {TEAM_CONFERENCE[r.team]?.label || r.team}
+              </td>
+            )}
             {FIELDS.map(({ key, width, upper, titleCase }) => {
               if (key === "status") {
                 const style = statusStyle(r.status);
@@ -887,7 +901,9 @@ function TeamOffersTable({ rows, onEdit, onOpenProfile, onRemove, sortKey, sortD
                   key={key}
                   style={{
                     ...tdStyle,
-                    ...(key === "position" ? { color: teamTextColor || "var(--accent)", fontWeight: 700 } : null),
+                    ...(key === "position"
+                      ? { color: (showTeam && textAccentFor(TEAM_CONFERENCE[r.team], theme)) || teamTextColor || "var(--accent)", fontWeight: 700 }
+                      : null),
                   }}
                   className={key === "dateOffered" ? "tabular" : undefined}
                 >
@@ -912,7 +928,7 @@ function TeamOffersTable({ rows, onEdit, onOpenProfile, onRemove, sortKey, sortD
   );
 }
 
-const STRING_SORT_KEYS = new Set(["player", "highSchool", "state", "position", "status", "pipelineStatus", "notes"]);
+const STRING_SORT_KEYS = new Set(["teamLabel", "player", "highSchool", "state", "position", "status", "pipelineStatus", "notes"]);
 
 // Dates come in as free text (M/D/YY, sometimes M/D/YYYY) rather than
 // real Date values, so a plain string sort gets it wrong -- "2/2/26"
@@ -956,10 +972,14 @@ export default function OfferTracker({ onBack }) {
   const activeTeam = selectedTeam && teams.some((t) => t.team === selectedTeam) ? selectedTeam : teams[0]?.team;
   const activeTeamMeta = teams.find((t) => t.team === activeTeam);
 
-  const allTeamRows = useMemo(
-    () => (activeClassYear && activeTeam ? tracker.rowsForTeam(activeClassYear, activeTeam) : []),
-    [activeClassYear, activeTeam, tracker]
-  );
+  // Typing in the search box searches every team in every conference
+  // for the class year; with it empty you browse the selected team.
+  const searching = search.trim() !== "";
+  const allTeamRows = useMemo(() => {
+    if (!activeClassYear) return [];
+    if (searching) return tracker.rowsForClassYear(activeClassYear);
+    return activeTeam ? tracker.rowsForTeam(activeClassYear, activeTeam) : [];
+  }, [activeClassYear, activeTeam, tracker, searching]);
 
   const stateOptions = useMemo(
     () => [...new Set(allTeamRows.map((r) => r.state).filter(Boolean))].sort(),
@@ -1024,8 +1044,8 @@ export default function OfferTracker({ onBack }) {
     });
   }
 
-  const teamAccent = activeTeamMeta?.color;
-  const teamTextAccent = textAccentFor(activeTeamMeta, theme);
+  const teamAccent = searching ? undefined : activeTeamMeta?.color;
+  const teamTextAccent = searching ? null : textAccentFor(activeTeamMeta, theme);
 
   return (
     <ThemeContext.Provider value={theme}>
@@ -1163,12 +1183,13 @@ export default function OfferTracker({ onBack }) {
               <>
                 <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 12, flexShrink: 0 }}>
                   {teams.map(({ team, label, color }) => {
-                    const active = team === activeTeam;
+                    const active = !searching && team === activeTeam;
                     return (
                       <button
                         key={team}
                         onClick={() => {
                           setSelectedTeam(team);
+                          setSearch("");
                           setStateFilter("");
                       setPositionFilter("");
                         }}
@@ -1192,7 +1213,7 @@ export default function OfferTracker({ onBack }) {
                     <input
                       value={search}
                       onChange={(e) => setSearch(e.target.value)}
-                      placeholder="Search name, high school or school committed to…"
+                      placeholder="Search every team — name, high school or school committed to…"
                       style={{
                         width: "100%", background: "var(--bg-surface)", border: "1px solid var(--border)", color: "var(--text-primary)",
                         borderRadius: 5, padding: "7px 10px 7px 30px", fontSize: 13, fontFamily: "inherit",
@@ -1212,8 +1233,9 @@ export default function OfferTracker({ onBack }) {
                     ))}
                   </select>
                   <span style={{ fontSize: 12.5, color: "var(--text-faint)", marginLeft: "auto" }}>
-                    {teamRows.length} of {allTeamRows.length}
+                    {teamRows.length} of {allTeamRows.length}{searching ? " across all teams" : ""}
                   </span>
+                  {!searching && (
                   <button
                     onClick={() => setAdding((a) => !a)}
                     style={{
@@ -1223,9 +1245,10 @@ export default function OfferTracker({ onBack }) {
                   >
                     <Plus size={14} /> Add offer
                   </button>
+                  )}
                 </div>
 
-                {adding && (
+                {adding && !searching && (
                   <AddOfferForm
                     teamLabel={activeTeamMeta?.label || ""}
                     onAdd={(fields) => tracker.addOffer(activeClassYear, activeTeam, fields)}
@@ -1236,6 +1259,7 @@ export default function OfferTracker({ onBack }) {
                 <div style={{ flex: 1, minHeight: 0, overflow: "auto", border: "1px solid var(--border)", borderRadius: 6, marginBottom: "var(--gutter)" }}>
                   <TeamOffersTable
                     rows={teamRows}
+                    showTeam={searching}
                     onEdit={(row, field, value) => tracker.updateOfferField(row, field, value)}
                     onOpenProfile={(player) => setProfilePlayer(player)}
                     onRemove={(row) => tracker.removeOffer(row)}

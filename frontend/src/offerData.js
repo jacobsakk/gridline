@@ -572,6 +572,10 @@ export function useOfferTracker() {
     });
   }, [docs]);
 
+  function rowsForClassYear(classYear) {
+    return effectiveDocs.filter((d) => d.classYear === classYear);
+  }
+
   function rowsForTeam(classYear, team) {
     return effectiveDocs.filter((d) => d.classYear === classYear && d.team === team);
   }
@@ -690,5 +694,5 @@ export function useOfferTracker() {
     return { teams, states, counts, stateTotals };
   }
 
-  return { ready, classYears, teamsForConference, rowsForTeam, rowsForPlayer, positionBreakdown, areaBreakdown, importWorkbook, importActivityFeed, updateOfferField, removeOffer, addOffer };
+  return { ready, classYears, teamsForConference, rowsForClassYear, rowsForTeam, rowsForPlayer, positionBreakdown, areaBreakdown, importWorkbook, importActivityFeed, updateOfferField, removeOffer, addOffer };
 }
