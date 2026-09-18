@@ -1,15 +1,21 @@
 import { useEffect, useMemo, useState } from "react";
-import { ExternalLink, Trophy } from "lucide-react";
+import { ExternalLink, RefreshCw, Trophy } from "lucide-react";
 import { PlayerDetailModal, useWatchlist, usePortalStatus } from "./Gridline.jsx";
 import { PlayerProfileModal, statusStyle, toTitleCase } from "./OfferTracker.jsx";
 import { TEAM_CONFERENCE, isCommitment, normalizePlayerKey, useOfferTracker } from "./offerData.js";
 import {
   COLLEGE_BY_ID,
+  GITHUB_TOKEN_URL,
+  fetchLatestDepthCharts,
   fetchSchedule,
   fetchTeamStats,
   fetchTeamSummary,
+  getGithubToken,
   lazyDepthCharts,
+  nameKey,
   rankFor,
+  refreshDepthCharts,
+  saveGithubToken,
   rosterFor,
   standingFor,
   teamKey,
@@ -466,15 +472,20 @@ function groupPositions(section) {
   return [p];
 }
 
-function DepthChip({ player }) {
+function DepthChip({ player, linked, onOpen }) {
   const bg = player.tag === "transfer" ? "#FFE94D" : player.tag === "freshman" ? "#8FE3FF" : "#FFFFFF";
+  const detail = [player.year, player.rs ? "redshirt" : "", player.tag].filter(Boolean).join(" · ");
   return (
     <div
-      title={[player.year, player.rs ? "redshirt" : "", player.tag].filter(Boolean).join(" · ")}
+      onClick={linked ? onOpen : undefined}
+      title={linked ? `${detail} — click for their Pre-Portal Tracker stats` : `${detail}${detail ? " · " : ""}not in the Pre-Portal Tracker`}
       style={{
         background: bg, color: "#111", borderRadius: 4, padding: "4px 9px", fontSize: 12.5, fontWeight: 600, whiteSpace: "nowrap",
-        border: "1px solid rgba(0,0,0,0.25)",
+        border: "1px solid rgba(0,0,0,0.25)", cursor: linked ? "pointer" : "default",
+        boxShadow: linked ? "0 0 0 2px var(--accent)" : "none", transition: "transform 0.12s ease",
       }}
+      onMouseEnter={(e) => linked && (e.currentTarget.style.transform = "translateY(-1px)")}
+      onMouseLeave={(e) => (e.currentTarget.style.transform = "none")}
     >
       #{player.no} {player.name}
       {player.rs && <span style={{ color: "#D62828", marginLeft: 3 }}>*</span>}
@@ -482,9 +493,106 @@ function DepthChip({ player }) {
   );
 }
 
+function TokenPrompt({ onSave, onClose }) {
+  const [value, setValue] = useState("");
+  const step = { margin: "0 0 6px", fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.5 };
+  return (
+    <div
+      onClick={onClose}
+      style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20, zIndex: 80 }}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={{ background: "var(--bg-panel)", border: "1px solid var(--border)", borderRadius: 10, width: 480, maxWidth: "100%", padding: 22, position: "relative", overflow: "hidden" }}
+      >
+        <div style={{ position: "absolute", left: 0, right: 0, top: 0, height: 4, background: "linear-gradient(90deg, var(--gold), var(--maroon))" }} />
+        <h3 className="oswald" style={{ margin: "6px 0 8px", fontSize: 19 }}>One-time setup for Refresh</h3>
+        <p style={{ ...step, color: "var(--text-muted)", marginBottom: 12 }}>
+          Ourlads can't be read straight from the browser, so Refresh asks GitHub to run the scraper. GitHub needs your permission to do that. The token is saved only in this browser.
+        </p>
+        <ol style={{ margin: "0 0 14px", paddingLeft: 20 }}>
+          <li style={step}>
+            Open <a href={GITHUB_TOKEN_URL} target="_blank" rel="noreferrer" style={{ color: "var(--accent)" }}>GitHub's new token page</a> and give it any name.
+          </li>
+          <li style={step}>Repository access: <strong>Only select repositories</strong> → <strong>gridline</strong>.</li>
+          <li style={step}>Permissions → Repository permissions → <strong>Actions: Read and write</strong>.</li>
+          <li style={step}>Generate the token and paste it here.</li>
+        </ol>
+        <input
+          id="github-token"
+          type="password"
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          placeholder="github_pat_…"
+          autoComplete="off"
+          style={{ width: "100%", background: "var(--bg-surface)", border: "1px solid var(--border)", color: "var(--text-primary)", borderRadius: 6, padding: "9px 12px", fontSize: 13.5, fontFamily: "inherit" }}
+        />
+        <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 16 }}>
+          <button onClick={onClose} style={{ background: "transparent", border: "1px solid var(--border)", color: "var(--text-primary)", borderRadius: 6, padding: "9px 18px", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
+            Cancel
+          </button>
+          <button
+            disabled={!value.trim()}
+            onClick={() => onSave(value.trim())}
+            style={{ background: "var(--maroon)", border: "1px solid var(--gold)", color: "var(--gold)", borderRadius: 6, padding: "9px 18px", fontSize: 13, fontWeight: 700, cursor: value.trim() ? "pointer" : "default", opacity: value.trim() ? 1 : 0.5, fontFamily: "inherit" }}
+          >
+            Save and refresh
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function DepthChartTab({ college }) {
   const charts = useAsync(lazyDepthCharts, []);
-  const team = charts.data?.teams?.[college.id];
+  const [live, setLive] = useState(null); // fresher data than the deployed copy
+  const [refresh, setRefresh] = useState({ running: false, message: "", error: "" });
+  const [askToken, setAskToken] = useState(false);
+  const [selected, setSelected] = useState(null);
+  const watchlist = useWatchlist();
+  const portalStatus = usePortalStatus();
+  const roster = useMemo(() => rosterFor(college), [college]);
+  const rosterByName = useMemo(() => new Map(roster.map((p) => [nameKey(p.player), p])), [roster]);
+
+  // The daily scrape commits to the repo before the site is redeployed, so
+  // quietly check whether GitHub already has something newer.
+  useEffect(() => {
+    if (!charts.data) return;
+    let active = true;
+    fetchLatestDepthCharts()
+      .then((latest) => active && new Date(latest.updated) > new Date(charts.data.updated) && setLive(latest))
+      .catch(() => {});
+    return () => {
+      active = false;
+    };
+  }, [charts.data]);
+
+  const data = live || charts.data;
+  const team = data?.teams?.[college.id];
+
+  async function runRefresh(token) {
+    setRefresh({ running: true, message: "Starting…", error: "" });
+    try {
+      const latest = await refreshDepthCharts(token, (message) => setRefresh((r) => ({ ...r, message })));
+      setLive(latest);
+      setRefresh({ running: false, message: "", error: "" });
+    } catch (err) {
+      if (err.code === "auth") {
+        saveGithubToken("");
+        setRefresh({ running: false, message: "", error: "GitHub rejected the saved token. Add a new one to continue." });
+        setAskToken(true);
+      } else {
+        setRefresh({ running: false, message: "", error: err.message || "Couldn't refresh right now." });
+      }
+    }
+  }
+
+  function onRefreshClick() {
+    const token = getGithubToken();
+    if (!token) setAskToken(true);
+    else runRefresh(token);
+  }
 
   if (charts.loading) return <div style={mutedNote}>Loading depth chart…</div>;
   if (college.division !== "FBS") {
@@ -492,28 +600,37 @@ function DepthChartTab({ college }) {
   }
   if (!team) return <div style={mutedNote}>No depth chart is available for {college.name} yet.</div>;
 
-  const updated = new Date(charts.data.updated).toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" });
+  const updated = new Date(data.updated).toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
+  const buttonStyle = {
+    display: "inline-flex", alignItems: "center", gap: 7, background: "var(--bg-surface)", border: "1px solid var(--border)", color: "var(--text-primary)",
+    borderRadius: 6, padding: "8px 14px", fontSize: 13, fontWeight: 600, textDecoration: "none", fontFamily: "inherit",
+  };
 
   return (
     <div style={{ paddingTop: 20 }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap", marginBottom: 20 }}>
-        <div style={{ fontSize: 12.5, color: "var(--text-faint)" }}>
-          Last updated {updated} · refreshed from Ourlads every morning
-          <span style={{ marginLeft: 14 }}>
-            <Swatch color="#FFE94D" /> transfer <Swatch color="#8FE3FF" /> true freshman <span style={{ color: "#D62828", fontWeight: 700 }}>*</span> redshirt
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap", marginBottom: 8 }}>
+        <div style={{ fontSize: 12.5, color: "var(--text-faint)", lineHeight: 1.8 }}>
+          Last updated {updated} · also refreshed every morning
+          <br />
+          <Swatch color="#FFE94D" /> transfer <Swatch color="#8FE3FF" /> true freshman <span style={{ color: "#D62828", fontWeight: 700 }}>*</span> redshirt
+          <span style={{ marginLeft: 10 }}>
+            <span style={{ display: "inline-block", width: 10, height: 10, borderRadius: 2, background: "#fff", boxShadow: "0 0 0 2px var(--accent)", marginRight: 6, verticalAlign: "-1px" }} />
+            outlined = in the Pre-Portal Tracker (click for stats)
           </span>
         </div>
-        <a
-          href={team.ourladsUrl}
-          target="_blank"
-          rel="noreferrer"
-          style={{
-            display: "inline-flex", alignItems: "center", gap: 7, background: "var(--bg-surface)", border: "1px solid var(--border)", color: "var(--text-primary)",
-            borderRadius: 6, padding: "8px 14px", fontSize: 13, fontWeight: 600, textDecoration: "none",
-          }}
-        >
-          View on Ourlads <ExternalLink size={13} />
-        </a>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          <button onClick={onRefreshClick} disabled={refresh.running} style={{ ...buttonStyle, cursor: refresh.running ? "default" : "pointer", opacity: refresh.running ? 0.75 : 1 }}>
+            <RefreshCw size={14} className={refresh.running ? "spin" : undefined} />
+            {refresh.running ? refresh.message || "Refreshing…" : "Refresh from Ourlads"}
+          </button>
+          <a href={team.ourladsUrl} target="_blank" rel="noreferrer" style={buttonStyle}>
+            View on Ourlads <ExternalLink size={13} />
+          </a>
+        </div>
+      </div>
+      <div style={{ minHeight: 20, marginBottom: 12, textAlign: "right", fontSize: 12.5 }}>
+        {refresh.running && <span style={{ color: "var(--text-muted)" }}>This scrapes every FBS team, so it takes 2–3 minutes. You can keep browsing.</span>}
+        {refresh.error && <span style={{ color: "var(--danger-text)" }}>{refresh.error}</span>}
       </div>
 
       {team.sections.map((section) => (
@@ -534,7 +651,21 @@ function DepthChartTab({ college }) {
                 {group.map((pos) => (
                   <div key={pos.pos} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6, minWidth: 100 }}>
                     <div style={{ fontSize: 12, color: "var(--text-muted)", fontWeight: 600, letterSpacing: "0.04em" }}>{pos.pos}</div>
-                    {pos.players.length === 0 ? <div style={{ color: "var(--text-faint)", fontSize: 12 }}>—</div> : pos.players.map((pl, j) => <DepthChip key={j} player={pl} />)}
+                    {pos.players.length === 0 ? (
+                      <div style={{ color: "var(--text-faint)", fontSize: 12 }}>—</div>
+                    ) : (
+                      pos.players.map((pl, j) => {
+                        const match = rosterByName.get(nameKey(pl.name));
+                        return (
+                          <DepthChip
+                            key={j}
+                            player={pl}
+                            linked={!!match}
+                            onOpen={() => setSelected({ player: match.player, team: match.team, division: match.division, position: match.position })}
+                          />
+                        );
+                      })
+                    )}
                   </div>
                 ))}
               </div>
@@ -542,6 +673,18 @@ function DepthChartTab({ college }) {
           </div>
         </div>
       ))}
+
+      {askToken && (
+        <TokenPrompt
+          onClose={() => setAskToken(false)}
+          onSave={(token) => {
+            saveGithubToken(token);
+            setAskToken(false);
+            runRefresh(token);
+          }}
+        />
+      )}
+      {selected && <PlayerDetailModal sel={selected} onClose={() => setSelected(null)} watchlist={watchlist} portalStatus={portalStatus} />}
     </div>
   );
 }

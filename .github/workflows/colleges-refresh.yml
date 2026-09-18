@@ -4,11 +4,23 @@ name: Colleges refresh
 # the Colleges section -- standings, polls, and the Ourlads depth charts --
 # commits it, and asks the Pages workflow to redeploy. (A push made with the
 # built-in token doesn't trigger other workflows on its own, hence the
-# explicit dispatch.) Also runnable by hand from the Actions tab.
+# explicit dispatch.) Also runnable by hand from the Actions tab, and by the
+# "Refresh from Ourlads" button on a team's Depth Chart tab (only=depth).
 on:
   schedule:
     - cron: "0 10 * * *"
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      only:
+        description: "What to refresh"
+        type: choice
+        default: all
+        options: [all, depth, standings]
+
+# One refresh at a time, so the button and the daily run can't collide.
+concurrency:
+  group: colleges-refresh
+  cancel-in-progress: false
 
 permissions:
   contents: write
@@ -27,7 +39,7 @@ jobs:
 
       - name: Scrape colleges, standings and depth charts
         working-directory: scraper
-        run: python3 colleges.py
+        run: python3 colleges.py ${{ inputs.only || 'all' }}
 
       - name: Commit and redeploy if anything changed
         env:

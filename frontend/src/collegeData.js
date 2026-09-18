@@ -136,6 +136,81 @@ export async function fetchTeamStats(id) {
   };
 }
 
+// ---------------------------------------------------- on-demand Ourlads refresh
+//
+// Ourlads can't be read from the browser (no CORS), so "refresh" asks GitHub
+// to run the scraper (the same workflow that runs every morning), waits for it
+// to finish, then reads the freshly committed file straight from the repo --
+// no redeploy needed to see it.
+
+const REPO = "jacobsakk/gridline";
+const WORKFLOW = "colleges-refresh.yml";
+const TOKEN_KEY = "gridline-github-token";
+const RAW_DEPTH = `https://raw.githubusercontent.com/${REPO}/main/frontend/src/data/depth-charts.json`;
+
+export const GITHUB_TOKEN_URL = "https://github.com/settings/personal-access-tokens/new";
+
+export function getGithubToken() {
+  try {
+    return window.localStorage.getItem(TOKEN_KEY) || "";
+  } catch {
+    return "";
+  }
+}
+export function saveGithubToken(token) {
+  try {
+    if (token) window.localStorage.setItem(TOKEN_KEY, token.trim());
+    else window.localStorage.removeItem(TOKEN_KEY);
+  } catch {
+    /* storage unavailable -- the token just won't be remembered */
+  }
+}
+
+export async function fetchLatestDepthCharts() {
+  const res = await fetch(`${RAW_DEPTH}?t=${Date.now()}`);
+  if (!res.ok) throw new Error(`GitHub returned ${res.status}`);
+  return res.json();
+}
+
+function githubHeaders(token) {
+  return { Authorization: `Bearer ${token}`, Accept: "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28" };
+}
+
+// Starts the depth-chart scrape and resolves once it finishes (or throws).
+// Error.code === "auth" means the saved token was rejected.
+export async function refreshDepthCharts(token, onStatus = () => {}) {
+  const startedAt = Date.now();
+  const dispatch = await fetch(`https://api.github.com/repos/${REPO}/actions/workflows/${WORKFLOW}/dispatches`, {
+    method: "POST",
+    headers: { ...githubHeaders(token), "Content-Type": "application/json" },
+    body: JSON.stringify({ ref: "main", inputs: { only: "depth" } }),
+  });
+  if (dispatch.status === 401 || dispatch.status === 403 || dispatch.status === 404) {
+    const err = new Error("GitHub rejected that token.");
+    err.code = "auth";
+    throw err;
+  }
+  if (!dispatch.ok) throw new Error(`GitHub returned ${dispatch.status}`);
+
+  onStatus("Scraping Ourlads…");
+  const deadline = Date.now() + 8 * 60 * 1000;
+  while (Date.now() < deadline) {
+    await new Promise((r) => setTimeout(r, 8000));
+    const res = await fetch(`https://api.github.com/repos/${REPO}/actions/workflows/${WORKFLOW}/runs?event=workflow_dispatch&per_page=5`, {
+      headers: githubHeaders(token),
+    });
+    if (!res.ok) continue;
+    const { workflow_runs: runs } = await res.json();
+    const run = runs.find((r) => new Date(r.created_at).getTime() >= startedAt - 20000);
+    if (!run) continue;
+    if (run.status === "completed") {
+      if (run.conclusion !== "success") throw new Error("The refresh failed on GitHub.");
+      return fetchLatestDepthCharts();
+    }
+  }
+  throw new Error("The refresh is taking longer than usual. Try again in a few minutes.");
+}
+
 export function lazyDepthCharts() {
   return import("./data/depth-charts.json").then((m) => m.default);
 }
@@ -196,6 +271,17 @@ export function teamKey(name) {
 
 // Pre-Portal Tracker players (FBS and FCS only -- the only levels the
 // colleges section lists), grouped under the college they play for.
+export function nameKey(name) {
+  return (name || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z ]/g, "")
+    .replace(/\b(jr|sr|ii|iii|iv|v)\b/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 let playersByCollegeKey = null;
 function buildPlayerIndex() {
   playersByCollegeKey = new Map();
