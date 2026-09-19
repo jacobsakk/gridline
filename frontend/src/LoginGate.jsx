@@ -46,11 +46,11 @@ function Shell({ children }) {
         fontFamily: "'Century Gothic', 'Jost', 'Helvetica Neue', Arial, sans-serif",
       }}
     >
-      <div style={{ width: 400, maxWidth: "100%", textAlign: "center" }}>
+      <div style={{ width: 560, maxWidth: "100%", textAlign: "center" }}>
         <img src={actionCDark} alt="Central Michigan Action C" style={{ height: 78, width: "auto", marginBottom: 18 }} />
-        <h1 className="oswald" style={{ fontSize: 30, fontWeight: 700, margin: "0 0 6px", letterSpacing: "0.01em" }}>Central Michigan Recruiting Hub</h1>
+        <h1 className="oswald" style={{ fontSize: "clamp(18px, 5.6vw, 30px)", fontWeight: 700, margin: "0 0 6px", letterSpacing: "0.01em", whiteSpace: "nowrap" }}>Central Michigan Recruiting Hub</h1>
         <div style={{ height: 3, width: 120, margin: "0 auto 26px", background: "linear-gradient(90deg, var(--gold), var(--maroon))", borderRadius: 2 }} />
-        <div style={{ background: "rgba(0,0,0,0.55)", border: "1px solid #4A1F2B", borderRadius: 12, padding: 24, textAlign: "left", backdropFilter: "blur(4px)" }}>
+        <div style={{ background: "rgba(0,0,0,0.55)", border: "1px solid #4A1F2B", borderRadius: 12, padding: 24, textAlign: "left", backdropFilter: "blur(4px)", maxWidth: 400, margin: "0 auto" }}>
           {children}
         </div>
         <div style={{ marginTop: 18, fontSize: 12.5, color: "#A78389" }}>Invitation only</div>
