@@ -1760,7 +1760,7 @@ export default function Gridline({ onBack, initialSearch }) {
               <img src={cmuHelmet} alt="Central Michigan Chippewas helmet" style={{ height: 34, width: "auto", flexShrink: 0 }} />
               <div style={{ display: "flex", alignItems: "baseline", gap: 14, flexWrap: "wrap" }}>
                 <h1 className="oswald app-title" style={{ fontSize: 26, fontWeight: 700, margin: 0, letterSpacing: "0.01em" }}>
-                  Central Michigan Pre-Portal Tracker
+                  Pre-Portal Tracker
                 </h1>
                 <span style={{ color: "var(--text-muted)", fontSize: 14 }}>weekly stats — NAIA · JUCO · D3 · D2 · FCS · FBS</span>
               </div>
