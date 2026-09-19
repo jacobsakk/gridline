@@ -56,7 +56,7 @@ export default function Dashboard({ onOpenCard, onOpenSettings }) {
           <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
             <img src={actionCDark} alt="Central Michigan Action C" style={{ height: 36, width: "auto", flexShrink: 0 }} />
             <h1 className="oswald app-title" style={{ fontSize: 22, fontWeight: 700, margin: 0, letterSpacing: "0.01em" }}>
-              Central Michigan Coach Hub
+              Central Michigan Recruiting Hub
             </h1>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
