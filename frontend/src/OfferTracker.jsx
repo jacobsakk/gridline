@@ -997,7 +997,8 @@ export default function OfferTracker({ onBack }) {
   const [adding, setAdding] = useState(false);
 
   const tracker = useOfferTracker();
-  const activeClassYear = classYear || tracker.classYears[tracker.classYears.length - 1] || null;
+  // Opens on the earliest class year (2027).
+  const activeClassYear = classYear || tracker.classYears[0] || null;
 
   const teams = useMemo(
     () => (activeClassYear ? tracker.teamsForConference(activeClassYear, conference) : []),
