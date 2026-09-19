@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useLayoutEffect, useRef } from "react";
 import homeLogo from "./assets/home-logo.png";
 
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -12,6 +12,18 @@ export default function CardTransition({ label, onCovered, onDone }) {
   const maroonRef = useRef(null);
   const logoRef = useRef(null);
   const labelRef = useRef(null);
+
+  // Size the name so it spans the same width as the logo above it, whatever
+  // its length ("OFFER TRACKER" gets bigger type than "PRE-PORTAL TRACKER").
+  useLayoutEffect(() => {
+    const label = labelRef.current;
+    const logo = logoRef.current;
+    if (!label || !logo) return;
+    label.style.fontSize = "100px";
+    const natural = label.scrollWidth;
+    const target = logo.offsetWidth;
+    if (natural > 0 && target > 0) label.style.fontSize = `${Math.min(84, (100 * target) / natural)}px`;
+  }, [label]);
 
   useEffect(() => {
     let cancelled = false;
@@ -65,7 +77,7 @@ export default function CardTransition({ label, onCovered, onDone }) {
       <div
         style={{
           position: "fixed", inset: 0, zIndex: 202, display: "flex", flexDirection: "column", alignItems: "center",
-          justifyContent: "center", gap: 22, pointerEvents: "none",
+          justifyContent: "center", gap: 18, pointerEvents: "none",
         }}
       >
         <img ref={logoRef} src={homeLogo} alt="" style={{ width: "min(460px, 70vw)", height: "auto", opacity: 0 }} />
@@ -73,8 +85,8 @@ export default function CardTransition({ label, onCovered, onDone }) {
           ref={labelRef}
           className="oswald"
           style={{
-            opacity: 0, fontSize: 22, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase",
-            color: "var(--gold)", textAlign: "center", padding: "0 20px",
+            opacity: 0, fontSize: 22, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", whiteSpace: "nowrap",
+            color: "var(--gold)", textAlign: "center",
           }}
         >
           {label}
