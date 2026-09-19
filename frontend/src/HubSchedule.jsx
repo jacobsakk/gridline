@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { COLLEGES, fetchSchedule, fetchTeamSummary } from "./collegeData.js";
+import riseLogo from "./assets/rise-logo.png";
 
 const SEASON = 2026;
 const CMU = COLLEGES.find((c) => c.name === "Central Michigan");
@@ -195,6 +196,7 @@ export default function HubSchedule({ theme }) {
               {ourRecord.standing && <span style={{ fontSize: 11.5, color: "var(--text-muted)" }}>{ourRecord.standing}</span>}
             </span>
           )}
+          <img src={riseLogo} alt="RISE" style={{ height: 34, width: "auto", flexShrink: 0 }} />
         </div>
         <div style={{ display: "flex", gap: 6 }}>
           <button onClick={() => scrollBy(-1)} aria-label="Scroll schedule left" style={arrow}><ChevronLeft size={16} /></button>
