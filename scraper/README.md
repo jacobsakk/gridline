@@ -25,6 +25,40 @@ per-conference requests). Run with `python3 build_data.py`.
 - Positions are normalized to a fixed 9-value set (`POSITION_MAP`) — see module docstring.
 - Real single-week numbers require two runs (snapshot + diff) — see `scraper/snapshots/`.
 
+## FBS / FCS — ESPN first, NCAA + conference pages as fallbacks
+
+For **FBS and FCS only**, `espn_stats.py` makes ESPN the primary source and the older pipeline the
+fallback (D2/D3/NAIA/JUCO are unchanged and still NCAA-API / Playwright based).
+
+1. **ESPN (primary).** The bulk `byathlete` list gives every FBS/FCS player with a game played
+   (~6,400); each one's full season line then comes from the core API
+   (`.../seasons/2026/types/2/athletes/{id}/statistics/0`, ~6,000 small requests, 8 in parallel, a few
+   minutes). This has no "top ~150 per category" cutoff like the NCAA leaderboards.
+2. **NCAA API (fallback).** Each NCAA row is matched to an ESPN row (same college, category and
+   player). A match keeps ESPN's numbers and only borrows what ESPN lacks: the exact solo/assist
+   **sack split** (ESPN gives total sacks only, so it's estimated until an NCAA row supplies it) and a
+   more specific position. No match means the row is added as an extra player.
+3. **Conference sites (fallback).** Same treatment for `conference_sites.py`'s rows.
+4. **Team spellings.** ESPN rows adopt the NCAA spelling of a school ("Penn St.") when one exists, so
+   week-over-week snapshot diffs (keyed by category + player + team) keep matching.
+5. Every row carries `source` (`espn` / `ncaa` / `conference`).
+
+If ESPN can't be reached at all, `build_fbs_fcs()` falls back to the old NCAA + conference path and
+says so in the log, so the weekly job still produces data.
+
+### Duplicate scrub (every weekly run, all divisions)
+
+`scrub_duplicates()` in `espn_stats.py` runs over the finished dataset before it's written. Two rows
+are the same player when they share division, week, category and school (compared by normalized
+spelling, `naming.team_key`) **and** the names are the same person (`naming.same_person_name`): equal
+after normalizing ("Reginald Vick, Jr." / "Jr.,Reginald Vick"), or the same last name with a
+compatible first name (Sam / Samuel) at a compatible position. Different generational numerals
+(IV vs V) are never merged, and same-name players on different schools are untouched. The row from
+the better source wins (ESPN > NCAA > conference), then more games/production; blanks are filled from
+the loser. Duplicate row ids are also repaired. The run prints how many were removed, with examples.
+`naming.py` mirrors `teamKey()`/`nameKey()` in `frontend/src/collegeData.js` -- keep the alias lists in
+step.
+
 ## NAIA — Playwright scraper — **done**
 
 `naia.py` + `build_data.py` (`build_naia_division()`) fetch every individual stat leader

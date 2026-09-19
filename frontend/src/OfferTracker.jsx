@@ -1,5 +1,5 @@
 import { createContext, useContext, useMemo, useState } from "react";
-import { ArrowLeft, Upload, X, Loader2, ChevronUp, ChevronDown, ChevronsUpDown, TrendingUp, MapPin, Search, Plus } from "lucide-react";
+import { ArrowLeft, Upload, X, Loader2, ChevronUp, ChevronDown, ChevronsUpDown, TrendingUp, MapPin, Search, Plus, ExternalLink } from "lucide-react";
 import { confirmAction } from "./ConfirmDialog.jsx";
 import { collegeForLabel, logoFor } from "./collegeData.js";
 import { ThemeSwitcher, useTheme } from "./theme.jsx";
@@ -417,6 +417,15 @@ function AddOfferForm({ teamLabel, onAdd, onClose }) {
   );
 }
 
+// A web search for a recruit: name plus high school, state, position and
+// class narrow it to the right kid (a name alone matches half the country).
+function recruitSearchUrl(player, highSchool, state, position, classYear) {
+  // "SAINT XAVIER HS (OH)" -> "SAINT XAVIER HS": the state is already in the query.
+  const school = (highSchool || "").replace(/\s*\([^)]*\)\s*$/, "");
+  const q = [toTitleCase(player), school, state, position, classYear ? `class of ${classYear}` : "", "football recruit"].filter(Boolean).join(" ");
+  return `https://www.google.com/search?q=${encodeURIComponent(q)}`;
+}
+
 export function PlayerProfileModal({ player, classYear, tracker, onClose }) {
   const theme = useContext(ThemeContext);
   const rows = useMemo(() => tracker.rowsForPlayer(classYear, player), [tracker, classYear, player]);
@@ -464,9 +473,23 @@ export function PlayerProfileModal({ player, classYear, tracker, onClose }) {
               {toTitleCase(first.highSchool) || "—"} · {first.state || "—"} · <span style={{ color: "var(--accent)", fontWeight: 700 }}>{first.position}</span>
             </div>
           </div>
-          <button onClick={onClose} style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer", padding: 4, lineHeight: 0 }}>
-            <X size={18} />
-          </button>
+          <div style={{ display: "flex", alignItems: "center", gap: 12, flexShrink: 0 }}>
+            <a
+              href={recruitSearchUrl(first.player, first.highSchool, first.state, first.position, classYear)}
+              target="_blank"
+              rel="noopener noreferrer"
+              title="Search this recruit"
+              style={{
+                display: "flex", alignItems: "center", gap: 7, background: "var(--accent-bg)", border: "1px solid var(--accent)", color: "var(--accent)",
+                borderRadius: 5, padding: "9px 15px", fontSize: 14, fontWeight: 700, textDecoration: "none", whiteSpace: "nowrap",
+              }}
+            >
+              <ExternalLink size={16} /> Search
+            </a>
+            <button onClick={onClose} style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer", padding: 4, lineHeight: 0 }}>
+              <X size={18} />
+            </button>
+          </div>
         </div>
 
         <div style={{ padding: 20, display: "flex", flexDirection: "column", gap: 20 }}>

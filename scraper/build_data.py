@@ -5,7 +5,8 @@ front-end to read directly.
 
 Run manually for now:
 
-    python3 scraper/build_data.py
+    python3 scraper/build_data.py            # everything
+    python3 scraper/build_data.py --fbs-fcs  # just FBS + FCS (ESPN first), a few minutes
 
 Also saves a dated snapshot of each division's season-to-date totals
 under scraper/snapshots/. From the *second* time this runs onward, it
@@ -33,6 +34,7 @@ from ncaa_api import (
     save_snapshot,
 )
 from conference_sites import fetch_supplemental_rows
+from espn_stats import build_espn_rows, fetch_athlete_lines, fetch_espn_athletes, fetch_roster_athletes, load_colleges, merge_division, scrub_duplicates
 
 OUTPUT_PATH = os.path.join(
     os.path.dirname(__file__), "..", "frontend", "src", "data", "real-stats.json"
@@ -61,34 +63,80 @@ def build_division(division_slug, division_label, run_date, fetch_total_rows):
     return total_rows + weekly_rows
 
 
-def build_ncaa_api_divisions(run_date):
+def build_fbs_fcs_legacy(run_date):
+    """The pre-ESPN FBS/FCS path (NCAA API + conference pages). Only used if
+    ESPN can't be reached, so the weekly job still produces data."""
     print("Fetching FBS conference map...")
     fbs_conferences = fetch_conference_map("fbs")
-    print(f"  {len(fbs_conferences)} FBS teams mapped to conferences")
-
-    print("Fetching FBS stat leaders (passing/rushing/receiving/tackling/sacks)...")
     fbs_rows = build_division(
         "fbs", "FBS", run_date,
         lambda: build_division_rows("fbs", "FBS", lambda team: fbs_conferences.get(team, "Independent")),
     )
-
-    print("Cross-referencing FBS against each conference's own stats page "
-          "(the NCAA's national leaderboard misses anyone outside roughly "
-          "the national top 150 per category)...")
     fbs_rows += fetch_supplemental_rows("FBS", fbs_rows)
 
     print("Fetching FCS conference map...")
     fcs_conferences = fetch_conference_map("fcs")
-    print(f"  {len(fcs_conferences)} FCS teams mapped to conferences")
-
-    print("Fetching FCS stat leaders (passing/rushing/receiving/tackling/sacks)...")
     fcs_rows = build_division(
         "fcs", "FCS", run_date,
         lambda: build_division_rows("fcs", "FCS", lambda team: fcs_conferences.get(team, "Independent")),
     )
-
-    print("Cross-referencing FCS against each conference's own stats page...")
     fcs_rows += fetch_supplemental_rows("FCS", fcs_rows)
+    return fbs_rows, fcs_rows
+
+
+def build_fbs_fcs(run_date):
+    """FBS + FCS: ESPN is the primary source; the NCAA API and each
+    conference's own stats page fill in whatever ESPN lacks (see espn_stats.py
+    for exactly how the three are combined)."""
+    print("Fetching FBS + FCS player stats from ESPN (primary source)...")
+    try:
+        colleges = load_colleges()
+        athletes = fetch_espn_athletes()
+        print(f"  {len(athletes)} athletes in ESPN's bulk list (covers FBS well, FCS barely)")
+        roster_athletes, failed_teams = fetch_roster_athletes(colleges, "FCS", skip_ids={a["athlete"]["id"] for a in athletes})
+        print(f"  +{len(roster_athletes)} FCS roster players" + (f" (rosters unavailable: {', '.join(failed_teams)})" if failed_teams else ""))
+        athletes += roster_athletes
+        print("  fetching each player's season line...")
+        lines, failures = fetch_athlete_lines(athletes, colleges)
+    except Exception as err:  # noqa: BLE001 -- any ESPN failure means fall back, loudly
+        print(f"  !! ESPN unavailable ({err}) -- falling back to the NCAA API + conference pages only")
+        return build_fbs_fcs_legacy(run_date)
+    print(f"  {len(lines)} player lines fetched, {len(failures)} failed")
+    if lines and len(failures) > 0.05 * (len(lines) + len(failures)):
+        print("  !! more than 5% of ESPN player lookups failed -- ESPN may be throttling; NCAA/conference fallbacks will cover the gaps")
+
+    results = {}
+    for slug, label in (("fbs", "FBS"), ("fcs", "FCS")):
+        espn_rows = build_espn_rows(label, colleges, athletes, lines)
+        print(f"  {len(espn_rows)} {label} rows from ESPN")
+
+        fallback_sets = []
+        try:
+            conferences = fetch_conference_map(slug)
+            print(f"  Fetching {label} NCAA leaderboards (fallback)...")
+            ncaa_rows = build_division_rows(slug, label, lambda team, c=conferences: c.get(team, "Independent"))
+            for r in ncaa_rows:
+                r["source"] = "ncaa"
+            fallback_sets.append(("ncaa", ncaa_rows))
+        except Exception as err:  # noqa: BLE001
+            print(f"  NCAA API fallback unavailable for {label}: {err}")
+            ncaa_rows = []
+
+        print(f"  Fetching {label} conference-site stats (fallback)...")
+        conf_rows = fetch_supplemental_rows(label, ncaa_rows)
+        for r in conf_rows:
+            r["source"] = "conference"
+        fallback_sets.append(("conference", conf_rows))
+
+        merged, stats = merge_division(label, espn_rows, fallback_sets, colleges)
+        for source, counts in stats.items():
+            print(f"    {source}: {counts['matched_into_espn']} matched an ESPN row, {counts['added']} added as extra players")
+        results[label] = build_division(slug, label, run_date, lambda m=merged: m)
+    return results["FBS"], results["FCS"]
+
+
+def build_ncaa_api_divisions(run_date):
+    fbs_rows, fcs_rows = build_fbs_fcs(run_date)
 
     print("Fetching D2 stat leaders (passing/rushing/receiving/tackling/sacks)...")
     d2_rows = build_division(
@@ -171,9 +219,24 @@ def build_juco_division(run_date):
 def main():
     run_date = datetime.date.today().isoformat()
 
-    all_rows = build_ncaa_api_divisions(run_date)
-    all_rows += build_naia_division(run_date)
-    all_rows += build_juco_division(run_date)
+    if "--fbs-fcs" in sys.argv:
+        # Quick refresh of just FBS + FCS (a few minutes): keeps every other
+        # division's rows exactly as they are in the existing output.
+        with open(OUTPUT_PATH) as f:
+            existing = json.load(f)
+        all_rows = [r for r in existing if r["division"] not in ("FBS", "FCS")]
+        fbs_rows, fcs_rows = build_fbs_fcs(run_date)
+        all_rows += fbs_rows + fcs_rows
+    else:
+        all_rows = build_ncaa_api_divisions(run_date)
+        all_rows += build_naia_division(run_date)
+        all_rows += build_juco_division(run_date)
+
+    print("\nScrubbing duplicates across every division...")
+    all_rows, report = scrub_duplicates(all_rows)
+    print(f"  removed {report['removed']} duplicate rows, repaired {report['ids_repaired']} duplicate ids")
+    for example in report["examples"]:
+        print(f"    {example}")
 
     os.makedirs(os.path.dirname(OUTPUT_PATH), exist_ok=True)
     with open(OUTPUT_PATH, "w") as f:
