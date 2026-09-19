@@ -42,7 +42,7 @@ export function statusStyle(status) {
     return { background: "var(--accent-bg)", color: "var(--accent)", border: "1px solid var(--accent)" };
   }
   if (s.startsWith("COMMIT")) {
-    return { background: "var(--danger-bg)", color: "var(--danger-text)", border: "1px solid var(--danger)", textDecoration: "line-through" };
+    return { background: "var(--danger-bg)", color: "var(--danger-text)", border: "1px solid var(--danger)" };
   }
   if (s === "OFFERED") {
     return { background: "var(--success-bg)", color: "var(--success)", border: "1px solid var(--success-border)" };
@@ -848,7 +848,7 @@ function SortIcon({ active, dir }) {
   return dir === "desc" ? <ChevronDown size={13} /> : <ChevronUp size={13} />;
 }
 
-function TeamOffersTable({ rows, onEdit, onOpenProfile, onRemove, sortKey, sortDir, onSort, teamColor, teamTextColor, showTeam }) {
+function TeamOffersTable({ rows, onEdit, onOpenProfile, onRemove, sortKey, sortDir, onSort, teamColor, teamTextColor, showTeam, commitTeam }) {
   const theme = useContext(ThemeContext);
   const tdStyle = { padding: "4px 10px", fontSize: 13.5, color: "var(--text-secondary)", borderRight: "1px solid var(--border-faint)" };
   const headerBackground = teamColor ? `color-mix(in srgb, ${teamColor} 22%, var(--bg-surface))` : "var(--bg-surface)";
@@ -899,7 +899,11 @@ function TeamOffersTable({ rows, onEdit, onOpenProfile, onRemove, sortKey, sortD
             )}
             {FIELDS.map(({ key, width, upper, titleCase }) => {
               if (key === "status") {
-                const style = statusStyle(r.status);
+                // With the commits switch on, the team's own commits wear its colors.
+                const style =
+                  commitTeam && isCommittedTo(r.status, commitTeam.label)
+                    ? { background: commitTeam.color, color: contrastOn(commitTeam.color), border: `1px solid ${textAccentFor(commitTeam, theme) || commitTeam.color}` }
+                    : statusStyle(r.status);
                 return (
                   <td key={key} style={tdStyle}>
                     <EditableCell
@@ -1272,7 +1276,7 @@ export default function OfferTracker({ onBack }) {
                   </select>
                   {!searching && activeTeamMeta && (
                     <label
-                      style={{ display: "flex", alignItems: "center", gap: 9, cursor: "pointer", userSelect: "none", fontSize: 13, fontWeight: 600, color: commitsOnly ? "var(--accent)" : "var(--text-secondary)", marginLeft: "auto" }}
+                      style={{ display: "flex", alignItems: "center", gap: 9, cursor: "pointer", userSelect: "none", fontSize: 13, fontWeight: 600, color: commitsOnly ? teamTextAccent || "var(--accent)" : "var(--text-secondary)", marginLeft: "auto" }}
                       title={`Only show players committed to ${activeTeamMeta.label}`}
                     >
                       <span
@@ -1283,18 +1287,19 @@ export default function OfferTracker({ onBack }) {
                         onKeyDown={(e) => (e.key === " " || e.key === "Enter") && (e.preventDefault(), setCommitsOnly((v) => !v))}
                         style={{
                           position: "relative", width: 38, height: 22, borderRadius: 999, flexShrink: 0, transition: "background 0.15s ease, border-color 0.15s ease",
-                          background: commitsOnly ? "var(--accent)" : "var(--bg-surface)", border: `1px solid ${commitsOnly ? "var(--accent)" : "var(--border)"}`,
+                          background: commitsOnly ? activeTeamMeta.color : "var(--bg-surface)",
+                          border: `1px solid ${commitsOnly ? teamTextAccent || activeTeamMeta.color : "var(--border)"}`,
                         }}
                       >
                         <span
                           style={{
                             position: "absolute", top: 2, left: commitsOnly ? 18 : 2, width: 16, height: 16, borderRadius: 999, transition: "left 0.15s ease",
-                            background: commitsOnly ? "var(--bg-page)" : "var(--text-muted)",
+                            background: commitsOnly ? contrastOn(activeTeamMeta.color) : "var(--text-muted)",
                           }}
                         />
                       </span>
                       <span onClick={() => setCommitsOnly((v) => !v)}>
-                        {activeTeamMeta.label} commits <span className="tabular" style={{ color: "var(--text-faint)", fontWeight: 500 }}>({commitCount})</span>
+                        {activeTeamMeta.label} Commits <span className="tabular" style={{ color: "var(--text-faint)", fontWeight: 500 }}>({commitCount})</span>
                       </span>
                     </label>
                   )}
@@ -1334,6 +1339,7 @@ export default function OfferTracker({ onBack }) {
                     onSort={handleSort}
                     teamColor={teamAccent}
                     teamTextColor={teamTextAccent}
+                    commitTeam={commitsOnly && !searching ? activeTeamMeta : null}
                   />
                 </div>
               </>
