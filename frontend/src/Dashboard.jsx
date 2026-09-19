@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Settings, ClipboardList, ChevronRight, FileSpreadsheet, GraduationCap } from "lucide-react";
+import { Settings, ClipboardList, ChevronRight, FileSpreadsheet, GraduationCap, LogOut } from "lucide-react";
+import { coachTitle } from "./auth.js";
 import { ThemeSwitcher, useTheme } from "./theme.jsx";
 import actionCDark from "./assets/cmu-action-c-dark.png";
 import anniversaryLogo from "./assets/anniversary-125.png";
@@ -30,7 +31,7 @@ const CARDS = [
   },
 ];
 
-export default function Dashboard({ onOpenCard, onOpenSettings }) {
+export default function Dashboard({ onOpenCard, onOpenSettings, session }) {
   const [theme, setTheme] = useTheme();
   return (
     <div
@@ -61,16 +62,31 @@ export default function Dashboard({ onOpenCard, onOpenSettings }) {
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
             <img src={anniversaryLogo} alt="Central Michigan football 125th anniversary" style={{ height: 46, width: "auto", flexShrink: 0 }} />
-            <button
-              onClick={onOpenSettings}
-              style={{
-                display: "flex", alignItems: "center", gap: 7, flexShrink: 0,
-                background: "var(--bg-surface)", border: "1px solid var(--border)", color: "var(--text-primary)",
-                borderRadius: 5, padding: "8px 14px", fontSize: 13, fontWeight: 600, cursor: "pointer",
-              }}
-            >
-              <Settings size={15} /> Settings
-            </button>
+            {session?.profile?.admin && (
+              <button
+                onClick={onOpenSettings}
+                style={{
+                  display: "flex", alignItems: "center", gap: 7, flexShrink: 0,
+                  background: "var(--bg-surface)", border: "1px solid var(--border)", color: "var(--text-primary)",
+                  borderRadius: 5, padding: "8px 14px", fontSize: 13, fontWeight: 600, cursor: "pointer",
+                }}
+              >
+                <Settings size={15} /> Settings
+              </button>
+            )}
+            {session && (
+              <button
+                onClick={session.signOut}
+                title={`Signed in as ${coachTitle(session.profile?.name, session.profile?.email)} -- click to sign out`}
+                style={{
+                  display: "flex", alignItems: "center", gap: 7, flexShrink: 0,
+                  background: "var(--bg-surface)", border: "1px solid var(--border)", color: "var(--text-primary)",
+                  borderRadius: 5, padding: "8px 14px", fontSize: 13, fontWeight: 600, cursor: "pointer",
+                }}
+              >
+                <LogOut size={15} /> Sign out
+              </button>
+            )}
             <ThemeSwitcher theme={theme} onChange={setTheme} />
           </div>
         </div>

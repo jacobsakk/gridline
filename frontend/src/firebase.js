@@ -1,9 +1,10 @@
 // Firebase project config. These values identify the project (not secret
 // credentials) -- access control comes entirely from the Firestore security
-// rules deployed alongside this app (see firestore.rules), which scope
-// read/write to just the "watchlist" collection.
+// rules deployed alongside this app (see firestore.rules): only signed-in,
+// invited coaches can read or write anything.
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
+import { getAuth } from "firebase/auth";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAokApn-a75wF0zY3eXncmvgikdAFG0qlE",
@@ -16,3 +17,4 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app);
+export const auth = getAuth(app);

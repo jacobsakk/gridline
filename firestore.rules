@@ -1,22 +1,53 @@
 rules_version = '2';
 
-// No auth on this site (it's a public stat tracker, not a login-gated app),
-// so access control here is just "only this one collection, nothing else in
-// the project is reachable" rather than per-user rules.
+// Invite-only. A coach can read or write data only when they are signed in
+// (via the emailed sign-in link, which proves they own the address) AND there
+// is an "accounts" document whose id is their lowercased email -- that
+// document is the invitation. The owner below is always allowed, which is how
+// the first account gets bootstrapped.
 service cloud.firestore {
   match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null && request.auth.token.email_verified == true;
+    }
+    function myEmail() {
+      return request.auth.token.email.lower();
+    }
+    function isOwner() {
+      return signedIn() && myEmail() == 'jacobsakk@gmail.com';
+    }
+    function invited() {
+      return isOwner() || (signedIn() && exists(/databases/$(database)/documents/accounts/$(myEmail())));
+    }
+    function isAdmin() {
+      return isOwner() || (invited() && get(/databases/$(database)/documents/accounts/$(myEmail())).data.admin == true);
+    }
+
+    // The invite list. The sign-in page has to check "is this email invited?"
+    // before anyone is signed in, so a single document can be fetched by its
+    // id -- but the list itself can't be browsed, and only admins change it.
+    // Coaches may stamp their own last-sign-in time and nothing else.
+    match /accounts/{email} {
+      allow get: if true;
+      allow list: if invited();
+      allow create, delete: if isAdmin();
+      allow update: if isAdmin() || (
+        signedIn() && myEmail() == email &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['lastLoginAt'])
+      );
+    }
+
     match /watchlist/{docId} {
-      allow read, write: if true;
+      allow read, write: if invited();
     }
     match /portalStatus/{docId} {
-      allow read, write: if true;
-    }
-    match /accounts/{docId} {
-      allow read, write: if true;
+      allow read, write: if invited();
     }
     match /offers/{docId} {
-      allow read, write: if true;
+      allow read, write: if invited();
     }
+
     match /{document=**} {
       allow read, write: if false;
     }

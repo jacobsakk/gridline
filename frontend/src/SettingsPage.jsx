@@ -1,17 +1,16 @@
 import { useState, useEffect, useMemo } from "react";
-import { collection, addDoc, deleteDoc, doc, onSnapshot, orderBy, query } from "firebase/firestore";
+import { collection, deleteDoc, doc, onSnapshot, orderBy, query, setDoc } from "firebase/firestore";
 import { db } from "./firebase";
-import { ArrowLeft, UserPlus, Trash2 } from "lucide-react";
+import { ArrowLeft, Mail, Send, Trash2 } from "lucide-react";
+import { normalizeEmail, sendInviteEmail } from "./auth.js";
 import { ThemeSwitcher, useTheme } from "./theme.jsx";
 import cmuHelmet from "./assets/cmu-helmet.png";
 
 const ROLES = ["Head Coach", "Assistant Coach", "Director of Player Personnel", "Recruiting Coordinator", "Analyst"];
 
-// Same shape as the watch list / portal status hooks elsewhere in the
-// app -- a small Firestore collection, open rules, no auth. This is a
-// staff roster (who's on the team and what they do), not a login
-// system: there's no password or session here, same as the rest of the
-// site.
+// The roster doubles as the invite list: a coach can sign in only if there is
+// an account here whose document id is their (lowercased) email -- the
+// Firestore rules check exactly that. Adding someone emails them a sign-in link.
 function useAccounts() {
   const [accounts, setAccounts] = useState([]);
   const [ready, setReady] = useState(false);
@@ -29,36 +28,82 @@ function useAccounts() {
     return unsubscribe;
   }, []);
 
-  async function addAccount({ name, email, role }) {
-    await addDoc(collection(db, "accounts"), {
+  async function inviteAccount({ name, email, role, admin, invitedBy, legacyId }) {
+    const key = normalizeEmail(email);
+    await setDoc(doc(db, "accounts", key), {
       name: name.trim(),
-      email: email.trim(),
+      email: key,
       role,
+      admin: !!admin,
       createdAt: new Date().toISOString(),
+      invitedBy: invitedBy || "",
     });
+    // An account made before logins existed had a random id -- replace it.
+    if (legacyId && legacyId !== key) await deleteDoc(doc(db, "accounts", legacyId));
+    await sendInviteEmail(key);
   }
 
   async function removeAccount(id) {
     await deleteDoc(doc(db, "accounts", id));
   }
 
-  return { accounts, ready, addAccount, removeAccount };
+  return { accounts, ready, inviteAccount, removeAccount };
 }
 
-export default function SettingsPage({ onBack }) {
+function inviteError(err) {
+  return err?.code === "auth/operation-not-allowed"
+    ? "Email sign-in isn't switched on in Firebase yet, so the invite email couldn't be sent. (The account was saved -- use Resend once it's on.)"
+    : err?.code === "permission-denied"
+      ? "You don't have permission to manage accounts."
+      : err?.code === "auth/too-many-requests"
+        ? "Too many emails sent in a short time. Wait a few minutes and try again."
+        : "Something went wrong. Try again.";
+}
+
+export default function SettingsPage({ onBack, session }) {
   const [theme, setTheme] = useTheme();
-  const { accounts, addAccount, removeAccount } = useAccounts();
+  const { accounts, inviteAccount, removeAccount } = useAccounts();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [role, setRole] = useState(ROLES[0]);
+  const [admin, setAdmin] = useState(false);
+  const [notice, setNotice] = useState({ kind: "", text: "" });
+  const [busy, setBusy] = useState(false);
+  const isAdmin = !!session?.profile?.admin;
 
-  function handleAdd(e) {
+  async function handleAdd(e) {
     e.preventDefault();
-    if (!name.trim()) return;
-    addAccount({ name, email, role });
-    setName("");
-    setEmail("");
-    setRole(ROLES[0]);
+    if (!name.trim() || !/^\S+@\S+\.\S+$/.test(email.trim())) {
+      setNotice({ kind: "error", text: "Enter a name and a valid email address." });
+      return;
+    }
+    setBusy(true);
+    setNotice({ kind: "", text: "" });
+    try {
+      await inviteAccount({ name, email, role, admin, invitedBy: session?.profile?.email });
+      setNotice({ kind: "ok", text: `Invite sent to ${normalizeEmail(email)}. They'll get an email with a sign-in link.` });
+      setName("");
+      setEmail("");
+      setRole(ROLES[0]);
+      setAdmin(false);
+    } catch (err) {
+      setNotice({ kind: "error", text: inviteError(err) });
+    }
+    setBusy(false);
+  }
+
+  async function resend(a) {
+    setNotice({ kind: "", text: "" });
+    try {
+      if (a.id !== normalizeEmail(a.email)) {
+        await inviteAccount({ name: a.name, email: a.email, role: a.role, admin: a.admin, invitedBy: session?.profile?.email, legacyId: a.id });
+      } else {
+        await sendInviteEmail(a.email);
+      }
+      setNotice({ kind: "ok", text: `Invite sent to ${a.email}.` });
+    } catch (err) {
+      setNotice({ kind: "error", text: inviteError(err) });
+    }
   }
 
   const inputStyle = useMemo(
@@ -121,75 +166,109 @@ export default function SettingsPage({ onBack }) {
           <div style={{ marginBottom: 10, fontSize: 11, color: "var(--text-faint)", letterSpacing: "0.03em", textTransform: "uppercase" }}>
             Staff & Access
           </div>
+          {!isAdmin ? (
+            <div style={{ background: "var(--bg-panel)", border: "1px solid var(--border)", borderRadius: 8, padding: 20, fontSize: 14, color: "var(--text-muted)" }}>
+              Only admins can invite coaches. Ask Jacob if you need someone added.
+            </div>
+          ) : (
           <div style={{ background: "var(--bg-panel)", border: "1px solid var(--border)", borderRadius: 8, padding: 20 }}>
-            <h2 className="oswald" style={{ fontSize: 18, fontWeight: 700, margin: "0 0 14px" }}>
-              Account Management
-            </h2>
+            <h2 className="oswald" style={{ fontSize: 18, fontWeight: 700, margin: "0 0 6px" }}>Invite a Coach</h2>
+            <p style={{ margin: "0 0 14px", fontSize: 13, color: "var(--text-muted)", lineHeight: 1.5 }}>
+              Only people on this list can sign in. Sending an invite emails them a one-time sign-in link; after that they stay signed in on their device.
+            </p>
 
-            <form onSubmit={handleAdd} style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "flex-end", marginBottom: 18 }}>
+            <form onSubmit={handleAdd} style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "flex-end", marginBottom: 12 }}>
               <div>
-                <label style={{ display: "block", fontSize: 10.5, color: "var(--text-faint)", marginBottom: 4 }}>Name</label>
-                <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Jane Smith" style={{ ...inputStyle, width: 180 }} />
+                <label htmlFor="invite-name" style={{ display: "block", fontSize: 10.5, color: "var(--text-faint)", marginBottom: 4 }}>Name</label>
+                <input id="invite-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Jane Smith" style={{ ...inputStyle, width: 180 }} />
               </div>
               <div>
-                <label style={{ display: "block", fontSize: 10.5, color: "var(--text-faint)", marginBottom: 4 }}>Email</label>
-                <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="jane@cmich.edu" style={{ ...inputStyle, width: 220 }} />
+                <label htmlFor="invite-email" style={{ display: "block", fontSize: 10.5, color: "var(--text-faint)", marginBottom: 4 }}>Email</label>
+                <input id="invite-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="jane@cmich.edu" style={{ ...inputStyle, width: 230 }} />
               </div>
               <div>
-                <label style={{ display: "block", fontSize: 10.5, color: "var(--text-faint)", marginBottom: 4 }}>Role</label>
-                <select value={role} onChange={(e) => setRole(e.target.value)} style={{ ...inputStyle, cursor: "pointer" }}>
+                <label htmlFor="invite-role" style={{ display: "block", fontSize: 10.5, color: "var(--text-faint)", marginBottom: 4 }}>Role</label>
+                <select id="invite-role" value={role} onChange={(e) => setRole(e.target.value)} style={{ ...inputStyle, cursor: "pointer" }}>
                   {ROLES.map((r) => (
                     <option key={r} value={r}>{r}</option>
                   ))}
                 </select>
               </div>
+              <label style={{ display: "flex", alignItems: "center", gap: 7, fontSize: 13, color: "var(--text-secondary)", paddingBottom: 9, cursor: "pointer" }}>
+                <input type="checkbox" checked={admin} onChange={(e) => setAdmin(e.target.checked)} /> Can invite others
+              </label>
               <button
                 type="submit"
+                disabled={busy}
                 style={{
-                  display: "flex", alignItems: "center", gap: 6,
+                  display: "flex", alignItems: "center", gap: 6, opacity: busy ? 0.6 : 1,
                   background: "var(--accent-bg)", border: "1px solid var(--accent)", color: "var(--accent)",
                   borderRadius: 5, padding: "8px 14px", fontSize: 13, fontWeight: 700, cursor: "pointer",
                 }}
               >
-                <UserPlus size={15} /> Add Account
+                <Send size={15} /> {busy ? "Sending…" : "Send Invite"}
               </button>
             </form>
 
+            {notice.text && (
+              <div role="status" style={{ marginBottom: 14, fontSize: 13, lineHeight: 1.45, color: notice.kind === "ok" ? "var(--success)" : "var(--danger-text)" }}>
+                {notice.text}
+              </div>
+            )}
+
             {accounts.length === 0 ? (
               <div style={{ fontSize: 13, color: "var(--text-faint)", padding: "10px 0" }}>
-                No accounts added yet.
+                No one has been invited yet. You can always sign in yourself as the owner.
               </div>
             ) : (
-              <table style={{ width: "100%", borderCollapse: "collapse" }}>
+              <div style={{ overflowX: "auto" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 620 }}>
                 <thead>
                   <tr style={{ borderBottom: "1px solid var(--border)" }}>
-                    <th style={{ textAlign: "left", padding: "6px 8px", fontSize: 11, color: "var(--text-faint)", textTransform: "uppercase" }}>Name</th>
-                    <th style={{ textAlign: "left", padding: "6px 8px", fontSize: 11, color: "var(--text-faint)", textTransform: "uppercase" }}>Email</th>
-                    <th style={{ textAlign: "left", padding: "6px 8px", fontSize: 11, color: "var(--text-faint)", textTransform: "uppercase" }}>Role</th>
-                    <th style={{ padding: "6px 8px" }}></th>
+                    {["Name", "Email", "Role", "Access", "Status", ""].map((h) => (
+                      <th key={h} style={{ textAlign: "left", padding: "6px 8px", fontSize: 11, color: "var(--text-faint)", textTransform: "uppercase" }}>{h}</th>
+                    ))}
                   </tr>
                 </thead>
                 <tbody>
-                  {accounts.map((a) => (
-                    <tr key={a.id} style={{ borderBottom: "1px solid var(--border-subtle)" }}>
-                      <td style={{ padding: "9px 8px", fontSize: 13.5, fontWeight: 600 }}>{a.name}</td>
-                      <td style={{ padding: "9px 8px", fontSize: 13, color: "var(--text-muted)" }}>{a.email || "—"}</td>
-                      <td style={{ padding: "9px 8px", fontSize: 13, color: "var(--text-secondary)" }}>{a.role || "—"}</td>
-                      <td style={{ padding: "9px 8px", textAlign: "right" }}>
-                        <button
-                          onClick={() => removeAccount(a.id)}
-                          title="Remove account"
-                          style={{ background: "none", border: "none", color: "var(--danger)", cursor: "pointer", padding: 4, lineHeight: 0 }}
-                        >
-                          <Trash2 size={15} />
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
+                  {accounts.map((a) => {
+                    const legacy = !a.email || a.id !== normalizeEmail(a.email);
+                    return (
+                      <tr key={a.id} style={{ borderBottom: "1px solid var(--border-subtle)" }}>
+                        <td style={{ padding: "9px 8px", fontSize: 13.5, fontWeight: 600 }}>{a.name}</td>
+                        <td style={{ padding: "9px 8px", fontSize: 13, color: "var(--text-muted)" }}>{a.email || "—"}</td>
+                        <td style={{ padding: "9px 8px", fontSize: 13, color: "var(--text-secondary)" }}>{a.role || "—"}</td>
+                        <td style={{ padding: "9px 8px", fontSize: 13, color: "var(--text-secondary)" }}>{a.admin ? "Admin" : "Coach"}</td>
+                        <td style={{ padding: "9px 8px", fontSize: 12.5, color: legacy ? "var(--danger-text)" : a.lastLoginAt ? "var(--success)" : "var(--text-muted)" }}>
+                          {legacy ? "Needs a new invite" : a.lastLoginAt ? `Signed in ${new Date(a.lastLoginAt).toLocaleDateString([], { month: "short", day: "numeric" })}` : "Invited — not signed in yet"}
+                        </td>
+                        <td style={{ padding: "9px 8px", textAlign: "right", whiteSpace: "nowrap" }}>
+                          {a.email && (
+                            <button
+                              onClick={() => resend(a)}
+                              title={legacy ? "Send an invite" : "Resend the invite email"}
+                              style={{ background: "none", border: "none", color: "var(--accent)", cursor: "pointer", padding: 4, lineHeight: 0, marginRight: 4 }}
+                            >
+                              <Mail size={15} />
+                            </button>
+                          )}
+                          <button
+                            onClick={() => removeAccount(a.id)}
+                            title="Remove — they can no longer sign in"
+                            style={{ background: "none", border: "none", color: "var(--danger)", cursor: "pointer", padding: 4, lineHeight: 0 }}
+                          >
+                            <Trash2 size={15} />
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
+              </div>
             )}
           </div>
+          )}
         </div>
       </div>
     </div>

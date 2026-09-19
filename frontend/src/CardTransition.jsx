@@ -7,11 +7,12 @@ const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 // one sweep across the screen, the HOME logo shows on the maroon, the next
 // screen mounts underneath (onCovered), and the panels sweep off to
 // reveal it (onDone when finished).
-export default function CardTransition({ label, onCovered, onDone }) {
+export default function CardTransition({ heading, label, onCovered, onDone }) {
   const goldRef = useRef(null);
   const maroonRef = useRef(null);
   const logoRef = useRef(null);
   const labelRef = useRef(null);
+  const headingRef = useRef(null);
 
   // Size the name so it spans the same width as the logo above it, whatever
   // its length ("OFFER TRACKER" gets bigger type than "PRE-PORTAL TRACKER").
@@ -23,7 +24,13 @@ export default function CardTransition({ label, onCovered, onDone }) {
     const natural = label.scrollWidth;
     const target = logo.offsetWidth;
     if (natural > 0 && target > 0) label.style.fontSize = `${Math.min(84, (100 * target) / natural)}px`;
-  }, [label]);
+    const head = headingRef.current;
+    if (head) {
+      head.style.fontSize = "100px";
+      const w = head.scrollWidth;
+      if (w > 0 && target > 0) head.style.fontSize = `${Math.min(46, (100 * target * 0.62) / w)}px`;
+    }
+  }, [label, heading]);
 
   useEffect(() => {
     let cancelled = false;
@@ -41,6 +48,11 @@ export default function CardTransition({ label, onCovered, onDone }) {
       play(logoRef.current, [{ opacity: 0, transform: "scale(0.86)" }, { opacity: 1, transform: "scale(1)" }], {
         duration: 420, delay: 520, easing: "cubic-bezier(0.2, 0.9, 0.3, 1.15)", fill: "both",
       });
+      if (headingRef.current) {
+        play(headingRef.current, [{ opacity: 0, transform: "translateY(-10px)" }, { opacity: 1, transform: "translateY(0)" }], {
+          duration: 380, delay: 560, easing: "ease-out", fill: "both",
+        });
+      }
       play(labelRef.current, [{ opacity: 0, transform: "translateY(10px)" }, { opacity: 1, transform: "translateY(0)" }], {
         duration: 380, delay: 700, easing: "ease-out", fill: "both",
       });
@@ -52,6 +64,7 @@ export default function CardTransition({ label, onCovered, onDone }) {
       if (cancelled) return;
       play(logoRef.current, [{ opacity: 1 }, { opacity: 0 }], { duration: 200, fill: "forwards" });
       play(labelRef.current, [{ opacity: 1 }, { opacity: 0 }], { duration: 200, fill: "forwards" });
+      if (headingRef.current) play(headingRef.current, [{ opacity: 1 }, { opacity: 0 }], { duration: 200, fill: "forwards" });
       play(maroonRef.current, outFrames, { duration: 540, easing: ease, fill: "forwards" });
       await play(goldRef.current, outFrames, { duration: 540, delay: 150, easing: ease, fill: "forwards" });
       if (!cancelled) onDone();
@@ -80,6 +93,18 @@ export default function CardTransition({ label, onCovered, onDone }) {
           justifyContent: "center", gap: 18, pointerEvents: "none",
         }}
       >
+        {heading && (
+          <div
+            ref={headingRef}
+            className="oswald"
+            style={{
+              opacity: 0, fontSize: 40, fontWeight: 700, letterSpacing: "0.32em", textTransform: "uppercase", whiteSpace: "nowrap",
+              color: "#F7EFE4", textAlign: "center", paddingLeft: "0.32em",
+            }}
+          >
+            {heading}
+          </div>
+        )}
         <img ref={logoRef} src={homeLogo} alt="" style={{ width: "min(460px, 70vw)", height: "auto", opacity: 0 }} />
         <div
           ref={labelRef}
