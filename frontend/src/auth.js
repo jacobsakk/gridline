@@ -11,7 +11,7 @@ import { auth, db } from "./firebase";
 
 // Always allowed in (and always an admin), even before any invite exists --
 // this is how the very first account gets bootstrapped. Mirrors firestore.rules.
-export const OWNER_EMAIL = "jacobsakk@gmail.com";
+export const OWNER_EMAIL = "sakk1j@cmich.edu";
 
 const EMAIL_KEY = "gridline-signin-email";
 
