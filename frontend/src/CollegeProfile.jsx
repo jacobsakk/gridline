@@ -12,11 +12,13 @@ import {
   fetchTeamSummary,
   getGithubToken,
   depthKey,
+  depthKey as compactKey,
   lazyDepthCharts,
   linkDepthChart,
   logoFor,
   rankFor,
   refreshDepthCharts,
+  statLinesFor,
   saveGithubToken,
   rosterFor,
   standingFor,
@@ -394,45 +396,159 @@ function ScheduleTab({ college, onOpenTeam }) {
 
 // -------------------------------------------------------------------- roster
 
-const CATEGORY_LABEL = { passing: "Passing", rushing: "Rushing", receiving: "Receiving", tackling: "Defense" };
+// One table per stat category; columns mirror the Pre-Portal Tracker's.
+const STAT_TABLES = {
+  passing: {
+    label: "Passing", defaultSort: "yards",
+    columns: [
+      { key: "games", label: "G" },
+      { key: "compAtt", label: "C/ATT", sortKey: "att" },
+      { key: "pct", label: "PCT" },
+      { key: "yards", label: "YDS" },
+      { key: "td", label: "TD" },
+      { key: "int", label: "INT" },
+      { key: "rating", label: "RTG" },
+    ],
+  },
+  rushing: {
+    label: "Rushing", defaultSort: "yards",
+    columns: [{ key: "games", label: "G" }, { key: "att", label: "ATT" }, { key: "yards", label: "YDS" }, { key: "avg", label: "AVG" }, { key: "td", label: "TD" }],
+  },
+  receiving: {
+    label: "Receiving", defaultSort: "yards",
+    columns: [{ key: "games", label: "G" }, { key: "rec", label: "REC" }, { key: "yards", label: "YDS" }, { key: "avg", label: "AVG" }, { key: "td", label: "TD" }],
+  },
+  tackling: {
+    label: "Defense", defaultSort: "total",
+    columns: [
+      { key: "games", label: "G" }, { key: "solo", label: "SOLO" }, { key: "ast", label: "AST" }, { key: "total", label: "TOT" },
+      { key: "tfl", label: "TFL" }, { key: "pbu", label: "PBU" }, { key: "int", label: "INT" }, { key: "sacks", label: "SACK" }, { key: "sackYds", label: "SACK YDS" },
+    ],
+  },
+};
+
+function statValue(row, key) {
+  if (key === "pct") {
+    const [comp, att] = (row.compAtt || "0/0").split("/").map(Number);
+    return att > 0 ? (comp / att) * 100 : 0;
+  }
+  const v = row[key];
+  return typeof v === "number" ? v : parseFloat(v) || 0;
+}
+
+function statDisplay(row, key) {
+  if (key === "pct") {
+    const v = statValue(row, "pct");
+    return v ? `${v.toFixed(1)}%` : "—";
+  }
+  const v = row[key];
+  return v == null || v === "" ? "—" : v;
+}
 
 function RosterTab({ college }) {
-  const players = useMemo(() => rosterFor(college), [college]);
+  const lines = useMemo(() => statLinesFor(college), [college]);
+  const populated = Object.keys(STAT_TABLES).filter((c) => lines[c].length > 0);
+  const [category, setCategory] = useState(null);
+  const active = category && lines[category]?.length ? category : populated.includes("passing") ? "passing" : populated[0] || "passing";
+  const table = STAT_TABLES[active];
+  const [sort, setSort] = useState({ key: null, dir: "desc" });
+  const sortKey = sort.key || table.defaultSort;
   const [selected, setSelected] = useState(null);
   const watchlist = useWatchlist();
   const portalStatus = usePortalStatus();
 
+  const rows = useMemo(() => {
+    const dir = sort.key ? sort.dir : "desc"; // untouched headers use the category default, highest first
+    const column = table.columns.find((c) => c.key === sortKey);
+    const valueKey = sortKey === "player" || sortKey === "position" ? sortKey : column?.sortKey || sortKey;
+    return [...lines[active]].sort((a, b) => {
+      let cmp;
+      if (valueKey === "player" || valueKey === "position") cmp = String(a[valueKey] || "").localeCompare(String(b[valueKey] || ""));
+      else cmp = statValue(a, valueKey) - statValue(b, valueKey);
+      if (cmp === 0) cmp = String(a.player).localeCompare(String(b.player));
+      return dir === "desc" ? -cmp : cmp;
+    });
+  }, [lines, active, sortKey, sort]);
+
+  function sortBy(key) {
+    const alpha = key === "player" || key === "position";
+    if (sortKey === key) setSort({ key, dir: sort.dir === "desc" ? "asc" : "desc" });
+    else setSort({ key, dir: alpha ? "asc" : "desc" });
+  }
+
+  const total = new Set(Object.values(lines).flatMap((list) => list.map((r) => compactKey(r.player)))).size;
+  const arrow = (key) => (sortKey === key ? (sort.dir === "desc" ? "▼" : "▲") : "");
+  const th = { ...thStyle, cursor: "pointer", userSelect: "none", fontWeight: 700 };
+
   return (
     <div style={{ paddingTop: 20 }}>
-      <div className="oswald" style={{ fontSize: 17, fontWeight: 700, marginBottom: 14 }}>
-        {players.length} player{players.length === 1 ? "" : "s"}
-        <span style={{ fontSize: 12.5, fontWeight: 400, color: "var(--text-faint)", marginLeft: 10, fontFamily: "inherit" }}>
-          from the Pre-Portal Tracker — click a player for their stats
-        </span>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap", marginBottom: 14 }}>
+        <div className="oswald" style={{ fontSize: 17, fontWeight: 700 }}>
+          {total} player{total === 1 ? "" : "s"} with stats
+          <span style={{ fontSize: 12.5, fontWeight: 400, color: "var(--text-faint)", marginLeft: 10, fontFamily: "inherit" }}>
+            click a column to sort · click a player for their full card
+          </span>
+        </div>
+        <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+          {Object.entries(STAT_TABLES).map(([key, t]) => {
+            const isActive = key === active;
+            return (
+              <button
+                key={key}
+                onClick={() => {
+                  setCategory(key);
+                  setSort({ key: null, dir: "desc" });
+                }}
+                style={{
+                  display: "flex", alignItems: "center", gap: 7, borderRadius: 999, padding: "7px 14px", fontSize: 13, fontWeight: 700, fontFamily: "inherit", cursor: "pointer",
+                  background: isActive ? "var(--accent-bg)" : "var(--bg-surface)", border: `1px solid ${isActive ? "var(--accent)" : "var(--border)"}`,
+                  color: isActive ? "var(--accent)" : "var(--text-secondary)",
+                }}
+              >
+                {t.label}
+                <span className="tabular" style={{ fontSize: 11.5, opacity: 0.8 }}>{lines[key].length}</span>
+              </button>
+            );
+          })}
+        </div>
       </div>
-      {players.length === 0 ? (
-        <div style={mutedNote}>No players from {college.name} are in the Pre-Portal Tracker yet. They show up here once they appear in its stat leaders.</div>
+
+      {populated.length === 0 ? (
+        <div style={mutedNote}>No stats for {college.name} players are in the Pre-Portal Tracker yet. They show up here once they appear in its stat leaders.</div>
       ) : (
         <TableShell>
           <thead>
-            <tr>{["Player", "Pos", "Stats in the tracker"].map((h) => <th key={h} style={thStyle}>{h}</th>)}</tr>
+            <tr>
+              <th style={th} onClick={() => sortBy("player")}>Player {arrow("player")}</th>
+              <th style={th} onClick={() => sortBy("position")}>Pos {arrow("position")}</th>
+              {table.columns.map((c) => (
+                <th key={c.key} style={{ ...th, textAlign: "right" }} onClick={() => sortBy(c.key)}>
+                  {c.label} {arrow(c.key)}
+                </th>
+              ))}
+            </tr>
           </thead>
           <tbody>
-            {players.map((p) => (
-              <tr key={p.id}>
+            {rows.map((r) => (
+              <tr key={r.id}>
                 <td style={{ ...tdStyle, fontWeight: 600, color: "var(--text-primary)" }}>
-                  <span className="player-name" onClick={() => setSelected({ player: p.player, team: p.team, division: p.division, position: p.position, variants: p.variants })}>{p.player}</span>
-                </td>
-                <td style={{ ...tdStyle, color: "var(--accent)", fontWeight: 700 }}>{p.position || "—"}</td>
-                <td style={tdStyle}>
-                  <span style={{ display: "inline-flex", gap: 6, flexWrap: "wrap" }}>
-                    {[...p.categories].map((c) => (
-                      <span key={c} style={{ border: "1px solid var(--border)", background: "var(--bg-surface)", borderRadius: 999, padding: "2px 9px", fontSize: 12 }}>
-                        {CATEGORY_LABEL[c] || c}
-                      </span>
-                    ))}
+                  <span
+                    className="player-name"
+                    onClick={() => setSelected({ player: r.player, team: r.team, division: r.division, position: r.position, variants: r.variants })}
+                  >
+                    {r.player}
                   </span>
                 </td>
+                <td style={{ ...tdStyle, color: "var(--accent)", fontWeight: 700 }}>{r.position || "—"}</td>
+                {table.columns.map((c) => (
+                  <td
+                    key={c.key}
+                    className="tabular"
+                    style={{ ...tdStyle, textAlign: "right", color: c.key === sortKey || (c.sortKey && c.sortKey === sortKey) ? "var(--text-primary)" : undefined, fontWeight: c.key === sortKey ? 700 : 400 }}
+                  >
+                    {statDisplay(r, c.key)}
+                  </td>
+                ))}
               </tr>
             ))}
           </tbody>

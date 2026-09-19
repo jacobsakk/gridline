@@ -459,3 +459,40 @@ export function collegeForLabel(label) {
 export function logoFor(college, theme) {
   return theme !== "light" ? `https://a.espncdn.com/i/teamlogos/ncaa/500-dark/${college.id}.png` : college.logo;
 }
+
+// ------------------------------------------------------------ team stat lines
+
+let statsByTeamKey = null;
+function buildStatIndex() {
+  statsByTeamKey = new Map();
+  const keyOfTeam = new Map();
+  realStats.forEach((r) => {
+    if ((r.division !== "FBS" && r.division !== "FCS") || r.week !== "total") return;
+    if (!keyOfTeam.has(r.team)) keyOfTeam.set(r.team, teamKey(r.team));
+    const k = keyOfTeam.get(r.team);
+    if (!statsByTeamKey.has(k)) statsByTeamKey.set(k, []);
+    statsByTeamKey.get(k).push(r);
+  });
+}
+
+const STAT_CATEGORIES = ["passing", "rushing", "receiving", "tackling"];
+
+// Season-total stat lines for one college's players from the Pre-Portal
+// Tracker data, by category. A player listed twice in a category (two
+// spellings of the school or the name) is collapsed to their fuller line.
+export function statLinesFor(college) {
+  if (!statsByTeamKey) buildStatIndex();
+  const keys = new Set([teamKey(college.name), teamKey(college.displayName)]);
+  const out = Object.fromEntries(STAT_CATEGORIES.map((c) => [c, new Map()]));
+  keys.forEach((k) => {
+    (statsByTeamKey.get(k) || []).forEach((r) => {
+      const bucket = out[r.category];
+      if (!bucket) return;
+      const id = compact(r.player);
+      const existing = bucket.get(id);
+      if (!existing || (r.games || 0) > (existing.games || 0)) bucket.set(id, { ...r, variants: [{ player: r.player, team: r.team }] });
+      else if (!existing.variants.some((v) => v.player === r.player && v.team === r.team)) existing.variants.push({ player: r.player, team: r.team });
+    });
+  });
+  return Object.fromEntries(STAT_CATEGORIES.map((c) => [c, [...out[c].values()]]));
+}
