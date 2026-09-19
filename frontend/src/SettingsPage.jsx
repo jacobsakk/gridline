@@ -168,7 +168,7 @@ export default function SettingsPage({ onBack, session }) {
           </div>
           {!isAdmin ? (
             <div style={{ background: "var(--bg-panel)", border: "1px solid var(--border)", borderRadius: 8, padding: 20, fontSize: 14, color: "var(--text-muted)" }}>
-              Only admins can invite coaches. Ask Jacob if you need someone added.
+              Only admins can invite coaches. Ask Coach Sakk if you need someone added.
             </div>
           ) : (
           <div style={{ background: "var(--bg-panel)", border: "1px solid var(--border)", borderRadius: 8, padding: 20 }}>

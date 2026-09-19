@@ -74,7 +74,7 @@ function SignInForm({ auth }) {
       setPhase("form");
       setError(
         err.code === "not-invited"
-          ? "That email hasn't been invited yet. Ask Jacob to send you an invite."
+          ? "That email hasn't been invited yet. Ask Coach Sakk to send you an invite."
           : err.code === "bad-email"
             ? err.message
             : err.code === "auth/operation-not-allowed"
@@ -184,7 +184,7 @@ export default function LoginGate({ children }) {
       <Shell>
         {auth.status === "denied" && (
           <div role="alert" style={{ marginBottom: 16, fontSize: 13.5, color: "#FF9E9E", lineHeight: 1.45 }}>
-            That email isn't on the invite list. Ask Jacob to add you.
+            That email isn't on the invite list. Ask Coach Sakk to add you.
           </div>
         )}
         <SignInForm auth={auth} />
