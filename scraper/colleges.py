@@ -39,6 +39,9 @@ DEPTH_PATH = os.path.join(DATA_DIR, "depth-charts.json")
 
 GROUPS = {"FBS": 80, "FCS": 81}
 
+# Shown one way everywhere (mirrors frontend/src/schoolNames.js).
+DISPLAY_NAMES = {"Massachusetts": "UMass"}
+
 
 def get(url, as_json=True, retries=3):
     last = None
@@ -115,7 +118,7 @@ def build_colleges():
                 prev = existing.get(tid, {})
                 colleges.append({
                     "id": tid,
-                    "name": t.get("location") or t["displayName"],
+                    "name": DISPLAY_NAMES.get(t.get("location"), t.get("location")) or t["displayName"],
                     "displayName": t["displayName"],
                     "abbreviation": t.get("abbreviation", ""),
                     "nickname": prev.get("nickname", ""),

@@ -12,7 +12,7 @@
   --text-primary: #EDEAE0;
   --text-secondary: #C7CDD1;
   --text-muted: #8B959C;
-  --text-faint: #5D666C;
+  --text-faint: #7F898F;
   --accent: var(--gold);
   --accent-bg: #241B08;
   --accent-hover-tint: rgba(251,171,24,0.18);
@@ -36,8 +36,8 @@
   --row-hover: #EFE9DB;
   --text-primary: #211E17;
   --text-secondary: #4B4740;
-  --text-muted: #736E62;
-  --text-faint: #948E7E;
+  --text-muted: #5A5548;
+  --text-faint: #6B6558;
   --accent: var(--maroon);
   --accent-bg: #F5E7EA;
   --accent-hover-tint: rgba(81,15,29,0.10);
@@ -53,6 +53,8 @@
 }
 .app-shell[data-theme="dark"] { color-scheme: dark; }
 .app-shell[data-theme="light"] { color-scheme: light; }
+/* Column headers read too thin on cream in light mode. */
+.app-shell[data-theme="light"] thead th { font-weight: 700 !important; }
 /* The top bar is maroon in both themes. Its text, buttons and inputs get
    cream-on-maroon colors of their own (custom properties re-resolve inside the
    bar), and the maroon helmet gets a light edge so it still shows. */
@@ -62,7 +64,7 @@
   --text-primary: #F7EFE4;
   --text-secondary: #E6D5CD;
   --text-muted: #CDAEAC;
-  --text-faint: #A78389;
+  --text-faint: #C4A3A8;
   --bg-surface: #6F2033;
   --bg-panel: #5E1626;
   --bg-page: #3B0A15;

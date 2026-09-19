@@ -11,6 +11,7 @@ import {
   writeBatch,
 } from "firebase/firestore";
 import { db } from "./firebase";
+import { canonicalSchool } from "./schoolNames.js";
 import { useEffect, useMemo, useState } from "react";
 
 // Sheet name (as it appears in the workbook, case-insensitive) -> which
@@ -127,8 +128,13 @@ const COMMITTED_WORD = /^\s*C+O+M{1,3}I{0,2}T{1,3}E{0,2}D{1,2}\b\s*(?:TOO?\b\s*)
 export function normalizeStatus(status) {
   const text = (status || "").trim();
   const m = COMMITTED_WORD.exec(text);
-  if (!m || !m[1].trim()) return text;
-  return `COMMITTED TO ${m[1].trim().replace(/\s+/g, " ").toUpperCase()}`;
+  if (!m || !m[1].trim()) {
+    // A bare school name as the status ("Miami (OH)", "Massachusetts") gets the same one spelling.
+    const bare = canonicalSchool(text);
+    return bare !== text ? bare.toUpperCase() : text;
+  }
+  const school = m[1].trim().replace(/\s+/g, " ");
+  return `COMMITTED TO ${canonicalSchool(school).toUpperCase()}`;
 }
 
 // A commitment is a fact about the recruit, not about whose board you're
@@ -389,9 +395,9 @@ export async function importActivityFeed(file, { dryRun = false } = {}) {
     const decommit = latest["Type"] === "de-commit";
     if (decommit) {
       const away = !target || target.toUpperCase() === latest["Recruiting College"].toUpperCase();
-      commitmentByPlayer.set(k, away ? "" : `COMMITTED TO ${target.toUpperCase()}`);
+      commitmentByPlayer.set(k, away ? "" : normalizeStatus(`COMMITTED TO ${target}`));
     } else if (target) {
-      commitmentByPlayer.set(k, `COMMITTED TO ${target.toUpperCase()}`);
+      commitmentByPlayer.set(k, normalizeStatus(`COMMITTED TO ${target}`));
     }
   });
 

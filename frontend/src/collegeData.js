@@ -1,6 +1,7 @@
 import colleges from "./data/colleges.json";
 import standings from "./data/standings.json";
 import realStats from "./data/real-stats.json";
+import { canonicalSchool } from "./schoolNames.js";
 
 export const COLLEGES = colleges;
 export const COLLEGE_BY_ID = new Map(colleges.map((c) => [c.id, c]));
@@ -73,7 +74,7 @@ function opponentOf(event, teamId) {
   const score = (c) => (c?.score == null ? null : typeof c.score === "object" ? c.score.displayValue : String(c.score));
   return {
     id: String(opp.team?.id || ""),
-    name: opp.team?.location || opp.team?.displayName || "TBD",
+    name: canonicalSchool(opp.team?.location || opp.team?.displayName || "TBD"),
     displayName: opp.team?.displayName || "",
     logo,
     rank: opp.curatedRank?.current && opp.curatedRank.current <= 25 ? opp.curatedRank.current : null,

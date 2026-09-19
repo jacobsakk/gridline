@@ -2,6 +2,7 @@ import { createContext, useContext, useMemo, useState } from "react";
 import { ArrowLeft, Upload, X, Loader2, ChevronUp, ChevronDown, ChevronsUpDown, TrendingUp, MapPin, Search, Plus, ExternalLink } from "lucide-react";
 import { confirmAction } from "./ConfirmDialog.jsx";
 import { collegeForLabel, logoFor, teamKey } from "./collegeData.js";
+import { canonicalSchool, fixBrandCase } from "./schoolNames.js";
 import { ThemeSwitcher, useTheme } from "./theme.jsx";
 import cmuHelmet from "./assets/cmu-helmet.png";
 import { CONFERENCE_ORDER, TEAM_CONFERENCE, normalizePosition, useOfferTracker } from "./offerData.js";
@@ -26,7 +27,7 @@ const FIELDS = [
 // normal-looking "Aaron Pegues" instead of "AARON PEGUES", matching
 // how names read in the Pre-Portal Tracker.
 export function toTitleCase(text) {
-  return (text || "").toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase());
+  return fixBrandCase((text || "").toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase()));
 }
 
 const PIPELINE_OPTIONS = ["Reject", "Recruit", "0 - Partial", "1 - Solid Starter", "2 - All Mac Player"];
@@ -1043,6 +1044,7 @@ export default function OfferTracker({ onBack }) {
       rows = rows.filter((r) => isCommittedTo(r.status, activeTeamMeta.label));
     }
     if (q) {
+      const alt = canonicalSchool(q).toLowerCase(); // "massachusetts" also finds "UMass"
       // Status is searched too, so typing a school ("ohio state")
       // finds everyone committed there -- that's the "committed to X"
       // text -- without a separate dropdown.
@@ -1050,7 +1052,8 @@ export default function OfferTracker({ onBack }) {
         (r) =>
           (r.player || "").toLowerCase().includes(q) ||
           (r.highSchool || "").toLowerCase().includes(q) ||
-          (r.status || "").toLowerCase().includes(q)
+          (r.status || "").toLowerCase().includes(q) ||
+          (r.status || "").toLowerCase().includes(alt)
       );
     }
     if (stateFilter) {

@@ -8,6 +8,7 @@ import "leaflet/dist/leaflet.css";
 import realStats from "./data/real-stats.json";
 import { ThemeSwitcher, useTheme } from "./theme.jsx";
 import cmuHelmet from "./assets/cmu-helmet.png";
+import { canonicalSchool } from "./schoolNames.js";
 
 const DIVISIONS = ["NAIA", "JUCO", "D3", "D2", "FCS", "FBS"];
 
@@ -660,7 +661,7 @@ function WatchListRow({
           )}
         </span>
       </td>
-      <td style={{ ...tdStyle, color: "var(--text-muted)" }}>{p.team || "—"}</td>
+      <td style={{ ...tdStyle, color: "var(--text-muted)" }}>{canonicalSchool(p.team) || "—"}</td>
       <td style={{ ...tdStyle, color: "var(--text-muted)", fontSize: 12.5 }}>{p.division || "—"}</td>
       <td style={{ ...tdStyle, color: "var(--accent)", fontWeight: 600 }} className="oswald">
         {p.position || "—"}
@@ -1277,7 +1278,7 @@ export function PlayerDetailModal({ sel, onClose, watchlist, portalStatus }) {
               </button>
             </div>
             <div style={{ fontSize: 13, color: "var(--text-muted)", marginTop: 3 }}>
-              {sel.team}
+              {canonicalSchool(sel.team)}
               {first ? ` · ${first.conference} · ${first.position} · ${DIVISION_LABEL[sel.division] || sel.division}` : ""}
             </div>
           </div>
@@ -1522,7 +1523,7 @@ function CompareModal({ players, onClose }) {
                       {p.player}
                     </div>
                     <div style={{ fontSize: 11.5, color: "var(--text-muted)", fontWeight: 400 }}>
-                      {p.team || "—"} · {p.position || "—"}
+                      {canonicalSchool(p.team) || "—"} · {p.position || "—"}
                     </div>
                   </th>
                 ))}
@@ -1601,7 +1602,7 @@ export default function Gridline({ onBack, initialSearch }) {
     if (position !== "All") filtered = filtered.filter((r) => r.position === position);
     if (conference !== "All") filtered = filtered.filter((r) => r.conference === conference);
     const q = search.trim().toLowerCase();
-    if (q) filtered = filtered.filter((r) => r.player.toLowerCase().includes(q) || r.team.toLowerCase().includes(q));
+    if (q) filtered = filtered.filter((r) => r.player.toLowerCase().includes(q) || (r.team.toLowerCase().includes(q) || canonicalSchool(r.team).toLowerCase().includes(q)));
 
     filtered = [...filtered].sort((a, b) => {
       if (STRING_SORT_KEYS.has(sortKey)) {
@@ -1630,10 +1631,10 @@ export default function Gridline({ onBack, initialSearch }) {
       const matchesCurrent = DATA.some(
         (r) =>
           r.division === division && r.category === category && r.week === week &&
-          (r.player.toLowerCase().includes(q) || r.team.toLowerCase().includes(q))
+          (r.player.toLowerCase().includes(q) || (r.team.toLowerCase().includes(q) || canonicalSchool(r.team).toLowerCase().includes(q)))
       );
       if (matchesCurrent) return;
-      const hit = DATA.find((r) => r.week === "total" && (r.player.toLowerCase().includes(q) || r.team.toLowerCase().includes(q)));
+      const hit = DATA.find((r) => r.week === "total" && (r.player.toLowerCase().includes(q) || (r.team.toLowerCase().includes(q) || canonicalSchool(r.team).toLowerCase().includes(q))));
       if (hit) {
         setDivision(hit.division);
         setCategory(hit.category);
@@ -2118,7 +2119,7 @@ export default function Gridline({ onBack, initialSearch }) {
                         )}
                       </span>
                     </td>
-                    <td style={{ ...tdStyle, color: "var(--text-muted)" }}>{r.team}</td>
+                    <td style={{ ...tdStyle, color: "var(--text-muted)" }}>{canonicalSchool(r.team)}</td>
                     <td style={{ ...tdStyle, color: "var(--text-muted)", fontSize: 12.5 }}>{r.conference}</td>
                     <td style={{ ...tdStyle, color: "var(--accent)", fontWeight: 600 }} className="oswald">
                       {r.position}
