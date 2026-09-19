@@ -172,9 +172,9 @@ export default function SettingsPage({ onBack, session }) {
             </div>
           ) : (
           <div style={{ background: "var(--bg-panel)", border: "1px solid var(--border)", borderRadius: 8, padding: 20 }}>
-            <h2 className="oswald" style={{ fontSize: 18, fontWeight: 700, margin: "0 0 6px" }}>Invite a Coach</h2>
+            <h2 className="oswald" style={{ fontSize: 18, fontWeight: 700, margin: "0 0 6px" }}>Accounts &amp; Invites</h2>
             <p style={{ margin: "0 0 14px", fontSize: 13, color: "var(--text-muted)", lineHeight: 1.5 }}>
-              Only people on this list can sign in. Sending an invite emails them a one-time sign-in link; after that they stay signed in on their device.
+              Only people on this list can sign in. An invite emails them a one-time link; they then create their own password. Every account appears below as soon as it's created.
             </p>
 
             <form onSubmit={handleAdd} style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "flex-end", marginBottom: 12 }}>
@@ -218,14 +218,14 @@ export default function SettingsPage({ onBack, session }) {
 
             {accounts.length === 0 ? (
               <div style={{ fontSize: 13, color: "var(--text-faint)", padding: "10px 0" }}>
-                No one has been invited yet. You can always sign in yourself as the owner.
+                No accounts yet. Your own account appears here after you sign in.
               </div>
             ) : (
               <div style={{ overflowX: "auto" }}>
-              <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 620 }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 760 }}>
                 <thead>
                   <tr style={{ borderBottom: "1px solid var(--border)" }}>
-                    {["Name", "Email", "Role", "Access", "Status", ""].map((h) => (
+                    {["Name", "Email", "Role", "Access", "Created", "Status", ""].map((h) => (
                       <th key={h} style={{ textAlign: "left", padding: "6px 8px", fontSize: 11, color: "var(--text-faint)", textTransform: "uppercase" }}>{h}</th>
                     ))}
                   </tr>
@@ -239,8 +239,15 @@ export default function SettingsPage({ onBack, session }) {
                         <td style={{ padding: "9px 8px", fontSize: 13, color: "var(--text-muted)" }}>{a.email || "—"}</td>
                         <td style={{ padding: "9px 8px", fontSize: 13, color: "var(--text-secondary)" }}>{a.role || "—"}</td>
                         <td style={{ padding: "9px 8px", fontSize: 13, color: "var(--text-secondary)" }}>{a.admin ? "Admin" : "Coach"}</td>
-                        <td style={{ padding: "9px 8px", fontSize: 12.5, color: legacy ? "var(--danger-text)" : a.lastLoginAt ? "var(--success)" : "var(--text-muted)" }}>
-                          {legacy ? "Needs a new invite" : a.lastLoginAt ? `Signed in ${new Date(a.lastLoginAt).toLocaleDateString([], { month: "short", day: "numeric" })}` : "Invited — not signed in yet"}
+                        <td className="tabular" style={{ padding: "9px 8px", fontSize: 12.5, color: "var(--text-muted)", whiteSpace: "nowrap" }}>
+                          {a.createdAt ? new Date(a.createdAt).toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" }) : "—"}
+                        </td>
+                        <td style={{ padding: "9px 8px", fontSize: 12.5, color: legacy ? "var(--danger-text)" : a.passwordSet ? "var(--success)" : "var(--text-muted)" }}>
+                          {legacy
+                            ? "Needs a new invite"
+                            : a.passwordSet
+                              ? `Active${a.lastLoginAt ? ` · last in ${new Date(a.lastLoginAt).toLocaleDateString([], { month: "short", day: "numeric" })}` : ""}`
+                              : "Invited — hasn't created a password yet"}
                         </td>
                         <td style={{ padding: "9px 8px", textAlign: "right", whiteSpace: "nowrap" }}>
                           {a.email && (

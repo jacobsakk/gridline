@@ -9,9 +9,12 @@ function prefersReducedMotion() {
 }
 
 // Dev-only shortcut for previewing the app and the welcome animation without
-// a real email round trip: /?devLogin=welcome (or =quiet). Compiled out of production builds.
+// a real email round trip: /?devLogin=welcome (or =quiet, or =password for the create-password step). Compiled out of production builds.
 function useDevAuth() {
   const dev = import.meta.env.DEV ? new URLSearchParams(window.location.search).get("devLogin") : null;
+  if (dev === "password") {
+    return { status: "needsPassword", profile: { name: "Jacob Sakk", email: "dev@example.com" }, createPassword: () => new Promise(() => {}), signOut: () => {} };
+  }
   return dev
     ? {
         status: "ready",
@@ -56,73 +59,137 @@ function Shell({ children }) {
   );
 }
 
+function authErrorMessage(err) {
+  const code = err?.code || "";
+  if (code === "not-invited") return "That email hasn't been invited yet. Ask Coach Sakk to send you an invite.";
+  if (code === "bad-email") return err.message;
+  if (["auth/invalid-credential", "auth/wrong-password", "auth/user-not-found", "auth/invalid-login-credentials"].includes(code))
+    return "That email and password don't match. If this is your first time, use the sign-in link below.";
+  if (code === "auth/operation-not-allowed") return "Email sign-in isn't switched on for this site yet (it needs one setting turned on in Firebase).";
+  if (code === "auth/too-many-requests") return "Too many attempts. Wait a few minutes and try again.";
+  if (code === "auth/network-request-failed") return "No connection. Check your internet and try again.";
+  return "Something went wrong. Try again in a moment.";
+}
+
 function SignInForm({ auth }) {
   const [email, setEmail] = useState("");
-  const [phase, setPhase] = useState("form"); // form | sending | sent
+  const [password, setPassword] = useState("");
+  const [phase, setPhase] = useState("form"); // form | working | sent
+  const [sent, setSent] = useState({ kind: "link", to: "" });
   const [error, setError] = useState(auth.error || "");
-  const [sentTo, setSentTo] = useState("");
 
-  async function send(e) {
-    e?.preventDefault();
+  async function run(action, kind) {
     setError("");
-    setPhase("sending");
+    setPhase("working");
     try {
-      const address = await auth.requestLink(email);
-      setSentTo(address);
-      setPhase("sent");
+      const result = await action();
+      if (kind) {
+        setSent({ kind, to: result });
+        setPhase("sent");
+      }
     } catch (err) {
       setPhase("form");
-      setError(
-        err.code === "not-invited"
-          ? "That email hasn't been invited yet. Ask Coach Sakk to send you an invite."
-          : err.code === "bad-email"
-            ? err.message
-            : err.code === "auth/operation-not-allowed"
-              ? "Email sign-in isn't switched on for this site yet (it needs one setting turned on in Firebase)."
-              : err.code === "auth/too-many-requests"
-                ? "Too many attempts. Wait a few minutes and try again."
-                : "We couldn't send the link right now. Try again in a moment."
-      );
+      setError(authErrorMessage(err));
     }
   }
 
+  function signIn(e) {
+    e.preventDefault();
+    if (!password) return setError("Enter your password.");
+    run(() => auth.signInWithPassword(email, password), null);
+  }
+
   if (phase === "sent") {
+    const reset = sent.kind === "reset";
     return (
       <div style={{ textAlign: "center" }}>
         <Mail size={30} color="var(--gold)" style={{ marginBottom: 10 }} />
         <h2 className="oswald" style={{ margin: "0 0 8px", fontSize: 20 }}>Check your email</h2>
         <p style={{ margin: "0 0 16px", fontSize: 14, color: "#CDAEAC", lineHeight: 1.55 }}>
-          We sent a sign-in link to <strong style={{ color: "#F7EFE4" }}>{sentTo}</strong>. Open it on this device to come in. It can take a minute, and it may land in spam.
+          {reset ? "We sent a link to reset your password to " : "We sent a sign-in link to "}
+          <strong style={{ color: "#F7EFE4" }}>{sent.to}</strong>.{" "}
+          {reset ? "Choose a new password there, then come back and sign in." : "Open it on this device, then you'll create your password."} It can take a minute, and it may land in spam.
         </p>
         <div style={{ display: "flex", justifyContent: "center", gap: 18 }}>
-          <button onClick={send} style={linkButton}>Resend link</button>
-          <button onClick={() => setPhase("form")} style={linkButton}>Use a different email</button>
+          <button onClick={() => run(() => (reset ? auth.forgotPassword(email) : auth.requestLink(email)), sent.kind)} style={linkButton}>Resend</button>
+          <button onClick={() => setPhase("form")} style={linkButton}>Back to sign in</button>
         </div>
       </div>
     );
   }
 
+  const working = phase === "working";
+  const label = { display: "block", fontSize: 12, letterSpacing: "0.08em", textTransform: "uppercase", color: "#A78389", marginBottom: 8 };
   return (
-    <form onSubmit={send}>
-      <label htmlFor="login-email" style={{ display: "block", fontSize: 12, letterSpacing: "0.08em", textTransform: "uppercase", color: "#A78389", marginBottom: 8 }}>Coach email</label>
-      <input
-        id="login-email"
-        type="email"
-        autoComplete="email"
-        autoFocus
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        placeholder="you@school.edu"
-        style={fieldStyle}
-      />
+    <form onSubmit={signIn}>
+      <label htmlFor="login-email" style={label}>Coach email</label>
+      <input id="login-email" type="email" autoComplete="username" autoFocus value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@school.edu" style={fieldStyle} />
+      <label htmlFor="login-password" style={{ ...label, marginTop: 14 }}>Password</label>
+      <input id="login-password" type="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Your password" style={fieldStyle} />
       {error && <div role="alert" style={{ marginTop: 12, fontSize: 13.5, color: "#FF9E9E", lineHeight: 1.45 }}>{error}</div>}
-      <button type="submit" disabled={phase === "sending" || !email.trim()} style={{ ...buttonStyle, marginTop: 16, opacity: phase === "sending" || !email.trim() ? 0.6 : 1 }}>
-        {phase === "sending" ? <Loader2 size={16} className="spin" /> : <Mail size={16} />}
-        {phase === "sending" ? "Sending…" : "Email me a sign-in link"}
+      <button type="submit" disabled={working || !email.trim()} style={{ ...buttonStyle, marginTop: 16, opacity: working || !email.trim() ? 0.6 : 1 }}>
+        {working ? <Loader2 size={16} className="spin" /> : null}
+        {working ? "Working…" : "Sign in"}
       </button>
-      <p style={{ margin: "14px 0 0", fontSize: 12.5, color: "#A78389", lineHeight: 1.5 }}>
-        No password needed. We'll email you a one-time link, and you'll stay signed in on this device.
-      </p>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 14, gap: 10, flexWrap: "wrap" }}>
+        <button type="button" disabled={working} onClick={() => run(() => auth.forgotPassword(email), "reset")} style={linkButton}>Forgot password?</button>
+      </div>
+      <div style={{ marginTop: 18, paddingTop: 16, borderTop: "1px solid #3A2A2E", textAlign: "center" }}>
+        <div style={{ fontSize: 12.5, color: "#A78389", marginBottom: 10 }}>First time here?</div>
+        <button
+          type="button"
+          disabled={working || !email.trim()}
+          onClick={() => run(() => auth.requestLink(email), "link")}
+          style={{ ...buttonStyle, background: "transparent", opacity: working || !email.trim() ? 0.6 : 1 }}
+        >
+          <Mail size={16} /> Email me a sign-in link
+        </button>
+        <p style={{ margin: "10px 0 0", fontSize: 12, color: "#A78389", lineHeight: 1.5 }}>Type your email above first. You'll create your own password after clicking the link.</p>
+      </div>
+    </form>
+  );
+}
+
+function CreatePassword({ auth }) {
+  const [password, setPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
+  const [error, setError] = useState("");
+  const [saving, setSaving] = useState(false);
+  const title = coachTitle(auth.profile?.name, auth.profile?.email);
+
+  async function save(e) {
+    e.preventDefault();
+    if (password.length < 8) return setError("Use at least 8 characters.");
+    if (password !== confirm) return setError("The two passwords don't match.");
+    setError("");
+    setSaving(true);
+    try {
+      await auth.createPassword(password);
+    } catch (err) {
+      setSaving(false);
+      setError(
+        err.code === "auth/weak-password"
+          ? "That password is too weak. Try a longer one."
+          : err.code === "auth/requires-recent-login"
+            ? "For security, please use your sign-in link again, then set your password."
+            : "We couldn't save your password. Try again."
+      );
+    }
+  }
+
+  return (
+    <form onSubmit={save}>
+      <h2 className="oswald" style={{ margin: "0 0 6px", fontSize: 20 }}>Welcome, {title}</h2>
+      <p style={{ margin: "0 0 16px", fontSize: 14, color: "#CDAEAC", lineHeight: 1.5 }}>One last step: create your own password. You'll use it with your email to sign in from now on.</p>
+      <label htmlFor="new-password" style={{ display: "block", fontSize: 12, letterSpacing: "0.08em", textTransform: "uppercase", color: "#A78389", marginBottom: 8 }}>New password</label>
+      <input id="new-password" type="password" autoComplete="new-password" autoFocus value={password} onChange={(e) => setPassword(e.target.value)} placeholder="At least 8 characters" style={fieldStyle} />
+      <label htmlFor="confirm-password" style={{ display: "block", fontSize: 12, letterSpacing: "0.08em", textTransform: "uppercase", color: "#A78389", margin: "14px 0 8px" }}>Confirm password</label>
+      <input id="confirm-password" type="password" autoComplete="new-password" value={confirm} onChange={(e) => setConfirm(e.target.value)} placeholder="Type it again" style={fieldStyle} />
+      {error && <div role="alert" style={{ marginTop: 12, fontSize: 13.5, color: "#FF9E9E", lineHeight: 1.45 }}>{error}</div>}
+      <button type="submit" disabled={saving || !password} style={{ ...buttonStyle, marginTop: 16, opacity: saving || !password ? 0.6 : 1 }}>
+        {saving ? <Loader2 size={16} className="spin" /> : null}
+        {saving ? "Saving…" : "Save password and continue"}
+      </button>
     </form>
   );
 }
@@ -179,6 +246,8 @@ export default function LoginGate({ children }) {
     );
   } else if (auth.status === "needsEmail") {
     screen = <Shell><ConfirmEmail auth={auth} /></Shell>;
+  } else if (auth.status === "needsPassword") {
+    screen = <Shell><CreatePassword auth={auth} /></Shell>;
   } else {
     screen = (
       <Shell>

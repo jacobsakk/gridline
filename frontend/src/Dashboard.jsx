@@ -61,6 +61,11 @@ export default function Dashboard({ onOpenCard, onOpenSettings, session }) {
             </h1>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
+            {session?.profile && (
+              <span className="welcome-line" style={{ fontSize: 14, fontWeight: 600, color: "var(--text-secondary)", whiteSpace: "nowrap" }}>
+                Welcome, {coachTitle(session.profile.name, session.profile.email)}
+              </span>
+            )}
             <img src={anniversaryLogo} alt="Central Michigan football 125th anniversary" style={{ height: 46, width: "auto", flexShrink: 0 }} />
             {session?.profile?.admin && (
               <button

@@ -1,12 +1,16 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
+  EmailAuthProvider,
   isSignInWithEmailLink,
+  linkWithCredential,
   onAuthStateChanged,
+  sendPasswordResetEmail,
   sendSignInLinkToEmail,
+  signInWithEmailAndPassword,
   signInWithEmailLink,
   signOut as firebaseSignOut,
 } from "firebase/auth";
-import { doc, getDoc, updateDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 import { auth, db } from "./firebase";
 
 // Always allowed in (and always an admin), even before any invite exists --
@@ -48,13 +52,14 @@ function storeEmail(email) {
 }
 
 async function findInvite(email) {
-  if (email === OWNER_EMAIL) return { name: "Jacob Sakk", email, admin: true, owner: true };
   const snap = await getDoc(doc(db, "accounts", email));
-  return snap.exists() ? { id: snap.id, ...snap.data() } : null;
+  const data = snap.exists() ? { id: snap.id, ...snap.data() } : null;
+  if (email === OWNER_EMAIL) return { name: "Jacob Sakk", role: "Owner", ...(data || {}), email, admin: true, owner: true, missingDoc: !data };
+  return data;
 }
 
 // Sign-in state for the whole app.
-//   status: "loading" | "signedOut" | "needsEmail" | "denied" | "ready"
+//   status: "loading" | "signedOut" | "needsEmail" | "needsPassword" | "denied" | "ready"
 export function useAuth() {
   const [state, setState] = useState({ status: "loading", profile: null, error: "" });
   const [justSignedIn, setJustSignedIn] = useState(false);
@@ -91,7 +96,19 @@ export function useAuth() {
             setState({ status: "denied", profile: null, error: "" });
             return;
           }
-          if (!profile.owner) updateDoc(doc(db, "accounts", email), { lastLoginAt: new Date().toISOString() }).catch(() => {});
+          // First sign-in is by emailed link; before anything else they choose a password.
+          const hasPassword = user.providerData.some((p) => p.providerId === "password");
+          if (!hasPassword) {
+            setState({ status: "needsPassword", profile: { ...profile, email }, error: "" });
+            return;
+          }
+          const stamp = { lastLoginAt: new Date().toISOString() };
+          if (profile.owner && profile.missingDoc) {
+            // The owner isn't invited by anyone, so their account is created here -- it then shows in Settings.
+            setDoc(doc(db, "accounts", email), { name: profile.name, email, role: profile.role, admin: true, createdAt: new Date().toISOString(), invitedBy: "", passwordSet: true, ...stamp }, { merge: true }).catch(() => {});
+          } else {
+            updateDoc(doc(db, "accounts", email), { ...stamp, passwordSet: true }).catch(() => {});
+          }
           setState({ status: "ready", profile: { ...profile, email }, error: "" });
         } catch {
           setState({ status: "signedOut", profile: null, error: "We couldn't check your invitation just now. Try again in a moment." });
@@ -122,6 +139,48 @@ export function useAuth() {
     return email;
   }, []);
 
+  // First-time password: attach it to the account that the emailed link just signed in.
+  const createPassword = useCallback(async (password) => {
+    const user = auth.currentUser;
+    if (!user) throw Object.assign(new Error("Not signed in."), { code: "auth/requires-recent-login" });
+    const email = normalizeEmail(user.email);
+    try {
+      await linkWithCredential(user, EmailAuthProvider.credential(email, password));
+    } catch (err) {
+      if (err.code !== "auth/provider-already-linked") throw err;
+    }
+    const stamp = { lastLoginAt: new Date().toISOString(), passwordSet: true };
+    if (email === OWNER_EMAIL) {
+      await setDoc(doc(db, "accounts", email), { name: "Jacob Sakk", email, role: "Owner", admin: true, createdAt: new Date().toISOString(), invitedBy: "", ...stamp }, { merge: true });
+    } else {
+      await updateDoc(doc(db, "accounts", email), stamp);
+    }
+    // Reload the profile (now with a password) so the app opens.
+    const profile = await findInvite(email);
+    setState({ status: "ready", profile: { ...profile, email }, error: "" });
+  }, []);
+
+  const signInWithPassword = useCallback(async (rawEmail, password) => {
+    const email = normalizeEmail(rawEmail);
+    if (!/^\S+@\S+\.\S+$/.test(email)) throw Object.assign(new Error("Enter a valid email address."), { code: "bad-email" });
+    setJustSignedIn(true);
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+    } catch (err) {
+      setJustSignedIn(false);
+      throw err;
+    }
+  }, []);
+
+  const forgotPassword = useCallback(async (rawEmail) => {
+    const email = normalizeEmail(rawEmail);
+    if (!/^\S+@\S+\.\S+$/.test(email)) throw Object.assign(new Error("Enter your email above first."), { code: "bad-email" });
+    const invite = await findInvite(email);
+    if (!invite) throw Object.assign(new Error("That email hasn't been invited."), { code: "not-invited" });
+    await sendPasswordResetEmail(auth, email, { url: SITE_URL });
+    return email;
+  }, []);
+
   const confirmEmail = useCallback(async (rawEmail) => {
     await completeLink(normalizeEmail(rawEmail));
   }, [completeLink]);
@@ -131,7 +190,7 @@ export function useAuth() {
     return firebaseSignOut(auth);
   }, []);
 
-  return { ...state, justSignedIn, requestLink, confirmEmail, signOut };
+  return { ...state, justSignedIn, requestLink, confirmEmail, createPassword, signInWithPassword, forgotPassword, signOut };
 }
 
 // Used by Settings: send (or re-send) an invitation email to someone already on the roster.

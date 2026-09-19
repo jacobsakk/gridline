@@ -27,14 +27,15 @@ service cloud.firestore {
     // The invite list. The sign-in page has to check "is this email invited?"
     // before anyone is signed in, so a single document can be fetched by its
     // id -- but the list itself can't be browsed, and only admins change it.
-    // Coaches may stamp their own last-sign-in time and nothing else.
+    // Coaches may stamp their own last-sign-in time and mark that they've set a
+    // password, and nothing else.
     match /accounts/{email} {
       allow get: if true;
       allow list: if invited();
       allow create, delete: if isAdmin();
       allow update: if isAdmin() || (
         signedIn() && myEmail() == email &&
-        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['lastLoginAt'])
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['lastLoginAt', 'passwordSet'])
       );
     }
 
