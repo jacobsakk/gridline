@@ -40,33 +40,34 @@ export default function CardTransition({ heading, label, onCovered, onDone }) {
       running.push(a);
       return a.finished;
     };
-    const ease = "cubic-bezier(0.7, 0, 0.2, 1)";
-    const inFrames = [{ transform: "translateX(-125%) skewX(-12deg)" }, { transform: "translateX(0) skewX(-12deg)" }];
-    const outFrames = [{ transform: "translateX(0) skewX(-12deg)" }, { transform: "translateX(125%) skewX(-12deg)" }];
+    const ease = "cubic-bezier(0.65, 0, 0.35, 1)"; // eases in and out gently, no sudden start or stop
+    const settle = "cubic-bezier(0.22, 1, 0.36, 1)"; // decelerates into place, no bounce
+    const inFrames = [{ transform: "translate3d(-125%, 0, 0) skewX(-12deg)" }, { transform: "translate3d(0, 0, 0) skewX(-12deg)" }];
+    const outFrames = [{ transform: "translate3d(0, 0, 0) skewX(-12deg)" }, { transform: "translate3d(125%, 0, 0) skewX(-12deg)" }];
 
     async function run() {
-      play(logoRef.current, [{ opacity: 0, transform: "scale(0.86)" }, { opacity: 1, transform: "scale(1)" }], {
-        duration: 420, delay: 520, easing: "cubic-bezier(0.2, 0.9, 0.3, 1.15)", fill: "both",
+      play(logoRef.current, [{ opacity: 0, transform: "scale(0.9)" }, { opacity: 1, transform: "scale(1)" }], {
+        duration: 620, delay: 640, easing: settle, fill: "both",
       });
       if (headingRef.current) {
-        play(headingRef.current, [{ opacity: 0, transform: "translateY(-10px)" }, { opacity: 1, transform: "translateY(0)" }], {
-          duration: 380, delay: 560, easing: "ease-out", fill: "both",
+        play(headingRef.current, [{ opacity: 0, transform: "translateY(-12px)" }, { opacity: 1, transform: "translateY(0)" }], {
+          duration: 560, delay: 720, easing: settle, fill: "both",
         });
       }
-      play(labelRef.current, [{ opacity: 0, transform: "translateY(10px)" }, { opacity: 1, transform: "translateY(0)" }], {
-        duration: 380, delay: 700, easing: "ease-out", fill: "both",
+      play(labelRef.current, [{ opacity: 0, transform: "translateY(12px)" }, { opacity: 1, transform: "translateY(0)" }], {
+        duration: 560, delay: 860, easing: settle, fill: "both",
       });
-      play(goldRef.current, inFrames, { duration: 520, easing: ease, fill: "forwards" });
-      await play(maroonRef.current, inFrames, { duration: 520, delay: 150, easing: ease, fill: "forwards" });
+      play(goldRef.current, inFrames, { duration: 680, easing: ease, fill: "forwards" });
+      await play(maroonRef.current, inFrames, { duration: 680, delay: 180, easing: ease, fill: "forwards" });
       if (cancelled) return;
       onCovered();
-      await wait(650);
+      await wait(800);
       if (cancelled) return;
-      play(logoRef.current, [{ opacity: 1 }, { opacity: 0 }], { duration: 200, fill: "forwards" });
-      play(labelRef.current, [{ opacity: 1 }, { opacity: 0 }], { duration: 200, fill: "forwards" });
-      if (headingRef.current) play(headingRef.current, [{ opacity: 1 }, { opacity: 0 }], { duration: 200, fill: "forwards" });
-      play(maroonRef.current, outFrames, { duration: 540, easing: ease, fill: "forwards" });
-      await play(goldRef.current, outFrames, { duration: 540, delay: 150, easing: ease, fill: "forwards" });
+      play(logoRef.current, [{ opacity: 1 }, { opacity: 0 }], { duration: 280, easing: "ease-in", fill: "forwards" });
+      play(labelRef.current, [{ opacity: 1 }, { opacity: 0 }], { duration: 280, easing: "ease-in", fill: "forwards" });
+      if (headingRef.current) play(headingRef.current, [{ opacity: 1 }, { opacity: 0 }], { duration: 280, easing: "ease-in", fill: "forwards" });
+      play(maroonRef.current, outFrames, { duration: 680, easing: ease, fill: "forwards" });
+      await play(goldRef.current, outFrames, { duration: 680, delay: 180, easing: ease, fill: "forwards" });
       if (!cancelled) onDone();
     }
 
@@ -79,7 +80,7 @@ export default function CardTransition({ heading, label, onCovered, onDone }) {
   }, []);
 
   // Panels are wider than the screen so the skewed edges never leave a gap.
-  const panel = { position: "fixed", top: 0, bottom: 0, left: "-15%", right: "-15%", transform: "translateX(-125%) skewX(-12deg)" };
+  const panel = { position: "fixed", top: 0, bottom: 0, left: "-15%", right: "-15%", transform: "translate3d(-125%, 0, 0) skewX(-12deg)", willChange: "transform" };
 
   return (
     <>
