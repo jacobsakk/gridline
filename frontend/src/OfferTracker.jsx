@@ -1,7 +1,7 @@
 import { createContext, useContext, useMemo, useState } from "react";
 import { ArrowLeft, Upload, X, Loader2, ChevronUp, ChevronDown, ChevronsUpDown, TrendingUp, MapPin, Search, Plus, ExternalLink } from "lucide-react";
 import { confirmAction } from "./ConfirmDialog.jsx";
-import { collegeForLabel, logoFor } from "./collegeData.js";
+import { collegeForLabel, logoFor, teamKey } from "./collegeData.js";
 import { ThemeSwitcher, useTheme } from "./theme.jsx";
 import cmuHelmet from "./assets/cmu-helmet.png";
 import { CONFERENCE_ORDER, TEAM_CONFERENCE, normalizePosition, useOfferTracker } from "./offerData.js";
@@ -415,6 +415,14 @@ function AddOfferForm({ teamLabel, onAdd, onClose }) {
       {error && <div style={{ fontSize: 12.5, color: "var(--danger)", marginTop: 6 }}>{error}</div>}
     </form>
   );
+}
+
+// "COMMITTED TO CENTRAL MICHIGAN" on the Central Michigan board -- the
+// school is compared by normalized name, so "BGSU"/"Bowling Green" and
+// "Sac State"/"Sacramento State" still line up.
+function isCommittedTo(status, teamLabel) {
+  const m = /^COMMITTED TO (.+)$/i.exec((status || "").trim());
+  return !!m && teamKey(m[1]) === teamKey(teamLabel);
 }
 
 // A web search for a recruit: name plus high school, state, position and
@@ -984,6 +992,7 @@ export default function OfferTracker({ onBack }) {
   const [search, setSearch] = useState("");
   const [stateFilter, setStateFilter] = useState("");
   const [positionFilter, setPositionFilter] = useState("");
+  const [commitsOnly, setCommitsOnly] = useState(false);
   const [profilePlayer, setProfilePlayer] = useState(null);
   const [adding, setAdding] = useState(false);
 
@@ -1017,9 +1026,17 @@ export default function OfferTracker({ onBack }) {
     return ["QB", "RB", "WR", "TE", "OL", "DL", "LB", "CB", "SAF", "ATH"].filter((p) => present.has(p));
   }, [allTeamRows]);
 
+  const commitCount = useMemo(
+    () => (activeTeamMeta && !searching ? allTeamRows.filter((r) => isCommittedTo(r.status, activeTeamMeta.label)).length : 0),
+    [allTeamRows, activeTeamMeta, searching]
+  );
+
   const teamRows = useMemo(() => {
     const q = search.trim().toLowerCase();
     let rows = allTeamRows;
+    if (commitsOnly && !searching && activeTeamMeta) {
+      rows = rows.filter((r) => isCommittedTo(r.status, activeTeamMeta.label));
+    }
     if (q) {
       // Status is searched too, so typing a school ("ohio state")
       // finds everyone committed there -- that's the "committed to X"
@@ -1051,7 +1068,7 @@ export default function OfferTracker({ onBack }) {
       const cmp = STRING_SORT_KEYS.has(sortKey) ? av.localeCompare(bv) : (parseFloat(av) || 0) - (parseFloat(bv) || 0);
       return sortDir === "desc" ? -cmp : cmp;
     });
-  }, [allTeamRows, search, stateFilter, positionFilter, sortKey, sortDir]);
+  }, [allTeamRows, search, stateFilter, positionFilter, commitsOnly, activeTeamMeta, searching, sortKey, sortDir]);
 
   function handleSort(key) {
     if (key === sortKey) {
@@ -1252,7 +1269,35 @@ export default function OfferTracker({ onBack }) {
                       <option key={p} value={p}>{p}</option>
                     ))}
                   </select>
-                  <span style={{ fontSize: 12.5, color: "var(--text-faint)", marginLeft: "auto" }}>
+                  {!searching && activeTeamMeta && (
+                    <label
+                      style={{ display: "flex", alignItems: "center", gap: 9, cursor: "pointer", userSelect: "none", fontSize: 13, fontWeight: 600, color: commitsOnly ? "var(--accent)" : "var(--text-secondary)", marginLeft: "auto" }}
+                      title={`Only show players committed to ${activeTeamMeta.label}`}
+                    >
+                      <span
+                        role="switch"
+                        aria-checked={commitsOnly}
+                        tabIndex={0}
+                        onClick={() => setCommitsOnly((v) => !v)}
+                        onKeyDown={(e) => (e.key === " " || e.key === "Enter") && (e.preventDefault(), setCommitsOnly((v) => !v))}
+                        style={{
+                          position: "relative", width: 38, height: 22, borderRadius: 999, flexShrink: 0, transition: "background 0.15s ease, border-color 0.15s ease",
+                          background: commitsOnly ? "var(--accent)" : "var(--bg-surface)", border: `1px solid ${commitsOnly ? "var(--accent)" : "var(--border)"}`,
+                        }}
+                      >
+                        <span
+                          style={{
+                            position: "absolute", top: 2, left: commitsOnly ? 18 : 2, width: 16, height: 16, borderRadius: 999, transition: "left 0.15s ease",
+                            background: commitsOnly ? "var(--bg-page)" : "var(--text-muted)",
+                          }}
+                        />
+                      </span>
+                      <span onClick={() => setCommitsOnly((v) => !v)}>
+                        {activeTeamMeta.label} commits <span className="tabular" style={{ color: "var(--text-faint)", fontWeight: 500 }}>({commitCount})</span>
+                      </span>
+                    </label>
+                  )}
+                  <span style={{ fontSize: 12.5, color: "var(--text-faint)", marginLeft: searching || !activeTeamMeta ? "auto" : 0 }}>
                     {teamRows.length} of {allTeamRows.length}{searching ? " across all teams" : ""}
                   </span>
                   {!searching && (
