@@ -1,0 +1,389 @@
+import * as XLSX from "xlsx";
+import { collection, deleteDoc, doc, onSnapshot, setDoc, updateDoc, writeBatch } from "firebase/firestore";
+import { db } from "./firebase";
+import { useEffect, useMemo, useState } from "react";
+
+// ---------------------------------------------------------------- constants
+
+export const SEASON_YEAR = 2026;
+
+// The face sheet's key. "auto" isn't a stored status -- an empty status means
+// "work it out from the Offer Tracker".
+export const STATUS_OPTIONS = [
+  { key: "committed", label: "Committed", bg: "#FFC82E", fg: "#510F1D" },
+  { key: "offered", label: "Offered", bg: "#B6D7A8", fg: "#1A1206" },
+  { key: "offerStatus", label: "Offer Status", bg: "#A4C2F4", fg: "#1A1206" },
+  { key: "partial", label: "Partial", bg: "#B4A7D6", fg: "#1A1206" },
+  { key: "elsewhere", label: "Committed Elsewhere", bg: "#EA9999", fg: "#1A1206" },
+];
+export const STATUS_BY_KEY = Object.fromEntries(STATUS_OPTIONS.map((s) => [s.key, s]));
+
+const MONTHS = { jan: 0, feb: 1, mar: 2, apr: 3, may: 4, jun: 5, jul: 6, aug: 7, sep: 8, oct: 9, nov: 10, dec: 11 };
+
+// ------------------------------------------------------------------- dates
+
+const pad = (n) => String(n).padStart(2, "0");
+export const toIso = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+export const fromIso = (iso) => {
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso || "");
+  return m ? new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3])) : null;
+};
+
+// Season dates carry no year ("Fri, Aug 28"): fall months are this season's
+// year, January-May belong to the next calendar year.
+function seasonYearFor(monthIndex) {
+  return monthIndex >= 5 ? SEASON_YEAR : SEASON_YEAR + 1;
+}
+
+export function mondayOf(date) {
+  const d = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  const back = (d.getDay() + 6) % 7; // Monday = 0
+  d.setDate(d.getDate() - back);
+  return d;
+}
+
+export function weekLabel(monday) {
+  const end = new Date(monday);
+  end.setDate(end.getDate() + 6);
+  return `${monday.getMonth() + 1}/${monday.getDate()} - ${end.getMonth() + 1}/${end.getDate()}`;
+}
+
+export const weekKey = (date) => toIso(mondayOf(date));
+
+// "Fri, Aug 28" / "Aug 28" / "Fri, 9/18" / "9/18" / "2026-09-18" / a Date -> ISO
+function parseDateText(value) {
+  if (value instanceof Date && !Number.isNaN(value.getTime())) return toIso(value);
+  const text = String(value ?? "").trim();
+  if (!text) return "";
+  let m = /^(\d{4})-(\d{1,2})-(\d{1,2})/.exec(text);
+  if (m) return `${m[1]}-${pad(m[2])}-${pad(m[3])}`;
+  m = /(?:[A-Za-z]{3,9},?\s+)?([A-Za-z]{3,9})\.?\s+(\d{1,2})$/.exec(text);
+  if (m && MONTHS[m[1].slice(0, 3).toLowerCase()] != null) {
+    const mo = MONTHS[m[1].slice(0, 3).toLowerCase()];
+    return `${seasonYearFor(mo)}-${pad(mo + 1)}-${pad(m[2])}`;
+  }
+  m = /(?:[A-Za-z]{3},?\s+)?(\d{1,2})\/(\d{1,2})(?:\/(\d{2,4}))?$/.exec(text);
+  if (m) {
+    const mo = Number(m[1]) - 1;
+    let yr = m[3] ? Number(m[3]) : seasonYearFor(mo);
+    if (yr < 100) yr += 2000;
+    return `${yr}-${pad(mo + 1)}-${pad(m[2])}`;
+  }
+  return "";
+}
+
+// ------------------------------------------------------------------ parsing
+
+const RESULT_RE = /^([WLT])\s*(\d+)\s*[-–]\s*(\d+)$/i;
+
+// One weekly cell from the master sheet, e.g. "W 24-23\nBelleville\nThu, Aug 27"
+// or "@Chippewa Valley\nFri, Sep 11" (not played yet).
+function parseGameCell(cell) {
+  const lines = String(cell ?? "").split(/\r?\n|\s\|\s/).map((l) => l.trim()).filter(Boolean);
+  if (!lines.length) return null;
+  const game = { opponent: "", homeAway: "H", date: "", result: "", ours: null, theirs: null };
+  for (const line of lines) {
+    const r = RESULT_RE.exec(line);
+    if (r) {
+      game.result = r[1].toUpperCase();
+      game.ours = Number(r[2]);
+      game.theirs = Number(r[3]);
+      continue;
+    }
+    const date = parseDateText(line);
+    if (date && /^(?:[A-Za-z]{3},?\s+)?[A-Za-z]{3,9}\.?\s+\d{1,2}$/.test(line)) {
+      game.date = date;
+      continue;
+    }
+    if (!game.opponent) {
+      game.homeAway = line.startsWith("@") ? "A" : "H";
+      game.opponent = line.replace(/^@\s*/, "").replace(/^vs\.?\s+/i, "").trim();
+    }
+  }
+  if (!game.opponent || /^(bye|open|tba)$/i.test(game.opponent)) {
+    return game.date ? { ...game, opponent: game.opponent || "TBA", bye: /^bye$/i.test(game.opponent) } : null;
+  }
+  return game;
+}
+
+const clean = (v) => (v == null ? "" : String(v).trim());
+const slug = (text) => clean(text).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+
+export function playerId(classYear, name) {
+  return `${classYear || "0000"}__${slug(name)}`;
+}
+
+const STATE_ABBR = {
+  alabama: "AL", alaska: "AK", arizona: "AZ", arkansas: "AR", california: "CA", colorado: "CO", connecticut: "CT", delaware: "DE", florida: "FL", georgia: "GA",
+  hawaii: "HI", idaho: "ID", illinois: "IL", indiana: "IN", iowa: "IA", kansas: "KS", kentucky: "KY", louisiana: "LA", maine: "ME", maryland: "MD",
+  massachusetts: "MA", michigan: "MI", minnesota: "MN", mississippi: "MS", missouri: "MO", montana: "MT", nebraska: "NE", nevada: "NV", "new hampshire": "NH",
+  "new jersey": "NJ", "new mexico": "NM", "new york": "NY", "north carolina": "NC", "north dakota": "ND", ohio: "OH", oklahoma: "OK", oregon: "OR", pennsylvania: "PA",
+  "rhode island": "RI", "south carolina": "SC", "south dakota": "SD", tennessee: "TN", texas: "TX", utah: "UT", vermont: "VT", virginia: "VA", washington: "WA",
+  "west virginia": "WV", wisconsin: "WI", wyoming: "WY", "district of columbia": "DC",
+};
+const toStateCode = (v) => {
+  const t = clean(v);
+  return t.length === 2 ? t.toUpperCase() : STATE_ABBR[t.toLowerCase()] || t;
+};
+
+function splitSchool(raw, stateHint) {
+  const text = clean(raw);
+  const m = /^(.*?)\s*\(([A-Za-z]{2})\)\s*$/.exec(text);
+  return m ? { highSchool: m[1].trim(), state: toStateCode(stateHint) || m[2].toUpperCase() } : { highSchool: text, state: toStateCode(stateHint) };
+}
+
+function rowsOf(sheet) {
+  return XLSX.utils.sheet_to_json(sheet, { header: 1, raw: false, defval: "", dateNF: "yyyy-mm-dd" });
+}
+
+// The master layout (Excel MASTER sheet or the "season" CSV): one row per player,
+// one column per week, each cell that week's game.
+function parseMaster(rows) {
+  const headerAt = rows.findIndex((r) => r.some((c) => /^name$/i.test(clean(c))) && r.some((c) => /coach/i.test(clean(c))));
+  if (headerAt < 0) return [];
+  const header = rows[headerAt].map((c) => clean(c).toLowerCase());
+  const col = (...names) => header.findIndex((h) => names.includes(h));
+  const idx = {
+    coach: col("recruiting coach", "area coach"), name: col("name"), position: col("position"), rating: col("rating"), year: col("year"),
+    cell: col("cell"), twitter: col("twitter"), state: col("state"), school: col("high school"), record: col("record"),
+    src1: col("source"), src2: col("source 2"), src3: col("source 3"), profile: col("player profile"),
+  };
+  const weekCols = header.map((h, i) => (/^\d{1,2}\/\d{1,2}\s*-\s*\d{1,2}\/\d{1,2}$/.test(h) ? i : -1)).filter((i) => i >= 0);
+  const players = [];
+  for (const r of rows.slice(headerAt + 1)) {
+    const name = clean(r[idx.name]);
+    if (!name) continue;
+    const year = clean(r[idx.year]).replace(/\.0$/, "");
+    const games = weekCols.map((i) => parseGameCell(r[i])).filter(Boolean);
+    players.push({
+      name, classYear: year, position: clean(r[idx.position]).toUpperCase(), coach: clean(r[idx.coach]),
+      ...splitSchool(r[idx.school], idx.state >= 0 ? r[idx.state] : ""),
+      rating: idx.rating >= 0 ? clean(r[idx.rating]) : "", cell: idx.cell >= 0 ? clean(r[idx.cell]) : "", twitter: idx.twitter >= 0 ? clean(r[idx.twitter]) : "",
+      recordText: idx.record >= 0 ? clean(r[idx.record]) : "",
+      sources: { maxpreps: clean(r[idx.src1]), scorestream: clean(r[idx.src2]), other: clean(r[idx.src3]), profile: clean(r[idx.profile]) },
+      games,
+    });
+  }
+  return players;
+}
+
+// The weekly layout (weekly CSV / WEEKLY SCORES sheet): one row per player, that
+// week's result plus the next game.
+function parseWeekly(rows) {
+  const headerAt = rows.findIndex((r) => r.some((c) => /^opponent$/i.test(clean(c))));
+  if (headerAt < 0) return [];
+  const header = rows[headerAt].map((c) => clean(c).toLowerCase());
+  const col = (...names) => header.findIndex((h) => names.includes(h));
+  const idx = {
+    coach: col("recruiting coach"), name: col("name"), first: col("first name"), last: col("last name"), year: col("year"), position: col("position"),
+    state: col("state"), school: col("high school"), cell: col("cell"), twitter: col("twitter"), rating: col("rating"),
+    opp: col("opponent"), ha: col("h/a"), result: col("result"), stats: col("stats", "stats/game summary"), date: col("game date"),
+    record: col("record"), nextOpp: col("next opponent", "next week opponent"), nextHa: col("next h/a"), nextDate: col("next date", "next week date"),
+    src1: col("source"), src2: col("source 2"), src3: col("source 3"), profile: col("player profile"),
+  };
+  const players = [];
+  for (const r of rows.slice(headerAt + 1)) {
+    const name = idx.name >= 0 ? clean(r[idx.name]) : `${clean(r[idx.first])} ${clean(r[idx.last])}`.trim();
+    if (!name) continue;
+    const games = [];
+    const played = RESULT_RE.exec(clean(r[idx.result]));
+    if (clean(r[idx.opp])) {
+      games.push({
+        opponent: clean(r[idx.opp]), homeAway: clean(r[idx.ha]).toUpperCase().startsWith("A") ? "A" : "H", date: parseDateText(r[idx.date]),
+        result: played ? played[1].toUpperCase() : "", ours: played ? Number(played[2]) : null, theirs: played ? Number(played[3]) : null,
+        summary: idx.stats >= 0 ? clean(r[idx.stats]) : "",
+      });
+    }
+    if (idx.nextOpp >= 0 && clean(r[idx.nextOpp])) {
+      games.push({ opponent: clean(r[idx.nextOpp]), homeAway: clean(r[idx.nextHa]).toUpperCase().startsWith("A") ? "A" : "H", date: parseDateText(r[idx.nextDate]), result: "", ours: null, theirs: null });
+    }
+    players.push({
+      name, classYear: clean(r[idx.year]).replace(/\.0$/, ""), position: clean(r[idx.position]).toUpperCase(), coach: idx.coach >= 0 ? clean(r[idx.coach]) : "",
+      ...splitSchool(r[idx.school], idx.state >= 0 ? r[idx.state] : ""), rating: idx.rating >= 0 ? clean(r[idx.rating]) : "", cell: idx.cell >= 0 ? clean(r[idx.cell]) : "",
+      twitter: idx.twitter >= 0 ? clean(r[idx.twitter]) : "", recordText: idx.record >= 0 ? clean(r[idx.record]) : "",
+      sources: { maxpreps: idx.src1 >= 0 ? clean(r[idx.src1]) : "", scorestream: idx.src2 >= 0 ? clean(r[idx.src2]) : "", other: idx.src3 >= 0 ? clean(r[idx.src3]) : "", profile: idx.profile >= 0 ? clean(r[idx.profile]) : "" },
+      games: games.filter((g) => g.date),
+    });
+  }
+  return players;
+}
+
+// Face-sheet blocks: six rows each -- RECORD / AREA COACH / STATS row, OPPONENT /
+// NEXT OPPONENT row, then "Name (POS) (Injured)" with SCORE and NEXT WEEK DATE.
+function parseStaffSheet(rows) {
+  const out = [];
+  for (let i = 0; i < rows.length - 5; i++) {
+    if (clean(rows[i][1]).toUpperCase() !== "RECORD" || clean(rows[i + 2][1]).toUpperCase() !== "OPPONENT") continue;
+    const nameCell = clean(rows[i + 4][0]);
+    const m = /^(.*?)\s*\(([A-Za-z/]+)\)(.*)$/.exec(nameCell);
+    if (!m) continue;
+    out.push({
+      name: m[1].trim(), position: m[2].toUpperCase(), injured: /injur/i.test(m[3]), coach: clean(rows[i + 1][2]), summary: clean(rows[i + 1][3]),
+      opponent: clean(rows[i + 3][1]), nextOpponent: clean(rows[i + 3][2]),
+    });
+  }
+  return out;
+}
+
+export async function parseHsFile(file) {
+  const buffer = await file.arrayBuffer();
+  const workbook = XLSX.read(buffer, { cellDates: true, ...(/\.csv$/i.test(file.name) ? { type: "array", raw: true } : {}) });
+  const players = [];
+  const staff = [];
+  for (const name of workbook.SheetNames) {
+    const rows = rowsOf(workbook.Sheets[name]);
+    const header = (rows.find((r) => r.some((c) => clean(c))) || []).map((c) => clean(c).toLowerCase());
+    if (rows.some((r) => clean(r[1]).toUpperCase() === "RECORD") && rows.some((r) => clean(r[1]).toUpperCase() === "OPPONENT")) {
+      staff.push(...parseStaffSheet(rows));
+    } else if (rows.slice(0, 5).some((r) => r.map((c) => clean(c).toLowerCase()).includes("opponent") && r.map((c) => clean(c).toLowerCase()).some((c) => /result/.test(c)))) {
+      players.push(...parseWeekly(rows));
+    } else if (rows.slice(0, 5).some((r) => r.map((c) => clean(c).toLowerCase()).includes("name") && r.map((c) => clean(c).toLowerCase()).some((c) => /coach/.test(c)))) {
+      players.push(...parseMaster(rows));
+    } else if (!header.length) {
+      continue;
+    }
+  }
+  return { players, staff };
+}
+
+// -------------------------------------------------------------- record etc.
+
+export function computeRecord(games) {
+  let w = 0;
+  let l = 0;
+  let t = 0;
+  (games || []).forEach((g) => {
+    if (g.result === "W") w++;
+    else if (g.result === "L") l++;
+    else if (g.result === "T") t++;
+  });
+  return { w, l, t, text: `${w}W - ${l}L${t ? ` - ${t}T` : ""}`, played: w + l + t };
+}
+
+const gameKey = (g) => g.date || `${g.opponent}`;
+
+// ------------------------------------------------------------ Firestore hook
+
+export function useHsTracker() {
+  const [docs, setDocs] = useState([]);
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    const unsubscribe = onSnapshot(
+      collection(db, "hsPlayers"),
+      (snap) => {
+        setDocs(snap.docs.map((d) => ({ id: d.id, ...(d.data() || {}) })).filter((d) => !d.removed));
+        setReady(true);
+      },
+      () => setReady(true)
+    );
+    return unsubscribe;
+  }, []);
+
+  const players = useMemo(
+    () =>
+      docs
+        .map((p) => {
+          const games = [...(p.games || [])].sort((a, b) => (a.date || "").localeCompare(b.date || ""));
+          const computed = computeRecord(games);
+          const m = /(\d+)\s*W\s*-\s*(\d+)\s*L/i.exec(p.recordText || "");
+          const record = m && Number(m[1]) + Number(m[2]) > computed.played ? { w: Number(m[1]), l: Number(m[2]), t: 0, text: p.recordText.trim(), played: Number(m[1]) + Number(m[2]) } : computed;
+          return { ...p, games, record };
+        })
+        .sort((a, b) => (a.name || "").localeCompare(b.name || "")),
+    [docs]
+  );
+
+  // Merges a parsed upload into what's already stored: roster fields come from
+  // the file, but statuses, injuries and hand-written game summaries stay.
+  async function importParsed({ players: incoming, staff }, { dryRun = false } = {}) {
+    const existingById = new Map(docs.map((d) => [d.id, d]));
+    const merged = new Map();
+    const summary = { created: 0, updated: 0, games: 0, summaries: 0, unmatchedStaff: [] };
+
+    incoming.forEach((p) => {
+      if (!p.classYear) return;
+      const id = playerId(p.classYear, p.name);
+      const base = merged.get(id) || existingById.get(id) || { id, status: "", injured: false, games: [], createdAt: new Date().toISOString() };
+      const next = { ...base };
+      ["name", "classYear", "position", "coach", "highSchool", "state", "rating", "cell", "twitter", "recordText"].forEach((k) => {
+        if (p[k]) next[k] = p[k];
+      });
+      next.sources = { ...(base.sources || {}), ...Object.fromEntries(Object.entries(p.sources || {}).filter(([, v]) => v)) };
+      const games = new Map((base.games || []).map((g) => [gameKey(g), g]));
+      p.games.forEach((g) => {
+        const key = gameKey(g);
+        const old = games.get(key);
+        // A recorded result never gets blanked out by a row that hasn't got one yet.
+        games.set(key, { ...(old || {}), ...Object.fromEntries(Object.entries(g).filter(([k, v]) => v !== "" && v != null || k === "summary" && v)), summary: g.summary || old?.summary || "" });
+        summary.games += 1;
+      });
+      next.games = [...games.values()].sort((a, b) => (a.date || "").localeCompare(b.date || ""));
+      next.updatedAt = new Date().toISOString();
+      merged.set(id, next);
+    });
+
+    // Face-sheet summaries attach to the game against that opponent.
+    (staff || []).forEach((s) => {
+      const target = [...merged.values(), ...docs].find((d) => (d.name || "").toLowerCase() === s.name.toLowerCase() || (d.name || "").toLowerCase().includes(s.name.toLowerCase()) || s.name.toLowerCase().includes((d.name || "").toLowerCase()));
+      if (!target) {
+        summary.unmatchedStaff.push(s.name);
+        return;
+      }
+      const next = merged.get(target.id) || { ...target };
+      const games = [...(next.games || [])];
+      const at = games.findIndex((g) => (g.opponent || "").toLowerCase() === s.opponent.toLowerCase());
+      if (at >= 0 && s.summary) {
+        games[at] = { ...games[at], summary: s.summary };
+        summary.summaries += 1;
+      }
+      next.games = games;
+      if (s.injured) next.injured = true;
+      if (!next.coach && s.coach) next.coach = s.coach;
+      merged.set(next.id, next);
+    });
+
+    merged.forEach((d, id) => (existingById.has(id) ? (summary.updated += 1) : (summary.created += 1)));
+    if (dryRun) return summary;
+    const entries = [...merged.values()];
+    for (let i = 0; i < entries.length; i += 400) {
+      const batch = writeBatch(db);
+      entries.slice(i, i + 400).forEach((d) => {
+        const { id, ...data } = d;
+        batch.set(doc(db, "hsPlayers", id), data);
+      });
+      await batch.commit();
+    }
+    return summary;
+  }
+
+  async function importFile(file, options) {
+    const parsed = await parseHsFile(file);
+    if (!parsed.players.length && !(parsed.staff || []).length) throw new Error("This doesn't look like a game tracker file -- expected a master or weekly sheet with names, opponents and results.");
+    return importParsed(parsed, options);
+  }
+
+  async function updatePlayer(id, fields) {
+    await updateDoc(doc(db, "hsPlayers", id), { ...fields, updatedAt: new Date().toISOString() });
+  }
+
+  // Edit one game (matched by its date) -- used for the hand-written summary.
+  async function updateGame(player, game, fields) {
+    const games = (player.games || []).map((g) => (gameKey(g) === gameKey(game) ? { ...g, ...fields } : g));
+    await updatePlayer(player.id, { games });
+  }
+
+  async function addPlayer({ name, classYear, position, highSchool, state, coach }) {
+    const id = playerId(classYear, name);
+    await setDoc(doc(db, "hsPlayers", id), {
+      name: name.trim(), classYear: classYear.trim(), position: position.trim().toUpperCase(), highSchool: highSchool.trim(), state: toStateCode(state), coach: coach.trim(),
+      status: "", injured: false, games: [], sources: {}, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
+    });
+  }
+
+  async function removePlayer(id) {
+    await deleteDoc(doc(db, "hsPlayers", id));
+  }
+
+  return { ready, players, importFile, importParsed, updatePlayer, updateGame, addPlayer, removePlayer };
+}

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Settings, ClipboardList, ChevronRight, FileSpreadsheet, GraduationCap, LogOut } from "lucide-react";
+import { Settings, ClipboardList, ChevronRight, FileSpreadsheet, GraduationCap, LogOut, Trophy } from "lucide-react";
 import { coachTitle } from "./auth.js";
 import { ThemeSwitcher, useTheme } from "./theme.jsx";
 import actionCDark from "./assets/cmu-action-c-dark.png";
@@ -28,6 +28,12 @@ const CARDS = [
     label: "Colleges",
     description: "Every FBS and FCS team: standings, schedules, recruiting, rosters and depth charts",
     icon: GraduationCap,
+  },
+  {
+    key: "hs",
+    label: "HS Game Update",
+    description: "Commits and targets: weekly high school results, records, area coach and game summaries",
+    icon: Trophy,
   },
 ];
 

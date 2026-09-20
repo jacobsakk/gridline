@@ -122,3 +122,14 @@ tbody tr:hover { background: var(--row-hover) !important; }
   .app-shell { --gutter: 16px; }
   .app-title { font-size: 19px !important; }
 }
+
+/* HS Game Update prints as a clean, light, full-length sheet. */
+@media print {
+  html, body, #root { height: auto !important; overflow: visible !important; background: #fff !important; }
+  .hs-shell { height: auto !important; overflow: visible !important; background: #fff !important; color: #111 !important; }
+  .hs-shell * { color-scheme: light; }
+  .hs-shell .hs-scroll { overflow: visible !important; }
+  .hs-no-print { display: none !important; }
+  .hs-shell .hs-card { break-inside: avoid; }
+  .hs-shell textarea { border: none !important; resize: none; }
+}

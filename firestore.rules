@@ -48,6 +48,9 @@ service cloud.firestore {
     match /offers/{docId} {
       allow read, write: if invited();
     }
+    match /hsPlayers/{docId} {
+      allow read, write: if invited();
+    }
 
     match /{document=**} {
       allow read, write: if false;

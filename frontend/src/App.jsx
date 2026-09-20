@@ -4,6 +4,7 @@ import Gridline from "./Gridline.jsx";
 import SettingsPage from "./SettingsPage.jsx";
 import OfferTracker from "./OfferTracker.jsx";
 import Colleges from "./Colleges.jsx";
+import HsGameUpdate from "./HsGameUpdate.jsx";
 import { ConfirmHost } from "./ConfirmDialog.jsx";
 import CardTransition from "./CardTransition.jsx";
 import LoginGate from "./LoginGate.jsx";
@@ -40,6 +41,7 @@ function Screens({ session }) {
   if (view.name === "tracker") screen = <Gridline onBack={toDashboard} initialSearch={view.search} />;
   else if (view.name === "offers") screen = <OfferTracker onBack={toDashboard} />;
   else if (view.name === "colleges") screen = <Colleges onBack={toDashboard} />;
+  else if (view.name === "hs") screen = <HsGameUpdate onBack={toDashboard} />;
   else if (view.name === "settings") screen = <SettingsPage onBack={toDashboard} session={session} />;
   else {
     screen = (
