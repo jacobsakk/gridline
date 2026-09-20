@@ -252,3 +252,21 @@ access the front-end itself has).
   dashboard (starts with `tvly-`), then add it as a repo secret named `TAVILY_API_KEY` under
   Settings → Secrets and variables → Actions. Until that secret exists, the workflow runs and
   exits immediately without doing anything.
+
+## HS Game Update — MaxPreps + ScoreStream cross-reference
+
+`hs_games.py` fills in the high school results behind the HS Game Update tab. For each school it
+pulls the football schedule from **MaxPreps** (structured JSON in the page's `__NEXT_DATA__`) and
+**ScoreStream** (rendered by headless Chromium via Playwright, since its game list loads with
+JavaScript), matches games by date (±1 day) and opponent name, and records a `conflict` on any game
+where the two sources report different scores. MaxPreps is shown when they disagree; ScoreStream
+fills in games MaxPreps has no score for.
+
+- **Privacy:** the schools to check are read from the app's `hsPlayers` collection and results are
+  written to `hsTeams/{school}` in Firestore — never committed. Runs in
+  `.github/workflows/hs-games-refresh.yml` using a `FIREBASE_SERVICE_ACCOUNT` secret.
+- `python3 hs_games.py --urls urls.json --dump out.json --no-write` runs it locally against a list
+  of `{"maxpreps": ..., "scorestream": ...}` pairs without touching the database.
+- `team_doc_id()` here and `teamDocId()` in `frontend/src/hsData.js` must produce the same id.
+- ScoreStream dates come as `Aug 29 '26` or relative (`Last Friday at 7:00 PM`); the browser runs in
+  Pacific time so late West Coast games never slip to the next day.

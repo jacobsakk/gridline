@@ -1,0 +1,51 @@
+name: HS game results refresh
+
+# Pulls the latest high school football results for every school on the
+# HS Game Update tab from MaxPreps and ScoreStream, cross-references the two,
+# and stores them in the database (hsTeams) where the app picks them up
+# live -- nothing is committed to the repo, so no recruit information ever
+# lands in it. Friday-night games finish late, so it runs each morning and
+# again Saturday and Sunday afternoons. Also runnable by hand.
+#
+# Needs one repository secret, FIREBASE_SERVICE_ACCOUNT: the JSON key of a
+# Firebase service account (Firebase console > Project settings > Service
+# accounts > Generate new private key).
+on:
+  schedule:
+    - cron: "0 10 * 8-12 *"       # every morning, 6am Detroit
+    - cron: "0 19 * 8-12 6,0"     # Sat + Sun afternoons, 3pm Detroit
+  workflow_dispatch:
+
+concurrency:
+  group: hs-games-refresh
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install scraper dependencies
+        run: |
+          pip install -r scraper/requirements-hs.txt
+          python -m playwright install --with-deps chromium
+
+      - name: Scrape results and store them
+        working-directory: scraper
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          if [ -z "$FIREBASE_SERVICE_ACCOUNT" ]; then
+            echo "FIREBASE_SERVICE_ACCOUNT secret is not set -- see the comment at the top of this workflow."
+            exit 1
+          fi
+          python3 hs_games.py

@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ArrowLeft, Loader2, Plus, Printer, Search, Trash2, Upload, X } from "lucide-react";
+import { AlertTriangle, ArrowLeft, FileText, Loader2, Plus, Printer, Search, Trash2, Upload, X } from "lucide-react";
 import cmuHelmet from "./assets/cmu-helmet.png";
 import { ThemeSwitcher, useTheme } from "./theme.jsx";
 import { confirmAction } from "./ConfirmDialog.jsx";
 import { useOfferTracker } from "./offerData.js";
+import { PlayerProfileModal, ThemeContext } from "./OfferTracker.jsx";
 import { fetchSchedule, teamKey } from "./collegeData.js";
 import {
   STATUS_BY_KEY,
@@ -56,15 +57,52 @@ function ResultChip({ game, big }) {
   if (!game?.result) return null;
   const win = game.result === "W";
   const loss = game.result === "L";
+  const alt = game.conflict?.scorestream;
+  const verified = (game.verifiedBy || []).length > 1 && !alt;
+  const title = alt
+    ? `Sources disagree: MaxPreps ${game.ours}-${game.theirs}, ScoreStream ${alt.ours}-${alt.theirs}. Showing MaxPreps.`
+    : verified
+      ? "Confirmed by MaxPreps and ScoreStream"
+      : game.scraped
+        ? `From ${(game.verifiedBy || ["a source"]).map((v) => (v === "maxpreps" ? "MaxPreps" : "ScoreStream")).join(" and ")} only`
+        : undefined;
   return (
     <span
       className="tabular"
+      title={title}
       style={{
-        display: "inline-block", borderRadius: 999, padding: big ? "5px 13px" : "2px 8px", fontSize: big ? 13.5 : 11.5, fontWeight: 800, whiteSpace: "nowrap",
+        display: "inline-flex", alignItems: "center", gap: 5, borderRadius: 999, padding: big ? "5px 13px" : "2px 8px", fontSize: big ? 13.5 : 11.5, fontWeight: 800, whiteSpace: "nowrap",
         background: win ? "#3CB371" : loss ? "#D9483B" : "var(--bg-surface)", color: win || loss ? "#fff" : "var(--text-primary)",
+        outline: alt ? "2px solid #FFC82E" : "none",
       }}
     >
       {game.result} {game.ours}-{game.theirs}
+      {alt && <AlertTriangle size={big ? 14 : 12} strokeWidth={2.6} aria-label="Sources disagree" />}
+    </span>
+  );
+}
+
+// A player's name. If they're on the Offer Tracker it opens their profile there.
+function PlayerLink({ player, linked, onProfile, style, children }) {
+  return linked ? (
+    <span
+      className="player-name"
+      role="link"
+      tabIndex={0}
+      title="Open Offer Tracker profile"
+      onClick={() => onProfile(player)}
+      onKeyDown={(e) => e.key === "Enter" && onProfile(player)}
+      style={{ cursor: "pointer", ...style }}
+    >
+      {children}
+    </span>
+  ) : (
+    <span
+      title="Not on the Offer Tracker yet"
+      onClick={() => onProfile(player)}
+      style={{ cursor: "pointer", ...style }}
+    >
+      {children}
     </span>
   );
 }
@@ -161,7 +199,7 @@ function UploadModal({ onClose, onImport }) {
 }
 
 function AddPlayerModal({ onClose, onAdd, coaches }) {
-  const [f, setF] = useState({ name: "", classYear: "2027", position: "", highSchool: "", state: "", coach: "" });
+  const [f, setF] = useState({ name: "", classYear: "2027", position: "", highSchool: "", state: "", coach: "", maxpreps: "", scorestream: "" });
   const [error, setError] = useState("");
   const set = (k) => (e) => setF((p) => ({ ...p, [k]: e.target.value }));
   async function submit(e) {
@@ -190,6 +228,8 @@ function AddPlayerModal({ onClose, onAdd, coaches }) {
           <input id="hs-coach" list="hs-coaches" placeholder="Area coach" value={f.coach} onChange={set("coach")} style={field} />
           <datalist id="hs-coaches">{coaches.map((c) => <option key={c} value={c} />)}</datalist>
         </div>
+        <input id="hs-maxpreps" placeholder="MaxPreps schedule link (fills in results automatically)" value={f.maxpreps} onChange={set("maxpreps")} style={field} />
+        <input id="hs-scorestream" placeholder="ScoreStream team link" value={f.scorestream} onChange={set("scorestream")} style={field} />
         {error && <div role="alert" style={{ fontSize: 13, color: "var(--danger-text)" }}>{error}</div>}
         <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
           <button type="button" onClick={onClose} style={{ ...controlStyle, cursor: "pointer" }}>Cancel</button>
@@ -202,7 +242,7 @@ function AddPlayerModal({ onClose, onAdd, coaches }) {
 
 // -------------------------------------------------------------- master tab
 
-function MasterTab({ players, weeks, currentWeek, cmuByWeek, statusOf, onOpenPlayer }) {
+function MasterTab({ players, weeks, currentWeek, cmuByWeek, statusOf, onOpenPlayer, onProfile, hasProfile }) {
   const thBase = {
     position: "sticky", top: 0, zIndex: 2, background: "var(--bg-surface)", padding: "9px 10px", fontSize: 11, color: "var(--text-faint)", textTransform: "uppercase",
     textAlign: "left", whiteSpace: "nowrap", borderBottom: "1px solid var(--border)", letterSpacing: "0.04em",
@@ -232,10 +272,13 @@ function MasterTab({ players, weeks, currentWeek, cmuByWeek, statusOf, onOpenPla
             <tr key={p.id}>
               <td style={td}>{p.coach || "—"}</td>
               <td style={{ ...td, position: "sticky", left: 0, background: "var(--bg-panel)", zIndex: 1, whiteSpace: "nowrap" }}>
-                <span className="player-name" onClick={() => onOpenPlayer(p.id)} style={{ cursor: "pointer" }}>
+                <PlayerLink player={p} linked={hasProfile(p)} onProfile={onProfile}>
                   <StatusName player={p} status={statusOf(p)}>{p.name}</StatusName>
-                </span>
+                </PlayerLink>
                 {p.injured && <span style={{ marginLeft: 6, fontSize: 11, color: "var(--danger-text)" }}>Injured</span>}
+                <button className="hs-no-print" onClick={() => onOpenPlayer(p.id)} title="Open face sheet" aria-label={`Face sheet for ${p.name}`} style={{ marginLeft: 6, background: "none", border: "none", color: "var(--text-faint)", cursor: "pointer", lineHeight: 0, verticalAlign: "middle" }}>
+                  <FileText size={13} />
+                </button>
               </td>
               <td style={{ ...td, color: "var(--accent)", fontWeight: 700 }}>{p.position || "—"}</td>
               <td style={td} className="tabular">{p.classYear}</td>
@@ -302,7 +345,7 @@ function EditableSummary({ value, onSave, placeholder = "No stats yet", rows = 2
   );
 }
 
-function WeeklyTab({ players, week, statusOf, updateGame, onOpenPlayer }) {
+function WeeklyTab({ players, week, statusOf, updateGame, onOpenPlayer, onProfile, hasProfile }) {
   const groups = useMemo(() => {
     const map = new Map(POSITION_GROUPS.map((g) => [g.key, []]));
     map.set("OTHER", []);
@@ -340,8 +383,12 @@ function WeeklyTab({ players, week, statusOf, updateGame, onOpenPlayer }) {
                       {p.position || "—"}
                     </span>
                     <div style={{ minWidth: 0 }}>
-                      <div className="player-name" onClick={() => onOpenPlayer(p.id)} style={{ fontWeight: 700, color: "var(--text-primary)", cursor: "pointer" }}>
-                        {p.name}{p.injured && <span style={{ marginLeft: 6, fontSize: 10.5, color: "var(--danger-text)" }}>INJURED</span>}
+                      <div style={{ fontWeight: 700, color: "var(--text-primary)" }}>
+                        <PlayerLink player={p} linked={hasProfile(p)} onProfile={onProfile}>{p.name}</PlayerLink>
+                        {p.injured && <span style={{ marginLeft: 6, fontSize: 10.5, color: "var(--danger-text)" }}>INJURED</span>}
+                        <button className="hs-no-print" onClick={() => onOpenPlayer(p.id)} title="Open face sheet" aria-label={`Face sheet for ${p.name}`} style={{ marginLeft: 6, background: "none", border: "none", color: "var(--text-faint)", cursor: "pointer", lineHeight: 0, verticalAlign: "middle" }}>
+                          <FileText size={13} />
+                        </button>
                       </div>
                       <div style={{ fontSize: 12, color: "var(--text-muted)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                         {p.highSchool}{p.state ? ` · ${p.state}` : ""} · <span className="tabular">{p.record.played ? p.record.text : "0W - 0L"}</span>
@@ -386,7 +433,7 @@ function WeeklyTab({ players, week, statusOf, updateGame, onOpenPlayer }) {
 
 // ------------------------------------------------------- staff face sheet
 
-function FaceCard({ player, week, status, updatePlayer, updateGame, removePlayer }) {
+function FaceCard({ player, week, status, updatePlayer, updateGame, removePlayer, onProfile, hasProfile }) {
   const { game, next } = pickWeekGames(player, week);
   const s = STATUS_BY_KEY[status];
   const label = { fontSize: 10, letterSpacing: "0.1em", color: "var(--text-faint)", textTransform: "uppercase", marginBottom: 3 };
@@ -396,7 +443,7 @@ function FaceCard({ player, week, status, updatePlayer, updateGame, removePlayer
       <div style={{ background: s?.bg || "var(--bg-surface)", color: s?.fg || "var(--text-primary)", padding: "10px 14px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
         <div style={{ minWidth: 0 }}>
           <div className="oswald" style={{ fontSize: 18, fontWeight: 700 }}>
-            {player.name} ({player.position || "—"}){player.injured && " (Injured)"}
+            <PlayerLink player={player} linked={hasProfile(player)} onProfile={onProfile} style={hasProfile(player) ? { textDecoration: "underline", textDecorationThickness: 1, textUnderlineOffset: 3 } : undefined}>{player.name}</PlayerLink> ({player.position || "—"}){player.injured && " (Injured)"}
           </div>
           <div style={{ fontSize: 12.5, opacity: 0.85 }}>{player.highSchool}{player.state ? ` (${player.state})` : ""} · Class of {player.classYear}</div>
         </div>
@@ -473,7 +520,7 @@ function FaceSheetTab(props) {
       {shown.length === 0 && <div style={{ padding: 40, textAlign: "center", color: "var(--text-faint)" }}>No players match.</div>}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))", gap: 14 }}>
         {shown.map((p) => (
-          <FaceCard key={p.id} player={p} week={week} status={statusOf(p)} updatePlayer={props.updatePlayer} updateGame={props.updateGame} removePlayer={props.removePlayer} />
+          <FaceCard key={p.id} player={p} week={week} status={statusOf(p)} updatePlayer={props.updatePlayer} updateGame={props.updateGame} removePlayer={props.removePlayer} onProfile={props.onProfile} hasProfile={props.hasProfile} />
         ))}
       </div>
     </div>
@@ -494,6 +541,7 @@ export default function HsGameUpdate({ onBack }) {
   const [focusId, setFocusId] = useState(null);
   const [uploadOpen, setUploadOpen] = useState(false);
   const [addOpen, setAddOpen] = useState(false);
+  const [profile, setProfile] = useState(null);
   const [cmuByWeek, setCmuByWeek] = useState({});
 
   // Status comes from the Offer Tracker unless someone set it by hand.
@@ -540,6 +588,8 @@ export default function HsGameUpdate({ onBack }) {
     const ok = await confirmAction({ title: `Remove ${p.name}?`, message: "This takes them out of the game tracker." });
     if (ok) hs.removePlayer(p.id);
   }
+
+  const hasProfile = (p) => offers.rowsForPlayer(p.classYear, p.name).length > 0;
 
   const openPlayer = (id) => {
     setFocusId(id);
@@ -635,7 +685,7 @@ export default function HsGameUpdate({ onBack }) {
             </div>
           </div>
         ) : tab === "Master Tracker" ? (
-          <MasterTab players={filtered} weeks={weeks} currentWeek={weekKey(new Date())} cmuByWeek={cmuByWeek} statusOf={statusOf} onOpenPlayer={openPlayer} />
+          <MasterTab players={filtered} weeks={weeks} currentWeek={weekKey(new Date())} cmuByWeek={cmuByWeek} statusOf={statusOf} onOpenPlayer={openPlayer} onProfile={setProfile} hasProfile={hasProfile} />
         ) : tab === "Weekly Tracker" ? (
           <WeeklyTab players={filtered} week={week} statusOf={statusOf} updateGame={hs.updateGame} onOpenPlayer={openPlayer} />
         ) : (
@@ -648,10 +698,27 @@ export default function HsGameUpdate({ onBack }) {
             updatePlayer={hs.updatePlayer}
             updateGame={hs.updateGame}
             removePlayer={removePlayer}
+            onProfile={setProfile}
+            hasProfile={hasProfile}
           />
         )}
       </div>
 
+      {profile && (hasProfile(profile) ? (
+        <ThemeContext.Provider value={theme}>
+          <PlayerProfileModal player={profile.name} classYear={profile.classYear} tracker={offers} onClose={() => setProfile(null)} />
+        </ThemeContext.Provider>
+      ) : (
+        <div onClick={() => setProfile(null)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20, zIndex: 70 }}>
+          <div onClick={(e) => e.stopPropagation()} style={{ background: "var(--bg-panel)", border: "1px solid var(--border)", borderRadius: 10, width: 400, maxWidth: "100%", padding: 22 }}>
+            <h2 className="oswald" style={{ margin: "0 0 8px", fontSize: 19 }}>{profile.name}</h2>
+            <p style={{ margin: "0 0 16px", fontSize: 13.5, color: "var(--text-muted)", lineHeight: 1.5 }}>
+              Not on the Offer Tracker yet for the class of {profile.classYear}. Once they show up on a team's board, their name here links straight to their profile.
+            </p>
+            <div style={{ textAlign: "right" }}><button onClick={() => setProfile(null)} style={{ ...controlStyle, cursor: "pointer" }}>Close</button></div>
+          </div>
+        </div>
+      ))}
       {uploadOpen && <UploadModal onClose={() => setUploadOpen(false)} onImport={(file) => hs.importFile(file)} />}
       {addOpen && <AddPlayerModal onClose={() => setAddOpen(false)} onAdd={hs.addPlayer} coaches={coaches} />}
     </div>

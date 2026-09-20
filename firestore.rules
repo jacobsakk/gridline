@@ -51,6 +51,11 @@ service cloud.firestore {
     match /hsPlayers/{docId} {
       allow read, write: if invited();
     }
+    // Scraped scores per school. Written only by the scheduled scraper (its
+    // service account bypasses rules); coaches can read but not change them.
+    match /hsTeams/{docId} {
+      allow read: if invited();
+    }
 
     match /{document=**} {
       allow read, write: if false;

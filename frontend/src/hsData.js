@@ -262,10 +262,68 @@ export function computeRecord(games) {
 
 const gameKey = (g) => g.date || `${g.opponent}`;
 
+// -------------------------------------------------- scraped results overlay
+
+// Stable id for a school's results document. Must match team_doc_id() in
+// scraper/hs_games.py -- the scraper writes hsTeams/{id}, the app reads it.
+export function teamDocId(sources) {
+  const mp = /maxpreps\.com\/([a-z]{2})\/([^/]+)\/([^/]+)\//.exec(sources?.maxpreps || "");
+  if (mp) return `mp_${mp[1]}_${mp[2]}_${mp[3]}`;
+  const ss = /scorestream\.com\/team\/([^/?#]+)/.exec(sources?.scorestream || "");
+  return ss ? `ss_${ss[1]}` : "";
+}
+
+const NOISE = new Set(["high", "school", "hs", "the", "of", "academy", "prep", "preparatory"]);
+const ALIASES = { st: "saint", mt: "mount", ft: "fort" };
+function nameTokens(name) {
+  const all = new Set(
+    String(name || "").toLowerCase().replace(/&/g, " and ").replace(/[^a-z0-9 ]+/g, " ").split(/\s+/).filter(Boolean).map((t) => ALIASES[t] || t)
+  );
+  const trimmed = new Set([...all].filter((t) => !NOISE.has(t)));
+  return trimmed.size ? trimmed : all;
+}
+export function sameSchool(a, b) {
+  const ta = nameTokens(a);
+  const tb = nameTokens(b);
+  if (!ta.size || !tb.size) return false;
+  let shared = 0;
+  ta.forEach((t) => tb.has(t) && shared++);
+  return shared / Math.min(ta.size, tb.size) >= 0.6;
+}
+
+function nameSimilarity(a, b) {
+  const ta = nameTokens(a);
+  const tb = nameTokens(b);
+  let shared = 0;
+  ta.forEach((t) => tb.has(t) && shared++);
+  return ta.size && tb.size ? shared / Math.max(ta.size, tb.size) : 0;
+}
+
+const daysApart = (a, b) => Math.abs((fromIso(a) - fromIso(b)) / 86400000);
+
+// Fills in results the scraper found (matched by date +/- a day and opponent),
+// and gives a player with no schedule of their own the school's schedule.
+export function overlayScraped(games, teamGames) {
+  if (!teamGames?.length) return games;
+  if (!games.length) {
+    return teamGames.map((t) => ({ date: t.date, opponent: t.opponent, homeAway: t.homeAway || "", ...(t.result ? { result: t.result, ours: t.ours, theirs: t.theirs } : {}), scraped: true, ...(t.conflict ? { conflict: t.conflict } : {}), verifiedBy: t.source || [] }));
+  }
+  return games.map((g) => {
+    if (!g.date) return g;
+    // Closest name wins, so "Lapeer" doesn't pick up "Lapeer East"'s score.
+    const t = teamGames
+      .filter((x) => x.result && daysApart(g.date, x.date) <= 1 && sameSchool(g.opponent, x.opponent))
+      .sort((a, b) => nameSimilarity(g.opponent, b.opponent) - nameSimilarity(g.opponent, a.opponent))[0];
+    if (!t) return g;
+    return { ...g, result: t.result, ours: t.ours, theirs: t.theirs, scraped: true, verifiedBy: t.source || [], ...(t.conflict ? { conflict: t.conflict } : {}) };
+  });
+}
+
 // ------------------------------------------------------------ Firestore hook
 
 export function useHsTracker() {
   const [docs, setDocs] = useState([]);
+  const [teams, setTeams] = useState({});
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
@@ -277,21 +335,31 @@ export function useHsTracker() {
       },
       () => setReady(true)
     );
-    return unsubscribe;
+    // Results the weekly scraper stored per school (absent until it has run once).
+    const unsubscribeTeams = onSnapshot(
+      collection(db, "hsTeams"),
+      (snap) => setTeams(Object.fromEntries(snap.docs.map((d) => [d.id, d.data() || {}]))),
+      () => {}
+    );
+    return () => {
+      unsubscribe();
+      unsubscribeTeams();
+    };
   }, []);
 
   const players = useMemo(
     () =>
       docs
         .map((p) => {
-          const games = [...(p.games || [])].sort((a, b) => (a.date || "").localeCompare(b.date || ""));
+          const stored = [...(p.games || [])].sort((a, b) => (a.date || "").localeCompare(b.date || ""));
+          const games = overlayScraped(stored, teams[teamDocId(p.sources)]?.games);
           const computed = computeRecord(games);
           const m = /(\d+)\s*W\s*-\s*(\d+)\s*L/i.exec(p.recordText || "");
           const record = m && Number(m[1]) + Number(m[2]) > computed.played ? { w: Number(m[1]), l: Number(m[2]), t: 0, text: p.recordText.trim(), played: Number(m[1]) + Number(m[2]) } : computed;
-          return { ...p, games, record };
+          return { ...p, games, storedGames: stored, record };
         })
         .sort((a, b) => (a.name || "").localeCompare(b.name || "")),
-    [docs]
+    [docs, teams]
   );
 
   // Merges a parsed upload into what's already stored: roster fields come from
@@ -369,15 +437,17 @@ export function useHsTracker() {
 
   // Edit one game (matched by its date) -- used for the hand-written summary.
   async function updateGame(player, game, fields) {
-    const games = (player.games || []).map((g) => (gameKey(g) === gameKey(game) ? { ...g, ...fields } : g));
+    // A player who has no stored schedule is showing the school's scraped one; the first edit saves it.
+    const base = player.storedGames?.length ? player.storedGames : player.games || [];
+    const games = base.map((g) => (gameKey(g) === gameKey(game) ? { ...g, ...fields } : g));
     await updatePlayer(player.id, { games });
   }
 
-  async function addPlayer({ name, classYear, position, highSchool, state, coach }) {
+  async function addPlayer({ name, classYear, position, highSchool, state, coach, maxpreps = "", scorestream = "" }) {
     const id = playerId(classYear, name);
     await setDoc(doc(db, "hsPlayers", id), {
       name: name.trim(), classYear: classYear.trim(), position: position.trim().toUpperCase(), highSchool: highSchool.trim(), state: toStateCode(state), coach: coach.trim(),
-      status: "", injured: false, games: [], sources: {}, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
+      status: "", injured: false, games: [], sources: { maxpreps: maxpreps.trim(), scorestream: scorestream.trim() }, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
     });
   }
 
@@ -385,5 +455,5 @@ export function useHsTracker() {
     await deleteDoc(doc(db, "hsPlayers", id));
   }
 
-  return { ready, players, importFile, importParsed, updatePlayer, updateGame, addPlayer, removePlayer };
+  return { ready, players, teams, importFile, importParsed, updatePlayer, updateGame, addPlayer, removePlayer };
 }
