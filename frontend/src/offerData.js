@@ -147,6 +147,23 @@ function normalizeTeamKey(sheetName) {
   return sheetName.trim().toUpperCase();
 }
 
+// Every "date offered" is stored one way -- M/D/YY, e.g. 6/26/25 -- whether
+// it was typed or imported as 6/26/2025, 06/26/25, 2025-06-26, 6-26-2026...
+// Anything that isn't recognizably a date is left exactly as written.
+export function normalizeOfferDate(value) {
+  const text = (value == null ? "" : String(value)).trim();
+  if (!text) return "";
+  let month, day, year;
+  let m = /^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})(?:[T\s].*)?$/.exec(text); // 2025-06-26
+  if (m) [, year, month, day] = m;
+  else if ((m = /^(\d{1,2})[-/.](\d{1,2})[-/.](\d{2}|\d{4})$/.exec(text))) [, month, day, year] = m; // 6/26/25, 6/26/2025
+  else return text;
+  const mo = Number(month);
+  const da = Number(day);
+  if (mo < 1 || mo > 12 || da < 1 || da > 31) return text;
+  return `${mo}/${da}/${String(year).slice(-2)}`;
+}
+
 function excelDateToIso(value) {
   if (value instanceof Date) return value.toISOString().slice(0, 10);
   if (typeof value === "string" && value.trim()) return value.trim();
@@ -191,7 +208,7 @@ function parseTeamSheet(sheet, teamKey) {
       highSchool: (row[2] || "").toString().trim(),
       state: (row[3] || "").toString().trim().toUpperCase(),
       position: normalizePosition((row[4] || "").toString()),
-      dateOffered: excelDateToIso(row[5]),
+      dateOffered: normalizeOfferDate(excelDateToIso(row[5])),
       status: normalizeStatus((row[6] || "").toString()),
       pipelineStatus: (row[7] || "").toString().trim(),
       notes: (row[8] || "").toString().trim(),
@@ -313,7 +330,7 @@ function otherOffersFromFeed(allOfferSchools) {
 // shift can move it a day).
 function feedDateToText(iso) {
   const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso || "");
-  return m ? `${Number(m[2])}/${Number(m[3])}/${m[1]}` : "";
+  return m ? normalizeOfferDate(`${m[2]}/${m[3]}/${m[1]}`) : "";
 }
 
 // Merges a weekly activity feed (one row per player + school, each an
@@ -518,20 +535,26 @@ export function useOfferTracker() {
           snap.docs
             .map((d) => {
               const data = d.data() || {};
-              return { id: d.id, ...data, status: normalizeStatus(data.status) };
+              return { id: d.id, ...data, status: normalizeStatus(data.status), dateOffered: normalizeOfferDate(data.dateOffered) };
             })
             .filter((d) => !d.removed)
         );
         // Misspelled commitments already in the database get rewritten
         // once (shown corrected either way; this keeps the stored value
         // clean too). Idempotent: nothing is left to fix afterwards.
-        const misspelled = snap.docs.filter((d) => {
-          const raw = (d.data().status || "").trim();
-          return raw && normalizeStatus(raw) !== raw;
+        // (Dates get the same treatment: stored as M/D/YY.)
+        const untidy = snap.docs.filter((d) => {
+          const data = d.data();
+          const status = (data.status || "").trim();
+          const date = data.dateOffered == null ? "" : String(data.dateOffered);
+          return (status && normalizeStatus(status) !== status) || (date && normalizeOfferDate(date) !== date);
         });
-        for (let i = 0; i < misspelled.length; i += 450) {
+        for (let i = 0; i < untidy.length; i += 450) {
           const batch = writeBatch(db);
-          misspelled.slice(i, i + 450).forEach((d) => batch.update(d.ref, { status: normalizeStatus(d.data().status) }));
+          untidy.slice(i, i + 450).forEach((d) => {
+            const data = d.data();
+            batch.update(d.ref, { status: normalizeStatus(data.status), dateOffered: normalizeOfferDate(data.dateOffered) });
+          });
           batch.commit().catch(() => {});
         }
         setReady(true);
@@ -620,7 +643,7 @@ export function useOfferTracker() {
       highSchool: (fields.highSchool || sibling?.highSchool || "").trim().toUpperCase(),
       state: (fields.state || sibling?.state || "").trim().toUpperCase(),
       position: normalizePosition(fields.position || sibling?.position || ""),
-      dateOffered: (fields.dateOffered || "").trim(),
+      dateOffered: normalizeOfferDate(fields.dateOffered),
       status: "",
       pipelineStatus: "",
       notes: (fields.notes || "").trim(),
@@ -639,7 +662,7 @@ export function useOfferTracker() {
   // rather than a fresh query, since the whole collection is already
   // held here via the snapshot listener.
   async function updateOfferField(row, field, rawValue) {
-    const value = field === "status" ? normalizeStatus(rawValue) : rawValue;
+    const value = field === "status" ? normalizeStatus(rawValue) : field === "dateOffered" ? normalizeOfferDate(rawValue) : rawValue;
     const updatedAt = new Date().toISOString();
     if (!SYNCED_FIELDS.has(field)) {
       await updateDoc(doc(db, "offers", row.id), { [field]: value, updatedAt });
