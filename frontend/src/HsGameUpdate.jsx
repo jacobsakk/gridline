@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { AlertTriangle, ArrowDown, Camera, ArrowLeft, ArrowUp, ChevronLeft, ChevronRight, FileText, Loader2, Plus, Printer, Search, Trash2, Upload, X } from "lucide-react";
+import { AlertTriangle, ArrowDown, Camera, ArrowLeft, ArrowUp, ChevronLeft, ChevronRight, Eye, EyeOff, FileText, Loader2, Plus, Printer, Search, Trash2, Upload, X } from "lucide-react";
 import cmuHelmet from "./assets/cmu-helmet.png";
 import { ThemeSwitcher, useTheme } from "./theme.jsx";
 import { confirmAction } from "./ConfirmDialog.jsx";
@@ -635,7 +635,7 @@ function FaceBlock({ player, week, status, updatePlayer, updateGame, removePlaye
         <label style={{ display: "flex", alignItems: "center", gap: 3, cursor: "pointer" }}>
           <input type="checkbox" checked={!!player.injured} onChange={(e) => updatePlayer(player.id, { injured: e.target.checked })} /> Injured
         </label>
-        <button onClick={() => removePlayer(player)} title="Remove this player from the tracker" aria-label={`Remove ${player.name}`} style={{ background: "none", border: "none", cursor: "pointer", lineHeight: 0, color: "#555" }}><Trash2 size={13} /></button>
+        <button onClick={() => updatePlayer(player.id, { faceSheet: false })} title="Take off the face sheet (stays in the tracker)" aria-label={`Take ${player.name} off the face sheet`} style={{ background: "none", border: "none", cursor: "pointer", lineHeight: 0, color: "#555" }}><EyeOff size={14} /></button>
       </div>
     </article>
   );
@@ -643,9 +643,94 @@ function FaceBlock({ player, week, status, updatePlayer, updateGame, removePlaye
 
 const toolButton = { background: "rgba(255,255,255,0.92)", border: "1px solid #444", borderRadius: 4, padding: 3, cursor: "pointer", lineHeight: 0, color: "#111" };
 
+const SHEET_SORTS = [
+  { key: "position", label: "Position" },
+  { key: "status", label: "Status" },
+  { key: "name", label: "Name" },
+  { key: "coach", label: "Area coach" },
+  { key: "school", label: "High school" },
+];
+
+// Position runs QB, RB, WR, TE, OL, DL, LB, DB; status runs committed, offered, ... none.
+// Whatever is sorted on, ties fall back to position group and then name.
+function sortForSheet(list, key, statusOf) {
+  const group = (p) => {
+    const i = POSITION_GROUPS.findIndex((g) => g.key === groupOf(p.position));
+    return i < 0 ? 99 : i;
+  };
+  const text = (v) => (v || "").toString().toLowerCase();
+  const primary = (p) => {
+    switch (key) {
+      case "status": return STATUS_ORDER[statusOf(p)] || 99;
+      case "name": return text(p.name);
+      case "coach": return text(p.coach) || "\uffff";
+      case "school": return text(p.highSchool);
+      default: return group(p);
+    }
+  };
+  return [...list].sort((a, b) => {
+    const pa = primary(a);
+    const pb = primary(b);
+    const c = typeof pa === "number" ? pa - pb : pa.localeCompare(pb);
+    return c || group(a) - group(b) || text(a.position).localeCompare(text(b.position)) || text(a.name).localeCompare(text(b.name));
+  });
+}
+
+// Choose who is on the face sheet. Being off the sheet doesn't touch the tracker.
+function FaceSheetPicker({ players, statusOf, sortBy, setFaceSheet, onClose }) {
+  const [q, setQ] = useState("");
+  const ordered = useMemo(() => {
+    const term = q.trim().toLowerCase();
+    return sortForSheet(players, sortBy, statusOf).filter((p) => !term || [p.name, p.highSchool, p.position, p.coach].some((v) => (v || "").toLowerCase().includes(term)));
+  }, [players, sortBy, q]); // eslint-disable-line react-hooks/exhaustive-deps
+  const on = (p) => p.faceSheet !== false;
+  const total = players.filter(on).length;
+  const shownIds = ordered.map((p) => p.id);
+  return (
+    <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20, zIndex: 70 }}>
+      <div onClick={(e) => e.stopPropagation()} style={{ background: "var(--bg-panel)", border: "1px solid var(--border)", borderRadius: 10, width: 620, maxWidth: "100%", maxHeight: "88vh", display: "flex", flexDirection: "column", padding: 20 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
+          <h2 className="oswald" style={{ margin: 0, fontSize: 19 }}>Who is on the face sheet</h2>
+          <button onClick={onClose} aria-label="Close" style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer", lineHeight: 0 }}><X size={18} /></button>
+        </div>
+        <p style={{ margin: "0 0 12px", fontSize: 13, color: "var(--text-muted)" }}>
+          <strong className="tabular" style={{ color: "var(--text-primary)" }}>{total} of {players.length}</strong> are on it. Taking someone off only hides them from the face sheet and its printout; they stay in the Master and Weekly trackers.
+        </p>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 10 }}>
+          <input id="hs-picker-search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search name, school, position…" style={{ ...controlStyle, flex: "1 1 180px", minWidth: 0 }} />
+          <button onClick={() => setFaceSheet(shownIds, true)} style={{ ...controlStyle, cursor: "pointer" }}>Put all shown on</button>
+          <button onClick={() => setFaceSheet(shownIds, false)} style={{ ...controlStyle, cursor: "pointer" }}>Take all shown off</button>
+        </div>
+        <div className="hs-scroll" style={{ overflow: "auto", border: "1px solid var(--border)", borderRadius: 8, minHeight: 0 }}>
+          {ordered.length === 0 && <div style={{ padding: 20, textAlign: "center", color: "var(--text-faint)" }}>No players match.</div>}
+          {ordered.map((p) => {
+            const st = STATUS_BY_KEY[statusOf(p)];
+            return (
+              <label key={p.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 12px", borderBottom: "1px solid var(--border-subtle)", cursor: "pointer", opacity: on(p) ? 1 : 0.55 }}>
+                <input type="checkbox" checked={on(p)} onChange={(e) => setFaceSheet([p.id], e.target.checked)} />
+                <span style={{ fontWeight: 700, color: "var(--text-primary)", flex: "1 1 auto", minWidth: 0 }}>{p.name}</span>
+                <span style={{ color: "var(--accent)", fontWeight: 700, fontSize: 12.5, width: 34 }}>{p.position || "—"}</span>
+                <span style={{ fontSize: 12.5, color: "var(--text-muted)", width: 190, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{p.highSchool}</span>
+                <span style={{ fontSize: 10.5, fontWeight: 800, width: 86, textAlign: "center", borderRadius: 4, padding: "2px 0", background: st?.bg || "transparent", color: st?.fg || "var(--text-faint)", textTransform: "uppercase" }}>{st ? st.label : "—"}</span>
+              </label>
+            );
+          })}
+        </div>
+        <div style={{ textAlign: "right", marginTop: 12 }}>
+          <button onClick={onClose} style={{ background: "var(--accent-bg)", border: "1px solid var(--accent)", color: "var(--accent)", borderRadius: 6, padding: "8px 18px", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>Done</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function FaceSheetTab(props) {
-  const { players, allPlayers, week, statusOf, focusId, clearFocus, updatePlayer } = props;
-  const shown = focusId ? players.filter((p) => p.id === focusId) : players;
+  const { players, allPlayers, week, statusOf, focusId, clearFocus, updatePlayer, setFaceSheet } = props;
+  const [sortBy, setSortBy] = useState("position");
+  const [picking, setPicking] = useState(false);
+  const onSheet = useMemo(() => sortForSheet(players.filter((p) => p.faceSheet !== false), sortBy, statusOf), [players, sortBy]); // eslint-disable-line react-hooks/exhaustive-deps
+  const hiddenCount = players.length - players.filter((p) => p.faceSheet !== false).length;
+  const shown = focusId ? players.filter((p) => p.id === focusId) : onSheet;
   const pages = [];
   for (let i = 0; i < shown.length; i += PER_PAGE) pages.push(shown.slice(i, i + PER_PAGE));
   const [note, setNote] = useState("");
@@ -678,6 +763,15 @@ function FaceSheetTab(props) {
     <div className="hs-scroll" style={{ flex: 1, minHeight: 0, overflow: "auto", paddingBottom: 30 }}>
       <div className="hs-no-print" style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap", marginBottom: 14, maxWidth: 940, marginInline: "auto" }}>
         {focusId && <button onClick={clearFocus} style={{ ...controlStyle, cursor: "pointer" }}>← Show everyone</button>}
+        <label style={{ display: "flex", alignItems: "center", gap: 7, fontSize: 13, color: "var(--text-muted)" }}>
+          Sort by
+          <select id="hs-sheet-sort" value={sortBy} onChange={(e) => setSortBy(e.target.value)} style={{ ...controlStyle, cursor: "pointer" }}>
+            {SHEET_SORTS.map((o) => <option key={o.key} value={o.key}>{o.label}</option>)}
+          </select>
+        </label>
+        <button onClick={() => setPicking(true)} style={{ ...controlStyle, cursor: "pointer", display: "flex", alignItems: "center", gap: 7, fontWeight: 700 }}>
+          <Eye size={14} /> Choose players{hiddenCount ? ` (${hiddenCount} off)` : ""}
+        </button>
         <input ref={photoInput} type="file" accept="image/*" multiple style={{ display: "none" }} onChange={(e) => { if (e.target.files.length) addPhotos(e.target.files); e.target.value = ""; }} />
         <button onClick={() => photoInput.current?.click()} disabled={busy} style={{ ...controlStyle, cursor: "pointer", display: "flex", alignItems: "center", gap: 7, fontWeight: 700 }}>
           {busy ? <Loader2 size={14} className="spin" /> : <Camera size={14} />} Add photos
@@ -686,7 +780,12 @@ function FaceSheetTab(props) {
           {note || "Name each picture after the player (Sam Rouleau.jpg) to add many at once, or hover a card to add one."}
         </span>
       </div>
-      {shown.length === 0 && <div style={{ padding: 40, textAlign: "center", color: "var(--text-faint)" }}>No players match.</div>}
+      {shown.length === 0 && (
+        <div style={{ padding: 40, textAlign: "center", color: "var(--text-faint)" }}>
+          {players.length ? "Everyone is off the face sheet. Use Choose players to put people back on." : "No players match."}
+        </div>
+      )}
+      {picking && <FaceSheetPicker players={players} statusOf={statusOf} sortBy={sortBy} setFaceSheet={setFaceSheet} onClose={() => setPicking(false)} />}
       <div className="hs-sheet">
         {pages.map((page, i) => (
           <section key={i} className="hs-page" style={{ maxWidth: 940, marginInline: "auto", marginBottom: 30 }}>
@@ -782,16 +881,6 @@ export default function HsGameUpdate({ onBack }) {
   }, [hs.players, search, coach, status, offers]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const sortedForMaster = useMemo(() => sortPlayers(filtered, sort, statusOf), [filtered, sort]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Face sheets read like the printed one: by position group, then name, unless a master sort is on.
-  const faceSheetOrder = useMemo(() => {
-    if (sort.key) return sortedForMaster;
-    const rank = (p) => {
-      const i = POSITION_GROUPS.findIndex((g) => g.key === groupOf(p.position));
-      return i < 0 ? 99 : i;
-    };
-    return [...filtered].sort((a, b) => rank(a) - rank(b) || (a.name || "").localeCompare(b.name || ""));
-  }, [filtered, sortedForMaster, sort.key]);
 
   async function removePlayer(p) {
     const ok = await confirmAction({ title: `Remove ${p.name}?`, message: "This takes them out of the game tracker." });
@@ -919,6 +1008,8 @@ export default function HsGameUpdate({ onBack }) {
             <button onClick={removeSelected} style={{ display: "flex", alignItems: "center", gap: 6, background: "transparent", border: "1px solid var(--danger-text)", color: "var(--danger-text)", borderRadius: 6, padding: "6px 12px", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
               <Trash2 size={14} /> Remove selected
             </button>
+            <button onClick={() => hs.setFaceSheet([...selected], true)} style={{ ...controlStyle, padding: "6px 12px", cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}><Eye size={14} /> Put on face sheet</button>
+            <button onClick={() => hs.setFaceSheet([...selected], false)} style={{ ...controlStyle, padding: "6px 12px", cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}><EyeOff size={14} /> Take off face sheet</button>
             <button onClick={() => setSelected(new Set())} style={{ ...controlStyle, padding: "6px 12px", cursor: "pointer" }}>Clear</button>
           </div>
         )}
@@ -946,7 +1037,7 @@ export default function HsGameUpdate({ onBack }) {
           <WeeklyTab players={filtered} week={week} statusOf={statusOf} updateGame={hs.updateGame} onOpenPlayer={openPlayer} onProfile={setProfile} hasProfile={hasProfile} />
         ) : (
           <FaceSheetTab
-            players={faceSheetOrder}
+            players={filtered}
             allPlayers={hs.players}
             week={week}
             statusOf={statusOf}
@@ -954,6 +1045,7 @@ export default function HsGameUpdate({ onBack }) {
             clearFocus={() => setFocusId(null)}
             updatePlayer={hs.updatePlayer}
             updateGame={hs.updateGame}
+            setFaceSheet={hs.setFaceSheet}
             removePlayer={removePlayer}
             onProfile={setProfile}
             hasProfile={hasProfile}

@@ -531,9 +531,19 @@ export function useHsTracker() {
       await batch.commit();
     }
   }
+  // Who is on the printed face sheet. Only players marked off are recorded (faceSheet: false);
+  // everyone else is on it, so new players show up without any extra step.
+  async function setFaceSheet(ids, on) {
+    const now = new Date().toISOString();
+    for (let i = 0; i < ids.length; i += 400) {
+      const batch = writeBatch(db);
+      ids.slice(i, i + 400).forEach((id) => batch.update(doc(db, "hsPlayers", id), { faceSheet: on, updatedAt: now }));
+      await batch.commit();
+    }
+  }
   const removePlayers = (ids) => setRemoved(ids, true);
   const restorePlayers = (ids) => setRemoved(ids, false);
   const removePlayer = (id) => setRemoved([id], true);
 
-  return { ready, players, teams, importFile, importParsed, updatePlayer, updateGame, addPlayer, removePlayer, removePlayers, restorePlayers };
+  return { ready, players, teams, importFile, importParsed, updatePlayer, updateGame, addPlayer, removePlayer, removePlayers, restorePlayers, setFaceSheet };
 }
