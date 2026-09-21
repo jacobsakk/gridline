@@ -237,7 +237,10 @@ function AddPlayerModal({ onClose, onAdd, coaches }) {
         <input id="hs-name" placeholder="Player name *" value={f.name} onChange={set("name")} style={field} autoFocus />
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
           <input id="hs-year" placeholder="Class year *" value={f.classYear} onChange={set("classYear")} style={field} />
-          <input id="hs-pos" placeholder="Position" value={f.position} onChange={set("position")} style={field} />
+          <select id="hs-pos" aria-label="Position" value={f.position} onChange={set("position")} style={{ ...field, cursor: "pointer" }}>
+            <option value="">Position</option>
+            {POSITION_GROUPS.map((g) => <option key={g.key} value={g.key}>{g.label}</option>)}
+          </select>
         </div>
         <input id="hs-school" placeholder="High school" value={f.highSchool} onChange={set("highSchool")} style={field} />
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
