@@ -9,6 +9,7 @@ import HsGameUpdate from "./HsGameUpdate.jsx";
 import { ConfirmHost } from "./ConfirmDialog.jsx";
 import CardTransition from "./CardTransition.jsx";
 import LoginGate from "./LoginGate.jsx";
+import ErrorBoundary from "./ErrorBoundary.jsx";
 
 // The dashboard is the main hub -- everything else (the tracker today,
 // more tools later per the plan) is a screen you navigate into and back
@@ -61,7 +62,7 @@ function Screens({ session }) {
 
   return (
     <>
-      <div key={view.name} className="screen-enter">{screen}</div>
+      <div key={view.name} className="screen-enter"><ErrorBoundary key={view.name}>{screen}</ErrorBoundary></div>
       {transition && (
         <CardTransition
           label={transition.label}
