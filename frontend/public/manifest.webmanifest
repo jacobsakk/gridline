@@ -1,0 +1,16 @@
+{
+  "name": "Central Michigan Recruiting Hub",
+  "short_name": "CMU Recruiting",
+  "description": "Central Michigan football recruiting hub: offer tracker, pre-portal tracker, HS game update and college profiles.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#000000",
+  "theme_color": "#510F1D",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

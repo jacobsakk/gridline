@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>Central Michigan Recruiting Hub</title>
     <meta name="description" content="Central Michigan football recruiting hub: offer tracker, pre-portal tracker and college profiles." />
     <meta property="og:type" content="website" />
@@ -18,12 +18,21 @@
     <meta name="twitter:image" content="https://jacobsakk.github.io/gridline/og-image.png" />
     <link rel="icon" type="image/png" href="./favicon.png" />
     <link rel="apple-touch-icon" href="./apple-touch-icon.png" />
+    <!-- Installable web app: on iPhone, Share > Add to Home Screen opens it full-screen like an app. -->
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <meta name="theme-color" content="#510F1D" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="CMU Recruiting" />
+    <meta name="format-detection" content="telephone=no" />
     <style>
       /* The Claude Artifact host used to inject a reset like this for us;
          a plain static site needs its own, or the browser's default 8px
          body margin shows as a white border around the dark app (and adds
          phantom scroll room past the viewport). */
       html, body { margin: 0; padding: 0; background: #12171A; }
+      body { -webkit-text-size-adjust: 100%; overscroll-behavior-y: none; }
     </style>
   </head>
   <body>

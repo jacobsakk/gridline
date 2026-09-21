@@ -1,3 +1,4 @@
+import { useRealStatsReady } from "./statsData.js";
 import { useContext, useEffect, useMemo, useState } from "react";
 import { ExternalLink, RefreshCw, Trophy } from "lucide-react";
 import { PlayerDetailModal, useWatchlist, usePortalStatus } from "./Gridline.jsx";
@@ -816,7 +817,7 @@ function Swatch({ color }) {
 
 const TABS = ["Recruiting", "Schedule", "Roster", "Depth Chart"];
 
-export default function CollegeProfile({ college, onOpenTeam }) {
+function CollegeProfileInner({ college, onOpenTeam }) {
   const [tab, setTab] = useState("Recruiting");
   return (
     <div style={{ flex: 1, minHeight: 0, overflow: "auto", padding: "22px var(--gutter) var(--gutter)" }}>
@@ -830,4 +831,11 @@ export default function CollegeProfile({ college, onOpenTeam }) {
       </div>
     </div>
   );
+}
+
+// The player and stat lookups need the Pre-Portal stats, which load on demand.
+export default function CollegeProfile(props) {
+  const ready = useRealStatsReady();
+  if (!ready) return <div style={{ padding: 40, textAlign: "center", color: "var(--text-faint)" }}>Loading…</div>;
+  return <CollegeProfileInner {...props} />;
 }

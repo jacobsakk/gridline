@@ -1,6 +1,6 @@
 import colleges from "./data/colleges.json";
 import standings from "./data/standings.json";
-import realStats from "./data/real-stats.json";
+import { REAL_STATS as realStats } from "./statsData.js";
 import { canonicalSchool } from "./schoolNames.js";
 
 export const COLLEGES = colleges;

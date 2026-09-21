@@ -159,3 +159,18 @@ tbody tr:hover { background: var(--row-hover) !important; }
 .hs-game-click .hs-del { opacity: 0; transition: opacity 0.12s; }
 .hs-game-click:hover .hs-del, .hs-game-click:focus-within .hs-del { opacity: 1; }
 @media (hover: none) { .hs-game-click .hs-del { opacity: 0.7; } }
+
+/* Installed on an iPhone, the page runs under the status bar and above the home bar: keep content clear of both,
+   and let the maroon header colour the strip behind the status bar. */
+.app-shell { padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom); }
+.app-shell .app-header { box-shadow: 0 calc(-1 * env(safe-area-inset-top, 0px)) 0 0 var(--maroon); }
+
+/* Phone touches: controls that would overflow wrap instead, and the division tabs scroll rather than clip. */
+.hub-controls { max-width: 100%; flex-wrap: wrap; }
+.division-tabs { overflow-x: auto; scrollbar-width: none; }
+.division-tabs::-webkit-scrollbar { display: none; }
+.division-tabs button { flex-shrink: 0; }
+@media (max-width: 560px) {
+  .tracker-subtitle { display: none; }
+  .division-tabs button { padding: 10px 14px 12px !important; }
+}

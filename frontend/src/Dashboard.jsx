@@ -66,7 +66,7 @@ export default function Dashboard({ onOpenCard, onOpenSettings, session }) {
               Central Michigan Recruiting Hub
             </h1>
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
+          <div className="hub-controls" style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
             {session?.profile && (
               <span className="welcome-line" style={{ fontSize: 14, fontWeight: 600, color: "var(--text-secondary)", whiteSpace: "nowrap" }}>
                 Welcome, {coachTitle(session.profile.name, session.profile.email)}

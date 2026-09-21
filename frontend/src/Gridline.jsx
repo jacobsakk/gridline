@@ -5,7 +5,7 @@ import { collection, doc, addDoc, updateDoc, onSnapshot, query, orderBy } from "
 import { db } from "./firebase";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import realStats from "./data/real-stats.json";
+import { REAL_STATS, loadRealStats } from "./statsData.js";
 import { ThemeSwitcher, useTheme } from "./theme.jsx";
 import StatsUploadModal from "./StatsUploadModal.jsx";
 import { loadUploads } from "./statsUpload.js";
@@ -117,21 +117,25 @@ const LEADER_BOARDS = [
   { key: "interceptions", categoryKey: "tackling", label: "Interceptions", sortKey: "int" },
 ];
 
-export const DATA = realStats;
-
-// None of the four sources sends completion % directly -- they all report
-// a "comp/att" string (compAtt) plus season totals, so it's derived once
-// here rather than duplicated across ncaa_api.py/naia.py/juco.py/cccaa.py.
-for (const r of DATA) {
-  if (r.category === "passing" && r.compAtt) {
-    const [comp, att] = r.compAtt.split("/").map(Number);
-    r.pct = att > 0 ? `${((comp / att) * 100).toFixed(1)}%` : "0.0%";
-  }
-}
+export const DATA = REAL_STATS; // filled in when the stats load (see loadRealStats)
 
 // Rows someone uploaded by hand (see statsUpload.js) replace the scraped season totals for that division and stat
 // category. DATA is rebuilt from the untouched bundle each time, so removing an upload restores the scraped rows.
-const BUNDLED = DATA.slice();
+const BUNDLED = [];
+let bundledReady = false;
+// Run once, right after the stats load. None of the sources sends completion % directly -- they all report a
+// "comp/att" string (compAtt) plus season totals -- so it's derived here rather than in every scraper.
+function prepareBundled() {
+  if (bundledReady) return;
+  for (const r of DATA) {
+    if (r.category === "passing" && r.compAtt) {
+      const [comp, att] = r.compAtt.split("/").map(Number);
+      r.pct = att > 0 ? `${((comp / att) * 100).toFixed(1)}%` : "0.0%";
+    }
+  }
+  BUNDLED.push(...DATA);
+  bundledReady = true;
+}
 export function applyUploads(uploads) {
   DATA.length = 0;
   DATA.push(...BUNDLED);
@@ -1786,7 +1790,7 @@ function GridlineMain({ onBack, initialSearch, onUploadStats }) {
                 <h1 className="oswald app-title" style={{ fontSize: 26, fontWeight: 700, margin: 0, letterSpacing: "0.01em" }}>
                   Pre-Portal Tracker
                 </h1>
-                <span style={{ color: "var(--text-muted)", fontSize: 14 }}>weekly stats — NAIA · JUCO · D3 · D2 · FCS · FBS</span>
+                <span className="tracker-subtitle" style={{ color: "var(--text-muted)", fontSize: 14 }}>weekly stats — NAIA · JUCO · D3 · D2 · FCS · FBS</span>
               </div>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
@@ -1848,7 +1852,7 @@ function GridlineMain({ onBack, initialSearch, onUploadStats }) {
           below (breakout strip, live banner, filters, table) scrolls as
           one region beneath this. */}
       <div style={{ flexShrink: 0, padding: "16px var(--gutter) 0" }}>
-        <div style={{ display: "flex", gap: 4, borderBottom: "1px solid var(--border)" }}>
+        <div className="division-tabs" style={{ display: "flex", gap: 4, borderBottom: "1px solid var(--border)" }}>
           {DIVISIONS.map((d) => (
             <button
               key={d}
@@ -2246,6 +2250,12 @@ export default function Gridline(props) {
   const [modal, setModal] = useState(false);
 
   const reload = useCallback(async () => {
+    try {
+      await loadRealStats();
+      prepareBundled();
+    } catch (err) {
+      console.error("Couldn't load the stats data", err);
+    }
     try {
       const found = await loadUploads();
       applyUploads(found);
