@@ -1,4 +1,5 @@
-import { createContext, useContext, useMemo, useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { initialSubRoute, setSubRoute } from "./route.js";
 import { ArrowLeft, Upload, X, Loader2, ChevronUp, ChevronDown, ChevronsUpDown, TrendingUp, MapPin, Search, Plus, ExternalLink } from "lucide-react";
 import { confirmAction } from "./ConfirmDialog.jsx";
 import { collegeForLabel, logoFor, teamKey } from "./collegeData.js";
@@ -988,10 +989,12 @@ function parseOfferDate(value) {
 export default function OfferTracker({ onBack }) {
   const [theme, setTheme] = useTheme();
   const [uploadOpen, setUploadOpen] = useState(false);
-  const [classYear, setClassYear] = useState(null);
-  const [conference, setConference] = useState("MAC");
-  const [subView, setSubView] = useState("teams"); // "teams" | "trends"
-  const [selectedTeam, setSelectedTeam] = useState(null);
+  // Where you are (#/offers/2027/MAC/teams/CMU) is kept in the address so a refresh returns here.
+  const [initial] = useState(initialSubRoute);
+  const [classYear, setClassYear] = useState(/^\d{4}$/.test(initial[0] || "") ? initial[0] : null);
+  const [conference, setConference] = useState(CONFERENCE_ORDER.includes(initial[1]) ? initial[1] : "MAC");
+  const [subView, setSubView] = useState(initial[2] === "trends" ? "trends" : "teams"); // "teams" | "trends"
+  const [selectedTeam, setSelectedTeam] = useState(initial[3] && TEAM_CONFERENCE[initial[3]] ? initial[3] : null);
   const [sortKey, setSortKey] = useState("player");
   const [sortDir, setSortDir] = useState("asc");
   const [search, setSearch] = useState("");
@@ -1011,6 +1014,9 @@ export default function OfferTracker({ onBack }) {
   );
   const activeTeam = selectedTeam && teams.some((t) => t.team === selectedTeam) ? selectedTeam : teams[0]?.team;
   const activeTeamMeta = teams.find((t) => t.team === activeTeam);
+  useEffect(() => {
+    if (activeClassYear) setSubRoute("offers", [activeClassYear, conference, subView, selectedTeam]);
+  }, [activeClassYear, conference, subView, selectedTeam]);
   const activeCollege = useMemo(() => (activeTeamMeta ? collegeForLabel(activeTeamMeta.label) : null), [activeTeamMeta]);
 
   // Typing in the search box searches every team in every conference

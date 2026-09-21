@@ -4,6 +4,7 @@ import cmuHelmet from "./assets/cmu-helmet.png";
 import { ThemeSwitcher, useTheme } from "./theme.jsx";
 import { confirmAction } from "./ConfirmDialog.jsx";
 import { useOfferTracker } from "./offerData.js";
+import { initialSubRoute, setSubRoute } from "./route.js";
 import { PlayerProfileModal, ThemeContext } from "./OfferTracker.jsx";
 import { fetchSchedule, teamKey } from "./collegeData.js";
 import {
@@ -19,6 +20,7 @@ import {
 } from "./hsData.js";
 
 const TABS = ["Master Tracker", "Weekly Tracker", "Staff Face Sheet"];
+const TAB_SLUGS = { "Master Tracker": "master", "Weekly Tracker": "weekly", "Staff Face Sheet": "face-sheet" };
 
 // Position groups for the weekly view, in the order coaches read a roster.
 const POSITION_GROUPS = [
@@ -603,8 +605,13 @@ export default function HsGameUpdate({ onBack }) {
   const [theme, setTheme] = useTheme();
   const hs = useHsTracker();
   const offers = useOfferTracker();
-  const [tab, setTab] = useState(TABS[0]);
-  const [week, setWeek] = useState(weekKey(new Date()));
+  // The open tab and week are kept in the address (#/hs/weekly/2026-09-14) so a refresh returns here.
+  const [initial] = useState(initialSubRoute);
+  const [tab, setTab] = useState(TABS.find((t) => TAB_SLUGS[t] === initial[0]) || TABS[0]);
+  const [week, setWeek] = useState(/^\d{4}-\d{2}-\d{2}$/.test(initial[1] || "") ? initial[1] : weekKey(new Date()));
+  useEffect(() => {
+    setSubRoute("hs", tab === "Master Tracker" ? [TAB_SLUGS[tab]] : [TAB_SLUGS[tab], week]);
+  }, [tab, week]);
   const [search, setSearch] = useState("");
   const [coach, setCoach] = useState("");
   const [status, setStatus] = useState("");

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { navigate, useRoute } from "./route.js";
 import Dashboard from "./Dashboard.jsx";
 import Gridline from "./Gridline.jsx";
 import SettingsPage from "./SettingsPage.jsx";
@@ -21,24 +22,29 @@ export default function App() {
   );
 }
 
+const SCREENS = new Set(["tracker", "offers", "colleges", "hs", "settings"]);
+
 function prefersReducedMotion() {
   return typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
 }
 
 function Screens({ session }) {
-  const [view, setView] = useState({ name: "dashboard" });
+  // Which screen you're on lives in the address (#/offers ...), so a refresh stays put.
+  const route = useRoute();
+  const view = { name: SCREENS.has(route[0]) ? route[0] : "dashboard" };
   const [transition, setTransition] = useState(null);
-  const toDashboard = () => setView({ name: "dashboard" });
+  const toDashboard = () => navigate([]);
+  const goTo = (name) => navigate([name]);
 
   // Opening a dashboard card plays the wipe; for users who ask for less
   // motion it just switches.
   function open(next, label) {
-    if (prefersReducedMotion()) setView(next);
+    if (prefersReducedMotion()) goTo(next.name);
     else setTransition({ next, label });
   }
 
   let screen;
-  if (view.name === "tracker") screen = <Gridline onBack={toDashboard} initialSearch={view.search} />;
+  if (view.name === "tracker") screen = <Gridline onBack={toDashboard} />;
   else if (view.name === "offers") screen = <OfferTracker onBack={toDashboard} />;
   else if (view.name === "colleges") screen = <Colleges onBack={toDashboard} />;
   else if (view.name === "hs") screen = <HsGameUpdate onBack={toDashboard} />;
@@ -47,7 +53,7 @@ function Screens({ session }) {
     screen = (
       <Dashboard
         onOpenCard={(key, label) => open({ name: key }, label)}
-        onOpenSettings={() => setView({ name: "settings" })}
+        onOpenSettings={() => goTo("settings")}
         session={session}
       />
     );
@@ -59,7 +65,7 @@ function Screens({ session }) {
       {transition && (
         <CardTransition
           label={transition.label}
-          onCovered={() => setView(transition.next)}
+          onCovered={() => goTo(transition.next.name)}
           onDone={() => setTransition(null)}
         />
       )}
