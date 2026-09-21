@@ -320,6 +320,7 @@ export function overlayScraped(games, teamDoc) {
   const merged = teamGames.map((t) => {
     const mine = findStored(t, games.filter((g) => !claimed.has(g)));
     if (mine) claimed.add(mine);
+    if (mine?.removed) return null; // deleted by hand: the scraper's copy stays hidden
     // A score someone set by hand (resolved) is final: the sources can't change it or flag it again.
     const locked = !!(mine && mine.resolved);
     return {
@@ -339,7 +340,7 @@ export function overlayScraped(games, teamDoc) {
   });
   const scheduleIsFresh = teamDoc.fetched?.maxpreps;
   const leftovers = games.filter((g) => !claimed.has(g) && (g.result || !scheduleIsFresh || !g.date));
-  return [...merged, ...leftovers].sort((a, b) => (a.date || "").localeCompare(b.date || ""));
+  return [...merged.filter(Boolean), ...leftovers].sort((a, b) => (a.date || "").localeCompare(b.date || ""));
 }
 
 // ------------------------------------------------------------------ photos
@@ -405,6 +406,7 @@ function mergeGames(a, b) {
   const merged = { ...other, ...Object.fromEntries(Object.entries(base).filter(([, v]) => v !== "" && v != null)) };
   merged.date = base.date || other.date || "";
   merged.summary = base.summary || other.summary || "";
+  if (a.removed || b.removed) merged.removed = true; // a deleted game stays deleted
   return merged;
 }
 
@@ -464,7 +466,7 @@ export function useHsTracker() {
       docs
         .map((p) => {
           const stored = dedupeGames(p.games || []);
-          const games = cleanSchedule(overlayScraped(stored, teams[teamDocId(p.sources)]));
+          const games = cleanSchedule(overlayScraped(stored, teams[teamDocId(p.sources)])).filter((g) => !g.removed);
           const computed = computeRecord(games);
           const m = /(\d+)\s*W\s*-\s*(\d+)\s*L/i.exec(p.recordText || "");
           const record = m && Number(m[1]) + Number(m[2]) > computed.played ? { w: Number(m[1]), l: Number(m[2]), t: 0, text: p.recordText.trim(), played: Number(m[1]) + Number(m[2]) } : computed;

@@ -353,7 +353,7 @@ function sortPlayers(players, sort, statusOf) {
   });
 }
 
-function MasterTab({ players, weeks, currentWeek, cmuByWeek, statusOf, statusWhy, autoStatusOf, onGame, onOpenPlayer, onProfile, hasProfile, selected, setSelected, sort, setSort, coaches, updatePlayer }) {
+function MasterTab({ players, weeks, currentWeek, cmuByWeek, statusOf, statusWhy, autoStatusOf, onGame, onDeleteGame, onOpenPlayer, onProfile, hasProfile, selected, setSelected, sort, setSort, coaches, updatePlayer }) {
   const thBase = {
     position: "sticky", top: 0, zIndex: 2, background: "var(--bg-surface)", padding: "9px 10px", fontSize: 11, color: "var(--text-faint)", textTransform: "uppercase",
     textAlign: "left", whiteSpace: "nowrap", borderBottom: "1px solid var(--border)", letterSpacing: "0.04em",
@@ -454,8 +454,17 @@ function MasterTab({ players, weeks, currentWeek, cmuByWeek, statusOf, statusWhy
                           title="Click for this game's sources"
                           onClick={() => onGame(p, g)}
                           onKeyDown={(e) => e.key === "Enter" && onGame(p, g)}
-                          style={{ display: "flex", flexDirection: "column", gap: 3, marginBottom: inWeek.length > 1 ? 6 : 0, cursor: "pointer" }}
+                          style={{ position: "relative", display: "flex", flexDirection: "column", gap: 3, marginBottom: inWeek.length > 1 ? 6 : 0, cursor: "pointer" }}
                         >
+                          <button
+                            className="hs-no-print hs-del"
+                            onClick={(e) => { e.stopPropagation(); onDeleteGame(p, g); }}
+                            title="Delete this game"
+                            aria-label={`Delete the ${g.opponent} game for ${p.name}`}
+                            style={{ position: "absolute", top: -2, right: -2, background: "var(--bg-panel)", border: "1px solid var(--border)", borderRadius: 4, color: "var(--danger-text)", cursor: "pointer", lineHeight: 0, padding: 3 }}
+                          >
+                            <X size={11} />
+                          </button>
                           {g.result ? <ResultChip game={g} /> : null}
                           <span style={{ color: "var(--text-primary)", fontSize: 12.5 }}>{g.homeAway === "A" ? "@" : ""}{g.opponent}</span>
                           <span style={{ fontSize: 11, color: "var(--text-faint)" }}>{mmdd(g.date)}{!g.result && g.date < toIso(new Date()) ? " · no score reported" : ""}</span>
@@ -1058,7 +1067,7 @@ function ReviewModal({ conflicts, missing, updateGame, onOpenGame, onClose }) {
 }
 
 // Where a game's result came from: each source's own page for that game, with the score it reported.
-function GameSourcesModal({ player, game, updateGame, onClose }) {
+function GameSourcesModal({ player, game, updateGame, onDelete, onClose }) {
   const sources = [
     { key: "maxpreps", label: "MaxPreps" },
     { key: "scorestream", label: "ScoreStream" },
@@ -1139,6 +1148,11 @@ function GameSourcesModal({ player, game, updateGame, onClose }) {
               <button onClick={useSources} disabled={busy} style={{ ...controlStyle, padding: "6px 10px", cursor: "pointer", fontSize: 12.5 }}>Use the sources again</button>
             )}
           </div>
+        </div>
+        <div style={{ marginTop: 14, textAlign: "right" }}>
+          <button onClick={() => onDelete(player, game)} style={{ background: "none", border: "1px solid var(--danger-text)", color: "var(--danger-text)", borderRadius: 6, padding: "6px 12px", fontSize: 12.5, fontWeight: 700, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 6 }}>
+            <Trash2 size={13} /> Delete this game
+          </button>
         </div>
         {!anyLink && <p style={{ margin: "10px 0 0", fontSize: 12.5, color: "var(--text-muted)" }}>This school's pages haven't been found yet. The scraper looks them up on its next run.</p>}
         {anyLink && !game.links && !game.scraped && <p style={{ margin: "10px 0 0", fontSize: 12.5, color: "var(--text-muted)" }}>This game came from an uploaded file, so only the team pages are linked until the scraper matches it.</p>}
@@ -1321,6 +1335,19 @@ export default function HsGameUpdate({ onBack }) {
     }
   }
 
+  // Deleting a game hides it everywhere and keeps it hidden: the scraper and re-uploads can't bring it back.
+  async function deleteGame(player, game) {
+    const ok = await confirmAction({
+      title: "Delete this game?",
+      message: `${player.name}: ${game.homeAway === "A" ? "@ " : "vs "}${game.opponent}, ${mmdd(game.date)}. It comes off the Master, Weekly and Face Sheet, and stays gone even if the scraper or a file lists it again. You can undo it right after.`,
+      confirmLabel: "Delete game",
+    });
+    if (!ok) return;
+    await hs.updateGame(player, game, { removed: true });
+    setGameSource(null);
+    setUndo({ label: `the ${game.opponent} game`, restoreGame: { id: player.id, game } });
+  }
+
   // Bulk removal for whatever is ticked on the master list.
   async function removeSelected() {
     const ids = [...selected].filter((id) => players.some((p) => p.id === id));
@@ -1470,8 +1497,17 @@ export default function HsGameUpdate({ onBack }) {
         )}
         {undo && (
           <div role="status" className="hs-no-print" style={{ display: "flex", alignItems: "center", gap: 12, background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 8, padding: "8px 14px", marginBottom: 12, flexShrink: 0, fontSize: 13.5 }}>
-            <span>Removed {undo.label}.</span>
-            <button onClick={() => { hs.restorePlayers(undo.ids); setUndo(null); }} style={{ background: "none", border: "none", color: "var(--accent)", fontWeight: 700, cursor: "pointer", fontSize: 13.5, padding: 0 }}>Undo</button>
+            <span>{undo.restoreGame ? "Deleted" : "Removed"} {undo.label}.</span>
+            <button
+              onClick={() => {
+                if (undo.restoreGame) {
+                  const owner = players.find((x) => x.id === undo.restoreGame.id);
+                  if (owner) hs.updateGame(owner, undo.restoreGame.game, { removed: false });
+                } else {
+                  hs.restorePlayers(undo.ids);
+                }
+                setUndo(null);
+              }} style={{ background: "none", border: "none", color: "var(--accent)", fontWeight: 700, cursor: "pointer", fontSize: 13.5, padding: 0 }}>Undo</button>
           </div>
         )}
         {!hs.ready ? (
@@ -1487,7 +1523,7 @@ export default function HsGameUpdate({ onBack }) {
             </div>
           </div>
         ) : tab === "Master Tracker" ? (
-          <MasterTab players={sortedForMaster} weeks={weeks} currentWeek={weekKey(new Date())} cmuByWeek={cmuByWeek} statusOf={statusOf} statusWhy={statusWhy} onOpenPlayer={openPlayer} onProfile={setProfile} hasProfile={hasProfile} selected={selected} setSelected={setSelected} sort={sort} setSort={setSort} coaches={coaches} updatePlayer={hs.updatePlayer} autoStatusOf={autoStatusOf} onGame={(player, game) => setGameSource({ id: player.id, key: game.date || game.opponent })} />
+          <MasterTab players={sortedForMaster} weeks={weeks} currentWeek={weekKey(new Date())} cmuByWeek={cmuByWeek} statusOf={statusOf} statusWhy={statusWhy} onOpenPlayer={openPlayer} onProfile={setProfile} hasProfile={hasProfile} selected={selected} setSelected={setSelected} sort={sort} setSort={setSort} coaches={coaches} updatePlayer={hs.updatePlayer} autoStatusOf={autoStatusOf} onGame={(player, game) => setGameSource({ id: player.id, key: game.date || game.opponent })} onDeleteGame={deleteGame} />
         ) : tab === "Weekly Tracker" ? (
           <WeeklyTab players={filtered} week={week} statusOf={statusOf} autoStatusOf={autoStatusOf} updatePlayer={hs.updatePlayer} onGame={(player, game) => setGameSource({ id: player.id, key: game.date || game.opponent })} updateGame={hs.updateGame} onOpenPlayer={openPlayer} onProfile={setProfile} hasProfile={hasProfile} />
         ) : (
@@ -1530,7 +1566,7 @@ export default function HsGameUpdate({ onBack }) {
         // Look the game up again from live data so the modal stays current if a refresh lands.
         const player = players.find((p) => p.id === gameSource.id);
         const game = player?.games.find((g) => (g.date || g.opponent) === gameSource.key);
-        return player && game ? <GameSourcesModal key={`${player.id}|${gameSource.key}`} player={player} game={game} updateGame={hs.updateGame} onClose={() => setGameSource(null)} /> : null;
+        return player && game ? <GameSourcesModal key={`${player.id}|${gameSource.key}`} player={player} game={game} updateGame={hs.updateGame} onDelete={deleteGame} onClose={() => setGameSource(null)} /> : null;
       })()}
       {reviewOpen && (
         <ReviewModal

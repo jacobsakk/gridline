@@ -154,3 +154,8 @@ tbody tr:hover { background: var(--row-hover) !important; }
 /* A game you can click for its sources. */
 .hs-game-click:hover { text-decoration: underline; }
 @media print { .hs-game-click { text-decoration: none !important; } }
+
+/* The delete button on a game in the Master appears on hover. */
+.hs-game-click .hs-del { opacity: 0; transition: opacity 0.12s; }
+.hs-game-click:hover .hs-del, .hs-game-click:focus-within .hs-del { opacity: 1; }
+@media (hover: none) { .hs-game-click .hs-del { opacity: 0.7; } }
