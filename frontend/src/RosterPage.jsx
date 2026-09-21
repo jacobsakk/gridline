@@ -6,6 +6,9 @@ import { ThemeSwitcher, useTheme } from "./theme.jsx";
 import { confirmAction } from "./ConfirmDialog.jsx";
 import { initialSubRoute, setSubRoute } from "./route.js";
 import { REAL_STATS, loadRealStats } from "./statsData.js";
+import { isCommitment, normalizePlayerKey, useOfferTracker } from "./offerData.js";
+import { teamKey } from "./collegeData.js";
+import { toTitleCase } from "./OfferTracker.jsx";
 import {
   BOARD, GROUPS, UNIT_LABEL, UNIT_OF_GROUP, YL_STYLE, classLabelFor, depthFor, groupOfPosition, idFor, parseRosterFile, playersInSeason,
   snapshotFor, styleForYearsLeft, useRoster, yearsLeftIn,
@@ -22,6 +25,13 @@ const norm = (t) => String(t ?? "").toLowerCase().replace(/[^a-z0-9]/g, "");
 const money = (n) => (n == null ? "" : `$${Number(n).toLocaleString()}`);
 const SCHOLARSHIP_LABEL = { full: "Scholarship", split: "Split", "walk-on": "Walk-on", "": "—" };
 
+// Recruits the Offer Tracker shows as committed to Central Michigan, for the class years after the roster's
+// current season. They appear in the projections as players who arrive that year.
+const isCmuCommit = (status) => {
+  const m = /^COMMITTED TO (.+)$/i.exec((status || "").trim());
+  return isCommitment(status) && !!m && teamKey(m[1]) === teamKey("Central Michigan");
+};
+
 // -------------------------------------------------------------------- pieces
 
 function Chip({ player, yl, onClick, draggable, onDragStart, onDragOver, onDrop, dim }) {
@@ -33,7 +43,7 @@ function Chip({ player, yl, onClick, draggable, onDragStart, onDragOver, onDrop,
       onDragOver={onDragOver}
       onDrop={onDrop}
       onClick={onClick}
-      title={`${player.name} · ${player.position || "—"} · ${yl} YL${player.scholarship ? ` · ${SCHOLARSHIP_LABEL[player.scholarship]}` : ""}${player.injured ? " · Injured" : ""}`}
+      title={`${player.name} · ${player.position || "—"} · ${yl} YL${player.commit ? " · Committed (Offer Tracker)" : ""}${player.scholarship ? ` · ${SCHOLARSHIP_LABEL[player.scholarship]}` : ""}${player.injured ? " · Injured" : ""}`}
       style={{
         display: "flex", alignItems: "center", gap: 6, width: "100%", textAlign: "left", background: st.bg, color: st.fg, border: `1px solid ${st.border}`,
         borderRadius: 5, padding: "3px 8px", fontSize: 12, fontWeight: 700, fontFamily: "inherit", cursor: draggable ? "grab" : "pointer", opacity: dim ? 0.35 : 1,
@@ -41,6 +51,7 @@ function Chip({ player, yl, onClick, draggable, onDragStart, onDragOver, onDrop,
       }}
     >
       <span style={{ overflow: "hidden", textOverflow: "ellipsis" }}>{player.jersey ? `#${player.jersey} ` : ""}{player.name}</span>
+      {player.commit && <span style={{ marginLeft: "auto", background: "#B6862C", color: "#fff", borderRadius: 3, fontSize: 9, padding: "0 4px" }}>COMMIT</span>}
       {player.injured && <span style={{ marginLeft: "auto", background: "#D9483B", color: "#fff", borderRadius: 3, fontSize: 9, padding: "0 4px" }}>INJ</span>}
     </button>
   );
@@ -302,6 +313,7 @@ const SHEET_COLUMNS = [
   { key: "cls", label: "Class", get: (p) => p._class, w: 60 },
   { key: "yl", label: "Yrs left", get: (p) => p._yl, w: 74 },
   { key: "eligEnd", label: "Elig. ends", get: (p) => p._end, w: 84 },
+  { key: "commit", label: "Commit", get: (p) => (p.commit ? `Class of ${p.startSeason}` : ""), w: 96 },
   { key: "scholarship", label: "Scholarship", get: (p) => SCHOLARSHIP_LABEL[p.scholarship || ""], w: 100 },
   { key: "height", label: "Ht", get: (p) => p.height, w: 60 },
   { key: "weight", label: "Wt", get: (p) => p.weight, w: 56 },
@@ -406,7 +418,7 @@ function PlayerModal({ player, season, label, admin, roster, depthSlot, statsLin
   const set = (k) => (e) => setF((s) => ({ ...s, [k]: e.target.type === "checkbox" ? e.target.checked : e.target.value }));
   const st = styleForYearsLeft(player._yl);
   const field = { ...control, width: "100%" };
-  const ro = !admin;
+  const ro = !admin || !!player.commit;
 
   async function save() {
     setBusy(true);
@@ -450,8 +462,9 @@ function PlayerModal({ player, season, label, admin, roster, depthSlot, statsLin
           <div style={{ fontSize: 13, color: "var(--text-muted)", marginTop: 6 }}>{[player.hometown, player.height, player.weight && `${player.weight} lbs`].filter(Boolean).join(" · ")}</div>
         </div>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-          {statsLinked ? <a href={`#/tracker/FBS/${encodeURIComponent(player.name)}`} style={{ ...ghostBtn, textDecoration: "none" }}>Stats in Pre-Portal <ExternalLink size={13} /></a> : <span style={{ ...ghostBtn, cursor: "default", color: "var(--text-faint)" }}>No stats yet</span>}
-          <a href={`#/colleges/${CMU_ID}/roster`} style={{ ...ghostBtn, textDecoration: "none" }}>Colleges roster <ExternalLink size={13} /></a>
+          {player.commit ? <a href={`#/offers/${player.startSeason}`} style={{ ...ghostBtn, textDecoration: "none" }}>Offer Tracker <ExternalLink size={13} /></a> : null}
+          {player.commit ? null : statsLinked ? <a href={`#/tracker/FBS/${encodeURIComponent(player.name)}`} style={{ ...ghostBtn, textDecoration: "none" }}>Stats in Pre-Portal <ExternalLink size={13} /></a> : <span style={{ ...ghostBtn, cursor: "default", color: "var(--text-faint)" }}>No stats yet</span>}
+          {!player.commit && <a href={`#/colleges/${CMU_ID}/roster`} style={{ ...ghostBtn, textDecoration: "none" }}>Colleges roster <ExternalLink size={13} /></a>}
           <button onClick={onClose} aria-label="Close" style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer", lineHeight: 0 }}><X size={20} /></button>
         </div>
       </div>
@@ -482,7 +495,7 @@ function PlayerModal({ player, season, label, admin, roster, depthSlot, statsLin
           <label style={{ display: "flex", gap: 6, alignItems: "center" }}><input type="checkbox" checked={f.injured} onChange={set("injured")} disabled={ro} /> Injured</label>
         </div>
         <label style={{ gridColumn: "1 / -1" }}><span style={label2}>Notes</span><textarea value={f.notes} onChange={set("notes")} readOnly={ro} rows={2} style={{ ...field, resize: "vertical" }} /></label>
-        {admin && (
+        {admin && !player.commit && (
           <div style={{ gridColumn: "1 / -1", borderTop: "1px solid var(--border)", paddingTop: 14, display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "14px 20px" }}>
             <div style={{ gridColumn: "1 / -1", fontSize: 11, letterSpacing: "0.08em", color: "var(--text-faint)" }}>ADMINS ONLY — private details and dollars</div>
             <label><span style={label2}>Date of birth</span><input value={f.dob} onChange={set("dob")} style={field} /></label>
@@ -491,14 +504,15 @@ function PlayerModal({ player, season, label, admin, roster, depthSlot, statsLin
             <label><span style={label2}>Revenue share {season} ($)</span><input value={f.revenue} onChange={set("revenue")} inputMode="decimal" style={field} /></label>
           </div>
         )}
+        {player.commit && <div style={{ gridColumn: "1 / -1", fontSize: 13, color: "var(--text-muted)", lineHeight: 1.5 }}>Committed to Central Michigan in the Offer Tracker (class of {player.startSeason}). Name, position and school come from there, so change them in the Offer Tracker. He is counted as arriving in {player.startSeason}. Once he's on the roster you upload, this entry is replaced by the real one.</div>}
         <div style={{ gridColumn: "1 / -1", fontSize: 12.5, color: "var(--text-faint)" }}>{depthSlot ? `Depth chart: ${depthSlot}` : "Not placed on the depth chart"}{player.startSeason > roster.base ? ` · arrives ${player.startSeason}` : ""}</div>
       </div>
       {error && <div role="alert" style={{ padding: "0 24px 12px", color: "var(--danger-text)", fontSize: 13 }}>{error}</div>}
       <div style={{ display: "flex", justifyContent: "space-between", padding: "0 24px 22px", gap: 10 }}>
-        {admin ? <button onClick={remove} style={{ ...ghostBtn, color: "var(--danger-text)", borderColor: "var(--danger-text)" }}><Trash2 size={14} /> Remove player</button> : <span />}
+        {admin && !player.commit ? <button onClick={remove} style={{ ...ghostBtn, color: "var(--danger-text)", borderColor: "var(--danger-text)" }}><Trash2 size={14} /> Remove player</button> : <span />}
         <span style={{ display: "flex", gap: 10 }}>
           <button onClick={onClose} style={ghostBtn}>{admin ? "Cancel" : "Close"}</button>
-          {admin && <button onClick={save} disabled={busy} style={primaryBtn}>{busy ? <Loader2 size={14} className="spin" /> : null} Save roster details</button>}
+          {admin && !player.commit && <button onClick={save} disabled={busy} style={primaryBtn}>{busy ? <Loader2 size={14} className="spin" /> : null} Save roster details</button>}
         </span>
       </div>
     </Modal>
@@ -723,7 +737,31 @@ export default function RosterPage({ onBack, session }) {
     };
   }, []);
 
-  const inSeason = useMemo(() => playersInSeason(roster.players, current, base), [roster.players, current, base]);
+  const offers = useOfferTracker();
+  // Rebuilt every render (the offers hook hands back fresh functions), but only replaced when the commits change.
+  const commitsNow = (() => {
+    const have = new Set(roster.players.map((p) => normalizePlayerKey(p.name)));
+    const seen = new Set();
+    const out = [];
+    offers.classYears.forEach((cy) => {
+      const year = Number(cy);
+      if (!(year > base)) return;
+      offers.rowsForClassYear(cy).forEach((d) => {
+        const key = normalizePlayerKey(d.player);
+        if (!isCmuCommit(d.status) || have.has(key) || seen.has(`${year}|${key}`)) return;
+        seen.add(`${year}|${key}`);
+        out.push({
+          id: `commit-${year}-${key.replace(/ /g, "-").toLowerCase()}`, commit: true, name: toTitleCase(d.player), position: d.position || "ATH",
+          highSchool: toTitleCase(d.highSchool || ""), hometown: d.state || "", startSeason: year, asOfSeason: year, yearsLeft: roster.eligibilityYears, jersey: "", scholarship: "",
+        });
+      });
+    });
+    return out;
+  })();
+  const commitSig = commitsNow.map((c) => [c.id, c.name, c.position, c.highSchool, c.hometown].join("~")).join("|");
+  const commits = useMemo(() => commitsNow, [commitSig]); // eslint-disable-line react-hooks/exhaustive-deps
+  const everyone = useMemo(() => [...roster.players, ...commits], [roster.players, commits]);
+  const inSeason = useMemo(() => playersInSeason(everyone, current, base), [everyone, current, base]);
   const rows = useMemo(
     () =>
       inSeason.map((p) => {
@@ -733,7 +771,7 @@ export default function RosterPage({ onBack, session }) {
     [inSeason, current, base, roster.eligibilityYears, roster.privateInfo, roster.finance]
   );
   const byId = useMemo(() => new Map(rows.map((p) => [p.id, p])), [rows]);
-  const depth = useMemo(() => depthFor(current, roster.seasons, roster.players, base), [current, roster.seasons, roster.players, base]);
+  const depth = useMemo(() => depthFor(current, roster.seasons, everyone, base), [current, roster.seasons, everyone, base]);
   const slotOf = (id) => {
     const hit = Object.entries(depth).find(([, list]) => list.includes(id));
     return hit ? hit[0] : "";
@@ -751,8 +789,8 @@ export default function RosterPage({ onBack, session }) {
   };
   const goals = goalsOf(current);
   const nextPlayers = useMemo(
-    () => playersInSeason(roster.players, current + 1, base).map((p) => ({ ...p, _yl: Math.max(1, yearsLeftIn(p, current + 1, base)) })),
-    [roster.players, current, base]
+    () => playersInSeason(everyone, current + 1, base).map((p) => ({ ...p, _yl: Math.max(1, yearsLeftIn(p, current + 1, base)) })),
+    [everyone, current, base]
   );
   const snap = useMemo(() => snapshotFor(rows, current, base, goals), [rows, current, base, goals]);
   const financeTotal = rows.reduce((a, p) => a + (Number(p._revenue) || 0), 0);
