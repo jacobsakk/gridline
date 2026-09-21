@@ -112,6 +112,97 @@ function Board({ unit, depth, byId, yl, edit, onOpen, onMove, filter }) {
   );
 }
 
+// ---------------------------------------------------------------- departures
+
+// Who leaves after the selected season, and what each position looks like the year after.
+function Departures({ season, rows, nextPlayers, goals, base, eligibilityYears, onOpen, filter }) {
+  const nextId = new Set(nextPlayers.map((p) => p.id));
+  const nowId = new Set(rows.map((p) => p.id));
+  const leaving = rows.filter((p) => !nextId.has(p.id));
+  const arriving = nextPlayers.filter((p) => !nowId.has(p.id));
+  const groups = Object.values(GROUPS).flat();
+  const count = (list, g) => list.filter((p) => groupOfPosition(p.position) === g).length;
+  const table = groups
+    .map((g) => {
+      const now = count(rows, g);
+      const out = count(leaving, g);
+      const incoming = count(arriving, g);
+      const returning = now - out;
+      const goal = goals[g] ?? 0;
+      return { g, now, out, returning, incoming, next: returning + incoming, goal, need: goal ? Math.max(0, goal - (returning + incoming)) : null };
+    })
+    .filter((r) => r.now || r.incoming || r.goal);
+  const q = filter.trim().toLowerCase();
+  const match = (p) => !q || [p.name, p.position, p.hometown].some((v) => String(v || "").toLowerCase().includes(q));
+  const th = { fontSize: 11, color: "var(--text-faint)", textTransform: "uppercase", letterSpacing: "0.04em", padding: "8px 10px", textAlign: "center", fontWeight: 600 };
+  const td = { padding: "8px 10px", textAlign: "center", fontSize: 13.5, borderTop: "1px solid var(--border-subtle)" };
+  const hasGoals = table.some((r) => r.goal);
+  const totals = table.reduce((a, r) => ({ now: a.now + r.now, out: a.out + r.out, incoming: a.incoming + r.incoming, next: a.next + r.next }), { now: 0, out: 0, incoming: 0, next: 0 });
+  const nextLabel = season + 1;
+  const byUnit = ["offense", "defense", "specialists"].map((u) => [u, leaving.filter((p) => UNIT_OF_GROUP[groupOfPosition(p.position)] === u), ]);
+  const unplaced = leaving.filter((p) => !UNIT_OF_GROUP[groupOfPosition(p.position)]);
+  const byGroup = (list) => groups.map((g) => [g, list.filter((p) => groupOfPosition(p.position) === g).sort((a, b) => a.name.localeCompare(b.name))]).filter(([, l]) => l.length);
+  return (
+    <div>
+      <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 16 }}>
+        {[[leaving.length, `LEAVING AFTER ${season}`, "#D9483B"], [arriving.length, `ARRIVING ${nextLabel}`, "var(--success)"], [totals.next, `PROJECTED ${nextLabel} ROSTER`, "var(--accent)"]].map(([n, l, c]) => (
+          <div key={l} style={{ border: `1px solid ${c}`, borderRadius: 999, padding: "7px 20px", textAlign: "center" }}>
+            <div className="tabular" style={{ fontWeight: 800, fontSize: 20 }}>{n}</div>
+            <div style={{ fontSize: 10, letterSpacing: "0.08em", color: "var(--text-faint)" }}>{l}</div>
+          </div>
+        ))}
+      </div>
+      <p style={{ margin: "0 0 14px", fontSize: 13, color: "var(--text-muted)", lineHeight: 1.5 }}>
+        Leaving after {season} means their eligibility runs out or they're marked as leaving early (open a player and change "Not on the roster after"). {hasGoals ? "\"To recruit\" is your goal for the position minus who's projected back." : "Set position goals under Edit snapshot to see how many you need to recruit."}
+      </p>
+      <div style={{ border: "1px solid var(--border)", borderRadius: 10, overflow: "auto", background: "var(--bg-panel)", marginBottom: 22 }}>
+        <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 560 }}>
+          <thead><tr><th style={{ ...th, textAlign: "left" }}>Pos</th><th style={th}>{season}</th><th style={th}>Leaving</th><th style={th}>Returning</th><th style={th}>Arriving</th><th style={th}>{nextLabel}</th>{hasGoals && <th style={th}>Goal</th>}{hasGoals && <th style={th}>To recruit</th>}</tr></thead>
+          <tbody>
+            {table.map((r) => (
+              <tr key={r.g}>
+                <td style={{ ...td, textAlign: "left", fontWeight: 700 }}>{r.g}</td>
+                <td style={td} className="tabular">{r.now}</td>
+                <td style={{ ...td, color: r.out ? "#D9483B" : undefined, fontWeight: r.out ? 800 : 400 }} className="tabular">{r.out ? `−${r.out}` : 0}</td>
+                <td style={td} className="tabular">{r.returning}</td>
+                <td style={{ ...td, color: r.incoming ? "var(--success)" : undefined }} className="tabular">{r.incoming ? `+${r.incoming}` : 0}</td>
+                <td style={{ ...td, fontWeight: 800 }} className="tabular">{r.next}</td>
+                {hasGoals && <td style={td} className="tabular">{r.goal || "—"}</td>}
+                {hasGoals && <td style={{ ...td, fontWeight: 800, color: r.need ? "#FAF34D" : "var(--text-faint)" }} className="tabular">{r.need == null ? "—" : r.need || "✓"}</td>}
+              </tr>
+            ))}
+            <tr>
+              <td style={{ ...td, textAlign: "left", fontWeight: 800 }}>TOTALS</td>
+              <td style={{ ...td, fontWeight: 800 }} className="tabular">{totals.now}</td>
+              <td style={{ ...td, fontWeight: 800, color: "#D9483B" }} className="tabular">−{totals.out}</td>
+              <td style={{ ...td, fontWeight: 800 }} className="tabular">{totals.now - totals.out}</td>
+              <td style={{ ...td, fontWeight: 800, color: "var(--success)" }} className="tabular">+{totals.incoming}</td>
+              <td style={{ ...td, fontWeight: 800 }} className="tabular">{totals.next}</td>
+              {hasGoals && <td style={td} />}{hasGoals && <td style={td} />}
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      {leaving.length === 0 && <div style={{ color: "var(--text-faint)", padding: 20 }}>Nobody leaves after {season}.</div>}
+      {[...byUnit, ["other", unplaced]].filter(([, l]) => l.length).map(([u, list]) => (
+        <section key={u} style={{ marginBottom: 22 }}>
+          <h3 className="oswald" style={{ margin: "0 0 10px", fontSize: 18, letterSpacing: "0.06em" }}>{(UNIT_LABEL[u] || "No position set").toUpperCase()} · {list.length}</h3>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(190px, 1fr))", gap: 14 }}>
+            {(u === "other" ? [["—", list]] : byGroup(list)).map(([g, l]) => (
+              <div key={g} style={{ background: "var(--bg-panel)", border: "1px solid var(--border)", borderRadius: 10, padding: 12 }}>
+                <div style={{ fontSize: 11.5, letterSpacing: "0.06em", color: "var(--text-muted)", marginBottom: 8 }}>{g} · {l.length}</div>
+                <div style={{ display: "grid", gap: 6 }}>
+                  {l.map((p) => <Chip key={p.id} player={p} yl={p._yl} dim={!match(p)} onClick={() => onOpen(p)} />)}
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      ))}
+    </div>
+  );
+}
+
 // ------------------------------------------------------------- the snapshot
 
 function SnapshotPanel({ snap, season, label, goals, admin, showFinance, setShowFinance, financeTotal, onClose, scholarshipLimit }) {
@@ -593,7 +684,7 @@ export default function RosterPage({ onBack, session }) {
   const roster = real;
   const [initial] = useState(initialSubRoute);
   const [season, setSeason] = useState(null);
-  const [view, setView] = useState(initial[1] === "sheet" ? "sheet" : "board");
+  const [view, setView] = useState(["sheet", "leaving"].includes(initial[1]) ? initial[1] : "board");
   const [unit, setUnit] = useState("all");
   const [search, setSearch] = useState("");
   const [edit, setEdit] = useState(false);
@@ -649,6 +740,10 @@ export default function RosterPage({ onBack, session }) {
     return !q || [p.name, p.position, p.hometown, p.highSchool, p.jersey].some((v) => String(v || "").toLowerCase().includes(q));
   });
   const goals = roster.seasons[current]?.goals || {};
+  const nextPlayers = useMemo(
+    () => playersInSeason(roster.players, current + 1, base).map((p) => ({ ...p, _yl: Math.max(1, yearsLeftIn(p, current + 1, base)) })),
+    [roster.players, current, base]
+  );
   const snap = useMemo(() => snapshotFor(rows, current, base, goals), [rows, current, base, goals]);
   const financeTotal = rows.reduce((a, p) => a + (Number(p._revenue) || 0), 0);
   const statsHas = (p) => statsNames.has(norm(p.name));
@@ -694,7 +789,7 @@ export default function RosterPage({ onBack, session }) {
           {admin && seasonList.length < 7 && <button onClick={addYear} title="Add the next year's projection" aria-label="Add next year" style={{ ...ghostBtn, padding: "8px 10px" }}><Plus size={14} /></button>}
           {admin && isProjection && <button onClick={dropYear} title="Delete this projection year" aria-label="Delete this projection year" style={{ ...ghostBtn, padding: "8px 10px" }}><X size={14} /></button>}
           <div style={{ display: "flex", gap: 4, background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 8, padding: 3 }}>
-            {[["board", "Depth chart"], ["sheet", "Spreadsheet"]].map(([k, l]) => (
+            {[["board", "Depth chart"], ["sheet", "Spreadsheet"], ["leaving", "Departures"]].map(([k, l]) => (
               <button key={k} onClick={() => setView(k)} style={{ border: "none", borderRadius: 6, padding: "7px 14px", fontSize: 13, fontWeight: 700, fontFamily: "inherit", cursor: "pointer", background: view === k ? "var(--accent)" : "transparent", color: view === k ? "var(--bg-page)" : "var(--text-muted)" }}>{l}</button>
             ))}
           </div>
@@ -734,6 +829,8 @@ export default function RosterPage({ onBack, session }) {
               <Board key={u} unit={u} depth={depth} byId={byId} yl={(p) => p._yl} edit={edit && admin} filter={search.trim().toLowerCase()} onOpen={(p) => setModal({ type: "player", player: p })} onMove={move} />
             ))}
           </>
+        ) : view === "leaving" ? (
+          <Departures season={current} rows={rows} nextPlayers={nextPlayers} goals={roster.seasons[current + 1]?.goals && Object.keys(roster.seasons[current + 1].goals).length ? roster.seasons[current + 1].goals : goals} base={base} eligibilityYears={roster.eligibilityYears} filter={search} onOpen={(p) => setModal({ type: "player", player: p })} />
         ) : (
           <Spreadsheet rows={shown} admin={admin} statsHas={statsHas} onOpen={(p) => setModal({ type: "player", player: p })} />
         )}
