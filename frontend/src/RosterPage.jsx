@@ -694,7 +694,12 @@ export default function RosterPage({ onBack, session }) {
   const [statsNames, setStatsNames] = useState(new Set());
 
   const base = roster.base;
-  const seasonList = useMemo(() => [...new Set([base, ...Object.keys(roster.seasons).map(Number)])].sort((a, b) => a - b), [base, roster.seasons]);
+  // The current season plus the next two are always there as projections; "+" adds later ones.
+  const AUTO_YEARS = 2;
+  const seasonList = useMemo(
+    () => [...new Set([base, ...Array.from({ length: AUTO_YEARS }, (_, i) => base + i + 1), ...Object.keys(roster.seasons).map(Number)])].sort((a, b) => a - b),
+    [base, roster.seasons]
+  );
   const current = season ?? (Number(initial[0]) && seasonList.includes(Number(initial[0])) ? Number(initial[0]) : base);
   const isProjection = current > base;
   const label = isProjection ? `${current} Projection` : String(current);
@@ -739,7 +744,12 @@ export default function RosterPage({ onBack, session }) {
     const q = search.trim().toLowerCase();
     return !q || [p.name, p.position, p.hometown, p.highSchool, p.jersey].some((v) => String(v || "").toLowerCase().includes(q));
   });
-  const goals = roster.seasons[current]?.goals || {};
+  // A projection year with no goals of its own uses the closest earlier year's
+  const goalsOf = (y) => {
+    for (let k = y; k >= base; k--) if (Object.keys(roster.seasons[k]?.goals || {}).length) return roster.seasons[k].goals;
+    return {};
+  };
+  const goals = goalsOf(current);
   const nextPlayers = useMemo(
     () => playersInSeason(roster.players, current + 1, base).map((p) => ({ ...p, _yl: Math.max(1, yearsLeftIn(p, current + 1, base)) })),
     [roster.players, current, base]
@@ -786,8 +796,8 @@ export default function RosterPage({ onBack, session }) {
           <select id="roster-season" value={current} onChange={(e) => setSeason(Number(e.target.value))} style={{ ...control, cursor: "pointer", fontWeight: 700 }} aria-label="Season">
             {seasonList.map((s) => <option key={s} value={s}>{s > base ? `${s} Projection` : s}</option>)}
           </select>
-          {admin && seasonList.length < 7 && <button onClick={addYear} title="Add the next year's projection" aria-label="Add next year" style={{ ...ghostBtn, padding: "8px 10px" }}><Plus size={14} /></button>}
-          {admin && isProjection && <button onClick={dropYear} title="Delete this projection year" aria-label="Delete this projection year" style={{ ...ghostBtn, padding: "8px 10px" }}><X size={14} /></button>}
+          {admin && seasonList.length < 8 && <button onClick={addYear} title="Add the next year's projection" aria-label="Add next year" style={{ ...ghostBtn, padding: "8px 10px" }}><Plus size={14} /></button>}
+          {admin && current > base + AUTO_YEARS && <button onClick={dropYear} title="Delete this projection year" aria-label="Delete this projection year" style={{ ...ghostBtn, padding: "8px 10px" }}><X size={14} /></button>}
           <div style={{ display: "flex", gap: 4, background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 8, padding: 3 }}>
             {[["board", "Depth chart"], ["sheet", "Spreadsheet"], ["leaving", "Departures"]].map(([k, l]) => (
               <button key={k} onClick={() => setView(k)} style={{ border: "none", borderRadius: 6, padding: "7px 14px", fontSize: 13, fontWeight: 700, fontFamily: "inherit", cursor: "pointer", background: view === k ? "var(--accent)" : "transparent", color: view === k ? "var(--bg-page)" : "var(--text-muted)" }}>{l}</button>
@@ -830,7 +840,7 @@ export default function RosterPage({ onBack, session }) {
             ))}
           </>
         ) : view === "leaving" ? (
-          <Departures season={current} rows={rows} nextPlayers={nextPlayers} goals={roster.seasons[current + 1]?.goals && Object.keys(roster.seasons[current + 1].goals).length ? roster.seasons[current + 1].goals : goals} base={base} eligibilityYears={roster.eligibilityYears} filter={search} onOpen={(p) => setModal({ type: "player", player: p })} />
+          <Departures season={current} rows={rows} nextPlayers={nextPlayers} goals={goalsOf(current + 1)} base={base} eligibilityYears={roster.eligibilityYears} filter={search} onOpen={(p) => setModal({ type: "player", player: p })} />
         ) : (
           <Spreadsheet rows={shown} admin={admin} statsHas={statsHas} onOpen={(p) => setModal({ type: "player", player: p })} />
         )}
