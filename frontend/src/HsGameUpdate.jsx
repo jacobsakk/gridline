@@ -26,8 +26,8 @@ const TABS = ["Master Tracker", "Weekly Tracker", "Staff Face Sheet"];
 const TAB_SLUGS = { "Master Tracker": "master", "Weekly Tracker": "weekly", "Staff Face Sheet": "face-sheet" };
 
 // Positions follow the Offer Tracker's set (see normalizePosition there): OG/OT become OL,
-// S/DB become SAF, and anything unrecognized is ATH. The order is how a roster is read.
-const POSITION_GROUPS = ["QB", "RB", "WR", "TE", "OL", "DL", "LB", "CB", "SAF", "ATH"].map((key) => ({ key, label: key }));
+// S/DB become SAF, K and P are their own, and anything unrecognized is ATH. The order is how a roster is read.
+const POSITION_GROUPS = ["QB", "RB", "WR", "TE", "OL", "DL", "LB", "CB", "SAF", "K", "P", "ATH"].map((key) => ({ key, label: key }));
 const groupOf = (position) => normalizePosition(position);
 
 const controlStyle = {

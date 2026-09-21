@@ -1045,7 +1045,7 @@ export default function OfferTracker({ onBack }) {
 
   const positionOptions = useMemo(() => {
     const present = new Set(allTeamRows.map((r) => normalizePosition(r.position)));
-    return ["QB", "RB", "WR", "TE", "OL", "DL", "LB", "CB", "SAF", "ATH"].filter((p) => present.has(p));
+    return ["QB", "RB", "WR", "TE", "OL", "DL", "LB", "CB", "SAF", "K", "P", "ATH"].filter((p) => present.has(p));
   }, [allTeamRows]);
 
   const commitCount = useMemo(

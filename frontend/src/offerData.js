@@ -87,6 +87,8 @@ const POSITION_MAP = {
   LB: "LB", ILB: "LB", OLB: "LB", MLB: "LB",
   CB: "CB",
   S: "SAF", SAF: "SAF", DB: "SAF", FS: "SAF", SS: "SAF",
+  K: "K", PK: "K", KICKER: "K",
+  P: "P", PT: "P", PUNTER: "P",
   ATH: "ATH",
 };
 

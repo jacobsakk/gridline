@@ -12,9 +12,9 @@ import { canonicalSchool } from "./schoolNames.js";
 
 const DIVISIONS = ["NAIA", "JUCO", "D3", "D2", "FCS", "FBS"];
 
-// Same canonical 9-value set every scraper normalizes to (see
-// POSITION_MAP in scraper/ncaa_api.py) -- the watch list groups by these.
-const WATCH_POSITIONS = ["ATH", "QB", "RB", "WR", "TE", "OL", "DL", "LB", "CB", "SAF"];
+// Same canonical set every scraper normalizes to (see POSITION_MAP in
+// scraper/ncaa_api.py) -- the watch list groups by these.
+const WATCH_POSITIONS = ["ATH", "QB", "RB", "WR", "TE", "OL", "DL", "LB", "CB", "SAF", "K", "P"];
 
 // "total" = season-to-date. Single-week rows (if any exist yet) are keyed
 // by the ISO date the snapshot was taken -- see scraper/build_data.py. A
