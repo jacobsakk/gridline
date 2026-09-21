@@ -119824,7 +119824,7 @@
     "source": "conference"
   },
   {
-    "id": "real-fcs-conf-receiving-188",
+    "id": "real-fcs-conf-receiving-189",
     "division": "FCS",
     "week": "total",
     "category": "receiving",
@@ -119834,9 +119834,9 @@
     "conference": "Pioneer",
     "games": 3,
     "sample": false,
-    "rec": 10,
-    "yards": 152,
-    "avg": "15.2",
+    "rec": 9,
+    "yards": 134,
+    "avg": "14.9",
     "td": 1,
     "source": "conference"
   },
