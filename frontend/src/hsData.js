@@ -301,22 +301,38 @@ function nameSimilarity(a, b) {
 
 const daysApart = (a, b) => Math.abs((fromIso(a) - fromIso(b)) / 86400000);
 
-// Fills in results the scraper found (matched by date +/- a day and opponent),
-// and gives a player with no schedule of their own the school's schedule.
-export function overlayScraped(games, teamGames) {
+// Once the scraper has run for a school, its schedule is the source of truth:
+// every game it found is shown (with its result), and anything typed by hand --
+// game summaries -- is carried over from the matching stored game. Stored games
+// the scraper doesn't know about are kept if they have a result (a source may
+// simply lack it) and dropped if they're just an un-played placeholder, which
+// is what a rescheduled game looks like.
+export function overlayScraped(games, teamDoc) {
+  const teamGames = teamDoc?.games;
   if (!teamGames?.length) return games;
-  if (!games.length) {
-    return teamGames.map((t) => ({ date: t.date, opponent: t.opponent, homeAway: t.homeAway || "", ...(t.result ? { result: t.result, ours: t.ours, theirs: t.theirs } : {}), scraped: true, ...(t.conflict ? { conflict: t.conflict } : {}), verifiedBy: t.source || [] }));
-  }
-  return games.map((g) => {
-    if (!g.date) return g;
-    // Closest name wins, so "Lapeer" doesn't pick up "Lapeer East"'s score.
-    const t = teamGames
-      .filter((x) => x.result && daysApart(g.date, x.date) <= 1 && sameSchool(g.opponent, x.opponent))
-      .sort((a, b) => nameSimilarity(g.opponent, b.opponent) - nameSimilarity(g.opponent, a.opponent))[0];
-    if (!t) return g;
-    return { ...g, result: t.result, ours: t.ours, theirs: t.theirs, scraped: true, verifiedBy: t.source || [], ...(t.conflict ? { conflict: t.conflict } : {}) };
+  const findStored = (t, pool) =>
+    pool
+      .filter((g) => g.date && daysApart(g.date, t.date) <= 1 && sameSchool(g.opponent, t.opponent))
+      .sort((a, b) => nameSimilarity(t.opponent, b.opponent) - nameSimilarity(t.opponent, a.opponent))[0];
+
+  const claimed = new Set();
+  const merged = teamGames.map((t) => {
+    const mine = findStored(t, games.filter((g) => !claimed.has(g)));
+    if (mine) claimed.add(mine);
+    return {
+      ...(mine || {}),
+      date: t.date,
+      opponent: (mine && mine.opponent) || t.opponent,
+      homeAway: t.homeAway || mine?.homeAway || "",
+      ...(t.result ? { result: t.result, ours: t.ours, theirs: t.theirs } : {}),
+      scraped: true,
+      verifiedBy: t.source || [],
+      ...(t.conflict ? { conflict: t.conflict } : {}),
+    };
   });
+  const scheduleIsFresh = teamDoc.fetched?.maxpreps;
+  const leftovers = games.filter((g) => !claimed.has(g) && (g.result || !scheduleIsFresh || !g.date));
+  return [...merged, ...leftovers].sort((a, b) => (a.date || "").localeCompare(b.date || ""));
 }
 
 // ------------------------------------------------------------ Firestore hook
@@ -352,7 +368,7 @@ export function useHsTracker() {
       docs
         .map((p) => {
           const stored = [...(p.games || [])].sort((a, b) => (a.date || "").localeCompare(b.date || ""));
-          const games = overlayScraped(stored, teams[teamDocId(p.sources)]?.games);
+          const games = overlayScraped(stored, teams[teamDocId(p.sources)]);
           const computed = computeRecord(games);
           const m = /(\d+)\s*W\s*-\s*(\d+)\s*L/i.exec(p.recordText || "");
           const record = m && Number(m[1]) + Number(m[2]) > computed.played ? { w: Number(m[1]), l: Number(m[2]), t: 0, text: p.recordText.trim(), played: Number(m[1]) + Number(m[2]) } : computed;
