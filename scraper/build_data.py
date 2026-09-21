@@ -237,7 +237,10 @@ def build_juco_division(run_date):
         for r in fresh:
             known = saved_names.get(_team_key(r["team"]))
             if known:
-                r["team"], r["conference"] = known
+                r["team"] = known[0]
+                # A saved conference from the team's own conference site wins; the old region labels don't.
+                if known[1] and not known[1].startswith("Region") and known[1] != "NJCAA":
+                    r["conference"] = known[1]
         covered = {_team_key(r["team"]) for r in fresh}
 
         print(f"Fetching JUCO conference sites ({len(CONFERENCES)}) and CCCAA (California) -- these use a real browser...")

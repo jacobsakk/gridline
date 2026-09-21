@@ -91,9 +91,39 @@ def fetch_players():
             return players
 
 
-def fetch_regions():
-    teams = _post("SiteTemplateTeams", TEAMS_QUERY, {"tenantId": TENANT_ID, "limit": 5000, "sport": "fball", "season": SEASON})["listTeams"]
-    return {t["schoolName"]: (t.get("regionName") or "NJCAA").replace("NJCAA ", "") for t in teams}
+# NJCAA's API only groups football teams by region, not by conference, so the conference is looked up here (from
+# the public list of junior college football programs on Wikipedia, in the acronym style the rest of the JUCO data
+# uses). Teams already saved under a conference from their own conference site keep that label instead. A program
+# that isn't listed is a newer program with no conference, shown as Independent.
+CONFERENCES = {
+    "SWJCFC": [  # Southwest Junior College Football Conference
+        "Blinn College", "Kilgore College", "Navarro College", "Northeastern Oklahoma A&M College",
+        "Trinity Valley Community College", "Tyler Junior College", "Cisco College", "New Mexico Military Institute",
+    ],
+    "KJCCC": [  # Kansas Jayhawk Community College Conference
+        "Butler Community College-KS", "Highland Community College-Kansas", "Coffeyville Community College", "Dodge City Community College",
+        "Garden City Community College", "Hutchinson Community College", "Independence Community College",
+    ],
+    "MCAC": [  # Minnesota College Athletic Conference
+        "Central Lakes College-Brainerd", "Minnesota North College - Mesabi Range", "Minnesota North College - Vermilion",
+        "Minnesota State Community and Technical College", "Minnesota West Community and Technical College",
+        "North Dakota State College of Science", "Rochester Community and Technical College",
+    ],
+    "NEFC": ["Nassau Community College"],  # Northeast Football Conference
+    "MACCC": [  # Mississippi (labelled MACCC throughout the tracker)
+        "Coahoma Community College", "Copiah-Lincoln Community College", "East Central Community College",
+        "East Mississippi Community College", "Hinds Community College", "Holmes Community College", "Itawamba Community College",
+        "Jones College", "Mississippi Delta Community College", "Mississippi Gulf Coast Community College",
+        "Northeast Mississippi Community College", "Northwest Mississippi Community College", "Pearl River Community College",
+        "Southwest Mississippi Community College",
+    ],
+    "ICCAC": ["Ellsworth Community College", "Iowa Central Community College", "Iowa Western Community College"],  # Iowa
+}
+_CONFERENCE_OF = {name: conf for conf, names in CONFERENCES.items() for name in names}
+
+
+def conference_for(school):
+    return _CONFERENCE_OF.get(school, "Independent")
 
 
 def _slug(text):
@@ -140,10 +170,9 @@ def to_rows(school, player, conference):
 
 
 def build_njcaa_rows():
-    regions = fetch_regions()
     rows = []
     for school, player in fetch_players():
-        rows += to_rows(school, player, regions.get(school, "NJCAA"))
+        rows += to_rows(school, player, conference_for(school))
     return rows
 
 
