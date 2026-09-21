@@ -1,4 +1,5 @@
 import { useRealStatsReady } from "./statsData.js";
+import { initialSubRoute, setSubRoute } from "./route.js";
 import { useContext, useEffect, useMemo, useState } from "react";
 import { ExternalLink, RefreshCw, Trophy } from "lucide-react";
 import { PlayerDetailModal, useWatchlist, usePortalStatus } from "./Gridline.jsx";
@@ -818,7 +819,14 @@ function Swatch({ color }) {
 const TABS = ["Recruiting", "Schedule", "Roster", "Depth Chart"];
 
 function CollegeProfileInner({ college, onOpenTeam }) {
-  const [tab, setTab] = useState("Recruiting");
+  // The open tab is kept in the address too (#/colleges/2117/roster), so other screens can link straight to it.
+  const [tab, setTab] = useState(() => {
+    const [id, want] = initialSubRoute();
+    return id === college.id ? TABS.find((t) => t.toLowerCase().replace(/\s/g, "") === String(want || "").toLowerCase()) || "Recruiting" : "Recruiting";
+  });
+  useEffect(() => {
+    setSubRoute("colleges", [college.id, tab.toLowerCase().replace(/\s/g, "")]);
+  }, [college.id, tab]);
   return (
     <div style={{ flex: 1, minHeight: 0, overflow: "auto", padding: "22px var(--gutter) var(--gutter)" }}>
       <div style={{ maxWidth: 1240, margin: "0 auto" }}>

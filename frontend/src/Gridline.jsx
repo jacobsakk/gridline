@@ -7,6 +7,7 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { REAL_STATS, loadRealStats } from "./statsData.js";
 import { ThemeSwitcher, useTheme } from "./theme.jsx";
+import { initialSubRoute } from "./route.js";
 import StatsUploadModal from "./StatsUploadModal.jsx";
 import { loadUploads } from "./statsUpload.js";
 import cmuHelmet from "./assets/cmu-helmet.png";
@@ -1604,12 +1605,14 @@ function CompareModal({ players, onClose }) {
 // ---------- Component ----------
 
 function GridlineMain({ onBack, initialSearch, onUploadStats }) {
-  const [division, setDivision] = useState("NAIA");
+  // #/tracker/FBS/Some Player opens that division with the player searched (the Roster page links here)
+  const [linked] = useState(() => initialSubRoute());
+  const [division, setDivision] = useState(() => (DIVISIONS.includes(linked[0]) ? linked[0] : "NAIA"));
   const [category, setCategory] = useState("passing");
   const [week, setWeek] = useState("total");
   const [position, setPosition] = useState("All");
   const [conference, setConference] = useState("All");
-  const [search, setSearch] = useState(initialSearch || "");
+  const [search, setSearch] = useState(initialSearch || (DIVISIONS.includes(linked[0]) ? linked[1] || "" : ""));
   const [sortKey, setSortKey] = useState("yards");
   const [sortDir, setSortDir] = useState("desc");
   const [watchlistOpen, setWatchlistOpen] = useState(false);

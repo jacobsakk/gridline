@@ -379,6 +379,8 @@ export default function Colleges({ onBack }) {
     return id && COLLEGE_BY_ID.has(id) ? id : null;
   });
   useEffect(() => {
+    // keep a tab already in the address (#/colleges/2117/roster) when the same team stays open
+    if (selectedId && initialSubRoute()[0] === selectedId) return;
     setSubRoute("colleges", selectedId ? [selectedId] : []);
   }, [selectedId]);
   // A stack so "Back" from a team you reached by clicking an opponent

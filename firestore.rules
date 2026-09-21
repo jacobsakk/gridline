@@ -61,6 +61,27 @@ service cloud.firestore {
       allow read: if invited();
     }
 
+    // Roster Management. Every invited coach can view the roster and depth charts; only admins change them.
+    match /rosterPlayers/{docId} {
+      allow read: if invited();
+      allow write: if isAdmin();
+    }
+    match /rosterSeasons/{docId} {
+      allow read: if invited();
+      allow write: if isAdmin();
+    }
+    match /rosterMeta/{docId} {
+      allow read: if invited();
+      allow write: if isAdmin();
+    }
+    // Revenue share dollars and athletes' contact details: admins only, for reading as well as writing.
+    match /rosterFinance/{docId} {
+      allow read, write: if isAdmin();
+    }
+    match /rosterPrivate/{docId} {
+      allow read, write: if isAdmin();
+    }
+
     match /{document=**} {
       allow read, write: if false;
     }

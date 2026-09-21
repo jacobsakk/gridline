@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Settings, ClipboardList, ChevronRight, FileSpreadsheet, GraduationCap, LogOut, Trophy } from "lucide-react";
+import { Settings, ClipboardList, ChevronRight, FileSpreadsheet, GraduationCap, LogOut, Trophy, Users } from "lucide-react";
 import { coachTitle } from "./auth.js";
 import { ThemeSwitcher, useTheme } from "./theme.jsx";
 import actionCDark from "./assets/cmu-action-c-dark.png";
@@ -34,6 +34,12 @@ const CARDS = [
     label: "HS Game Update",
     description: "Commits and targets: weekly high school results, records, area coach and game summaries",
     icon: Trophy,
+  },
+  {
+    key: "roster",
+    label: "Roster Management",
+    description: "Depth chart by years left, projections for future seasons, and the full roster spreadsheet",
+    icon: Users,
   },
 ];
 

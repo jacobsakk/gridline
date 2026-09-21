@@ -13,3 +13,6 @@ design-refs/
 # Recruit data exports (phone numbers, handles) must never be committed
 score-tracker-*.csv
 *Game Update*.xlsx
+
+# Temporary local copies of private files used while testing
+frontend/public/_tmp/
