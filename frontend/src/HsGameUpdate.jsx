@@ -147,14 +147,27 @@ function UploadModal({ onClose, onImport }) {
   const [results, setResults] = useState([]);
   const [error, setError] = useState("");
   const input = useRef(null);
+  // Coaches whose players stay out of the tracker; remembered on this computer.
+  const [skip, setSkip] = useState(() => {
+    try {
+      return window.localStorage.getItem("hsSkipCoaches") ?? "GB";
+    } catch {
+      return "GB";
+    }
+  });
 
   async function run() {
     setBusy(true);
     setError("");
+    try {
+      window.localStorage.setItem("hsSkipCoaches", skip);
+    } catch {
+      /* not remembered -- fine */
+    }
     const done = [];
     try {
       for (const file of files) {
-        const summary = await onImport(file);
+        const summary = await onImport(file, { skipCoaches: skip.split(",") });
         done.push({ name: file.name, summary });
       }
       setResults(done);
@@ -180,12 +193,17 @@ function UploadModal({ onClose, onImport }) {
         <button onClick={() => input.current?.click()} style={{ ...controlStyle, width: "100%", cursor: "pointer", textAlign: "left", display: "flex", alignItems: "center", gap: 8 }}>
           <Upload size={15} /> {files.length ? files.map((f) => f.name).join(", ") : "Choose files…"}
         </button>
+        <label style={{ display: "block", marginTop: 14, fontSize: 12.5, color: "var(--text-muted)" }}>
+          Leave out players whose area coach is (separate several with commas)
+          <input id="hs-skip-coaches" value={skip} onChange={(e) => setSkip(e.target.value)} placeholder="e.g. GB" style={{ ...controlStyle, width: "100%", marginTop: 5 }} />
+        </label>
         {error && <div role="alert" style={{ marginTop: 12, fontSize: 13, color: "var(--danger-text)" }}>{error}</div>}
         {results.map((r) => (
           <div key={r.name} style={{ marginTop: 12, fontSize: 13, color: "var(--success)", lineHeight: 1.5 }}>
             <strong>{r.name}</strong>: {r.summary.created} new, {r.summary.updated} updated, {r.summary.games} games read
             {r.summary.summaries ? `, ${r.summary.summaries} game summaries` : ""}
             {r.summary.skipped ? `, ${r.summary.skipped} skipped (removed earlier)` : ""}
+            {r.summary.excluded ? `, ${r.summary.excluded} left out (coach ${skip.trim()})` : ""}
             {r.summary.unmatchedStaff?.length ? ` · not matched: ${[...new Set(r.summary.unmatchedStaff)].slice(0, 4).join(", ")}${r.summary.unmatchedStaff.length > 4 ? "…" : ""}` : ""}
           </div>
         ))}
@@ -1250,7 +1268,7 @@ export default function HsGameUpdate({ onBack }) {
         </div>
       ))}
       {missingOpen && <MissingScoresModal rows={missingScores} updateGame={hs.updateGame} onClose={() => setMissingOpen(false)} />}
-      {uploadOpen && <UploadModal onClose={() => setUploadOpen(false)} onImport={(file) => hs.importFile(file)} />}
+      {uploadOpen && <UploadModal onClose={() => setUploadOpen(false)} onImport={(file, options) => hs.importFile(file, options)} />}
       {addOpen && <AddPlayerModal onClose={() => setAddOpen(false)} onAdd={hs.addPlayer} coaches={coaches} />}
     </div>
   );

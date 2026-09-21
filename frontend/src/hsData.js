@@ -536,10 +536,25 @@ export function useHsTracker() {
     return summary;
   }
 
-  async function importFile(file, options) {
+  // skipCoaches: area coaches whose players are left out of the upload entirely (e.g. ["GB"]).
+  async function importFile(file, options = {}) {
     const parsed = await parseHsFile(file);
     if (!parsed.players.length && !(parsed.staff || []).length) throw new Error("This doesn't look like a game tracker file -- expected a master or weekly sheet with names, opponents and results.");
-    return importParsed(parsed, options);
+    const skip = new Set((options.skipCoaches || []).map((c) => c.trim().toLowerCase()).filter(Boolean));
+    let excluded = 0;
+    if (skip.size) {
+      const leftOut = new Set();
+      parsed.players = parsed.players.filter((p) => {
+        if (!skip.has((p.coach || "").trim().toLowerCase())) return true;
+        leftOut.add((p.name || "").trim().toLowerCase());
+        excluded += 1;
+        return false;
+      });
+      // Face-sheet blocks for a left-out player, or written under a left-out coach, go too.
+      parsed.staff = (parsed.staff || []).filter((s) => !leftOut.has((s.name || "").trim().toLowerCase()) && !skip.has((s.coach || "").trim().toLowerCase()));
+    }
+    const summary = await importParsed(parsed, options);
+    return { ...summary, excluded };
   }
 
   async function updatePlayer(id, fields) {
