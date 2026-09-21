@@ -374,9 +374,10 @@ export function matchPhotoFiles(files, players) {
   const unmatched = [];
   files.forEach((file) => {
     const base = letters(file.name.replace(/\.[^.]+$/, ""));
-    const hit = players
-      .filter((p) => letters(p.name) && base.includes(letters(p.name)))
-      .sort((a, b) => letters(b.name).length - letters(a.name).length)[0];
+    // Either spelling counts: the Offer Tracker's (shown on the sheet) or the HS file's own.
+    const names = (p) => [p.name, p.hsName].map(letters).filter(Boolean);
+    const longest = (p) => Math.max(0, ...names(p).filter((n) => base.includes(n)).map((n) => n.length));
+    const hit = players.filter((p) => longest(p) > 0).sort((a, b) => longest(b) - longest(a))[0];
     if (hit) matched.push({ file, player: hit });
     else unmatched.push(file.name);
   });

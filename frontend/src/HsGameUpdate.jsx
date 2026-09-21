@@ -5,7 +5,7 @@ import { ThemeSwitcher, useTheme } from "./theme.jsx";
 import { confirmAction } from "./ConfirmDialog.jsx";
 import { firstNameKey, lastNameKey, normalizePlayerKey, normalizePosition, useOfferTracker } from "./offerData.js";
 import { initialSubRoute, setSubRoute } from "./route.js";
-import { PlayerProfileModal, ThemeContext } from "./OfferTracker.jsx";
+import { PlayerProfileModal, ThemeContext, toTitleCase } from "./OfferTracker.jsx";
 import { fetchSchedule, teamKey } from "./collegeData.js";
 import {
   SEASON_YEAR,
@@ -1029,7 +1029,17 @@ export default function HsGameUpdate({ onBack }) {
         }
         // A position typed in on this sheet (positionOverride) beats both.
         const override = POSITION_GROUPS.some((g) => g.key === p.positionOverride) ? p.positionOverride : "";
-        return { ...p, position: override || auto, autoPosition: auto, positionOverride: override, hsPosition: p.position, positionFromOffers: !override && fromOffers };
+        // The name reads the way the Offer Tracker spells it (BJ Adams, not Brandon Adams Jr.): the CMU
+        // sheet's spelling first, else the most common one.
+        let name = p.name;
+        if (rows.length) {
+          const cmuRow = rows.find((r) => r.team === "CMU");
+          const spellings = {};
+          rows.forEach((r) => (spellings[r.player] = (spellings[r.player] || 0) + 1));
+          const common = Object.keys(spellings).sort((a, b) => spellings[b] - spellings[a])[0];
+          name = toTitleCase((cmuRow || {}).player || common);
+        }
+        return { ...p, name, hsName: p.name, position: override || auto, autoPosition: auto, positionOverride: override, hsPosition: p.position, positionFromOffers: !override && fromOffers };
       }),
     [hs.players, matchRows] // eslint-disable-line react-hooks/exhaustive-deps
   );
@@ -1105,7 +1115,7 @@ export default function HsGameUpdate({ onBack }) {
     const q = search.trim().toLowerCase();
     return players
       .filter((p) => (!coach || p.coach === coach) && (!status || (status === "none" ? !statusOf(p) : statusOf(p) === status)))
-      .filter((p) => !q || [p.name, p.highSchool, p.state, p.position, p.coach].some((v) => (v || "").toLowerCase().includes(q)));
+      .filter((p) => !q || [p.name, p.hsName, p.highSchool, p.state, p.position, p.coach].some((v) => (v || "").toLowerCase().includes(q)));
   }, [players, search, coach, status, offers]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const sortedForMaster = useMemo(() => sortPlayers(filtered, sort, statusOf), [filtered, sort]); // eslint-disable-line react-hooks/exhaustive-deps

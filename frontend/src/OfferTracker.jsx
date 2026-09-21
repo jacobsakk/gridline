@@ -27,8 +27,18 @@ const FIELDS = [
 // entered). Actually reformatting the string is the only way to get a
 // normal-looking "Aaron Pegues" instead of "AARON PEGUES", matching
 // how names read in the Pre-Portal Tracker.
+// Initials stay capitalized ("BJ Adams", not "Bj Adams"): two letters with no vowel (BJ, CJ, TJ, DJ)
+// or AJ/EJ/OJ. Jr, Sr and the like are left as ordinary words.
+const NOT_INITIALS = new Set(["jr", "sr", "mr", "ms", "dr", "st", "mt"]);
+const isInitials = (word) => !NOT_INITIALS.has(word.toLowerCase()) && (/^[bcdfghjklmnpqrstvwxz]{2}$/i.test(word) || /^(aj|ej|oj)$/i.test(word));
+
 export function toTitleCase(text) {
-  return fixBrandCase((text || "").toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase()));
+  return fixBrandCase(
+    (text || "")
+      .toLowerCase()
+      .replace(/\b\w/g, (c) => c.toUpperCase())
+      .replace(/\b[A-Za-z]{2}\b/g, (w) => (isInitials(w) ? w.toUpperCase() : w))
+  );
 }
 
 const PIPELINE_OPTIONS = ["Reject", "Recruit", "0 - Partial", "1 - Solid Starter", "2 - All Mac Player"];
