@@ -884,6 +884,65 @@ function FaceSheetTab(props) {
   );
 }
 
+// Games in the past that neither site (nor an uploaded file) has a score for. Type the result in.
+function MissingScoresModal({ rows, updateGame, onClose }) {
+  const [draft, setDraft] = useState({});
+  const [saving, setSaving] = useState("");
+  const key = (r) => `${r.player.id}|${r.game.date}|${r.game.opponent}`;
+  const set = (r, patch) => setDraft((d) => ({ ...d, [key(r)]: { result: "W", ours: "", theirs: "", ...d[key(r)], ...patch } }));
+  async function save(r) {
+    const d = { result: "W", ours: "", theirs: "", ...draft[key(r)] };
+    if (d.ours === "" || d.theirs === "") return;
+    setSaving(key(r));
+    await updateGame(r.player, r.game, { result: d.result, ours: Number(d.ours), theirs: Number(d.theirs) });
+    setSaving("");
+  }
+  const num = { ...controlStyle, width: 58, padding: "6px 8px", textAlign: "center" };
+  return (
+    <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20, zIndex: 70 }}>
+      <div onClick={(e) => e.stopPropagation()} style={{ background: "var(--bg-panel)", border: "1px solid var(--border)", borderRadius: 10, width: 760, maxWidth: "100%", maxHeight: "88vh", display: "flex", flexDirection: "column", padding: 20 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
+          <h2 className="oswald" style={{ margin: 0, fontSize: 19 }}>Missing scores</h2>
+          <button onClick={onClose} aria-label="Close" style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer", lineHeight: 0 }}><X size={18} /></button>
+        </div>
+        <p style={{ margin: "0 0 12px", fontSize: 13, color: "var(--text-muted)", lineHeight: 1.5 }}>
+          <strong className="tabular" style={{ color: "var(--text-primary)" }}>{rows.length}</strong> past games have no score from MaxPreps, ScoreStream or your files. Some were scrimmages or games that were never played. Enter a score to fill one in (put our team's score first); a score the scraper finds later will replace it.
+        </p>
+        <div className="hs-scroll" style={{ overflow: "auto", border: "1px solid var(--border)", borderRadius: 8, minHeight: 0 }}>
+          {rows.length === 0 && <div style={{ padding: 24, textAlign: "center", color: "var(--text-faint)" }}>Every past game has a score.</div>}
+          {rows.map((r) => {
+            const d = { result: "W", ours: "", theirs: "", ...draft[key(r)] };
+            return (
+              <div key={key(r)} style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", padding: "8px 12px", borderBottom: "1px solid var(--border-subtle)" }}>
+                <div style={{ flex: "1 1 220px", minWidth: 0 }}>
+                  <div style={{ fontWeight: 700, color: "var(--text-primary)" }}>{r.player.name} <span style={{ color: "var(--text-faint)", fontWeight: 400, fontSize: 12.5 }}>{r.player.highSchool}</span></div>
+                  <div style={{ fontSize: 12.5, color: "var(--text-muted)" }}>
+                    {mmdd(r.game.date)} · {r.game.homeAway === "A" ? "@ " : ""}{r.game.opponent}
+                    {r.player.sources?.maxpreps && <> · <a href={r.player.sources.maxpreps} target="_blank" rel="noreferrer" style={{ color: "var(--accent)" }}>MaxPreps</a></>}
+                    {r.player.sources?.scorestream && <> · <a href={r.player.sources.scorestream} target="_blank" rel="noreferrer" style={{ color: "var(--accent)" }}>ScoreStream</a></>}
+                  </div>
+                </div>
+                <select aria-label="Result" value={d.result} onChange={(e) => set(r, { result: e.target.value })} style={{ ...controlStyle, padding: "6px 8px" }}>
+                  <option value="W">W</option><option value="L">L</option><option value="T">T</option>
+                </select>
+                <input aria-label="Our score" inputMode="numeric" placeholder="Us" value={d.ours} onChange={(e) => set(r, { ours: e.target.value.replace(/\D/g, "") })} style={num} />
+                <span style={{ color: "var(--text-faint)" }}>-</span>
+                <input aria-label="Their score" inputMode="numeric" placeholder="Them" value={d.theirs} onChange={(e) => set(r, { theirs: e.target.value.replace(/\D/g, "") })} style={num} />
+                <button onClick={() => save(r)} disabled={d.ours === "" || d.theirs === "" || saving === key(r)} style={{ background: "var(--accent-bg)", border: "1px solid var(--accent)", color: "var(--accent)", borderRadius: 6, padding: "6px 12px", fontSize: 13, fontWeight: 700, cursor: "pointer", opacity: d.ours === "" || d.theirs === "" ? 0.5 : 1 }}>
+                  {saving === key(r) ? "Saving…" : "Save"}
+                </button>
+              </div>
+            );
+          })}
+        </div>
+        <div style={{ textAlign: "right", marginTop: 12 }}>
+          <button onClick={onClose} style={{ background: "var(--accent-bg)", border: "1px solid var(--accent)", color: "var(--accent)", borderRadius: 6, padding: "8px 18px", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>Done</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ------------------------------------------------------------------- page
 
 export default function HsGameUpdate({ onBack }) {
@@ -925,6 +984,7 @@ export default function HsGameUpdate({ onBack }) {
   const [selected, setSelected] = useState(() => new Set());
   const [sort, setSort] = useState({ key: "", dir: "asc" });
   const [undo, setUndo] = useState(null);
+  const [missingOpen, setMissingOpen] = useState(false);
   const [cmuByWeek, setCmuByWeek] = useState({});
 
   // Status comes from the Offer Tracker unless someone set it by hand. `why` says which,
@@ -1019,6 +1079,18 @@ export default function HsGameUpdate({ onBack }) {
     if (at >= 0 && at < weeks.length) setWeek(weeks[at]);
   };
 
+  // Past games (this season, not byes) with no score anywhere, oldest first.
+  const missingScores = useMemo(() => {
+    const today = toIso(new Date());
+    const out = [];
+    players.forEach((p) =>
+      p.games.forEach((g) => {
+        if (g.date && !g.bye && !g.result && g.date < today && g.date >= `${SEASON_YEAR}-08-01`) out.push({ player: p, game: g });
+      })
+    );
+    return out.sort((a, b) => a.game.date.localeCompare(b.game.date) || a.player.name.localeCompare(b.player.name));
+  }, [players]);
+
   const hasProfile = (p) => offers.rowsForPlayer(p.classYear, p.name).length > 0;
 
   const openPlayer = (id) => {
@@ -1090,6 +1162,11 @@ export default function HsGameUpdate({ onBack }) {
           </select>
           <span style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 8 }}>
             <span className="tabular" style={{ fontSize: 12.5, color: "var(--text-faint)" }}>{filtered.length} of {players.length}</span>
+            {missingScores.length > 0 && (
+              <button onClick={() => setMissingOpen(true)} title="Past games no source has a score for" style={{ ...controlStyle, display: "flex", alignItems: "center", gap: 6, cursor: "pointer", fontWeight: 700, borderColor: "var(--danger-text)", color: "var(--danger-text)" }}>
+                <AlertTriangle size={14} /> Missing scores ({missingScores.length})
+              </button>
+            )}
             <button onClick={() => setAddOpen(true)} style={{ ...controlStyle, display: "flex", alignItems: "center", gap: 6, cursor: "pointer", fontWeight: 700 }}><Plus size={14} /> Add player</button>
             <button onClick={() => window.print()} style={{ ...controlStyle, display: "flex", alignItems: "center", gap: 6, cursor: "pointer", fontWeight: 700 }}><Printer size={14} /> Print</button>
           </span>
@@ -1172,6 +1249,7 @@ export default function HsGameUpdate({ onBack }) {
           </div>
         </div>
       ))}
+      {missingOpen && <MissingScoresModal rows={missingScores} updateGame={hs.updateGame} onClose={() => setMissingOpen(false)} />}
       {uploadOpen && <UploadModal onClose={() => setUploadOpen(false)} onImport={(file) => hs.importFile(file)} />}
       {addOpen && <AddPlayerModal onClose={() => setAddOpen(false)} onAdd={hs.addPlayer} coaches={coaches} />}
     </div>

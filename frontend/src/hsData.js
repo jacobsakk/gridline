@@ -322,6 +322,7 @@ export function overlayScraped(games, teamDoc) {
     if (mine) claimed.add(mine);
     return {
       ...(mine || {}),
+      storedKey: mine ? gameKey(mine) : "",
       date: t.date,
       opponent: (mine && mine.opponent) || t.opponent,
       homeAway: t.homeAway || mine?.homeAway || "",
@@ -549,7 +550,10 @@ export function useHsTracker() {
   async function updateGame(player, game, fields) {
     // A player who has no stored schedule is showing the school's scraped one; the first edit saves it.
     const base = player.storedGames?.length ? player.storedGames : player.games || [];
-    const games = base.map((g) => (gameKey(g) === gameKey(game) ? { ...g, ...fields } : g));
+    // The stored copy may sit on a slightly different date than the scraped one shown on screen.
+    const key = game.storedKey || gameKey(game);
+    let games = base.map((g) => (gameKey(g) === key ? { ...g, ...fields } : g));
+    if (!base.some((g) => gameKey(g) === key)) games = [...base, { date: game.date, opponent: game.opponent, homeAway: game.homeAway || "", ...fields }];
     await updatePlayer(player.id, { games });
   }
 
