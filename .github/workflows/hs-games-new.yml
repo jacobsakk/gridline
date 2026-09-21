@@ -1,0 +1,55 @@
+name: HS new player catch-up
+
+# Keeps a newly added player from waiting for the big Friday-night run. Every half hour it
+# checks the database for players whose school has no MaxPreps / ScoreStream links yet, or a
+# school with no results stored yet. If there's nothing, it stops in seconds without installing
+# a browser. If there is, it looks up the missing links (borrowing them from another player at
+# the same school, else searching both sites), scrapes just those schools, and stores the
+# results -- so the player's games and scores fill in on their own within about half an hour.
+#
+# Uses the same FIREBASE_SERVICE_ACCOUNT secret as "HS game results refresh".
+on:
+  schedule:
+    - cron: "*/30 * * * *"
+  workflow_dispatch:
+
+# Shares a queue with the full refresh so the two never write at the same time.
+concurrency:
+  group: hs-games-refresh
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  catchup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Check for new players
+        id: plan
+        working-directory: scraper
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          pip install -q google-cloud-firestore
+          python3 hs_games.py --plan
+
+      - name: Install browser
+        if: steps.plan.outputs.work == 'true'
+        run: |
+          pip install -q -r scraper/requirements-hs.txt
+          python -m playwright install --with-deps chromium
+
+      - name: Look up links and scrape the new schools
+        if: steps.plan.outputs.work == 'true'
+        working-directory: scraper
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: python3 hs_games.py --new-only

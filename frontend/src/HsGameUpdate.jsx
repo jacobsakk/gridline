@@ -26,8 +26,8 @@ const TABS = ["Master Tracker", "Weekly Tracker", "Staff Face Sheet"];
 const TAB_SLUGS = { "Master Tracker": "master", "Weekly Tracker": "weekly", "Staff Face Sheet": "face-sheet" };
 
 // Positions follow the Offer Tracker's set (see normalizePosition there): OG/OT become OL,
-// S/DB become SAF, K and P are their own, and anything unrecognized is ATH. The order is how a roster is read.
-const POSITION_GROUPS = ["QB", "RB", "WR", "TE", "OL", "DL", "LB", "CB", "SAF", "K", "P", "ATH"].map((key) => ({ key, label: key }));
+// S/DB become SAF, K, P and LS are their own, and anything unrecognized is ATH. The order is how a roster is read.
+const POSITION_GROUPS = ["QB", "RB", "WR", "TE", "OL", "DL", "LB", "CB", "SAF", "K", "P", "LS", "ATH"].map((key) => ({ key, label: key }));
 const groupOf = (position) => normalizePosition(position);
 
 const controlStyle = {
@@ -215,10 +215,24 @@ function UploadModal({ onClose, onImport }) {
   );
 }
 
-function AddPlayerModal({ onClose, onAdd, coaches }) {
+function AddPlayerModal({ onClose, onAdd, coaches, players }) {
   const [f, setF] = useState({ name: "", classYear: "2027", position: "", highSchool: "", state: "", coach: "", maxpreps: "", scorestream: "" });
   const [error, setError] = useState("");
+  const [borrowed, setBorrowed] = useState("");
+  const schools = useMemo(() => [...new Set(players.map((p) => p.highSchool).filter(Boolean))].sort(), [players]);
   const set = (k) => (e) => setF((p) => ({ ...p, [k]: e.target.value }));
+  // Picking a school that's already on the tracker brings its state and its MaxPreps / ScoreStream
+  // links along, so the player's games fill in without pasting anything.
+  function setSchool(e) {
+    const value = e.target.value;
+    const known = players.find((p) => (p.highSchool || "").toLowerCase() === value.trim().toLowerCase() && (p.sources?.maxpreps || p.sources?.scorestream));
+    setF((prev) => ({
+      ...prev,
+      highSchool: value,
+      ...(known ? { state: prev.state || known.state || "", maxpreps: prev.maxpreps || known.sources?.maxpreps || "", scorestream: prev.scorestream || known.sources?.scorestream || "" } : {}),
+    }));
+    setBorrowed(known ? `Using the links already on file for ${known.highSchool}.` : "");
+  }
   async function submit(e) {
     e.preventDefault();
     if (!f.name.trim() || !f.classYear.trim()) return setError("A name and class year are required.");
@@ -242,14 +256,16 @@ function AddPlayerModal({ onClose, onAdd, coaches }) {
             {POSITION_GROUPS.map((g) => <option key={g.key} value={g.key}>{g.label}</option>)}
           </select>
         </div>
-        <input id="hs-school" placeholder="High school" value={f.highSchool} onChange={set("highSchool")} style={field} />
+        <input id="hs-school" list="hs-school-list" placeholder="High school" value={f.highSchool} onChange={setSchool} style={field} />
+        <datalist id="hs-school-list">{schools.map((n) => <option key={n} value={n} />)}</datalist>
+        {borrowed && <div style={{ fontSize: 12.5, color: "var(--success)" }}>{borrowed}</div>}
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
           <input id="hs-state" placeholder="State" value={f.state} onChange={set("state")} style={field} />
           <input id="hs-coach" list="hs-coaches" placeholder="Area coach" value={f.coach} onChange={set("coach")} style={field} />
           <datalist id="hs-coaches">{coaches.map((c) => <option key={c} value={c} />)}</datalist>
         </div>
-        <input id="hs-maxpreps" placeholder="MaxPreps schedule link (fills in results automatically)" value={f.maxpreps} onChange={set("maxpreps")} style={field} />
-        <input id="hs-scorestream" placeholder="ScoreStream team link" value={f.scorestream} onChange={set("scorestream")} style={field} />
+        <input id="hs-maxpreps" placeholder="MaxPreps schedule link (optional: found automatically if blank)" value={f.maxpreps} onChange={set("maxpreps")} style={field} />
+        <input id="hs-scorestream" placeholder="ScoreStream team link (optional)" value={f.scorestream} onChange={set("scorestream")} style={field} />
         {error && <div role="alert" style={{ fontSize: 13, color: "var(--danger-text)" }}>{error}</div>}
         <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
           <button type="button" onClick={onClose} style={{ ...controlStyle, cursor: "pointer" }}>Cancel</button>
@@ -336,7 +352,7 @@ function sortPlayers(players, sort, statusOf) {
   });
 }
 
-function MasterTab({ players, weeks, currentWeek, cmuByWeek, statusOf, statusWhy, onOpenPlayer, onProfile, hasProfile, selected, setSelected, sort, setSort, coaches, updatePlayer }) {
+function MasterTab({ players, weeks, currentWeek, cmuByWeek, statusOf, statusWhy, autoStatusOf, onGame, onOpenPlayer, onProfile, hasProfile, selected, setSelected, sort, setSort, coaches, updatePlayer }) {
   const thBase = {
     position: "sticky", top: 0, zIndex: 2, background: "var(--bg-surface)", padding: "9px 10px", fontSize: 11, color: "var(--text-faint)", textTransform: "uppercase",
     textAlign: "left", whiteSpace: "nowrap", borderBottom: "1px solid var(--border)", letterSpacing: "0.04em",
@@ -380,6 +396,7 @@ function MasterTab({ players, weeks, currentWeek, cmuByWeek, statusOf, statusWhy
             <SortHead k="name" style={{ position: "sticky", left: 38, zIndex: 3 }}>Name</SortHead>
             <SortHead k="coach">Coach</SortHead>
             <SortHead k="pos">Pos</SortHead>
+            <SortHead k="status">Status</SortHead>
             <SortHead k="year">Yr</SortHead>
             <SortHead k="school">High School</SortHead>
             <SortHead k="record">Record</SortHead>
@@ -417,6 +434,9 @@ function MasterTab({ players, weeks, currentWeek, cmuByWeek, statusOf, statusWhy
                 <td style={{ ...td, padding: "4px 6px", background: on ? rowBg : undefined }}>
                   <PositionSelect player={p} updatePlayer={updatePlayer} />
                 </td>
+                <td style={{ ...td, padding: "4px 6px", background: on ? rowBg : undefined }}>
+                  <StatusSelect player={p} status={statusOf(p)} autoStatus={autoStatusOf(p)} updatePlayer={updatePlayer} />
+                </td>
                 <td style={{ ...td, background: on ? rowBg : undefined }} className="tabular">{p.classYear}</td>
                 <td style={{ ...td, whiteSpace: "nowrap", background: on ? rowBg : undefined }}>{p.highSchool}{p.state ? ` (${p.state})` : ""}</td>
                 <td style={{ ...td, whiteSpace: "nowrap", fontWeight: 700, color: "var(--text-primary)", background: on ? rowBg : undefined }} className="tabular">{p.record.played ? p.record.text : "—"}</td>
@@ -425,7 +445,16 @@ function MasterTab({ players, weeks, currentWeek, cmuByWeek, statusOf, statusWhy
                   return (
                     <td key={w} style={{ ...td, background: on ? rowBg : w === currentWeek ? "color-mix(in srgb, var(--accent) 6%, transparent)" : undefined }}>
                       {inWeek.map((g) => (
-                        <div key={g.date + g.opponent} style={{ display: "flex", flexDirection: "column", gap: 3, marginBottom: inWeek.length > 1 ? 6 : 0 }}>
+                        <div
+                          key={g.date + g.opponent}
+                          role="button"
+                          tabIndex={0}
+                          className="hs-game-click"
+                          title="Click for this game's sources"
+                          onClick={() => onGame(p, g)}
+                          onKeyDown={(e) => e.key === "Enter" && onGame(p, g)}
+                          style={{ display: "flex", flexDirection: "column", gap: 3, marginBottom: inWeek.length > 1 ? 6 : 0, cursor: "pointer" }}
+                        >
                           {g.result ? <ResultChip game={g} /> : null}
                           <span style={{ color: "var(--text-primary)", fontSize: 12.5 }}>{g.homeAway === "A" ? "@" : ""}{g.opponent}</span>
                           <span style={{ fontSize: 11, color: "var(--text-faint)" }}>{mmdd(g.date)}{!g.result && g.date < toIso(new Date()) ? " · no score reported" : ""}</span>
@@ -482,7 +511,7 @@ function EditableSummary({ value, onSave, placeholder = "No stats yet", rows = 2
   );
 }
 
-function WeeklyTab({ players, week, statusOf, updateGame, onOpenPlayer, onProfile, hasProfile }) {
+function WeeklyTab({ players, week, statusOf, autoStatusOf, updatePlayer, onGame, updateGame, onOpenPlayer, onProfile, hasProfile }) {
   const groups = useMemo(() => {
     const map = new Map(POSITION_GROUPS.map((g) => [g.key, []]));
     map.set("OTHER", []);
@@ -534,9 +563,20 @@ function WeeklyTab({ players, week, statusOf, updateGame, onOpenPlayer, onProfil
                       <div style={{ fontSize: 12, color: "var(--text-muted)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                         {p.highSchool}{p.state ? ` · ${p.state}` : ""} · <span className="tabular">{p.record.played ? p.record.text : "0W - 0L"}</span>
                       </div>
+                      <div className="hs-no-print" style={{ marginTop: 3 }}>
+                        <StatusSelect player={p} status={status} autoStatus={autoStatusOf(p)} updatePlayer={updatePlayer} style={{ padding: "1px 4px" }} />
+                      </div>
                     </div>
                   </div>
-                  <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+                  <div
+                    className={game ? "hs-game-click" : undefined}
+                    role={game ? "button" : undefined}
+                    tabIndex={game ? 0 : undefined}
+                    title={game ? "Click for this game's sources" : undefined}
+                    onClick={game ? () => onGame(p, game) : undefined}
+                    onKeyDown={game ? (e) => e.key === "Enter" && onGame(p, game) : undefined}
+                    style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", cursor: game ? "pointer" : "default" }}
+                  >
                     {game ? (
                       <>
                         <span style={{ color: "var(--text-muted)", fontWeight: 700 }}>{game.homeAway === "A" ? "@" : "vs"}</span>
@@ -595,7 +635,7 @@ const fit = (text) => {
   return { fontSize: `calc(var(--hs-font) * ${scale})`, whiteSpace: "nowrap" };
 };
 
-function FaceBlock({ player, week, status, why, updatePlayer, updateGame, removePlayer, onProfile, hasProfile }) {
+function FaceBlock({ player, week, status, why, onGame, updatePlayer, updateGame, removePlayer, onProfile, hasProfile }) {
   const { game, next } = pickWeekGames(player, week);
   const s = STATUS_BY_KEY[status];
   const [photoError, setPhotoError] = useState("");
@@ -650,9 +690,9 @@ function FaceBlock({ player, week, status, why, updatePlayer, updateGame, remove
       <div style={{ ...headCell, gridColumn: 2, gridRow: 1 }}>RECORD</div>
       <div style={{ ...valueCell, gridColumn: 2, gridRow: 2 }} className="tabular">{player.record.played ? player.record.text : "—"}</div>
       <div style={{ ...headCell, gridColumn: 2, gridRow: 3 }}>OPPONENT</div>
-      <div style={{ ...valueCell, gridColumn: 2, gridRow: 4, ...fit(game?.opponent) }}>{game?.opponent || "—"}</div>
+      <div className={game ? "hs-game-click" : undefined} title={game ? "Click for this game's sources" : undefined} onClick={game ? () => onGame(player, game) : undefined} style={{ ...valueCell, gridColumn: 2, gridRow: 4, ...fit(game?.opponent), cursor: game ? "pointer" : "default" }}>{game?.opponent || "—"}</div>
       <div style={{ ...headCell, gridColumn: 2, gridRow: 5 }}>SCORE</div>
-      <div style={{ ...valueCell, gridColumn: 2, gridRow: 6 }} className="tabular">
+      <div style={{ ...valueCell, gridColumn: 2, gridRow: 6, cursor: game ? "pointer" : "default" }} className="tabular" onClick={game ? () => onGame(player, game) : undefined} title={game ? "Click for this game's sources" : undefined}>
         {game?.result ? (
           <span title={game.conflict ? `Sources disagree: MaxPreps ${game.ours}-${game.theirs}, ScoreStream ${game.conflict.scorestream?.ours}-${game.conflict.scorestream?.theirs}` : undefined}>
             {game.result} {game.ours}-{game.theirs}{game.conflict && <span className="hs-no-print" style={{ color: "#B3261E", fontWeight: 800 }}> ⚠</span>}
@@ -917,7 +957,7 @@ function FaceSheetTab(props) {
               ))}
             </div>
             {page.map((p) => (
-              <FaceBlock key={p.id} player={p} week={week} status={statusOf(p)} why={props.statusWhy(p)} updatePlayer={updatePlayer} updateGame={props.updateGame} removePlayer={props.removePlayer} onProfile={props.onProfile} hasProfile={props.hasProfile} />
+              <FaceBlock key={p.id} player={p} week={week} status={statusOf(p)} why={props.statusWhy(p)} onGame={props.onGame} updatePlayer={updatePlayer} updateGame={props.updateGame} removePlayer={props.removePlayer} onProfile={props.onProfile} hasProfile={props.hasProfile} />
             ))}
           </section>
         ))}
@@ -982,6 +1022,79 @@ function MissingScoresModal({ rows, updateGame, onClose }) {
         </div>
       </div>
     </div>
+  );
+}
+
+// Where a game's result came from: each source's own page for that game, with the score it reported.
+function GameSourcesModal({ player, game, onClose }) {
+  const sources = [
+    { key: "maxpreps", label: "MaxPreps" },
+    { key: "scorestream", label: "ScoreStream" },
+  ];
+  const reported = game.verifiedBy || [];
+  const alt = game.conflict?.scorestream;
+  const scoreFrom = (key) => {
+    if (!reported.includes(key)) return "";
+    const s = key === "scorestream" && alt ? alt : game;
+    return `${s.result} ${s.ours}-${s.theirs}`;
+  };
+  const anyLink = sources.some((s) => game.links?.[s.key] || player.sources?.[s.key]);
+  return (
+    <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20, zIndex: 70 }}>
+      <div onClick={(e) => e.stopPropagation()} style={{ background: "var(--bg-panel)", border: "1px solid var(--border)", borderRadius: 10, width: 440, maxWidth: "100%", padding: 22 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 10 }}>
+          <div>
+            <h2 className="oswald" style={{ margin: 0, fontSize: 19 }}>{game.homeAway === "A" ? "@" : "vs"} {game.opponent}</h2>
+            <div style={{ fontSize: 13, color: "var(--text-muted)", marginTop: 2 }}>{player.highSchool} · {mmdd(game.date)}</div>
+          </div>
+          <button onClick={onClose} aria-label="Close" style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer", lineHeight: 0 }}><X size={18} /></button>
+        </div>
+        <div style={{ display: "grid", gap: 8, margin: "16px 0 4px" }}>
+          {sources.map((s) => {
+            const gameUrl = game.links?.[s.key];
+            const teamUrl = player.sources?.[s.key];
+            const url = gameUrl || teamUrl;
+            const score = scoreFrom(s.key);
+            return (
+              <div key={s.key} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, border: "1px solid var(--border)", borderRadius: 8, padding: "10px 12px" }}>
+                <div>
+                  <div style={{ fontWeight: 700, color: "var(--text-primary)" }}>{s.label}</div>
+                  <div className="tabular" style={{ fontSize: 12.5, color: score ? "var(--text-secondary)" : "var(--text-faint)" }}>{score ? `Reported ${score}` : "No score reported"}</div>
+                </div>
+                {url ? (
+                  <a href={url} target="_blank" rel="noreferrer" style={{ color: "var(--accent)", fontWeight: 700, fontSize: 13, whiteSpace: "nowrap" }}>
+                    {gameUrl ? "Open game page ↗" : "Open team schedule ↗"}
+                  </a>
+                ) : (
+                  <span style={{ fontSize: 12.5, color: "var(--text-faint)" }}>No link yet</span>
+                )}
+              </div>
+            );
+          })}
+        </div>
+        {alt && <p style={{ margin: "10px 0 0", fontSize: 12.5, color: "var(--danger-text)" }}>The two sources disagree on the score. The sheet shows MaxPreps; open both to check.</p>}
+        {!anyLink && <p style={{ margin: "10px 0 0", fontSize: 12.5, color: "var(--text-muted)" }}>This school's pages haven't been found yet. The scraper looks them up on its next run.</p>}
+        {anyLink && !game.links && !game.scraped && <p style={{ margin: "10px 0 0", fontSize: 12.5, color: "var(--text-muted)" }}>This game came from an uploaded file, so only the team pages are linked until the scraper matches it.</p>}
+      </div>
+    </div>
+  );
+}
+
+// The status shown for a player. "Auto" follows the Offer Tracker; picking one here overrides it.
+function StatusSelect({ player, status, autoStatus, updatePlayer, style }) {
+  const s = STATUS_BY_KEY[status];
+  return (
+    <select
+      className="offer-cell-input"
+      aria-label={`Status for ${player.name}`}
+      value={player.status || ""}
+      onChange={(e) => updatePlayer(player.id, { status: e.target.value })}
+      title={player.status ? "Set by hand" : "Auto: from the Offer Tracker"}
+      style={{ cursor: "pointer", fontWeight: 700, fontSize: 11.5, borderRadius: 4, background: s?.bg || "transparent", color: s?.fg || "var(--text-muted)", ...style }}
+    >
+      <option value="">Auto{autoStatus ? ` (${STATUS_BY_KEY[autoStatus]?.label})` : ""}</option>
+      {STATUS_OPTIONS.map((o) => <option key={o.key} value={o.key}>{o.label}</option>)}
+    </select>
   );
 }
 
@@ -1068,12 +1181,12 @@ export default function HsGameUpdate({ onBack }) {
   const [sort, setSort] = useState({ key: "", dir: "asc" });
   const [undo, setUndo] = useState(null);
   const [missingOpen, setMissingOpen] = useState(false);
+  const [gameSource, setGameSource] = useState(null);
   const [cmuByWeek, setCmuByWeek] = useState({});
 
   // Status comes from the Offer Tracker unless someone set it by hand. `why` says which,
   // so a surprising color can be traced to its source (shown when hovering the name).
-  function statusInfo(p) {
-    if (p.status) return { key: p.status, why: `Set by hand on this tracker (${STATUS_BY_KEY[p.status]?.label || p.status}). Choose "Auto" to follow the Offer Tracker instead.` };
+  function autoStatusInfo(p) {
     const rows = matchRows(p);
     if (!rows.length) return { key: "", why: "Not on the Offer Tracker." };
     const spelled = rows[0].player && rows[0].player.toLowerCase() !== (p.name || "").toLowerCase() ? ` (listed there as ${rows[0].player})` : "";
@@ -1087,8 +1200,13 @@ export default function HsGameUpdate({ onBack }) {
     if (!cmu) return { key: "", why: `On the Offer Tracker${spelled}, but no CMU offer.` };
     return { key: /partial/i.test(cmu.pipelineStatus || "") ? "partial" : "offered", why: `Offer Tracker${spelled}: CMU offer${cmu.pipelineStatus ? `, ${cmu.pipelineStatus}` : ""}.` };
   }
+  function statusInfo(p) {
+    if (p.status) return { key: p.status, why: `Set by hand on this tracker (${STATUS_BY_KEY[p.status]?.label || p.status}). Choose "Auto" to follow the Offer Tracker instead.` };
+    return autoStatusInfo(p);
+  }
   const statusOf = (p) => statusInfo(p).key;
   const statusWhy = (p) => statusInfo(p).why;
+  const autoStatusOf = (p) => autoStatusInfo(p).key;
 
   // Our own schedule across the top of the master sheet, like the workbook's first row.
   useEffect(() => {
@@ -1294,9 +1412,9 @@ export default function HsGameUpdate({ onBack }) {
             </div>
           </div>
         ) : tab === "Master Tracker" ? (
-          <MasterTab players={sortedForMaster} weeks={weeks} currentWeek={weekKey(new Date())} cmuByWeek={cmuByWeek} statusOf={statusOf} statusWhy={statusWhy} onOpenPlayer={openPlayer} onProfile={setProfile} hasProfile={hasProfile} selected={selected} setSelected={setSelected} sort={sort} setSort={setSort} coaches={coaches} updatePlayer={hs.updatePlayer} />
+          <MasterTab players={sortedForMaster} weeks={weeks} currentWeek={weekKey(new Date())} cmuByWeek={cmuByWeek} statusOf={statusOf} statusWhy={statusWhy} onOpenPlayer={openPlayer} onProfile={setProfile} hasProfile={hasProfile} selected={selected} setSelected={setSelected} sort={sort} setSort={setSort} coaches={coaches} updatePlayer={hs.updatePlayer} autoStatusOf={autoStatusOf} onGame={(player, game) => setGameSource({ id: player.id, key: game.date || game.opponent })} />
         ) : tab === "Weekly Tracker" ? (
-          <WeeklyTab players={filtered} week={week} statusOf={statusOf} updateGame={hs.updateGame} onOpenPlayer={openPlayer} onProfile={setProfile} hasProfile={hasProfile} />
+          <WeeklyTab players={filtered} week={week} statusOf={statusOf} autoStatusOf={autoStatusOf} updatePlayer={hs.updatePlayer} onGame={(player, game) => setGameSource({ id: player.id, key: game.date || game.opponent })} updateGame={hs.updateGame} onOpenPlayer={openPlayer} onProfile={setProfile} hasProfile={hasProfile} />
         ) : (
           <FaceSheetTab
             players={filtered}
@@ -1304,6 +1422,7 @@ export default function HsGameUpdate({ onBack }) {
             week={week}
             statusOf={statusOf}
             statusWhy={statusWhy}
+            onGame={(player, game) => setGameSource({ id: player.id, key: game.date || game.opponent })}
             focusId={focusId}
             clearFocus={() => setFocusId(null)}
             updatePlayer={hs.updatePlayer}
@@ -1332,9 +1451,15 @@ export default function HsGameUpdate({ onBack }) {
           </div>
         </div>
       ))}
+      {gameSource && (() => {
+        // Look the game up again from live data so the modal stays current if a refresh lands.
+        const player = players.find((p) => p.id === gameSource.id);
+        const game = player?.games.find((g) => (g.date || g.opponent) === gameSource.key);
+        return player && game ? <GameSourcesModal player={player} game={game} onClose={() => setGameSource(null)} /> : null;
+      })()}
       {missingOpen && <MissingScoresModal rows={missingScores} updateGame={hs.updateGame} onClose={() => setMissingOpen(false)} />}
       {uploadOpen && <UploadModal onClose={() => setUploadOpen(false)} onImport={(file, options) => hs.importFile(file, options)} />}
-      {addOpen && <AddPlayerModal onClose={() => setAddOpen(false)} onAdd={hs.addPlayer} coaches={coaches} />}
+      {addOpen && <AddPlayerModal onClose={() => setAddOpen(false)} onAdd={hs.addPlayer} coaches={coaches} players={players} />}
     </div>
   );
 }

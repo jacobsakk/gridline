@@ -13,6 +13,8 @@ name: HS game results refresh
 #   Sat 14:00  = Sat 10am Detroit  -- late score corrections
 #   Fri 03:00  = Thu 11pm Detroit  -- Thursday-night games
 #   Sun 14:00  = Sun 10am Detroit  -- anything reported late
+# It also finds MaxPreps / ScoreStream pages for any school that doesn't have them yet.
+# ("HS new player catch-up" does that, and scrapes just the new schools, every half hour.)
 # Also runnable by hand from the Actions tab.
 #
 # Needs one repository secret, FIREBASE_SERVICE_ACCOUNT: the JSON key of a

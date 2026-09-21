@@ -298,15 +298,16 @@ def _avg(yards, count):
 
 # The NCAA's raw position labels are finer-grained and inconsistent (DE/DT
 # vs DL, DB vs S vs CB, etc.) than we want exposed as filter options.
-# Collapsed to one canonical set of 12 the front-end filters against. TE
+# Collapsed to one canonical set of 13 the front-end filters against. TE
 # used to fold into WR; split back out into its own value per request.
-# Kickers (K) and punters (P) are their own positions rather than ATH.
+# Kickers (K), punters (P) and long snappers (LS) are their own positions rather than ATH/OL.
 POSITION_MAP = {
     "QB": "QB",
     "RB": "RB", "FB": "RB",
     "WR": "WR",
     "TE": "TE",
-    "OL": "OL", "LS": "OL",
+    "OL": "OL",
+    "LS": "LS",
     "DL": "DL", "DE": "DL", "DT": "DL",
     "LB": "LB",
     "CB": "CB",

@@ -329,6 +329,7 @@ export function overlayScraped(games, teamDoc) {
       ...(t.result ? { result: t.result, ours: t.ours, theirs: t.theirs } : {}),
       scraped: true,
       verifiedBy: t.source || [],
+      ...(t.links ? { links: t.links } : {}),
       ...(t.conflict ? { conflict: t.conflict } : {}),
     };
   });

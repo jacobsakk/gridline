@@ -48,7 +48,7 @@ SOURCE_PRIORITY = {"espn": 3, "ncaa": 2, "conference": 1}
 # ESPN spells positions per-slot (OT, ILB, FS...); fold them into the same
 # canonical set the rest of the pipeline uses.
 ESPN_POSITION_MAP = {
-    "OT": "OL", "OG": "OL", "C": "OL", "OL": "OL", "LS": "OL",
+    "OT": "OL", "OG": "OL", "C": "OL", "OL": "OL", "LS": "LS",
     "DL": "DL", "DE": "DL", "DT": "DL", "NT": "DL", "EDGE": "DL",
     "LB": "LB", "ILB": "LB", "OLB": "LB", "MLB": "LB",
     "S": "SAF", "SS": "SAF", "FS": "SAF", "DB": "SAF",

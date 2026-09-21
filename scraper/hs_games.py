@@ -23,6 +23,8 @@ import os
 import re
 import sys
 import time
+import urllib.error
+import urllib.parse
 import urllib.request
 
 UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36"
@@ -72,12 +74,146 @@ def same_school(a, b):
     return len(ta & tb) / min(len(ta), len(tb)) >= 0.6
 
 
+# ---------------------------------------------------- finding a school's pages
+
+STATE_CODES = {
+    "alabama": "AL", "alaska": "AK", "arizona": "AZ", "arkansas": "AR", "california": "CA", "colorado": "CO", "connecticut": "CT", "delaware": "DE",
+    "florida": "FL", "georgia": "GA", "hawaii": "HI", "idaho": "ID", "illinois": "IL", "indiana": "IN", "iowa": "IA", "kansas": "KS", "kentucky": "KY",
+    "louisiana": "LA", "maine": "ME", "maryland": "MD", "massachusetts": "MA", "michigan": "MI", "minnesota": "MN", "mississippi": "MS", "missouri": "MO",
+    "montana": "MT", "nebraska": "NE", "nevada": "NV", "new hampshire": "NH", "new jersey": "NJ", "new mexico": "NM", "new york": "NY", "north carolina": "NC",
+    "north dakota": "ND", "ohio": "OH", "oklahoma": "OK", "oregon": "OR", "pennsylvania": "PA", "rhode island": "RI", "south carolina": "SC",
+    "south dakota": "SD", "tennessee": "TN", "texas": "TX", "utah": "UT", "vermont": "VT", "virginia": "VA", "washington": "WA", "west virginia": "WV",
+    "wisconsin": "WI", "wyoming": "WY", "district of columbia": "DC",
+}
+
+
+def state_code(text):
+    t = (text or "").strip()
+    if len(t) == 2 and t.isalpha():
+        return t.upper()
+    return STATE_CODES.get(t.lower(), "")
+
+
+def clean_school_name(name):
+    """'Grosse Pointe South HS (MI)' -> 'Grosse Pointe South'."""
+    t = re.sub(r"\([^)]*\)", " ", name or "")
+    t = re.sub(r"\b(HS|H\.S\.|High School|High)\b", " ", t, flags=re.I)
+    t = re.sub(r"\bAcad\b\.?", "Academy", t, flags=re.I)
+    return re.sub(r"\s+", " ", t).strip(" -,")
+
+
+def maxpreps_search(query):
+    import urllib.parse
+
+    html = fetch_html("https://www.maxpreps.com/search/?q=" + urllib.parse.quote_plus(query.lower()))
+    m = re.search(r'<script id="__NEXT_DATA__"[^>]*>(.*?)</script>', html, re.S)
+    if not m:
+        return []
+    return json.loads(m.group(1))["props"]["pageProps"].get("initialSchoolResults") or []
+
+
+def _mp_schedule_url(result):
+    return result["canonicalUrl"].rstrip("/") + f"/football/{str(SEASON_YEAR)[2:]}-{str(SEASON_YEAR + 1)[2:]}/schedule/"
+
+
+def find_maxpreps(school, state):
+    """The football schedule page for a school, or "" if there isn't one clear match.
+    A candidate only counts if its football page really loads with games on it (search also
+    returns other sports and look-alike names)."""
+    name = clean_school_name(school)
+    st = state_code(state)
+    if not name:
+        return ""
+    queries = [name]
+    words = name.split()
+    if len(words) > 2:
+        queries.append(" ".join(words[:-1]))  # drop a trailing word (a mascot, "Central")
+    pool = {}
+    for q in queries:
+        try:
+            for r in maxpreps_search(q):
+                pool.setdefault(r["canonicalUrl"], r)
+        except Exception:
+            pass
+        time.sleep(0.6)
+    scored = [(name_similarity(name, r.get("name")), r) for r in pool.values()]
+    want = name_tokens(name)
+    in_state = [x for x in scored if st and x[1].get("state") == st]
+    same_state = sorted([x for x in in_state if x[0] >= 0.6], key=lambda x: -x[0])
+    if not same_state:
+        # "Saint Joseph" is "South Bend St. Joseph" on MaxPreps: every word present, a few extra ones.
+        same_state = sorted(
+            [(1.0 - 0.05 * len(name_tokens(x[1].get("name")) - want), x[1]) for x in in_state if want and want <= name_tokens(x[1].get("name"))],
+            key=lambda x: -x[0],
+        )
+    # A wrong state in the sheet is common: fall back to a single, exact-name school anywhere.
+    exact_anywhere = [x for x in scored if x[0] >= 0.99]
+    candidates = same_state or (exact_anywhere if len(exact_anywhere) == 1 else [])
+    for _, r in candidates[:3]:
+        url = _mp_schedule_url(r)
+        try:
+            if fetch_maxpreps(url):
+                return url
+        except Exception:
+            pass
+        time.sleep(0.6)
+    return ""
+
+
+async def find_scorestream_many(schools):
+    """{(name, state): team games url or ""} using ScoreStream's own search page."""
+    from playwright.async_api import async_playwright
+
+    out = {}
+    async with async_playwright() as p:
+        browser = await p.chromium.launch()
+        context = await browser.new_context(user_agent=UA, locale="en-US")
+        for name, state in schools:
+            out[(name, state)] = ""
+            page = await context.new_page()
+            try:
+                await page.goto("https://scorestream.com/search?q=" + urllib.parse.quote_plus(name.lower()), wait_until="domcontentloaded", timeout=60000)
+                await page.wait_for_selector('a[href^="/team/"]', timeout=20000)
+                cards = await page.evaluate(
+                    """() => [...document.querySelectorAll('a[href^="/team/"]')].map(a => ({href: a.getAttribute('href'), text: a.innerText.split('\\n').map(t => t.trim()).filter(Boolean)}))"""
+                )
+                want = name_tokens(name)
+                best, best_key = "", (0.0, 0)
+                for c in cards:
+                    place = next((t for t in reversed(c["text"]) if re.search(r",\s*[A-Z]{2}$", t)), "")
+                    if state and not place.endswith(f", {state}"):
+                        continue
+                    slug = re.sub(r"-\d+$", "", c["href"].rsplit("/", 1)[-1]).replace("-", " ")
+                    have = name_tokens(slug)
+                    contained = len(want & have) / len(want) if want else 0.0
+                    key = (contained, -len(have - want))  # fully contained, fewest extra words
+                    if contained >= 0.8 and key > best_key:
+                        best, best_key = c["href"], key
+                if best:
+                    out[(name, state)] = "https://scorestream.com" + best.split("?")[0] + "/games"
+            except Exception:
+                pass
+            finally:
+                await page.close()
+            await asyncio.sleep(DELAY_SECONDS)
+        await browser.close()
+    return out
+
+
 # ---------------------------------------------------------------- MaxPreps
 
 def fetch_html(url):
-    req = urllib.request.Request(url, headers={"User-Agent": UA, "Accept-Language": "en-US,en;q=0.9"})
-    with urllib.request.urlopen(req, timeout=40) as resp:
-        return resp.read().decode("utf-8", "replace")
+    for _ in range(4):
+        req = urllib.request.Request(url, headers={"User-Agent": UA, "Accept-Language": "en-US,en;q=0.9"})
+        try:
+            with urllib.request.urlopen(req, timeout=40) as resp:
+                return resp.read().decode("utf-8", "replace")
+        except urllib.error.HTTPError as err:
+            if err.code == 308 and err.headers.get("Location"):  # older Pythons don't follow 308 themselves
+                url = urllib.parse.urljoin(url, err.headers["Location"])
+                continue
+            raise
+    raise RuntimeError("too many redirects")
 
 
 def fetch_maxpreps(url):
@@ -107,6 +243,9 @@ def fetch_maxpreps(url):
             continue
         result, ours, opp_pts = mine[5], mine[6], theirs[6]
         game = {"date": date, "opponent": opponent, "homeAway": "H" if mine[4] == 1 else "A"}
+        link = c[18] if len(c) > 18 and isinstance(c[18], str) and c[18].startswith("http") else ""
+        if link:
+            game["links"] = {"maxpreps": link}
         if result in ("W", "L", "T") and ours is not None and opp_pts is not None:
             game.update(result=result, ours=int(ours), theirs=int(opp_pts))
         games.append(game)
@@ -168,7 +307,7 @@ def parse_scorestream_card(card, today):
         return None
     return {
         "first": teams[0], "second": teams[1], "firstPts": int(lines[4]), "secondPts": int(lines[5]),
-        "date": date.isoformat(), "status": lines[6],
+        "date": date.isoformat(), "status": lines[6], "href": card.get("href") or "",
     }
 
 
@@ -229,10 +368,13 @@ async def fetch_scorestream_many(urls):
                     if key in seen:
                         continue
                     seen.add(key)
-                    games.append({
+                    game = {
                         "date": card["date"], "opponent": opp, "ours": ours, "theirs": theirs,
                         "result": "W" if ours > theirs else "L" if ours < theirs else "T",
-                    })
+                    }
+                    if card["href"]:
+                        game["links"] = {"scorestream": "https://scorestream.com" + card["href"].split("?")[0]}
+                    games.append(game)
                 out[url] = games
             except Exception as err:  # one bad page must not sink the run
                 print(f"  ScoreStream failed for {url}: {err}", file=sys.stderr)
@@ -280,6 +422,7 @@ def cross_reference(mp_games, ss_games):
         if gi in match_of:
             s = ss_games[match_of[gi]]
             entry["source"].append("scorestream")
+            entry["links"] = {**g.get("links", {}), **s.get("links", {})}
             if "result" not in g:
                 entry.update(result=s["result"], ours=s["ours"], theirs=s["theirs"])
             elif (g["ours"], g["theirs"]) != (s["ours"], s["theirs"]):
@@ -303,7 +446,11 @@ def collapse_games(games, today):
         for i, o in enumerate(merged):
             if same_school(o["opponent"], g["opponent"]) and _days_apart(o["date"], g["date"]) <= 1:
                 keep, other = (g, o) if "result" in g and "result" not in o else (o, g)
-                merged[i] = {**other, **keep, "source": sorted(set(o.get("source", [])) | set(g.get("source", [])))}
+                merged[i] = {
+                    **other, **keep,
+                    "source": sorted(set(o.get("source", [])) | set(g.get("source", []))),
+                    "links": {**o.get("links", {}), **g.get("links", {})},
+                }
                 break
         else:
             merged.append(dict(g))
@@ -354,12 +501,109 @@ def firestore_client():
     return firestore.Client(project=info["project_id"], credentials=creds)
 
 
-def pairs_from_firestore(client):
-    pairs = {}
+RETRY_LOOKUP_DAYS = 3  # after a failed search, wait this long before searching for that school again
+
+
+def load_players(client):
+    """[(doc ref, data)] for every player still on the tracker."""
+    out = []
     for snap in client.collection("hsPlayers").stream():
         data = snap.to_dict() or {}
-        if data.get("removed"):
-            continue
+        if not data.get("removed"):
+            out.append((snap.reference, data))
+    return out
+
+
+def school_key(data):
+    return (clean_school_name(data.get("highSchool")).lower(), state_code(data.get("state")))
+
+
+def _recently_tried(data):
+    tried = data.get("sourcesTriedAt")
+    if not tried:
+        return False
+    try:
+        when = dt.datetime.fromisoformat(str(tried).replace("Z", "+00:00"))
+    except ValueError:
+        return False
+    return dt.datetime.now(dt.timezone.utc) - when < dt.timedelta(days=RETRY_LOOKUP_DAYS)
+
+
+def players_needing_links(players):
+    return [
+        (ref, d) for ref, d in players
+        if school_key(d)[0] and not all((d.get("sources") or {}).get(k) for k in ("maxpreps", "scorestream")) and not _recently_tried(d)
+    ]
+
+
+def resolve_sources(client, players, write=True):
+    """Give every player a MaxPreps and a ScoreStream link without anyone pasting them in:
+    borrow them from another player at the same school, else search both sites. Returns the
+    players with their sources filled in (and saves that to the database)."""
+    known = {}  # school -> links already on some player
+    for _, d in players:
+        for kind in ("maxpreps", "scorestream"):
+            url = (d.get("sources") or {}).get(kind)
+            if url:
+                known.setdefault(school_key(d), {}).setdefault(kind, url)
+
+    todo = players_needing_links(players)
+    schools = {}
+    for _, d in todo:
+        schools.setdefault(school_key(d), d)
+    if not todo:
+        return players
+
+    print(f"looking up links for {len(schools)} schools ({len(todo)} players)")
+    found = {}
+    need_ss = []
+    for key, d in schools.items():
+        have = known.get(key, {})
+        links = dict(have)
+        if not links.get("maxpreps"):
+            url = find_maxpreps(d.get("highSchool"), d.get("state"))
+            if url:
+                links["maxpreps"] = url
+        if not links.get("scorestream"):
+            need_ss.append((key[0], key[1]))
+        found[key] = links
+        print(f"  {d.get('highSchool')} ({key[1]}): MaxPreps {'found' if links.get('maxpreps') else 'no'}")
+    if need_ss:
+        ss = asyncio.run(find_scorestream_many(need_ss))
+        for key in found:
+            url = ss.get(key)
+            if url:
+                found[key]["scorestream"] = url
+
+    now = dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds")
+    updated = []
+    todo_ids = {ref.id for ref, _ in todo}
+    batch, n = client.batch(), 0
+    for ref, d in players:
+        key = school_key(d)
+        if ref.id in todo_ids:
+            links = found.get(key, {})
+            sources = dict(d.get("sources") or {})
+            for kind in ("maxpreps", "scorestream"):
+                if links.get(kind) and not sources.get(kind):
+                    sources[kind] = links[kind]
+            d = {**d, "sources": sources, "sourcesTriedAt": now}
+            if write:
+                batch.update(ref, {"sources": sources, "sourcesTriedAt": now})
+                n += 1
+                if n % 400 == 0:
+                    batch.commit()
+                    batch = client.batch()
+        updated.append((ref, d))
+    if write and n:
+        batch.commit()
+        print(f"saved links for {n} players")
+    return updated
+
+
+def pairs_from_players(players):
+    pairs = {}
+    for _, data in players:
         src = data.get("sources") or {}
         doc_id = team_doc_id(src)
         if doc_id:
@@ -370,12 +614,18 @@ def pairs_from_firestore(client):
     return pairs
 
 
+def existing_team_ids(client):
+    return {snap.id for snap in client.collection("hsTeams").select([]).stream()}
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--urls", help="JSON file: list of {maxpreps, scorestream} objects (skips Firestore input)")
     ap.add_argument("--dump", help="write results to this JSON file")
     ap.add_argument("--limit", type=int, help="only the first N schools (testing)")
     ap.add_argument("--no-write", action="store_true", help="don't write to Firestore")
+    ap.add_argument("--new-only", action="store_true", help="only schools that have no results stored yet (quick catch-up for newly added players)")
+    ap.add_argument("--plan", action="store_true", help="just report whether --new-only has anything to do (sets the GitHub output 'work')")
     args = ap.parse_args()
 
     client = None
@@ -386,10 +636,28 @@ def main():
                 pairs.setdefault(team_doc_id(src), {}).update({k: v for k, v in src.items() if v})
     else:
         client = firestore_client()
-        pairs = pairs_from_firestore(client)
+        players = load_players(client)
+        if args.plan:
+            new_players = players_needing_links(players)
+            have = existing_team_ids(client)
+            new_schools = [d for d in pairs_from_players(players) if d not in have]
+            work = bool(new_players or new_schools)
+            print(f"{len(new_players)} players need links, {len(new_schools)} schools have no results yet -> {'work to do' if work else 'nothing to do'}")
+            out = os.environ.get("GITHUB_OUTPUT")
+            if out:
+                with open(out, "a") as f:
+                    f.write(f"work={'true' if work else 'false'}\n")
+            return
+        players = resolve_sources(client, players, write=not args.no_write)
+        pairs = pairs_from_players(players)
+        if args.new_only:
+            have = existing_team_ids(client)
+            pairs = {k: v for k, v in pairs.items() if k not in have}
     if args.limit:
         pairs = dict(list(pairs.items())[: args.limit])
     print(f"{len(pairs)} schools to check")
+    if not pairs:
+        return
 
     docs = scrape(pairs)
 

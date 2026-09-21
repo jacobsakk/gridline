@@ -150,3 +150,7 @@ tbody tr:hover { background: var(--row-hover) !important; }
   .hs-shell * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   .hs-shell input, .hs-shell select { appearance: none; }
 }
+
+/* A game you can click for its sources. */
+.hs-game-click:hover { text-decoration: underline; }
+@media print { .hs-game-click { text-decoration: none !important; } }

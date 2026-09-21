@@ -82,11 +82,12 @@ const POSITION_MAP = {
   RB: "RB", FB: "RB",
   WR: "WR",
   TE: "TE",
-  OL: "OL", LS: "OL", OT: "OL", OG: "OL", OC: "OL",
+  OL: "OL", OT: "OL", OG: "OL", OC: "OL",
   DL: "DL", DE: "DL", DT: "DL", EDGE: "DL",
   LB: "LB", ILB: "LB", OLB: "LB", MLB: "LB",
   CB: "CB",
   S: "SAF", SAF: "SAF", DB: "SAF", FS: "SAF", SS: "SAF",
+  LS: "LS", // long snapper
   K: "K", PK: "K", KICKER: "K",
   P: "P", PT: "P", PUNTER: "P",
   ATH: "ATH",
