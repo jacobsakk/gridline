@@ -252,6 +252,70 @@ function parseTeamSheet(sheet, teamKey) {
 // writes it to Firestore under the given class year -- replacing
 // (not just adding to) each team's previous rows, so a player dropped
 // from this week's export doesn't linger forever as a stale row.
+// ---- fixing and merging recruit names ---------------------------------------
+// The source sheets carry typing/scan garbles (DLMOND SCOLT for DEMOND SCOTT: E and T read as L), and the
+// same recruit can be spelled two ways. Fixing one keeps the old spelling on the profile (alsoKnownAs), so
+// uploading the same sheet again maps it back to the right name instead of recreating the bad one.
+export function buildAliasMap(docs) {
+  const map = new Map();
+  docs.forEach((d) => (d.alsoKnownAs || []).forEach((alias) => map.set(`${d.classYear}|${normalizePlayerKey(alias)}`, d.player)));
+  return map;
+}
+
+const nameTokens = (name) => (name || "").toUpperCase().trim().split(/\s+/).filter(Boolean);
+
+// Garbled words in the source sheets follow a pattern: an E read as an L right after a D and before another
+// consonant (DLMOND for DEMOND, JAYDLN, ALEXANDLR, ACADLMY) or in a run of Ls (WENDLLL for WENDELL). D-L before a
+// vowel is left alone -- that's a real spelling (Bradley, Hadley). A T read as an L (SCOLT for SCOTT) can't be
+// told from a real word by pattern, so it's only suggested when the right spelling is used elsewhere on the
+// tracker. Suggestions only -- nothing changes until someone accepts one.
+const patternFix = (word) => word.replace(/DLLL/g, "DELL").replace(/DL(?=[BCDFGHJKMNPQRSTVWXZ'’])/g, "DE");
+
+const wordsOf = (text) => (text || "").toUpperCase().split(/[^A-Z'’-]+/).filter((w) => w.length >= 3);
+
+export function suggestWordFixes(rows) {
+  const inNames = new Map(); // word -> distinct names using it
+  const inSchools = new Map(); // word -> distinct schools using it
+  const add = (map, word, whole) => {
+    if (!map.has(word)) map.set(word, new Set());
+    map.get(word).add(whole);
+  };
+  rows.forEach((d) => {
+    const name = (d.player || "").trim().toUpperCase();
+    const school = (d.highSchool || "").trim().toUpperCase();
+    wordsOf(name).forEach((w) => add(inNames, w, name));
+    wordsOf(school).forEach((w) => add(inSchools, w, school));
+  });
+  const use = (w) => (inNames.get(w)?.size || 0) + (inSchools.get(w)?.size || 0);
+
+  const out = [];
+  new Set([...inNames.keys(), ...inSchools.keys()]).forEach((word) => {
+    if (!word.includes("L")) return;
+    let to = patternFix(word);
+    // Another spelling (E/T for L) already used more often on the tracker beats the pattern.
+    const spots = [...word].map((c, i) => (c === "L" ? i : -1)).filter((i) => i >= 0).slice(0, 4);
+    let best = { text: "", count: 0 };
+    for (let n = 1; n < 3 ** spots.length; n++) {
+      const v = word.split("");
+      let rest = n;
+      spots.forEach((at) => {
+        const pick = rest % 3;
+        rest = Math.floor(rest / 3);
+        if (pick) v[at] = pick === 1 ? "E" : "T";
+      });
+      const text = v.join("");
+      const count = use(text);
+      if (count > best.count) best = { text, count };
+    }
+    if (best.count >= 2 && best.count >= 3 * (use(word) + 1)) to = best.text;
+    if (to === word || to.length !== word.length) return;
+    out.push({ from: word, to, names: [...(inNames.get(word) || [])], schools: [...(inSchools.get(word) || [])] });
+  });
+  return out.sort((a, b) => b.names.length + b.schools.length - (a.names.length + a.schools.length) || a.from.localeCompare(b.from));
+}
+
+const wholeWord = (word) => new RegExp(`(^|[^A-Z'’-])${word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?=$|[^A-Z'’-])`, "gi");
+
 export async function importWorkbook(file, classYear) {
   const buffer = await file.arrayBuffer();
   const workbook = XLSX.read(buffer, { cellDates: true });
@@ -264,6 +328,10 @@ export async function importWorkbook(file, classYear) {
   // of batches committed in parallel takes seconds instead.
   const operations = [];
 
+  // Names already fixed or merged on the tracker: a spelling that was corrected maps back to the right one.
+  const aliasSnap = await getDocs(query(collection(db, "offers"), where("classYear", "==", classYear)));
+  const aliasMap = buildAliasMap(aliasSnap.docs.map((d) => d.data()));
+
   for (const sheetName of workbook.SheetNames) {
     const teamKey = normalizeTeamKey(sheetName);
     if (SKIP_SHEET_PATTERN.test(teamKey) || SKIP_SHEET_SUBSTRING.test(teamKey) || RETIRED_SHEETS.has(teamKey)) continue;
@@ -274,6 +342,10 @@ export async function importWorkbook(file, classYear) {
     }
 
     const records = parseTeamSheet(workbook.Sheets[sheetName], teamKey);
+    records.forEach((r) => {
+      const fixed = aliasMap.get(`${classYear}|${normalizePlayerKey(r.player)}`);
+      if (fixed) r.player = fixed;
+    });
 
     const existingQuery = query(collection(db, "offers"), where("classYear", "==", classYear), where("team", "==", teamKey));
     const existingSnap = await getDocs(existingQuery);
@@ -674,6 +746,103 @@ export function useOfferTracker() {
   // offer turns out to be inaccurate. Kept in the database, flagged
   // removed, rather than deleted: otherwise the next upload would just
   // bring it back, and this way both uploads know to skip it.
+  // Every distinct spelling on file for a class year (for pickers).
+  function profileNames(classYear) {
+    return [...new Set(effectiveDocs.filter((d) => d.classYear === classYear).map((d) => d.player))].sort();
+  }
+
+  function suggestFixes() {
+    return suggestWordFixes(docs.filter((d) => !d.removed));
+  }
+
+  // How many rows a word replacement would touch (for the preview).
+  function wordReplacementPreview(from, { names = true, schools = true } = {}) {
+    if (!from.trim()) return { names: [], schools: [], rows: 0 };
+    const re = wholeWord(from.trim());
+    const test = (text) => ((re.lastIndex = 0), re.test(text || ""));
+    const live = docs.filter((d) => !d.removed);
+    const nameHits = names ? [...new Set(live.filter((d) => test(d.player)).map((d) => d.player))] : [];
+    const schoolHits = schools ? [...new Set(live.filter((d) => test(d.highSchool)).map((d) => d.highSchool))] : [];
+    const rows = live.filter((d) => (names && test(d.player)) || (schools && test(d.highSchool))).length;
+    return { names: nameHits, schools: schoolHits, rows };
+  }
+
+  // Replaces a whole word in recruits' names and/or high schools on every team's sheet. A changed name keeps
+  // its old spelling as an alias, so uploading the same sheet again maps back to the corrected name.
+  async function replaceWord(from, to, { names = true, schools = true } = {}) {
+    const source = from.trim();
+    const target = to.trim().toUpperCase();
+    if (!source || !target) throw new Error("Enter the word to replace and what it should be.");
+    const re = wholeWord(source);
+    const swap = (text) => (text || "").replace(re, (m, lead) => `${lead}${target}`);
+    const changes = [];
+    docs
+      .filter((d) => !d.removed)
+      .forEach((d) => {
+        const patch = {};
+        if (names && swap(d.player) !== d.player) {
+          patch.player = swap(d.player);
+          patch.alsoKnownAs = [...new Set([...(d.alsoKnownAs || []), d.player])];
+        }
+        if (schools && swap(d.highSchool) !== d.highSchool) patch.highSchool = swap(d.highSchool);
+        if (Object.keys(patch).length) changes.push({ id: d.id, patch: { ...patch, updatedAt: new Date().toISOString() } });
+      });
+    for (let i = 0; i < changes.length; i += 400) {
+      const batch = writeBatch(db);
+      changes.slice(i, i + 400).forEach((c) => batch.update(doc(db, "offers", c.id), c.patch));
+      await batch.commit();
+    }
+    return { rows: changes.length };
+  }
+
+  // Makes `fromName` and `toName` one profile under `toName`'s spelling (the correct one). If `toName` isn't on
+  // file it's a plain rename. Where both profiles have a row for the same team the rows are combined and the
+  // duplicate is removed; every row keeps the old spelling as an alias so re-uploads land on the right name.
+  async function mergeProfile(classYear, fromName, toName) {
+    const target = (toName || "").trim().toUpperCase();
+    if (!target) throw new Error("Enter the correct name.");
+    const inYear = docs.filter((d) => d.classYear === classYear && !d.removed);
+    const fromKey = normalizePlayerKey(fromName);
+    const fromRows = inYear.filter((d) => normalizePlayerKey(d.player) === fromKey);
+    const toRows = inYear.filter((d) => normalizePlayerKey(d.player) === normalizePlayerKey(target) && !fromRows.includes(d));
+    if (!fromRows.length) throw new Error("That profile wasn't found.");
+    const canonical = toRows[0]?.player || target;
+    const aliases = new Set([
+      ...fromRows.map((d) => d.player),
+      ...fromRows.flatMap((d) => d.alsoKnownAs || []),
+      ...toRows.flatMap((d) => d.alsoKnownAs || []),
+    ]);
+    aliases.delete(canonical);
+    const alsoKnownAs = [...aliases];
+    const now = new Date().toISOString();
+    const FILL = ["dateOffered", "status", "pipelineStatus", "notes", "highSchool", "state", "position"];
+    const blank = (v) => v === undefined || v === null || (typeof v === "string" && !v.trim()) || (Array.isArray(v) && !v.length);
+
+    const batch = writeBatch(db);
+    let merged = 0;
+    let renamed = 0;
+    const sharedInfo = {};
+    toRows.forEach((t) => FILL.forEach((k) => blank(sharedInfo[k]) && !blank(t[k]) && (sharedInfo[k] = t[k])));
+    fromRows.forEach((f) => {
+      const t = toRows.find((x) => x.team === f.team);
+      if (t) {
+        const patch = { alsoKnownAs, updatedAt: now };
+        [...FILL, "otherOffers"].forEach((k) => blank(t[k]) && !blank(f[k]) && (patch[k] = f[k]));
+        batch.update(doc(db, "offers", t.id), patch);
+        batch.update(doc(db, "offers", f.id), { removed: true, removedAt: now, mergedInto: canonical });
+        merged += 1;
+      } else {
+        const patch = { player: canonical, alsoKnownAs, updatedAt: now };
+        FILL.forEach((k) => blank(f[k]) && !blank(sharedInfo[k]) && (patch[k] = sharedInfo[k]));
+        batch.update(doc(db, "offers", f.id), patch);
+        renamed += 1;
+      }
+    });
+    toRows.forEach((t) => !fromRows.some((f) => f.team === t.team) && batch.update(doc(db, "offers", t.id), { alsoKnownAs, updatedAt: now }));
+    await batch.commit();
+    return { canonical, merged, renamed };
+  }
+
   async function removeOffer(row) {
     await updateDoc(doc(db, "offers", row.id), { removed: true, removedAt: new Date().toISOString() });
   }
@@ -775,5 +944,5 @@ export function useOfferTracker() {
     return { teams, states, counts, stateTotals };
   }
 
-  return { ready, classYears, teamsForConference, rowsForClassYear, rowsForTeam, rowsForPlayer, rowsByPlayer, rowsByLast, positionBreakdown, areaBreakdown, importWorkbook, importActivityFeed, updateOfferField, removeOffer, addOffer };
+  return { ready, classYears, teamsForConference, rowsForClassYear, rowsForTeam, rowsForPlayer, rowsByPlayer, rowsByLast, profileNames, suggestFixes, wordReplacementPreview, replaceWord, mergeProfile, positionBreakdown, areaBreakdown, importWorkbook, importActivityFeed, updateOfferField, removeOffer, addOffer };
 }

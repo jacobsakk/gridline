@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { initialSubRoute, setSubRoute } from "./route.js";
-import { ArrowLeft, Upload, X, Loader2, ChevronUp, ChevronDown, ChevronsUpDown, TrendingUp, MapPin, Search, Plus, ExternalLink } from "lucide-react";
+import NameFixModal from "./NameFixModal.jsx";
+import { ArrowLeft, Upload, X, Loader2, ChevronUp, ChevronDown, ChevronsUpDown, TrendingUp, MapPin, Search, Plus, ExternalLink, Pencil } from "lucide-react";
 import { confirmAction } from "./ConfirmDialog.jsx";
 import { collegeForLabel, logoFor, teamKey } from "./collegeData.js";
 import { canonicalSchool, fixBrandCase } from "./schoolNames.js";
@@ -1013,6 +1014,7 @@ export default function OfferTracker({ onBack }) {
   const [commitsOnly, setCommitsOnly] = useState(false);
   const [profilePlayer, setProfilePlayer] = useState(null);
   const [adding, setAdding] = useState(false);
+  const [fixingNames, setFixingNames] = useState(false);
 
   const tracker = useOfferTracker();
   // Opens on the earliest class year (2027).
@@ -1138,6 +1140,19 @@ export default function OfferTracker({ onBack }) {
             </h1>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
+            {activeClassYear && (
+              <button
+                onClick={() => setFixingNames(true)}
+                title="Fix a misspelled name or merge two spellings of one recruit"
+                style={{
+                  display: "flex", alignItems: "center", gap: 7, flexShrink: 0,
+                  background: "var(--bg-surface)", border: "1px solid var(--border)", color: "var(--text-primary)",
+                  borderRadius: 5, padding: "8px 14px", fontSize: 13, fontWeight: 700, cursor: "pointer",
+                }}
+              >
+                <Pencil size={15} /> Fix names
+              </button>
+            )}
             <button
               onClick={() => setUploadOpen(true)}
               style={{
@@ -1379,6 +1394,8 @@ export default function OfferTracker({ onBack }) {
           onClose={() => setProfilePlayer(null)}
         />
       )}
+
+      {fixingNames && activeClassYear && <NameFixModal tracker={tracker} classYear={activeClassYear} onClose={() => setFixingNames(false)} />}
 
       {uploadOpen && (
         <UploadModal
