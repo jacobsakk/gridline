@@ -1,5 +1,5 @@
 import * as XLSX from "xlsx";
-import { collection, deleteDoc, doc, onSnapshot, setDoc, updateDoc, writeBatch } from "firebase/firestore";
+import { collection, deleteDoc, deleteField, doc, onSnapshot, setDoc, updateDoc, writeBatch } from "firebase/firestore";
 import { useEffect, useMemo, useState } from "react";
 import { db } from "./firebase";
 
@@ -51,7 +51,7 @@ export const BOARD = [
       ],
       [
         { key: "CB1", label: "CB", groups: ["CB"] }, { key: "CB2", label: "CB", groups: ["CB"] }, { key: "LB1", label: "LB", groups: ["LB"] },
-        { key: "LB2", label: "LB", groups: ["LB"] }, { key: "NICKEL", label: "NICKEL", groups: ["CB"] },
+        { key: "LB2", label: "LB", groups: ["LB"] }, { key: "LB3", label: "LB", groups: ["LB"] }, { key: "NICKEL", label: "NICKEL", groups: ["CB"] },
         { key: "SAF1", label: "SAF", groups: ["S"] }, { key: "SAF2", label: "SAF", groups: ["S"] },
       ],
     ],
@@ -63,7 +63,7 @@ export const ALL_SLOTS = BOARD.flatMap((b) => b.rows.flat());
 // Which slots a group's players are spread across, in the order they're dealt out.
 const SLOTS_FOR_GROUP = {
   QB: ["QB"], RB: ["RB"], TE: ["TE"], WR: ["X", "Z", "H"], OL: ["LT", "LG", "C", "RG", "RT"], DL: ["DE1", "DT1", "DT2", "DE2"], DE: ["DE1", "DE2"], DT: ["DT1", "DT2"],
-  LB: ["LB1", "LB2"], CB: ["CB1", "CB2", "NICKEL"], S: ["SAF1", "SAF2"], K: ["K"], P: ["P"], LS: ["LS"],
+  LB: ["LB1", "LB2", "LB3"], CB: ["CB1", "CB2", "NICKEL"], S: ["SAF1", "SAF2"], K: ["K"], P: ["P"], LS: ["LS"],
 };
 const SLOT_HINT = { LT: "LT", LG: "LG", C: "C", RG: "RG", RT: "RT", NB: "NICKEL", NICKEL: "NICKEL", X: "X", Z: "Z", H: "H" };
 
@@ -143,7 +143,7 @@ export function autoDepth(roster) {
 }
 
 // The depth chart for `season`: the one saved for it, else last season's (minus anyone gone) plus new arrivals.
-export function depthFor(season, seasons, players, base, cache = {}) {
+export function depthFor(season, seasons, players, base, cache = {}, seed = null) {
   if (cache[season]) return cache[season];
   const roster = playersInSeason(players, season, base).map((p) => ({ ...p, yearsLeftNow: yearsLeftIn(p, season, base) }));
   const ids = new Set(roster.map((p) => p.id));
@@ -155,16 +155,82 @@ export function depthFor(season, seasons, players, base, cache = {}) {
     const stray = roster.filter((p) => !placed.has(p.id));
     if (stray.length) Object.entries(autoDepth(stray)).forEach(([slot, list]) => depth[slot].push(...list));
   } else if (season > base && seasons[season - 1] !== undefined || season > base) {
-    const before = depthFor(season - 1, seasons, players, base, cache);
+    const before = depthFor(season - 1, seasons, players, base, cache, seed);
     depth = Object.fromEntries(ALL_SLOTS.map((s) => [s.key, (before[s.key] || []).filter((id) => ids.has(id))]));
     const placed = new Set(Object.values(depth).flat());
     const arrivals = roster.filter((p) => !placed.has(p.id));
     if (arrivals.length) Object.entries(autoDepth(arrivals)).forEach(([slot, list]) => depth[slot].push(...list));
+  } else if (seed) {
+    // the current season, not arranged by hand: follow the Colleges depth chart, then place anyone it didn't list
+    depth = Object.fromEntries(ALL_SLOTS.map((s) => [s.key, (seed[s.key] || []).filter((id) => ids.has(id))]));
+    const placed = new Set(Object.values(depth).flat());
+    const stray = roster.filter((p) => !placed.has(p.id));
+    if (stray.length) Object.entries(autoDepth(stray)).forEach(([slot, list]) => depth[slot].push(...list));
   } else {
     depth = autoDepth(roster);
   }
   cache[season] = depth;
   return depth;
+}
+
+// The Colleges depth chart (from Ourlads) names positions its own way; this maps them onto the board's slots.
+const OURLADS_SLOT = {
+  "WR-X": "X", X: "X", "WR-Z": "Z", Z: "Z", "WR-H": "H", "WR-Y": "H", H: "H", Y: "H", SL: "H", SLOT: "H",
+  LT: "LT", LG: "LG", C: "C", RG: "RG", RT: "RT", TE: "TE", "TE-Y": "TE", QB: "QB", RB: "RB", HB: "RB", FB: "RB",
+  LDE: "DE1", DE: "DE1", RDE: "DE2", LDT: "DT1", NT: "DT1", DT: "DT1", RDT: "DT2", UT: "DT2",
+  WLB: "LB1", MLB: "LB2", SLB: "LB3", LB: "LB1", ILB: "LB2", OLB: "LB1",
+  LCB: "CB1", CB: "CB1", RCB: "CB2", NB: "NICKEL", SS: "SAF1", S: "SAF1", FS: "SAF2",
+  PT: "P", P: "P", PK: "K", K: "K", KO: "K", LS: "LS",
+};
+const stripSuffix = (name) => String(name ?? "").replace(/\b(jr|sr|ii|iii|iv|v)\b\.?/gi, "");
+
+// Places roster players on the board the way the Colleges depth chart lists them. Players are matched by
+// jersey number with the same last name, then by full name, then by last name plus first initial when that
+// leaves one person. Returns the depth, how many were placed, and the depth chart names it couldn't find.
+export function depthFromOurlads(team, players) {
+  const depth = Object.fromEntries(ALL_SLOTS.map((s) => [s.key, []]));
+  const lastOf = (n) => {
+    const w = stripSuffix(n).trim().split(/\s+/).filter(Boolean);
+    return norm(w[w.length - 1] || "");
+  };
+  const firstOf = (n) => norm((stripSuffix(n).trim().split(/\s+/)[0] || "")[0] || "");
+  const byFull = new Map(players.map((p) => [norm(stripSuffix(p.name)), p]));
+  const find = (pl, slot) => {
+    const last = lastOf(pl.name);
+    const number = Number(pl.no);
+    if (String(pl.no ?? "") !== "" && Number.isFinite(number)) {
+      const hit = players.find((p) => String(p.jersey ?? "") !== "" && Number(p.jersey) === number && lastOf(p.name) === last);
+      if (hit) return hit;
+    }
+    const full = byFull.get(norm(stripSuffix(pl.name)));
+    if (full) return full;
+    const same = players.filter((p) => lastOf(p.name) === last && firstOf(p.name) === firstOf(pl.name));
+    if (same.length === 1) return same[0];
+    // a different first name is a nickname or a typo often enough: accept a unique last name at the same position
+    const groups = ALL_SLOTS.find((x) => x.key === slot)?.groups || [];
+    const sameLast = players.filter((p) => lastOf(p.name) === last && groups.includes(groupOfPosition(p.position)));
+    return sameLast.length === 1 ? sameLast[0] : null;
+  };
+  const placed = new Set();
+  const missing = [];
+  (team?.sections || []).forEach((section) => {
+    if (/reserve/i.test(section.title)) return;
+    section.positions.forEach((pos) => {
+      const slot = OURLADS_SLOT[String(pos.pos).toUpperCase()];
+      if (!slot) return;
+      pos.players.forEach((pl) => {
+        const p = find(pl, slot);
+        if (!p) {
+          if (!missing.includes(pl.name)) missing.push(pl.name);
+          return;
+        }
+        if (placed.has(p.id)) return;
+        placed.add(p.id);
+        depth[slot].push(p.id);
+      });
+    });
+  });
+  return { depth, placed: placed.size, missing };
 }
 
 // ------------------------------------------------------------------ upload
@@ -492,6 +558,10 @@ export function useRoster({ isAdmin }) {
     async saveDepth(season, depth) {
       await setDoc(doc(db, "rosterSeasons", String(season)), { season, projection: season > base, depth, updatedAt: now() }, { merge: true });
       await touch();
+    },
+    // Back to following the Colleges depth chart
+    async clearDepth(season) {
+      await setDoc(doc(db, "rosterSeasons", String(season)), { depth: deleteField(), updatedAt: now() }, { merge: true });
     },
     async saveGoals(season, goals) {
       await setDoc(doc(db, "rosterSeasons", String(season)), { season, projection: season > base, goals, updatedAt: now() }, { merge: true });

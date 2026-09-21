@@ -7,10 +7,10 @@ import { confirmAction } from "./ConfirmDialog.jsx";
 import { initialSubRoute, setSubRoute } from "./route.js";
 import { REAL_STATS, loadRealStats } from "./statsData.js";
 import { isCommitment, normalizePlayerKey, useOfferTracker } from "./offerData.js";
-import { teamKey } from "./collegeData.js";
+import { fetchLatestDepthCharts, lazyDepthCharts, teamKey } from "./collegeData.js";
 import { toTitleCase } from "./OfferTracker.jsx";
 import {
-  BOARD, GROUPS, UNIT_LABEL, UNIT_OF_GROUP, YL_STYLE, classLabelFor, depthFor, groupOfPosition, idFor, parseRosterFile, playersInSeason,
+  BOARD, GROUPS, UNIT_LABEL, depthFromOurlads, UNIT_OF_GROUP, YL_STYLE, classLabelFor, depthFor, groupOfPosition, idFor, parseRosterFile, playersInSeason,
   snapshotFor, styleForYearsLeft, useRoster, yearsLeftIn,
 } from "./rosterData.js";
 
@@ -771,7 +771,29 @@ export default function RosterPage({ onBack, session }) {
     [inSeason, current, base, roster.eligibilityYears, roster.privateInfo, roster.finance]
   );
   const byId = useMemo(() => new Map(rows.map((p) => [p.id, p])), [rows]);
-  const depth = useMemo(() => depthFor(current, roster.seasons, everyone, base), [current, roster.seasons, everyone, base]);
+  // The Colleges depth chart for Central Michigan (the deployed copy, then GitHub's if it's newer)
+  const [ourlads, setOurlads] = useState(null);
+  useEffect(() => {
+    let live = true;
+    lazyDepthCharts()
+      .then((data) => {
+        if (!live) return;
+        setOurlads(data);
+        fetchLatestDepthCharts()
+          .then((latest) => live && new Date(latest.updated) > new Date(data.updated) && setOurlads(latest))
+          .catch(() => {});
+      })
+      .catch(() => {});
+    return () => {
+      live = false;
+    };
+  }, []);
+  const seed = useMemo(() => {
+    const team = ourlads?.teams?.[CMU_ID];
+    return team ? { ...depthFromOurlads(team, playersInSeason(roster.players, base, base)), updated: ourlads.updated } : null;
+  }, [ourlads, roster.players, base]);
+  const handArranged = !!roster.seasons[base]?.depth;
+  const depth = useMemo(() => depthFor(current, roster.seasons, everyone, base, {}, seed?.depth), [current, roster.seasons, everyone, base, seed]);
   const slotOf = (id) => {
     const hit = Object.entries(depth).find(([, list]) => list.includes(id));
     return hit ? hit[0] : "";
@@ -871,7 +893,11 @@ export default function RosterPage({ onBack, session }) {
           <>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap", marginBottom: 12 }}>
               <YlKey />
-              <span style={{ fontSize: 12.5, color: "var(--text-faint)" }}>{shown.length} of {rows.length} players{isProjection ? " · players leave when their eligibility runs out" : ""}{edit ? " · drag a player to move him" : ""}</span>
+              <span style={{ fontSize: 12.5, color: "var(--text-faint)" }}>
+                {seed && !handArranged && `Depth chart follows Colleges (${seed.placed} placed, updated ${new Date(seed.updated).toLocaleDateString([], { month: "short", day: "numeric" })}${seed.missing.length ? `; not on your roster: ${seed.missing.join(", ")}` : ""}) · `}
+                {handArranged && seed && admin && <button onClick={async () => { if (await confirmAction({ title: "Use the Colleges depth chart?", message: "This replaces the depth chart you arranged by hand for the current season with the one on the Colleges page. It then keeps following Colleges as it updates.", confirmLabel: "Use Colleges" })) roster.clearDepth(base); }} style={{ background: "none", border: "none", color: "var(--accent)", cursor: "pointer", fontSize: 12.5, padding: 0, textDecoration: "underline", fontFamily: "inherit" }}>Reset to the Colleges depth chart</button>}
+                {handArranged && seed && admin && " · "}
+                {shown.length} of {rows.length} players{isProjection ? " · players leave when their eligibility runs out" : ""}{edit ? " · drag a player to move him" : ""}</span>
             </div>
             {units.map((u) => (
               <Board key={u} unit={u} depth={depth} byId={byId} yl={(p) => p._yl} edit={edit && admin} filter={search.trim().toLowerCase()} onOpen={(p) => setModal({ type: "player", player: p })} onMove={move} />
