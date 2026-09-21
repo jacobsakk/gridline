@@ -484,8 +484,12 @@ function WeeklyTab({ players, week, statusOf, updateGame, onOpenPlayer, onProfil
     const map = new Map(POSITION_GROUPS.map((g) => [g.key, []]));
     map.set("OTHER", []);
     players.forEach((p) => map.get(groupOf(p.position)).push(p));
+    // Within a position, the order of the key: committed, offered, offer status, partial,
+    // committed elsewhere, then anyone with no status; alphabetical inside each.
+    const rank = new Map(players.map((p) => [p.id, STATUS_ORDER[statusOf(p)] || 99]));
+    map.forEach((list) => list.sort((a, b) => rank.get(a.id) - rank.get(b.id) || (a.name || "").localeCompare(b.name || "")));
     return [...map.entries()].filter(([, list]) => list.length);
-  }, [players]);
+  }, [players, statusOf]); // eslint-disable-line react-hooks/exhaustive-deps
   const head = { fontSize: 10.5, letterSpacing: "0.1em", color: "var(--text-faint)", textTransform: "uppercase" };
 
   return (
