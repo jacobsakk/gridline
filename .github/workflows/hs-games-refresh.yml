@@ -4,16 +4,27 @@ name: HS game results refresh
 # HS Game Update tab from MaxPreps and ScoreStream, cross-references the two,
 # and stores them in the database (hsTeams) where the app picks them up
 # live -- nothing is committed to the repo, so no recruit information ever
-# lands in it. Friday-night games finish late, so it runs each morning and
-# again Saturday and Sunday afternoons. Also runnable by hand.
+# lands in it.
+#
+# Timed so Saturday morning already has Friday night's scores (times are UTC;
+# GitHub can start a scheduled run up to ~20 minutes late):
+#   Sat 03:00  = Fri 11pm Detroit  -- East/Midwest games are final
+#   Sat 08:00  = Sat  4am Detroit  -- West Coast games are final
+#   Sat 14:00  = Sat 10am Detroit  -- late score corrections
+#   Fri 03:00  = Thu 11pm Detroit  -- Thursday-night games
+#   Sun 14:00  = Sun 10am Detroit  -- anything reported late
+# Also runnable by hand from the Actions tab.
 #
 # Needs one repository secret, FIREBASE_SERVICE_ACCOUNT: the JSON key of a
 # Firebase service account (Firebase console > Project settings > Service
 # accounts > Generate new private key).
 on:
   schedule:
-    - cron: "0 10 * 8-12 *"       # every morning, 6am Detroit
-    - cron: "0 19 * 8-12 6,0"     # Sat + Sun afternoons, 3pm Detroit
+    - cron: "0 3 * 8-12 6"        # Fri 11pm Detroit
+    - cron: "0 8 * 8-12 6"        # Sat 4am Detroit
+    - cron: "0 14 * 8-12 6"       # Sat 10am Detroit
+    - cron: "0 3 * 8-12 5"        # Thu 11pm Detroit
+    - cron: "0 14 * 8-12 0"       # Sun 10am Detroit
   workflow_dispatch:
 
 concurrency:
