@@ -199,19 +199,58 @@ def build_naia_division(run_date):
     return build_division("naia", "NAIA", run_date, lambda: _run_with_browser(build_naia_rows))
 
 
+def _team_key(name):
+    """'Butler', 'Butler Community College' -> 'butler' (same team across sources)."""
+    import re
+
+    text = (name or "").lower()
+    for word in ("community college", "junior college", "college", "university"):
+        text = text.replace(word, "")
+    return re.sub(r"[^a-z]", "", text)
+
+
 def build_juco_division(run_date):
+    """JUCO = NJCAA programs from njcaa.org's public API (plain HTTPS, no browser) plus whatever the conference
+    sites and CCCAA (California) give. Those PrestoSports sites now sit behind a bot check, so when they can't be
+    reached the last saved rows for those teams are kept instead."""
+    import njcaa
     from juco import CONFERENCES, build_juco_rows
     from cccaa import build_cccaa_rows
 
-    print(f"Fetching JUCO stat leaders across {len(CONFERENCES)} conferences "
-          f"(also uses a real browser -- these sites challenge plain HTTP requests "
-          f"under load, confirmed directly)...")
-    print("Fetching CCCAA (California JUCO) stat leaders...")
-
     def fetch_total_rows():
-        def _fetch(page):
-            return build_juco_rows(page) + build_cccaa_rows(page)
-        return _run_with_browser(_fetch)
+        print("Fetching NJCAA football stats from njcaa.org's public API...")
+        try:
+            fresh = njcaa.build_njcaa_rows()
+            print(f"  {len(fresh)} NJCAA rows from {len({r['team'] for r in fresh})} teams")
+        except Exception as err:  # noqa: BLE001
+            print(f"::warning::NJCAA API unavailable ({err})")
+            fresh = []
+        # Keep each team's name and conference label as already saved, so weekly comparisons still line up.
+        try:
+            with open(OUTPUT_PATH) as f:
+                saved_juco = [r for r in json.load(f) if r["division"] == "JUCO" and r["week"] == "total"]
+        except (OSError, ValueError):
+            saved_juco = []
+        saved_names = {_team_key(r["team"]): (r["team"], r["conference"]) for r in saved_juco}
+        for r in fresh:
+            known = saved_names.get(_team_key(r["team"]))
+            if known:
+                r["team"], r["conference"] = known
+        covered = {_team_key(r["team"]) for r in fresh}
+
+        print(f"Fetching JUCO conference sites ({len(CONFERENCES)}) and CCCAA (California) -- these use a real browser...")
+        try:
+            def _legacy(page):
+                return build_juco_rows(page) + build_cccaa_rows(page)
+
+            other = [r for r in _run_with_browser(_legacy) if _team_key(r["team"]) not in covered]
+            print(f"  {len(other)} rows from the conference / CCCAA sites (teams NJCAA doesn't cover)")
+        except Exception as err:  # noqa: BLE001
+            print(f"::warning::JUCO conference / CCCAA sites unreachable ({err}); keeping their last saved rows")
+            other = [r for r in saved_juco if _team_key(r["team"]) not in covered]
+            if not fresh:
+                raise
+        return fresh + other
 
     return build_division("juco", "JUCO", run_date, fetch_total_rows)
 
