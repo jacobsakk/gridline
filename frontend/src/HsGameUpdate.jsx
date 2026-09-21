@@ -259,6 +259,24 @@ function AddPlayerModal({ onClose, onAdd, coaches }) {
 
 // -------------------------------------------------------------- master tab
 
+// Position, editable in place. "Auto" follows the Offer Tracker profile (or the HS sheet if there isn't one);
+// picking a position here overrides it for this sheet only -- the Offer Tracker is left alone.
+function PositionSelect({ player, updatePlayer, style }) {
+  return (
+    <select
+      className="offer-cell-input"
+      aria-label={`Position for ${player.name}`}
+      value={player.positionOverride || ""}
+      onChange={(e) => updatePlayer(player.id, { positionOverride: e.target.value })}
+      title={player.positionOverride ? `Set by hand (Auto would be ${player.autoPosition})` : player.positionFromOffers ? "Auto: from the Offer Tracker" : "Auto: from the HS sheet (not on the Offer Tracker)"}
+      style={{ cursor: "pointer", fontWeight: 700, color: "var(--accent)", fontSize: 13, ...style }}
+    >
+      <option value="">{player.autoPosition} (auto)</option>
+      {POSITION_GROUPS.map((g) => <option key={g.key} value={g.key}>{g.label}</option>)}
+    </select>
+  );
+}
+
 // Area coach, editable in place. Type a new name or pick one already in use; Enter saves, Escape undoes.
 function CoachCell({ player, coaches, updatePlayer }) {
   return (
@@ -393,7 +411,9 @@ function MasterTab({ players, weeks, currentWeek, cmuByWeek, statusOf, statusWhy
                 <td style={{ ...td, padding: "4px 6px", whiteSpace: "nowrap", background: on ? rowBg : undefined }}>
                   <CoachCell player={p} coaches={coaches} updatePlayer={updatePlayer} />
                 </td>
-                <td title={p.positionFromOffers ? `From the Offer Tracker${p.hsPosition && normalizePosition(p.hsPosition) !== p.position ? ` (the HS sheet says ${p.hsPosition})` : ""}` : "From the HS sheet (not on the Offer Tracker), read through the same position rules"} style={{ ...td, color: "var(--accent)", fontWeight: 700, background: on ? rowBg : undefined }}>{p.position || "—"}</td>
+                <td style={{ ...td, padding: "4px 6px", background: on ? rowBg : undefined }}>
+                  <PositionSelect player={p} updatePlayer={updatePlayer} />
+                </td>
                 <td style={{ ...td, background: on ? rowBg : undefined }} className="tabular">{p.classYear}</td>
                 <td style={{ ...td, whiteSpace: "nowrap", background: on ? rowBg : undefined }}>{p.highSchool}{p.state ? ` (${p.state})` : ""}</td>
                 <td style={{ ...td, whiteSpace: "nowrap", fontWeight: 700, color: "var(--text-primary)", background: on ? rowBg : undefined }} className="tabular">{p.record.played ? p.record.text : "—"}</td>
@@ -668,6 +688,10 @@ function FaceBlock({ player, week, status, why, updatePlayer, updateGame, remove
       </div>
 
       <div className="hs-no-print hs-tools" style={{ position: "absolute", top: 3, right: 3, display: "flex", alignItems: "center", gap: 6, background: "rgba(255,255,255,0.92)", border: `1px solid ${SHEET.ink}`, borderRadius: 4, padding: "2px 6px", fontSize: 11.5, color: SHEET.ink, zIndex: 2 }}>
+        <select aria-label={`Position for ${player.name}`} value={player.positionOverride || ""} onChange={(e) => updatePlayer(player.id, { positionOverride: e.target.value })} style={{ fontSize: 11.5, background: "#fff", color: SHEET.ink, border: "1px solid #999", borderRadius: 3 }}>
+          <option value="">{player.autoPosition} (auto)</option>
+          {POSITION_GROUPS.map((g) => <option key={g.key} value={g.key}>{g.label}</option>)}
+        </select>
         <select aria-label={`Status for ${player.name}`} value={player.status || ""} onChange={(e) => updatePlayer(player.id, { status: e.target.value })} style={{ fontSize: 11.5, background: "#fff", color: SHEET.ink, border: "1px solid #999", borderRadius: 3 }}>
           <option value="">Auto{status && !player.status ? ` (${STATUS_BY_KEY[status]?.label})` : ""}</option>
           {STATUS_OPTIONS.map((o) => <option key={o.key} value={o.key}>{o.label}</option>)}
@@ -992,12 +1016,20 @@ export default function HsGameUpdate({ onBack }) {
       hs.players.map((p) => {
         const rows = matchRows(p);
         const positions = rows.map((r) => (r.position || "").trim()).filter(Boolean).map(normalizePosition);
-        if (!positions.length) return { ...p, position: normalizePosition(p.position), hsPosition: p.position, positionFromOffers: false };
-        const cmu = rows.find((r) => r.team === "CMU" && (r.position || "").trim());
-        const counts = {};
-        positions.forEach((x) => (counts[x] = (counts[x] || 0) + 1));
-        const common = Object.keys(counts).sort((a, b) => counts[b] - counts[a])[0];
-        return { ...p, position: cmu ? normalizePosition(cmu.position) : common, hsPosition: p.position, positionFromOffers: true };
+        let auto;
+        let fromOffers = false;
+        if (positions.length) {
+          const cmu = rows.find((r) => r.team === "CMU" && (r.position || "").trim());
+          const counts = {};
+          positions.forEach((x) => (counts[x] = (counts[x] || 0) + 1));
+          auto = cmu ? normalizePosition(cmu.position) : Object.keys(counts).sort((a, b) => counts[b] - counts[a])[0];
+          fromOffers = true;
+        } else {
+          auto = normalizePosition(p.position);
+        }
+        // A position typed in on this sheet (positionOverride) beats both.
+        const override = POSITION_GROUPS.some((g) => g.key === p.positionOverride) ? p.positionOverride : "";
+        return { ...p, position: override || auto, autoPosition: auto, positionOverride: override, hsPosition: p.position, positionFromOffers: !override && fromOffers };
       }),
     [hs.players, matchRows] // eslint-disable-line react-hooks/exhaustive-deps
   );
