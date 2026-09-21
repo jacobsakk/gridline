@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { AlertTriangle, ArrowLeft, FileText, Loader2, Plus, Printer, Search, Trash2, Upload, X } from "lucide-react";
+import { AlertTriangle, ArrowDown, ArrowLeft, ArrowUp, ChevronLeft, ChevronRight, FileText, Loader2, Plus, Printer, Search, Trash2, Upload, X } from "lucide-react";
 import cmuHelmet from "./assets/cmu-helmet.png";
 import { ThemeSwitcher, useTheme } from "./theme.jsx";
 import { confirmAction } from "./ConfirmDialog.jsx";
@@ -7,6 +7,7 @@ import { useOfferTracker } from "./offerData.js";
 import { PlayerProfileModal, ThemeContext } from "./OfferTracker.jsx";
 import { fetchSchedule, teamKey } from "./collegeData.js";
 import {
+  SEASON_YEAR,
   STATUS_BY_KEY,
   STATUS_OPTIONS,
   fromIso,
@@ -180,6 +181,7 @@ function UploadModal({ onClose, onImport }) {
           <div key={r.name} style={{ marginTop: 12, fontSize: 13, color: "var(--success)", lineHeight: 1.5 }}>
             <strong>{r.name}</strong>: {r.summary.created} new, {r.summary.updated} updated, {r.summary.games} games read
             {r.summary.summaries ? `, ${r.summary.summaries} game summaries` : ""}
+            {r.summary.skipped ? `, ${r.summary.skipped} skipped (removed earlier)` : ""}
             {r.summary.unmatchedStaff?.length ? ` · not matched: ${[...new Set(r.summary.unmatchedStaff)].slice(0, 4).join(", ")}${r.summary.unmatchedStaff.length > 4 ? "…" : ""}` : ""}
           </div>
         ))}
@@ -242,64 +244,132 @@ function AddPlayerModal({ onClose, onAdd, coaches }) {
 
 // -------------------------------------------------------------- master tab
 
-function MasterTab({ players, weeks, currentWeek, cmuByWeek, statusOf, onOpenPlayer, onProfile, hasProfile }) {
+const STATUS_ORDER = Object.fromEntries(STATUS_OPTIONS.map((o, i) => [o.key, i + 1]));
+// W > T > L > scheduled-but-unplayed > nothing that week
+const resultRank = (g) => (!g ? 0 : g.result === "W" ? 4 : g.result === "T" ? 3 : g.result === "L" ? 2 : 1);
+
+function sortPlayers(players, sort, statusOf) {
+  if (!sort.key) return players;
+  const dir = sort.dir === "desc" ? -1 : 1;
+  const text = (v) => (v || "").toString().toLowerCase();
+  const valueOf = (p) => {
+    if (sort.key.startsWith("week:")) return resultRank(p.games.find((x) => x.date && weekKey(fromIso(x.date)) === sort.key.slice(5)));
+    switch (sort.key) {
+      case "name": return text(p.name);
+      case "coach": return text(p.coach);
+      case "pos": return text(p.position);
+      case "year": return text(p.classYear);
+      case "school": return text(p.highSchool);
+      case "status": return STATUS_ORDER[statusOf(p)] || 99;
+      case "record": return p.record.played ? p.record.w / p.record.played + p.record.played / 1000 : -1;
+      default: return "";
+    }
+  };
+  // Ties fall back to name so the order is stable.
+  return [...players].sort((a, b) => {
+    const va = valueOf(a);
+    const vb = valueOf(b);
+    const c = typeof va === "number" ? va - vb : va.localeCompare(vb);
+    return c ? c * dir : text(a.name).localeCompare(text(b.name));
+  });
+}
+
+function MasterTab({ players, weeks, currentWeek, cmuByWeek, statusOf, onOpenPlayer, onProfile, hasProfile, selected, setSelected, sort, setSort }) {
   const thBase = {
     position: "sticky", top: 0, zIndex: 2, background: "var(--bg-surface)", padding: "9px 10px", fontSize: 11, color: "var(--text-faint)", textTransform: "uppercase",
     textAlign: "left", whiteSpace: "nowrap", borderBottom: "1px solid var(--border)", letterSpacing: "0.04em",
   };
   const td = { padding: "8px 10px", fontSize: 13, color: "var(--text-secondary)", borderBottom: "1px solid var(--border-subtle)", verticalAlign: "top" };
+  const allSelected = players.length > 0 && players.every((p) => selected.has(p.id));
+  const toggleAll = () => setSelected(allSelected ? new Set() : new Set(players.map((p) => p.id)));
+  const toggleOne = (id) =>
+    setSelected((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  const clickSort = (key) => setSort((s) => (s.key === key ? (s.dir === "asc" ? { key, dir: "desc" } : { key: "", dir: "asc" }) : { key, dir: "asc" }));
+  const SortHead = ({ k, children, style }) => {
+    const on = sort.key === k;
+    return (
+      <th
+        style={{ ...thBase, ...style, cursor: "pointer", userSelect: "none", color: on ? "var(--accent)" : style?.color || thBase.color }}
+        onClick={() => clickSort(k)}
+        aria-sort={on ? (sort.dir === "asc" ? "ascending" : "descending") : "none"}
+        title="Click to sort"
+      >
+        <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
+          {children}
+          {on && (sort.dir === "asc" ? <ArrowUp size={12} /> : <ArrowDown size={12} />)}
+        </span>
+      </th>
+    );
+  };
+  const checkCol = { width: 38, minWidth: 38, padding: "8px 0 8px 12px" };
   return (
     <div className="hs-scroll" style={{ flex: 1, minHeight: 0, overflow: "auto", border: "1px solid var(--border)", borderRadius: 8, background: "var(--bg-panel)" }}>
       <table style={{ borderCollapse: "separate", borderSpacing: 0, minWidth: "100%" }}>
         <thead>
           <tr>
-            <th style={thBase}>Coach</th>
-            <th style={{ ...thBase, position: "sticky", left: 0, zIndex: 3 }}>Name</th>
-            <th style={thBase}>Pos</th>
-            <th style={thBase}>Yr</th>
-            <th style={thBase}>High School</th>
-            <th style={thBase}>Record</th>
+            <th className="hs-no-print" style={{ ...thBase, ...checkCol, position: "sticky", left: 0, zIndex: 3 }}>
+              <input id="hs-select-all" type="checkbox" checked={allSelected} onChange={toggleAll} aria-label="Select all shown" style={{ cursor: "pointer" }} />
+            </th>
+            <SortHead k="name" style={{ position: "sticky", left: 38, zIndex: 3 }}>Name</SortHead>
+            <SortHead k="coach">Coach</SortHead>
+            <SortHead k="pos">Pos</SortHead>
+            <SortHead k="year">Yr</SortHead>
+            <SortHead k="school">High School</SortHead>
+            <SortHead k="record">Record</SortHead>
             {weeks.map((w) => (
-              <th key={w} style={{ ...thBase, minWidth: 150, background: w === currentWeek ? "var(--accent-bg)" : thBase.background, color: w === currentWeek ? "var(--accent)" : thBase.color }}>
-                <div>{weekLabel(fromIso(w))}</div>
-                {cmuByWeek[w] && <div style={{ textTransform: "none", letterSpacing: 0, color: "var(--text-muted)", marginTop: 2, fontWeight: 500 }}>CMU {cmuByWeek[w]}</div>}
-              </th>
+              <SortHead key={w} k={`week:${w}`} style={{ minWidth: 150, background: w === currentWeek ? "var(--accent-bg)" : thBase.background, color: w === currentWeek ? "var(--accent)" : thBase.color }}>
+                <span>
+                  <div>{weekLabel(fromIso(w))}</div>
+                  {cmuByWeek[w] && <div style={{ textTransform: "none", letterSpacing: 0, color: "var(--text-muted)", marginTop: 2, fontWeight: 500 }}>CMU {cmuByWeek[w]}</div>}
+                </span>
+              </SortHead>
             ))}
           </tr>
         </thead>
         <tbody>
-          {players.map((p) => (
-            <tr key={p.id}>
-              <td style={td}>{p.coach || "—"}</td>
-              <td style={{ ...td, position: "sticky", left: 0, background: "var(--bg-panel)", zIndex: 1, whiteSpace: "nowrap" }}>
-                <PlayerLink player={p} linked={hasProfile(p)} onProfile={onProfile}>
-                  <StatusName player={p} status={statusOf(p)}>{p.name}</StatusName>
-                </PlayerLink>
-                {p.injured && <span style={{ marginLeft: 6, fontSize: 11, color: "var(--danger-text)" }}>Injured</span>}
-                <button className="hs-no-print" onClick={() => onOpenPlayer(p.id)} title="Open face sheet" aria-label={`Face sheet for ${p.name}`} style={{ marginLeft: 6, background: "none", border: "none", color: "var(--text-faint)", cursor: "pointer", lineHeight: 0, verticalAlign: "middle" }}>
-                  <FileText size={13} />
-                </button>
-              </td>
-              <td style={{ ...td, color: "var(--accent)", fontWeight: 700 }}>{p.position || "—"}</td>
-              <td style={td} className="tabular">{p.classYear}</td>
-              <td style={{ ...td, whiteSpace: "nowrap" }}>{p.highSchool}{p.state ? ` (${p.state})` : ""}</td>
-              <td style={{ ...td, whiteSpace: "nowrap", fontWeight: 700, color: "var(--text-primary)" }} className="tabular">{p.record.played ? p.record.text : "—"}</td>
-              {weeks.map((w) => {
-                const g = p.games.find((x) => x.date && weekKey(fromIso(x.date)) === w);
-                return (
-                  <td key={w} style={{ ...td, background: w === currentWeek ? "color-mix(in srgb, var(--accent) 6%, transparent)" : undefined }}>
-                    {g ? (
-                      <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
-                        {g.result ? <ResultChip game={g} /> : null}
-                        <span style={{ color: "var(--text-primary)", fontSize: 12.5 }}>{g.homeAway === "A" ? "@" : ""}{g.opponent}</span>
-                        <span style={{ fontSize: 11, color: "var(--text-faint)" }}>{mmdd(g.date)}</span>
-                      </div>
-                    ) : null}
-                  </td>
-                );
-              })}
-            </tr>
-          ))}
+          {players.map((p) => {
+            const on = selected.has(p.id);
+            const rowBg = on ? "color-mix(in srgb, var(--accent) 10%, var(--bg-panel))" : "var(--bg-panel)";
+            return (
+              <tr key={p.id}>
+                <td className="hs-no-print" style={{ ...td, ...checkCol, position: "sticky", left: 0, zIndex: 1, background: rowBg }}>
+                  <input type="checkbox" checked={on} onChange={() => toggleOne(p.id)} aria-label={`Select ${p.name}`} style={{ cursor: "pointer" }} />
+                </td>
+                <td style={{ ...td, position: "sticky", left: 38, background: rowBg, zIndex: 1, whiteSpace: "nowrap" }}>
+                  <PlayerLink player={p} linked={hasProfile(p)} onProfile={onProfile}>
+                    <StatusName player={p} status={statusOf(p)}>{p.name}</StatusName>
+                  </PlayerLink>
+                  {p.injured && <span style={{ marginLeft: 6, fontSize: 11, color: "var(--danger-text)" }}>Injured</span>}
+                  <button className="hs-no-print" onClick={() => onOpenPlayer(p.id)} title="Open face sheet" aria-label={`Face sheet for ${p.name}`} style={{ marginLeft: 6, background: "none", border: "none", color: "var(--text-faint)", cursor: "pointer", lineHeight: 0, verticalAlign: "middle" }}>
+                    <FileText size={13} />
+                  </button>
+                </td>
+                <td style={{ ...td, whiteSpace: "nowrap", background: on ? rowBg : undefined }}>{p.coach || "—"}</td>
+                <td style={{ ...td, color: "var(--accent)", fontWeight: 700, background: on ? rowBg : undefined }}>{p.position || "—"}</td>
+                <td style={{ ...td, background: on ? rowBg : undefined }} className="tabular">{p.classYear}</td>
+                <td style={{ ...td, whiteSpace: "nowrap", background: on ? rowBg : undefined }}>{p.highSchool}{p.state ? ` (${p.state})` : ""}</td>
+                <td style={{ ...td, whiteSpace: "nowrap", fontWeight: 700, color: "var(--text-primary)", background: on ? rowBg : undefined }} className="tabular">{p.record.played ? p.record.text : "—"}</td>
+                {weeks.map((w) => {
+                  const g = p.games.find((x) => x.date && weekKey(fromIso(x.date)) === w);
+                  return (
+                    <td key={w} style={{ ...td, background: on ? rowBg : w === currentWeek ? "color-mix(in srgb, var(--accent) 6%, transparent)" : undefined }}>
+                      {g ? (
+                        <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+                          {g.result ? <ResultChip game={g} /> : null}
+                          <span style={{ color: "var(--text-primary)", fontSize: 12.5 }}>{g.homeAway === "A" ? "@" : ""}{g.opponent}</span>
+                          <span style={{ fontSize: 11, color: "var(--text-faint)" }}>{mmdd(g.date)}</span>
+                        </div>
+                      ) : null}
+                    </td>
+                  );
+                })}
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>
@@ -542,6 +612,9 @@ export default function HsGameUpdate({ onBack }) {
   const [uploadOpen, setUploadOpen] = useState(false);
   const [addOpen, setAddOpen] = useState(false);
   const [profile, setProfile] = useState(null);
+  const [selected, setSelected] = useState(() => new Set());
+  const [sort, setSort] = useState({ key: "", dir: "asc" });
+  const [undo, setUndo] = useState(null);
   const [cmuByWeek, setCmuByWeek] = useState({});
 
   // Status comes from the Offer Tracker unless someone set it by hand.
@@ -571,10 +644,17 @@ export default function HsGameUpdate({ onBack }) {
   }, []);
 
   const coaches = useMemo(() => [...new Set(hs.players.map((p) => p.coach).filter(Boolean))].sort(), [hs.players]);
+  // Every week of the season, not just weeks that have a game: the run of Mondays
+  // from mid-August to Thanksgiving week, stretched to cover any game outside it.
   const weeks = useMemo(() => {
-    const set = new Set(hs.players.flatMap((p) => p.games.filter((g) => g.date).map((g) => weekKey(fromIso(g.date)))));
-    set.add(weekKey(new Date()));
-    return [...set].sort();
+    const dates = hs.players.flatMap((p) => p.games.filter((g) => g.date).map((g) => fromIso(g.date)));
+    const start = mondayOf(new Date(SEASON_YEAR, 7, 10));
+    const end = mondayOf(new Date(SEASON_YEAR, 10, 30));
+    let first = dates.length ? new Date(Math.min(start, ...dates.map(mondayOf))) : start;
+    const last = dates.length ? new Date(Math.max(end, ...dates.map(mondayOf))) : end;
+    const out = [];
+    for (let d = new Date(first); d <= last; d.setDate(d.getDate() + 7)) out.push(toIso(d));
+    return out;
   }, [hs.players]);
 
   const filtered = useMemo(() => {
@@ -584,10 +664,42 @@ export default function HsGameUpdate({ onBack }) {
       .filter((p) => !q || [p.name, p.highSchool, p.state, p.position, p.coach].some((v) => (v || "").toLowerCase().includes(q)));
   }, [hs.players, search, coach, status, offers]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  const sortedForMaster = useMemo(() => sortPlayers(filtered, sort, statusOf), [filtered, sort]); // eslint-disable-line react-hooks/exhaustive-deps
+
   async function removePlayer(p) {
     const ok = await confirmAction({ title: `Remove ${p.name}?`, message: "This takes them out of the game tracker." });
-    if (ok) hs.removePlayer(p.id);
+    if (ok) {
+      hs.removePlayer(p.id);
+      setUndo({ ids: [p.id], label: p.name });
+    }
   }
+
+  // Bulk removal for whatever is ticked on the master list.
+  async function removeSelected() {
+    const ids = [...selected].filter((id) => hs.players.some((p) => p.id === id));
+    if (!ids.length) return;
+    const names = ids.map((id) => hs.players.find((p) => p.id === id)?.name).filter(Boolean);
+    const ok = await confirmAction({
+      title: `Remove ${ids.length} player${ids.length === 1 ? "" : "s"}?`,
+      message: `${names.slice(0, 6).join(", ")}${names.length > 6 ? ` and ${names.length - 6} more` : ""} will come off the tracker. You can undo this right after.`,
+      confirmLabel: "Remove",
+    });
+    if (!ok) return;
+    await hs.removePlayers(ids);
+    setSelected(new Set());
+    setUndo({ ids, label: `${ids.length} player${ids.length === 1 ? "" : "s"}` });
+  }
+
+  useEffect(() => {
+    if (!undo) return;
+    const id = setTimeout(() => setUndo(null), 12000);
+    return () => clearTimeout(id);
+  }, [undo]);
+
+  const stepWeek = (n) => {
+    const at = weeks.indexOf(week) + n;
+    if (at >= 0 && at < weeks.length) setWeek(weeks[at]);
+  };
 
   const hasProfile = (p) => offers.rowsForPlayer(p.classYear, p.name).length > 0;
 
@@ -666,12 +778,29 @@ export default function HsGameUpdate({ onBack }) {
         </div>
 
         {tab === "Weekly Tracker" && (
-          <div className="oswald" style={{ textAlign: "center", fontSize: 26, fontWeight: 700, letterSpacing: "0.04em", margin: "0 0 14px", flexShrink: 0 }}>
-            WEEK OF {weekLabel(fromIso(week))}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 16, margin: "0 0 14px", flexShrink: 0 }}>
+            <button className="hs-no-print" onClick={() => stepWeek(-1)} disabled={weeks.indexOf(week) <= 0} aria-label="Previous week" style={{ ...controlStyle, padding: "6px 8px", lineHeight: 0, cursor: "pointer" }}><ChevronLeft size={18} /></button>
+            <div className="oswald" style={{ textAlign: "center", fontSize: 26, fontWeight: 700, letterSpacing: "0.04em" }}>WEEK OF {weekLabel(fromIso(week))}</div>
+            <button className="hs-no-print" onClick={() => stepWeek(1)} disabled={weeks.indexOf(week) >= weeks.length - 1} aria-label="Next week" style={{ ...controlStyle, padding: "6px 8px", lineHeight: 0, cursor: "pointer" }}><ChevronRight size={18} /></button>
           </div>
         )}
         {tab !== "Staff Face Sheet" && <div className="hs-no-print" style={{ marginBottom: 12, flexShrink: 0 }}><Legend /></div>}
 
+        {tab === "Master Tracker" && selected.size > 0 && (
+          <div className="hs-no-print" style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap", background: "var(--accent-bg)", border: "1px solid var(--accent)", borderRadius: 8, padding: "8px 14px", marginBottom: 12, flexShrink: 0 }}>
+            <strong className="tabular" style={{ fontSize: 13.5 }}>{selected.size} selected</strong>
+            <button onClick={removeSelected} style={{ display: "flex", alignItems: "center", gap: 6, background: "transparent", border: "1px solid var(--danger-text)", color: "var(--danger-text)", borderRadius: 6, padding: "6px 12px", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
+              <Trash2 size={14} /> Remove selected
+            </button>
+            <button onClick={() => setSelected(new Set())} style={{ ...controlStyle, padding: "6px 12px", cursor: "pointer" }}>Clear</button>
+          </div>
+        )}
+        {undo && (
+          <div role="status" className="hs-no-print" style={{ display: "flex", alignItems: "center", gap: 12, background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 8, padding: "8px 14px", marginBottom: 12, flexShrink: 0, fontSize: 13.5 }}>
+            <span>Removed {undo.label}.</span>
+            <button onClick={() => { hs.restorePlayers(undo.ids); setUndo(null); }} style={{ background: "none", border: "none", color: "var(--accent)", fontWeight: 700, cursor: "pointer", fontSize: 13.5, padding: 0 }}>Undo</button>
+          </div>
+        )}
         {!hs.ready ? (
           <div style={{ padding: 40, textAlign: "center", color: "var(--text-faint)" }}>Loading…</div>
         ) : hs.players.length === 0 ? (
@@ -685,7 +814,7 @@ export default function HsGameUpdate({ onBack }) {
             </div>
           </div>
         ) : tab === "Master Tracker" ? (
-          <MasterTab players={filtered} weeks={weeks} currentWeek={weekKey(new Date())} cmuByWeek={cmuByWeek} statusOf={statusOf} onOpenPlayer={openPlayer} onProfile={setProfile} hasProfile={hasProfile} />
+          <MasterTab players={sortedForMaster} weeks={weeks} currentWeek={weekKey(new Date())} cmuByWeek={cmuByWeek} statusOf={statusOf} onOpenPlayer={openPlayer} onProfile={setProfile} hasProfile={hasProfile} selected={selected} setSelected={setSelected} sort={sort} setSort={setSort} />
         ) : tab === "Weekly Tracker" ? (
           <WeeklyTab players={filtered} week={week} statusOf={statusOf} updateGame={hs.updateGame} onOpenPlayer={openPlayer} />
         ) : (

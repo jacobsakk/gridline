@@ -1,5 +1,5 @@
 import * as XLSX from "xlsx";
-import { collection, deleteDoc, doc, onSnapshot, setDoc, updateDoc, writeBatch } from "firebase/firestore";
+import { collection, doc, onSnapshot, setDoc, updateDoc, writeBatch } from "firebase/firestore";
 import { db } from "./firebase";
 import { useEffect, useMemo, useState } from "react";
 
@@ -340,13 +340,16 @@ export function overlayScraped(games, teamDoc) {
 export function useHsTracker() {
   const [docs, setDocs] = useState([]);
   const [teams, setTeams] = useState({});
+  const [removedIds, setRemovedIds] = useState(() => new Set());
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onSnapshot(
       collection(db, "hsPlayers"),
       (snap) => {
-        setDocs(snap.docs.map((d) => ({ id: d.id, ...(d.data() || {}) })).filter((d) => !d.removed));
+        const all = snap.docs.map((d) => ({ id: d.id, ...(d.data() || {}) }));
+        setDocs(all.filter((d) => !d.removed));
+        setRemovedIds(new Set(all.filter((d) => d.removed).map((d) => d.id)));
         setReady(true);
       },
       () => setReady(true)
@@ -383,11 +386,16 @@ export function useHsTracker() {
   async function importParsed({ players: incoming, staff }, { dryRun = false } = {}) {
     const existingById = new Map(docs.map((d) => [d.id, d]));
     const merged = new Map();
-    const summary = { created: 0, updated: 0, games: 0, summaries: 0, unmatchedStaff: [] };
+    const summary = { created: 0, updated: 0, games: 0, summaries: 0, skipped: 0, unmatchedStaff: [] };
 
     incoming.forEach((p) => {
       if (!p.classYear) return;
       const id = playerId(p.classYear, p.name);
+      // Someone removed from the tracker stays removed when a file that still lists them is loaded again.
+      if (removedIds.has(id)) {
+        summary.skipped += 1;
+        return;
+      }
       const base = merged.get(id) || existingById.get(id) || { id, status: "", injured: false, games: [], createdAt: new Date().toISOString() };
       const next = { ...base };
       ["name", "classYear", "position", "coach", "highSchool", "state", "rating", "cell", "twitter", "recordText"].forEach((k) => {
@@ -467,9 +475,19 @@ export function useHsTracker() {
     });
   }
 
-  async function removePlayer(id) {
-    await deleteDoc(doc(db, "hsPlayers", id));
+  // Removal is a flag, not a delete: a later upload of a file that still lists
+  // the player won't bring them back, and it can be undone.
+  async function setRemoved(ids, removed) {
+    const now = new Date().toISOString();
+    for (let i = 0; i < ids.length; i += 400) {
+      const batch = writeBatch(db);
+      ids.slice(i, i + 400).forEach((id) => batch.update(doc(db, "hsPlayers", id), removed ? { removed: true, removedAt: now } : { removed: false, updatedAt: now }));
+      await batch.commit();
+    }
   }
+  const removePlayers = (ids) => setRemoved(ids, true);
+  const restorePlayers = (ids) => setRemoved(ids, false);
+  const removePlayer = (id) => setRemoved([id], true);
 
-  return { ready, players, teams, importFile, importParsed, updatePlayer, updateGame, addPlayer, removePlayer };
+  return { ready, players, teams, importFile, importParsed, updatePlayer, updateGame, addPlayer, removePlayer, removePlayers, restorePlayers };
 }
