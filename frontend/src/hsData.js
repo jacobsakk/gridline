@@ -320,17 +320,21 @@ export function overlayScraped(games, teamDoc) {
   const merged = teamGames.map((t) => {
     const mine = findStored(t, games.filter((g) => !claimed.has(g)));
     if (mine) claimed.add(mine);
+    // A score someone set by hand (resolved) is final: the sources can't change it or flag it again.
+    const locked = !!(mine && mine.resolved);
     return {
       ...(mine || {}),
       storedKey: mine ? gameKey(mine) : "",
       date: t.date,
       opponent: (mine && mine.opponent) || t.opponent,
       homeAway: t.homeAway || mine?.homeAway || "",
-      ...(t.result ? { result: t.result, ours: t.ours, theirs: t.theirs } : {}),
+      ...(t.result && !locked ? { result: t.result, ours: t.ours, theirs: t.theirs } : {}),
+      // What the sources say, kept for reference when the score on the sheet was set by hand.
+      ...(locked && t.result ? { sourceReported: { result: t.result, ours: t.ours, theirs: t.theirs, conflict: t.conflict || null } } : {}),
       scraped: true,
       verifiedBy: t.source || [],
       ...(t.links ? { links: t.links } : {}),
-      ...(t.conflict ? { conflict: t.conflict } : {}),
+      ...(t.conflict && !locked ? { conflict: t.conflict } : {}),
     };
   });
   const scheduleIsFresh = teamDoc.fetched?.maxpreps;

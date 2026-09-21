@@ -57,7 +57,9 @@ function ResultChip({ game, big }) {
   const loss = game.result === "L";
   const alt = game.conflict?.scorestream;
   const verified = (game.verifiedBy || []).length > 1 && !alt;
-  const title = alt
+  const title = game.resolved
+    ? "Score set by hand"
+    : alt
     ? `Sources disagree: MaxPreps ${game.ours}-${game.theirs}, ScoreStream ${alt.ours}-${alt.theirs}. Showing MaxPreps.`
     : verified
       ? "Confirmed by MaxPreps and ScoreStream"
@@ -278,19 +280,18 @@ function AddPlayerModal({ onClose, onAdd, coaches, players }) {
 
 // -------------------------------------------------------------- master tab
 
-// Position, editable in place. "Auto" follows the Offer Tracker profile (or the HS sheet if there isn't one);
-// picking a position here overrides it for this sheet only -- the Offer Tracker is left alone.
+// Position, editable in place. It shows what the sheet is using now (the Offer Tracker's, unless changed here);
+// picking another position sets it for this sheet only -- the Offer Tracker is left alone.
 function PositionSelect({ player, updatePlayer, style }) {
   return (
     <select
       className="offer-cell-input"
       aria-label={`Position for ${player.name}`}
-      value={player.positionOverride || ""}
+      value={player.position}
       onChange={(e) => updatePlayer(player.id, { positionOverride: e.target.value })}
-      title={player.positionOverride ? `Set by hand (Auto would be ${player.autoPosition})` : player.positionFromOffers ? "Auto: from the Offer Tracker" : "Auto: from the HS sheet (not on the Offer Tracker)"}
+      title={player.positionOverride ? "Set by hand on this sheet" : player.positionFromOffers ? "From the Offer Tracker" : "From the HS sheet (not on the Offer Tracker)"}
       style={{ cursor: "pointer", fontWeight: 700, color: "var(--accent)", fontSize: 13, ...style }}
     >
-      <option value="">{player.autoPosition} (auto)</option>
       {POSITION_GROUPS.map((g) => <option key={g.key} value={g.key}>{g.label}</option>)}
     </select>
   );
@@ -435,7 +436,7 @@ function MasterTab({ players, weeks, currentWeek, cmuByWeek, statusOf, statusWhy
                   <PositionSelect player={p} updatePlayer={updatePlayer} />
                 </td>
                 <td style={{ ...td, padding: "4px 6px", background: on ? rowBg : undefined }}>
-                  <StatusSelect player={p} status={statusOf(p)} autoStatus={autoStatusOf(p)} updatePlayer={updatePlayer} />
+                  <StatusSelect player={p} status={statusOf(p)} updatePlayer={updatePlayer} />
                 </td>
                 <td style={{ ...td, background: on ? rowBg : undefined }} className="tabular">{p.classYear}</td>
                 <td style={{ ...td, whiteSpace: "nowrap", background: on ? rowBg : undefined }}>{p.highSchool}{p.state ? ` (${p.state})` : ""}</td>
@@ -564,7 +565,7 @@ function WeeklyTab({ players, week, statusOf, autoStatusOf, updatePlayer, onGame
                         {p.highSchool}{p.state ? ` · ${p.state}` : ""} · <span className="tabular">{p.record.played ? p.record.text : "0W - 0L"}</span>
                       </div>
                       <div className="hs-no-print" style={{ marginTop: 3 }}>
-                        <StatusSelect player={p} status={status} autoStatus={autoStatusOf(p)} updatePlayer={updatePlayer} style={{ padding: "1px 4px" }} />
+                        <StatusSelect player={p} status={status} updatePlayer={updatePlayer} style={{ padding: "1px 4px" }} />
                       </div>
                     </div>
                   </div>
@@ -735,12 +736,11 @@ function FaceBlock({ player, week, status, why, onGame, updatePlayer, updateGame
       </div>
 
       <div className="hs-no-print hs-tools" style={{ position: "absolute", top: 3, right: 3, display: "flex", alignItems: "center", gap: 6, background: "rgba(255,255,255,0.92)", border: `1px solid ${SHEET.ink}`, borderRadius: 4, padding: "2px 6px", fontSize: 11.5, color: SHEET.ink, zIndex: 2 }}>
-        <select aria-label={`Position for ${player.name}`} value={player.positionOverride || ""} onChange={(e) => updatePlayer(player.id, { positionOverride: e.target.value })} style={{ fontSize: 11.5, background: "#fff", color: SHEET.ink, border: "1px solid #999", borderRadius: 3 }}>
-          <option value="">{player.autoPosition} (auto)</option>
+        <select aria-label={`Position for ${player.name}`} value={player.position} onChange={(e) => updatePlayer(player.id, { positionOverride: e.target.value })} style={{ fontSize: 11.5, background: "#fff", color: SHEET.ink, border: "1px solid #999", borderRadius: 3 }}>
           {POSITION_GROUPS.map((g) => <option key={g.key} value={g.key}>{g.label}</option>)}
         </select>
-        <select aria-label={`Status for ${player.name}`} value={player.status || ""} onChange={(e) => updatePlayer(player.id, { status: e.target.value })} style={{ fontSize: 11.5, background: "#fff", color: SHEET.ink, border: "1px solid #999", borderRadius: 3 }}>
-          <option value="">Auto{status && !player.status ? ` (${STATUS_BY_KEY[status]?.label})` : ""}</option>
+        <select aria-label={`Status for ${player.name}`} value={status || "none"} onChange={(e) => updatePlayer(player.id, { status: e.target.value })} style={{ fontSize: 11.5, background: "#fff", color: SHEET.ink, border: "1px solid #999", borderRadius: 3 }}>
+          <option value="none">No status</option>
           {STATUS_OPTIONS.map((o) => <option key={o.key} value={o.key}>{o.label}</option>)}
         </select>
         <label style={{ display: "flex", alignItems: "center", gap: 3, cursor: "pointer" }}>
@@ -966,52 +966,84 @@ function FaceSheetTab(props) {
   );
 }
 
-// Games in the past that neither site (nor an uploaded file) has a score for. Type the result in.
-function MissingScoresModal({ rows, updateGame, onClose }) {
+// Everything a person needs to settle: games whose two sources disagree, and past games no source has
+// a score for. Either way the score entered here is final for that game -- the flag stops, and the
+// scraper can't change it (a game's box has "Use the sources again" to hand it back).
+function ReviewModal({ conflicts, missing, updateGame, onOpenGame, onClose }) {
+  const [tab, setTab] = useState(conflicts.length || !missing.length ? "conflicts" : "missing");
   const [draft, setDraft] = useState({});
   const [saving, setSaving] = useState("");
   const key = (r) => `${r.player.id}|${r.game.date}|${r.game.opponent}`;
   const set = (r, patch) => setDraft((d) => ({ ...d, [key(r)]: { result: "W", ours: "", theirs: "", ...d[key(r)], ...patch } }));
-  async function save(r) {
-    const d = { result: "W", ours: "", theirs: "", ...draft[key(r)] };
-    if (d.ours === "" || d.theirs === "") return;
+  async function settle(r, fields) {
     setSaving(key(r));
-    await updateGame(r.player, r.game, { result: d.result, ours: Number(d.ours), theirs: Number(d.theirs) });
+    await updateGame(r.player, r.game, { ...fields, resolved: true });
     setSaving("");
   }
   const num = { ...controlStyle, width: 58, padding: "6px 8px", textAlign: "center" };
+  const rows = tab === "conflicts" ? conflicts : missing;
+  const tabBtn = (id, label, n) => (
+    <button
+      onClick={() => setTab(id)}
+      style={{ border: "none", borderRadius: 6, padding: "7px 14px", fontSize: 13, fontWeight: 700, fontFamily: "inherit", cursor: "pointer", background: tab === id ? "var(--accent)" : "transparent", color: tab === id ? "var(--bg-page)" : "var(--text-muted)" }}
+    >
+      {label} ({n})
+    </button>
+  );
   return (
     <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20, zIndex: 70 }}>
-      <div onClick={(e) => e.stopPropagation()} style={{ background: "var(--bg-panel)", border: "1px solid var(--border)", borderRadius: 10, width: 760, maxWidth: "100%", maxHeight: "88vh", display: "flex", flexDirection: "column", padding: 20 }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
-          <h2 className="oswald" style={{ margin: 0, fontSize: 19 }}>Missing scores</h2>
+      <div onClick={(e) => e.stopPropagation()} style={{ background: "var(--bg-panel)", border: "1px solid var(--border)", borderRadius: 10, width: 780, maxWidth: "100%", maxHeight: "88vh", display: "flex", flexDirection: "column", padding: 20 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+          <h2 className="oswald" style={{ margin: 0, fontSize: 19 }}>Needs review</h2>
           <button onClick={onClose} aria-label="Close" style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer", lineHeight: 0 }}><X size={18} /></button>
         </div>
+        <div style={{ display: "flex", gap: 4, background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 8, padding: 3, alignSelf: "flex-start", marginBottom: 10 }}>
+          {tabBtn("conflicts", "Conflicts", conflicts.length)}
+          {tabBtn("missing", "Missing scores", missing.length)}
+        </div>
         <p style={{ margin: "0 0 12px", fontSize: 13, color: "var(--text-muted)", lineHeight: 1.5 }}>
-          <strong className="tabular" style={{ color: "var(--text-primary)" }}>{rows.length}</strong> past games have no score from MaxPreps, ScoreStream or your files. Some were scrimmages or games that were never played. Enter a score to fill one in (put our team's score first); a score the scraper finds later will replace it.
+          {tab === "conflicts"
+            ? "MaxPreps and ScoreStream report different scores for these games. Pick the right one (or type a score) and the flag stops for that game; the scraper won't change it after that."
+            : "No source has a score for these past games. Some were scrimmages or games never played. Enter a score to fill one in (our team first); it's final for that game."}
         </p>
         <div className="hs-scroll" style={{ overflow: "auto", border: "1px solid var(--border)", borderRadius: 8, minHeight: 0 }}>
-          {rows.length === 0 && <div style={{ padding: 24, textAlign: "center", color: "var(--text-faint)" }}>Every past game has a score.</div>}
+          {rows.length === 0 && <div style={{ padding: 24, textAlign: "center", color: "var(--text-faint)" }}>{tab === "conflicts" ? "No score conflicts." : "Every past game has a score."}</div>}
           {rows.map((r) => {
             const d = { result: "W", ours: "", theirs: "", ...draft[key(r)] };
+            const alt = r.game.conflict?.scorestream;
+            const busy = saving === key(r);
             return (
               <div key={key(r)} style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", padding: "8px 12px", borderBottom: "1px solid var(--border-subtle)" }}>
                 <div style={{ flex: "1 1 220px", minWidth: 0 }}>
                   <div style={{ fontWeight: 700, color: "var(--text-primary)" }}>{r.player.name} <span style={{ color: "var(--text-faint)", fontWeight: 400, fontSize: 12.5 }}>{r.player.highSchool}</span></div>
                   <div style={{ fontSize: 12.5, color: "var(--text-muted)" }}>
-                    {mmdd(r.game.date)} · {r.game.homeAway === "A" ? "@ " : ""}{r.game.opponent}
-                    {r.player.sources?.maxpreps && <> · <a href={r.player.sources.maxpreps} target="_blank" rel="noreferrer" style={{ color: "var(--accent)" }}>MaxPreps</a></>}
-                    {r.player.sources?.scorestream && <> · <a href={r.player.sources.scorestream} target="_blank" rel="noreferrer" style={{ color: "var(--accent)" }}>ScoreStream</a></>}
+                    {mmdd(r.game.date)} · {r.game.homeAway === "A" ? "@ " : ""}{r.game.opponent} ·{" "}
+                    <button onClick={() => onOpenGame(r.player, r.game)} style={{ background: "none", border: "none", padding: 0, color: "var(--accent)", cursor: "pointer", fontSize: 12.5, textDecoration: "underline" }}>sources</button>
                   </div>
                 </div>
+                {tab === "conflicts" && alt && (
+                  <>
+                    <button disabled={busy} onClick={() => settle(r, { result: r.game.result, ours: r.game.ours, theirs: r.game.theirs })} style={{ ...controlStyle, padding: "6px 10px", cursor: "pointer", fontWeight: 700 }} className="tabular">
+                      MaxPreps {r.game.result} {r.game.ours}-{r.game.theirs}
+                    </button>
+                    <button disabled={busy} onClick={() => settle(r, { result: alt.result, ours: alt.ours, theirs: alt.theirs })} style={{ ...controlStyle, padding: "6px 10px", cursor: "pointer", fontWeight: 700 }} className="tabular">
+                      ScoreStream {alt.result} {alt.ours}-{alt.theirs}
+                    </button>
+                    <span style={{ color: "var(--text-faint)", fontSize: 12 }}>or</span>
+                  </>
+                )}
                 <select aria-label="Result" value={d.result} onChange={(e) => set(r, { result: e.target.value })} style={{ ...controlStyle, padding: "6px 8px" }}>
                   <option value="W">W</option><option value="L">L</option><option value="T">T</option>
                 </select>
                 <input aria-label="Our score" inputMode="numeric" placeholder="Us" value={d.ours} onChange={(e) => set(r, { ours: e.target.value.replace(/\D/g, "") })} style={num} />
                 <span style={{ color: "var(--text-faint)" }}>-</span>
                 <input aria-label="Their score" inputMode="numeric" placeholder="Them" value={d.theirs} onChange={(e) => set(r, { theirs: e.target.value.replace(/\D/g, "") })} style={num} />
-                <button onClick={() => save(r)} disabled={d.ours === "" || d.theirs === "" || saving === key(r)} style={{ background: "var(--accent-bg)", border: "1px solid var(--accent)", color: "var(--accent)", borderRadius: 6, padding: "6px 12px", fontSize: 13, fontWeight: 700, cursor: "pointer", opacity: d.ours === "" || d.theirs === "" ? 0.5 : 1 }}>
-                  {saving === key(r) ? "Saving…" : "Save"}
+                <button
+                  onClick={() => settle(r, { result: d.result, ours: Number(d.ours), theirs: Number(d.theirs) })}
+                  disabled={d.ours === "" || d.theirs === "" || busy}
+                  style={{ background: "var(--accent-bg)", border: "1px solid var(--accent)", color: "var(--accent)", borderRadius: 6, padding: "6px 12px", fontSize: 13, fontWeight: 700, cursor: "pointer", opacity: d.ours === "" || d.theirs === "" ? 0.5 : 1 }}
+                >
+                  {busy ? "Saving…" : "Save"}
                 </button>
               </div>
             );
@@ -1026,18 +1058,34 @@ function MissingScoresModal({ rows, updateGame, onClose }) {
 }
 
 // Where a game's result came from: each source's own page for that game, with the score it reported.
-function GameSourcesModal({ player, game, onClose }) {
+function GameSourcesModal({ player, game, updateGame, onClose }) {
   const sources = [
     { key: "maxpreps", label: "MaxPreps" },
     { key: "scorestream", label: "ScoreStream" },
   ];
   const reported = game.verifiedBy || [];
-  const alt = game.conflict?.scorestream;
+  // When the score was set by hand, the sources' own numbers are kept aside for reference.
+  const fromSources = game.resolved ? game.sourceReported : game;
+  const alt = fromSources?.conflict?.scorestream;
   const scoreFrom = (key) => {
-    if (!reported.includes(key)) return "";
-    const s = key === "scorestream" && alt ? alt : game;
+    if (!reported.includes(key) || !fromSources?.result) return "";
+    const s = key === "scorestream" && alt ? alt : fromSources;
     return `${s.result} ${s.ours}-${s.theirs}`;
   };
+  const [edit, setEdit] = useState({ result: game.result || "W", ours: game.ours ?? "", theirs: game.theirs ?? "" });
+  const [busy, setBusy] = useState(false);
+  const canSave = edit.ours !== "" && edit.theirs !== "" && !busy;
+  async function saveScore() {
+    setBusy(true);
+    await updateGame(player, game, { result: edit.result, ours: Number(edit.ours), theirs: Number(edit.theirs), resolved: true });
+    setBusy(false);
+  }
+  async function useSources() {
+    setBusy(true);
+    await updateGame(player, game, { resolved: false, result: "", ours: null, theirs: null });
+    setBusy(false);
+  }
+  const num = { ...controlStyle, width: 58, padding: "6px 8px", textAlign: "center" };
   const anyLink = sources.some((s) => game.links?.[s.key] || player.sources?.[s.key]);
   return (
     <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20, zIndex: 70 }}>
@@ -1072,7 +1120,26 @@ function GameSourcesModal({ player, game, onClose }) {
             );
           })}
         </div>
-        {alt && <p style={{ margin: "10px 0 0", fontSize: 12.5, color: "var(--danger-text)" }}>The two sources disagree on the score. The sheet shows MaxPreps; open both to check.</p>}
+        {alt && !game.resolved && <p style={{ margin: "10px 0 0", fontSize: 12.5, color: "var(--danger-text)" }}>The two sources disagree on the score. The sheet shows MaxPreps; open both to check, then set the right score below.</p>}
+        <div style={{ marginTop: 14, paddingTop: 12, borderTop: "1px solid var(--border-subtle)" }}>
+          <div style={{ fontSize: 11, letterSpacing: "0.06em", textTransform: "uppercase", color: "var(--text-faint)", marginBottom: 6 }}>
+            Score on the sheet{game.resolved ? " — set by hand" : ""}
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+            <select aria-label="Result" value={edit.result} onChange={(e) => setEdit({ ...edit, result: e.target.value })} style={{ ...controlStyle, padding: "6px 8px" }}>
+              <option value="W">W</option><option value="L">L</option><option value="T">T</option>
+            </select>
+            <input aria-label="Our score" inputMode="numeric" placeholder="Us" value={edit.ours} onChange={(e) => setEdit({ ...edit, ours: e.target.value.replace(/\D/g, "") })} style={num} />
+            <span style={{ color: "var(--text-faint)" }}>-</span>
+            <input aria-label="Their score" inputMode="numeric" placeholder="Them" value={edit.theirs} onChange={(e) => setEdit({ ...edit, theirs: e.target.value.replace(/\D/g, "") })} style={num} />
+            <button onClick={saveScore} disabled={!canSave} style={{ background: "var(--accent-bg)", border: "1px solid var(--accent)", color: "var(--accent)", borderRadius: 6, padding: "6px 12px", fontSize: 13, fontWeight: 700, cursor: "pointer", opacity: canSave ? 1 : 0.5 }}>
+              {busy ? "Saving…" : "Save score"}
+            </button>
+            {game.resolved && (
+              <button onClick={useSources} disabled={busy} style={{ ...controlStyle, padding: "6px 10px", cursor: "pointer", fontSize: 12.5 }}>Use the sources again</button>
+            )}
+          </div>
+        </div>
         {!anyLink && <p style={{ margin: "10px 0 0", fontSize: 12.5, color: "var(--text-muted)" }}>This school's pages haven't been found yet. The scraper looks them up on its next run.</p>}
         {anyLink && !game.links && !game.scraped && <p style={{ margin: "10px 0 0", fontSize: 12.5, color: "var(--text-muted)" }}>This game came from an uploaded file, so only the team pages are linked until the scraper matches it.</p>}
       </div>
@@ -1080,19 +1147,19 @@ function GameSourcesModal({ player, game, onClose }) {
   );
 }
 
-// The status shown for a player. "Auto" follows the Offer Tracker; picking one here overrides it.
-function StatusSelect({ player, status, autoStatus, updatePlayer, style }) {
+// The status shown for a player: the Offer Tracker's unless changed here. Picking one sets it for this sheet.
+function StatusSelect({ player, status, updatePlayer, style }) {
   const s = STATUS_BY_KEY[status];
   return (
     <select
       className="offer-cell-input"
       aria-label={`Status for ${player.name}`}
-      value={player.status || ""}
+      value={status || "none"}
       onChange={(e) => updatePlayer(player.id, { status: e.target.value })}
-      title={player.status ? "Set by hand" : "Auto: from the Offer Tracker"}
+      title={player.status ? "Set by hand on this sheet" : "From the Offer Tracker"}
       style={{ cursor: "pointer", fontWeight: 700, fontSize: 11.5, borderRadius: 4, background: s?.bg || "transparent", color: s?.fg || "var(--text-muted)", ...style }}
     >
-      <option value="">Auto{autoStatus ? ` (${STATUS_BY_KEY[autoStatus]?.label})` : ""}</option>
+      <option value="none">No status</option>
       {STATUS_OPTIONS.map((o) => <option key={o.key} value={o.key}>{o.label}</option>)}
     </select>
   );
@@ -1180,7 +1247,7 @@ export default function HsGameUpdate({ onBack }) {
   const [selected, setSelected] = useState(() => new Set());
   const [sort, setSort] = useState({ key: "", dir: "asc" });
   const [undo, setUndo] = useState(null);
-  const [missingOpen, setMissingOpen] = useState(false);
+  const [reviewOpen, setReviewOpen] = useState(false);
   const [gameSource, setGameSource] = useState(null);
   const [cmuByWeek, setCmuByWeek] = useState({});
 
@@ -1201,7 +1268,8 @@ export default function HsGameUpdate({ onBack }) {
     return { key: /partial/i.test(cmu.pipelineStatus || "") ? "partial" : "offered", why: `Offer Tracker${spelled}: CMU offer${cmu.pipelineStatus ? `, ${cmu.pipelineStatus}` : ""}.` };
   }
   function statusInfo(p) {
-    if (p.status) return { key: p.status, why: `Set by hand on this tracker (${STATUS_BY_KEY[p.status]?.label || p.status}). Choose "Auto" to follow the Offer Tracker instead.` };
+    if (p.status === "none") return { key: "", why: "Set by hand on this sheet: no status." };
+    if (p.status) return { key: p.status, why: `Set by hand on this tracker (${STATUS_BY_KEY[p.status]?.label || p.status}). Change it with the status dropdown.` };
     return autoStatusInfo(p);
   }
   const statusOf = (p) => statusInfo(p).key;
@@ -1292,6 +1360,13 @@ export default function HsGameUpdate({ onBack }) {
     return out.sort((a, b) => a.game.date.localeCompare(b.game.date) || a.player.name.localeCompare(b.player.name));
   }, [players]);
 
+  // Games whose two sources disagree and nobody has settled.
+  const conflictScores = useMemo(() => {
+    const out = [];
+    players.forEach((p) => p.games.forEach((g) => g.conflict && !g.resolved && out.push({ player: p, game: g })));
+    return out.sort((a, b) => a.game.date.localeCompare(b.game.date) || a.player.name.localeCompare(b.player.name));
+  }, [players]);
+
   const hasProfile = (p) => matchRows(p).length > 0;
 
   const openPlayer = (id) => {
@@ -1363,9 +1438,9 @@ export default function HsGameUpdate({ onBack }) {
           </select>
           <span style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 8 }}>
             <span className="tabular" style={{ fontSize: 12.5, color: "var(--text-faint)" }}>{filtered.length} of {players.length}</span>
-            {missingScores.length > 0 && (
-              <button onClick={() => setMissingOpen(true)} title="Past games no source has a score for" style={{ ...controlStyle, display: "flex", alignItems: "center", gap: 6, cursor: "pointer", fontWeight: 700, borderColor: "var(--danger-text)", color: "var(--danger-text)" }}>
-                <AlertTriangle size={14} /> Missing scores ({missingScores.length})
+            {missingScores.length + conflictScores.length > 0 && (
+              <button onClick={() => setReviewOpen(true)} title="Score conflicts and past games no source has a score for" style={{ ...controlStyle, display: "flex", alignItems: "center", gap: 6, cursor: "pointer", fontWeight: 700, borderColor: "var(--danger-text)", color: "var(--danger-text)" }}>
+                <AlertTriangle size={14} /> Needs review ({conflictScores.length + missingScores.length})
               </button>
             )}
             <button onClick={() => setAddOpen(true)} style={{ ...controlStyle, display: "flex", alignItems: "center", gap: 6, cursor: "pointer", fontWeight: 700 }}><Plus size={14} /> Add player</button>
@@ -1455,9 +1530,17 @@ export default function HsGameUpdate({ onBack }) {
         // Look the game up again from live data so the modal stays current if a refresh lands.
         const player = players.find((p) => p.id === gameSource.id);
         const game = player?.games.find((g) => (g.date || g.opponent) === gameSource.key);
-        return player && game ? <GameSourcesModal player={player} game={game} onClose={() => setGameSource(null)} /> : null;
+        return player && game ? <GameSourcesModal key={`${player.id}|${gameSource.key}`} player={player} game={game} updateGame={hs.updateGame} onClose={() => setGameSource(null)} /> : null;
       })()}
-      {missingOpen && <MissingScoresModal rows={missingScores} updateGame={hs.updateGame} onClose={() => setMissingOpen(false)} />}
+      {reviewOpen && (
+        <ReviewModal
+          conflicts={conflictScores}
+          missing={missingScores}
+          updateGame={hs.updateGame}
+          onOpenGame={(player, game) => setGameSource({ id: player.id, key: game.date || game.opponent })}
+          onClose={() => setReviewOpen(false)}
+        />
+      )}
       {uploadOpen && <UploadModal onClose={() => setUploadOpen(false)} onImport={(file, options) => hs.importFile(file, options)} />}
       {addOpen && <AddPlayerModal onClose={() => setAddOpen(false)} onAdd={hs.addPlayer} coaches={coaches} players={players} />}
     </div>
