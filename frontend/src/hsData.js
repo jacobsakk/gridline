@@ -97,7 +97,8 @@ function parseGameCell(cell) {
     }
     if (!game.opponent) {
       game.homeAway = line.startsWith("@") ? "A" : "H";
-      game.opponent = line.replace(/^@\s*/, "").replace(/^vs\.?\s+/i, "").trim();
+      // "@Lincoln", "vs Lincoln", "vs, Lincoln" -> Lincoln (away only for "@")
+      game.opponent = line.replace(/^@\s*/, "").replace(/^vs\.?,?\s+/i, "").trim();
     }
   }
   if (!game.opponent || /^(bye|open|tba)$/i.test(game.opponent)) {
@@ -381,6 +382,35 @@ export function matchPhotoFiles(files, players) {
   return { matched, unmatched };
 }
 
+// -------------------------------------------- one game listed twice
+
+// The same game can arrive twice: two files a day apart on the date, or one file with a
+// date and one with only the opponent. Those are collapsed to a single game, keeping
+// whichever copy has the result.
+function sameGame(a, b) {
+  if (!sameSchool(a.opponent, b.opponent)) return false;
+  if (a.date && b.date) return daysApart(a.date, b.date) <= 1;
+  return true;
+}
+
+function mergeGames(a, b) {
+  const [base, other] = b.result && !a.result ? [b, a] : [a, b];
+  const merged = { ...other, ...Object.fromEntries(Object.entries(base).filter(([, v]) => v !== "" && v != null)) };
+  merged.date = base.date || other.date || "";
+  merged.summary = base.summary || other.summary || "";
+  return merged;
+}
+
+export function dedupeGames(games) {
+  const out = [];
+  (games || []).forEach((g) => {
+    const at = out.findIndex((o) => sameGame(o, g));
+    if (at < 0) out.push({ ...g });
+    else out[at] = mergeGames(out[at], g);
+  });
+  return out.sort((x, y) => (x.date || "").localeCompare(y.date || ""));
+}
+
 // ------------------------------------------------------------ Firestore hook
 
 export function useHsTracker() {
@@ -416,7 +446,7 @@ export function useHsTracker() {
     () =>
       docs
         .map((p) => {
-          const stored = [...(p.games || [])].sort((a, b) => (a.date || "").localeCompare(b.date || ""));
+          const stored = dedupeGames(p.games || []);
           const games = overlayScraped(stored, teams[teamDocId(p.sources)]);
           const computed = computeRecord(games);
           const m = /(\d+)\s*W\s*-\s*(\d+)\s*L/i.exec(p.recordText || "");
@@ -456,7 +486,7 @@ export function useHsTracker() {
         games.set(key, { ...(old || {}), ...Object.fromEntries(Object.entries(g).filter(([k, v]) => v !== "" && v != null || k === "summary" && v)), summary: g.summary || old?.summary || "" });
         summary.games += 1;
       });
-      next.games = [...games.values()].sort((a, b) => (a.date || "").localeCompare(b.date || ""));
+      next.games = dedupeGames([...games.values()]);
       next.updatedAt = new Date().toISOString();
       merged.set(id, next);
     });

@@ -109,13 +109,27 @@ const SYNCED_FIELDS = new Set(["player", "highSchool", "state", "position", "sta
 // correctly -- so E and L are treated as the same letter when deciding
 // whether two rows are the same recruit. Suffixes (Jr./III) are kept:
 // "Andrew Davis" and "Andrew Davis Jr." are different players.
+// Boys are entered as "Will" on one sheet and "William" on another; the same recruit
+// must land in one profile (and share one commitment), so a first name that's a common
+// short form is read as its full name. Only unambiguous short forms are listed.
+const FIRST_NAME_FORMS = {
+  WILL: "WILLIAM", WILLY: "WILLIAM", BILL: "WILLIAM", BILLY: "WILLIAM", MIKE: "MICHAEL", MATT: "MATTHEW", NICK: "NICHOLAS",
+  CHRIS: "CHRISTOPHER", BEN: "BENJAMIN", JAKE: "JACOB", JOSH: "JOSHUA", JOE: "JOSEPH", JIM: "JAMES", JIMMY: "JAMES", TONY: "ANTHONY",
+  DAN: "DANIEL", DANNY: "DANIEL", DAVE: "DAVID", TOM: "THOMAS", TOMMY: "THOMAS", ZACH: "ZACHARY", ZACK: "ZACHARY", SAM: "SAMUEL",
+  ANDY: "ANDREW", ROB: "ROBERT", BOB: "ROBERT", BOBBY: "ROBERT", RICK: "RICHARD", RICKY: "RICHARD", EDDIE: "EDWARD", JEFF: "JEFFREY",
+  GREG: "GREGORY", STEVE: "STEVEN", PAT: "PATRICK", CHARLIE: "CHARLES", KENNY: "KENNETH", NATE: "NATHAN", TIM: "TIMOTHY", JON: "JONATHAN",
+  ALEX: "ALEXANDER",
+};
+
 export function normalizePlayerKey(player) {
-  return (player || "")
+  const words = (player || "")
     .toUpperCase()
     .replace(/[^A-Z ]/g, "")
-    .replace(/E/g, "L")
     .replace(/\s+/g, " ")
-    .trim();
+    .trim()
+    .split(" ");
+  words[0] = FIRST_NAME_FORMS[words[0]] || words[0];
+  return words.join(" ").replace(/E/g, "L");
 }
 
 // The source spells "committed" many ways (COMITTED, COMMITED, COMTTED,

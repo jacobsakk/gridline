@@ -112,14 +112,14 @@ function PlayerLink({ player, linked, onProfile, style, children }) {
   );
 }
 
-function StatusName({ player, status, children, style }) {
+function StatusName({ player, status, why, children, style }) {
   const s = STATUS_BY_KEY[status];
   return (
     <span
       style={{
         display: "inline-block", borderRadius: 4, padding: s ? "1px 8px" : 0, fontWeight: 700, background: s?.bg, color: s?.fg || "var(--text-primary)", ...style,
       }}
-      title={s ? s.label : undefined}
+      title={why ? `${s ? s.label : "No status"} — ${why}` : s ? s.label : undefined}
     >
       {children}
     </span>
@@ -278,7 +278,7 @@ function sortPlayers(players, sort, statusOf) {
   });
 }
 
-function MasterTab({ players, weeks, currentWeek, cmuByWeek, statusOf, onOpenPlayer, onProfile, hasProfile, selected, setSelected, sort, setSort }) {
+function MasterTab({ players, weeks, currentWeek, cmuByWeek, statusOf, statusWhy, onOpenPlayer, onProfile, hasProfile, selected, setSelected, sort, setSort }) {
   const thBase = {
     position: "sticky", top: 0, zIndex: 2, background: "var(--bg-surface)", padding: "9px 10px", fontSize: 11, color: "var(--text-faint)", textTransform: "uppercase",
     textAlign: "left", whiteSpace: "nowrap", borderBottom: "1px solid var(--border)", letterSpacing: "0.04em",
@@ -345,7 +345,7 @@ function MasterTab({ players, weeks, currentWeek, cmuByWeek, statusOf, onOpenPla
                 </td>
                 <td style={{ ...td, position: "sticky", left: 38, background: rowBg, zIndex: 1, whiteSpace: "nowrap" }}>
                   <PlayerLink player={p} linked={hasProfile(p)} onProfile={onProfile}>
-                    <StatusName player={p} status={statusOf(p)}>{p.name}</StatusName>
+                    <StatusName player={p} status={statusOf(p)} why={statusWhy(p)}>{p.name}</StatusName>
                   </PlayerLink>
                   {p.injured && <span style={{ marginLeft: 6, fontSize: 11, color: "var(--danger-text)" }}>Injured</span>}
                   <button className="hs-no-print" onClick={() => onOpenPlayer(p.id)} title="Open face sheet" aria-label={`Face sheet for ${p.name}`} style={{ marginLeft: 6, background: "none", border: "none", color: "var(--text-faint)", cursor: "pointer", lineHeight: 0, verticalAlign: "middle" }}>
@@ -358,16 +358,16 @@ function MasterTab({ players, weeks, currentWeek, cmuByWeek, statusOf, onOpenPla
                 <td style={{ ...td, whiteSpace: "nowrap", background: on ? rowBg : undefined }}>{p.highSchool}{p.state ? ` (${p.state})` : ""}</td>
                 <td style={{ ...td, whiteSpace: "nowrap", fontWeight: 700, color: "var(--text-primary)", background: on ? rowBg : undefined }} className="tabular">{p.record.played ? p.record.text : "—"}</td>
                 {weeks.map((w) => {
-                  const g = p.games.find((x) => x.date && weekKey(fromIso(x.date)) === w);
+                  const inWeek = p.games.filter((x) => x.date && weekKey(fromIso(x.date)) === w);
                   return (
                     <td key={w} style={{ ...td, background: on ? rowBg : w === currentWeek ? "color-mix(in srgb, var(--accent) 6%, transparent)" : undefined }}>
-                      {g ? (
-                        <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+                      {inWeek.map((g) => (
+                        <div key={g.date + g.opponent} style={{ display: "flex", flexDirection: "column", gap: 3, marginBottom: inWeek.length > 1 ? 6 : 0 }}>
                           {g.result ? <ResultChip game={g} /> : null}
                           <span style={{ color: "var(--text-primary)", fontSize: 12.5 }}>{g.homeAway === "A" ? "@" : ""}{g.opponent}</span>
                           <span style={{ fontSize: 11, color: "var(--text-faint)" }}>{mmdd(g.date)}</span>
                         </div>
-                      ) : null}
+                      ))}
                     </td>
                   );
                 })}
@@ -528,7 +528,7 @@ const fit = (text) => {
   return { fontSize: `calc(var(--hs-font) * ${scale})`, whiteSpace: "nowrap" };
 };
 
-function FaceBlock({ player, week, status, updatePlayer, updateGame, removePlayer, onProfile, hasProfile }) {
+function FaceBlock({ player, week, status, why, updatePlayer, updateGame, removePlayer, onProfile, hasProfile }) {
   const { game, next } = pickWeekGames(player, week);
   const s = STATUS_BY_KEY[status];
   const [photoError, setPhotoError] = useState("");
@@ -571,7 +571,7 @@ function FaceBlock({ player, week, status, updatePlayer, updateGame, removePlaye
         </div>
         {photoError && <div role="alert" className="hs-no-print" style={{ position: "absolute", inset: "auto 4px 30px 4px", background: "#fff", color: "#B3261E", fontSize: 11, padding: 3, border: "1px solid #B3261E" }}>{photoError}</div>}
       </div>
-      <div style={{ ...valueCell, gridColumn: 1, gridRow: 5, background: s?.bg || SHEET.grey, color: s?.fg || SHEET.ink, fontWeight: 800, ...fit(`${player.name} (${player.position || "—"})${player.injured ? " (Injured)" : ""}`) }}>
+      <div title={why ? `${s ? s.label : "No status"} — ${why}` : undefined} style={{ ...valueCell, gridColumn: 1, gridRow: 5, background: s?.bg || SHEET.grey, color: s?.fg || SHEET.ink, fontWeight: 800, ...fit(`${player.name} (${player.position || "—"})${player.injured ? " (Injured)" : ""}`) }}>
         <PlayerLink player={player} linked={hasProfile(player)} onProfile={onProfile}>
           {player.name} ({player.position || "—"}){player.injured && " (Injured)"}
         </PlayerLink>
@@ -799,7 +799,7 @@ function FaceSheetTab(props) {
               ))}
             </div>
             {page.map((p) => (
-              <FaceBlock key={p.id} player={p} week={week} status={statusOf(p)} updatePlayer={updatePlayer} updateGame={props.updateGame} removePlayer={props.removePlayer} onProfile={props.onProfile} hasProfile={props.hasProfile} />
+              <FaceBlock key={p.id} player={p} week={week} status={statusOf(p)} why={props.statusWhy(p)} updatePlayer={updatePlayer} updateGame={props.updateGame} removePlayer={props.removePlayer} onProfile={props.onProfile} hasProfile={props.hasProfile} />
             ))}
           </section>
         ))}
@@ -833,17 +833,25 @@ export default function HsGameUpdate({ onBack }) {
   const [undo, setUndo] = useState(null);
   const [cmuByWeek, setCmuByWeek] = useState({});
 
-  // Status comes from the Offer Tracker unless someone set it by hand.
-  function derivedStatus(p) {
+  // Status comes from the Offer Tracker unless someone set it by hand. `why` says which,
+  // so a surprising color can be traced to its source (shown when hovering the name).
+  function statusInfo(p) {
+    if (p.status) return { key: p.status, why: `Set by hand on this tracker (${STATUS_BY_KEY[p.status]?.label || p.status}). Choose "Auto" to follow the Offer Tracker instead.` };
     const rows = offers.rowsForPlayer(p.classYear, p.name);
-    if (!rows.length) return "";
+    if (!rows.length) return { key: "", why: "Not on the Offer Tracker." };
+    const spelled = rows[0].player && rows[0].player.toLowerCase() !== (p.name || "").toLowerCase() ? ` (listed there as ${rows[0].player})` : "";
     const committed = rows.find((r) => /^COMMITTED TO /i.test((r.status || "").trim()));
-    if (committed) return teamKey(committed.status.replace(/^COMMITTED TO /i, "")) === teamKey("Central Michigan") ? "committed" : "elsewhere";
+    if (committed) {
+      const to = committed.status.replace(/^COMMITTED TO /i, "");
+      const ours = teamKey(to) === teamKey("Central Michigan");
+      return { key: ours ? "committed" : "elsewhere", why: `Offer Tracker${spelled}: ${committed.status} (on the ${committed.team} sheet).` };
+    }
     const cmu = rows.find((r) => r.team === "CMU");
-    if (!cmu) return "";
-    return /partial/i.test(cmu.pipelineStatus || "") ? "partial" : "offered";
+    if (!cmu) return { key: "", why: `On the Offer Tracker${spelled}, but no CMU offer.` };
+    return { key: /partial/i.test(cmu.pipelineStatus || "") ? "partial" : "offered", why: `Offer Tracker${spelled}: CMU offer${cmu.pipelineStatus ? `, ${cmu.pipelineStatus}` : ""}.` };
   }
-  const statusOf = (p) => p.status || derivedStatus(p);
+  const statusOf = (p) => statusInfo(p).key;
+  const statusWhy = (p) => statusInfo(p).why;
 
   // Our own schedule across the top of the master sheet, like the workbook's first row.
   useEffect(() => {
@@ -1032,7 +1040,7 @@ export default function HsGameUpdate({ onBack }) {
             </div>
           </div>
         ) : tab === "Master Tracker" ? (
-          <MasterTab players={sortedForMaster} weeks={weeks} currentWeek={weekKey(new Date())} cmuByWeek={cmuByWeek} statusOf={statusOf} onOpenPlayer={openPlayer} onProfile={setProfile} hasProfile={hasProfile} selected={selected} setSelected={setSelected} sort={sort} setSort={setSort} />
+          <MasterTab players={sortedForMaster} weeks={weeks} currentWeek={weekKey(new Date())} cmuByWeek={cmuByWeek} statusOf={statusOf} statusWhy={statusWhy} onOpenPlayer={openPlayer} onProfile={setProfile} hasProfile={hasProfile} selected={selected} setSelected={setSelected} sort={sort} setSort={setSort} />
         ) : tab === "Weekly Tracker" ? (
           <WeeklyTab players={filtered} week={week} statusOf={statusOf} updateGame={hs.updateGame} onOpenPlayer={openPlayer} onProfile={setProfile} hasProfile={hasProfile} />
         ) : (
@@ -1041,6 +1049,7 @@ export default function HsGameUpdate({ onBack }) {
             allPlayers={hs.players}
             week={week}
             statusOf={statusOf}
+            statusWhy={statusWhy}
             focusId={focusId}
             clearFocus={() => setFocusId(null)}
             updatePlayer={hs.updatePlayer}
