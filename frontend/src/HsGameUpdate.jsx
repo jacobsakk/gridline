@@ -992,7 +992,7 @@ function ReviewModal({ conflicts, missing, updateGame, onOpenGame, onClose }) {
   );
   return (
     <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20, zIndex: 70 }}>
-      <div onClick={(e) => e.stopPropagation()} style={{ background: "var(--bg-panel)", border: "1px solid var(--border)", borderRadius: 10, width: 780, maxWidth: "100%", maxHeight: "88vh", display: "flex", flexDirection: "column", padding: 20 }}>
+      <div onClick={(e) => e.stopPropagation()} style={{ background: "var(--bg-panel)", border: "1px solid var(--border)", borderRadius: 10, width: 1240, maxWidth: "100%", maxHeight: "88vh", display: "flex", flexDirection: "column", padding: 20 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
           <h2 className="oswald" style={{ margin: 0, fontSize: 19 }}>Needs review</h2>
           <button onClick={onClose} aria-label="Close" style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer", lineHeight: 0 }}><X size={18} /></button>
@@ -1013,8 +1013,8 @@ function ReviewModal({ conflicts, missing, updateGame, onOpenGame, onClose }) {
             const alt = r.game.conflict?.scorestream;
             const busy = saving === key(r);
             return (
-              <div key={key(r)} style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", padding: "8px 12px", borderBottom: "1px solid var(--border-subtle)" }}>
-                <div style={{ flex: "1 1 220px", minWidth: 0 }}>
+              <div key={key(r)} style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", padding: "8px 12px", borderBottom: "1px solid var(--border-subtle)", whiteSpace: "nowrap" }}>
+                <div style={{ flex: "1 1 300px", minWidth: 0, whiteSpace: "normal" }}>
                   <div style={{ fontWeight: 700, color: "var(--text-primary)" }}>{r.player.name} <span style={{ color: "var(--text-faint)", fontWeight: 400, fontSize: 12.5 }}>{r.player.highSchool}</span></div>
                   <div style={{ fontSize: 12.5, color: "var(--text-muted)" }}>
                     {mmdd(r.game.date)} · {r.game.homeAway === "A" ? "@ " : ""}{r.game.opponent} ·{" "}
