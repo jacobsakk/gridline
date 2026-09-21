@@ -9,3 +9,7 @@ __pycache__/
 venv/
 .DS_Store
 design-refs/
+
+# Recruit data exports (phone numbers, handles) must never be committed
+score-tracker-*.csv
+*Game Update*.xlsx
