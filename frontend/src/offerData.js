@@ -121,6 +121,20 @@ const FIRST_NAME_FORMS = {
   ALEX: "ALEXANDER",
 };
 
+const NAME_SUFFIXES = new Set(["JR", "SR", "II", "III", "IV"]);
+const nameWords = (name) => (name || "").toUpperCase().replace(/[^A-Z ]/g, " ").split(/\s+/).filter(Boolean);
+
+// Last name without Jr./III, and first name with short forms read as the full name -- used to
+// find a recruit whose name is spelled a little differently on another sheet.
+export function lastNameKey(name) {
+  const words = nameWords(name).filter((w) => !NAME_SUFFIXES.has(w));
+  return words.length > 1 ? words[words.length - 1] : words[0] || "";
+}
+export function firstNameKey(name) {
+  const first = nameWords(name)[0] || "";
+  return FIRST_NAME_FORMS[first] || first;
+}
+
 export function normalizePlayerKey(player) {
   const words = (player || "")
     .toUpperCase()
@@ -638,6 +652,17 @@ export function useOfferTracker() {
     return index;
   }, [effectiveDocs]);
 
+  // Same rows grouped by class year and last name, for spelling-tolerant lookups.
+  const rowsByLast = useMemo(() => {
+    const index = new Map();
+    effectiveDocs.forEach((d) => {
+      const k = `${d.classYear}|${lastNameKey(d.player)}`;
+      if (!index.has(k)) index.set(k, []);
+      index.get(k).push(d);
+    });
+    return index;
+  }, [effectiveDocs]);
+
   function rowsForPlayer(classYear, player) {
     return rowsByPlayer.get(`${classYear}|${normalizePlayerKey(player)}`) || [];
   }
@@ -747,5 +772,5 @@ export function useOfferTracker() {
     return { teams, states, counts, stateTotals };
   }
 
-  return { ready, classYears, teamsForConference, rowsForClassYear, rowsForTeam, rowsForPlayer, positionBreakdown, areaBreakdown, importWorkbook, importActivityFeed, updateOfferField, removeOffer, addOffer };
+  return { ready, classYears, teamsForConference, rowsForClassYear, rowsForTeam, rowsForPlayer, rowsByPlayer, rowsByLast, positionBreakdown, areaBreakdown, importWorkbook, importActivityFeed, updateOfferField, removeOffer, addOffer };
 }

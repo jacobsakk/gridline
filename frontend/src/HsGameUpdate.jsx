@@ -1,14 +1,15 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AlertTriangle, ArrowDown, Camera, GripVertical, ArrowLeft, ArrowUp, ChevronLeft, ChevronRight, Eye, EyeOff, FileText, Loader2, Plus, Printer, Search, Trash2, Upload, X } from "lucide-react";
 import cmuHelmet from "./assets/cmu-helmet.png";
 import { ThemeSwitcher, useTheme } from "./theme.jsx";
 import { confirmAction } from "./ConfirmDialog.jsx";
-import { useOfferTracker } from "./offerData.js";
+import { firstNameKey, lastNameKey, normalizePlayerKey, normalizePosition, useOfferTracker } from "./offerData.js";
 import { initialSubRoute, setSubRoute } from "./route.js";
 import { PlayerProfileModal, ThemeContext } from "./OfferTracker.jsx";
 import { fetchSchedule, teamKey } from "./collegeData.js";
 import {
   SEASON_YEAR,
+  sameSchool,
   STATUS_BY_KEY,
   STATUS_OPTIONS,
   fromIso,
@@ -24,18 +25,10 @@ import {
 const TABS = ["Master Tracker", "Weekly Tracker", "Staff Face Sheet"];
 const TAB_SLUGS = { "Master Tracker": "master", "Weekly Tracker": "weekly", "Staff Face Sheet": "face-sheet" };
 
-// Position groups for the weekly view, in the order coaches read a roster.
-const POSITION_GROUPS = [
-  { key: "QB", label: "QB", match: /^QB$/ },
-  { key: "RB", label: "RB", match: /^(RB|FB|HB)$/ },
-  { key: "WR", label: "WR", match: /^(WR|SLOT)$/ },
-  { key: "TE", label: "TE", match: /^TE$/ },
-  { key: "OL", label: "OL", match: /^(OL|OT|OG|OC|C|IOL|LS)$/ },
-  { key: "DL", label: "DL", match: /^(DL|DE|DT|EDGE|NT)$/ },
-  { key: "LB", label: "LB", match: /^(LB|ILB|OLB|MLB)$/ },
-  { key: "DB", label: "DB", match: /^(DB|CB|S|SS|FS|SAF|NB)$/ },
-];
-const groupOf = (position) => POSITION_GROUPS.find((g) => g.match.test((position || "").toUpperCase()))?.key || "OTHER";
+// Positions follow the Offer Tracker's set (see normalizePosition there): OG/OT become OL,
+// S/DB become SAF, and anything unrecognized is ATH. The order is how a roster is read.
+const POSITION_GROUPS = ["QB", "RB", "WR", "TE", "OL", "DL", "LB", "CB", "SAF", "ATH"].map((key) => ({ key, label: key }));
+const groupOf = (position) => normalizePosition(position);
 
 const controlStyle = {
   background: "var(--bg-surface)", border: "1px solid var(--border)", color: "var(--text-primary)", borderRadius: 6,
@@ -400,7 +393,7 @@ function MasterTab({ players, weeks, currentWeek, cmuByWeek, statusOf, statusWhy
                 <td style={{ ...td, padding: "4px 6px", whiteSpace: "nowrap", background: on ? rowBg : undefined }}>
                   <CoachCell player={p} coaches={coaches} updatePlayer={updatePlayer} />
                 </td>
-                <td title={p.positionFromOffers ? `From the Offer Tracker${p.hsPosition && p.hsPosition !== p.position ? ` (the HS sheet says ${p.hsPosition})` : ""}` : "From the HS sheet — not on the Offer Tracker"} style={{ ...td, color: "var(--accent)", fontWeight: 700, background: on ? rowBg : undefined }}>{p.position || "—"}</td>
+                <td title={p.positionFromOffers ? `From the Offer Tracker${p.hsPosition && normalizePosition(p.hsPosition) !== p.position ? ` (the HS sheet says ${p.hsPosition})` : ""}` : "From the HS sheet (not on the Offer Tracker), read through the same position rules"} style={{ ...td, color: "var(--accent)", fontWeight: 700, background: on ? rowBg : undefined }}>{p.position || "—"}</td>
                 <td style={{ ...td, background: on ? rowBg : undefined }} className="tabular">{p.classYear}</td>
                 <td style={{ ...td, whiteSpace: "nowrap", background: on ? rowBg : undefined }}>{p.highSchool}{p.state ? ` (${p.state})` : ""}</td>
                 <td style={{ ...td, whiteSpace: "nowrap", fontWeight: 700, color: "var(--text-primary)", background: on ? rowBg : undefined }} className="tabular">{p.record.played ? p.record.text : "—"}</td>
@@ -968,22 +961,45 @@ export default function HsGameUpdate({ onBack }) {
   const hs = useHsTracker();
   const offers = useOfferTracker();
 
-  // A player's position comes from their Offer Tracker profile when they have one (that's the
-  // one coaches maintain); the HS sheet's own position is only the fallback.
+  // The player's rows on the Offer Tracker. An exact name match first; otherwise the same class
+  // year and last name with a compatible first name (Max/Maxim) at the same school, provided
+  // that points at exactly one recruit.
+  const matchRows = useCallback(
+    (p) => {
+      const exact = offers.rowsForPlayer(p.classYear, p.name);
+      if (exact.length) return exact;
+      const candidates = offers.rowsByLast?.get(`${p.classYear}|${lastNameKey(p.name)}`) || [];
+      if (!candidates.length) return [];
+      const first = firstNameKey(p.name);
+      const found = new Map();
+      candidates.forEach((r) => {
+        const other = firstNameKey(r.player);
+        const bothSchools = p.highSchool && r.highSchool;
+        const schoolOk = !bothSchools || sameSchool(p.highSchool, r.highSchool);
+        const closeFirst = other === first || (first.length >= 3 && other.length >= 3 && (other.startsWith(first) || first.startsWith(other)));
+        if (schoolOk && (closeFirst || (bothSchools && other[0] === first[0]))) found.set(normalizePlayerKey(r.player), r.player);
+      });
+      return found.size === 1 ? offers.rowsForPlayer(p.classYear, [...found.values()][0]) : [];
+    },
+    [offers.rowsByPlayer, offers.rowsByLast] // eslint-disable-line react-hooks/exhaustive-deps
+  );
+
+  // Position, like everywhere else on the site, is the Offer Tracker's: taken from the player's
+  // profile there when they have one (the CMU row first, else the most common), and read through
+  // the same position rules. The HS sheet's own value is only the fallback.
   const players = useMemo(
     () =>
       hs.players.map((p) => {
-        const rows = offers.rowsForPlayer(p.classYear, p.name);
-        const positions = rows.map((r) => (r.position || "").trim().toUpperCase()).filter(Boolean);
-        if (!positions.length) return p;
+        const rows = matchRows(p);
+        const positions = rows.map((r) => (r.position || "").trim()).filter(Boolean).map(normalizePosition);
+        if (!positions.length) return { ...p, position: normalizePosition(p.position), hsPosition: p.position, positionFromOffers: false };
         const cmu = rows.find((r) => r.team === "CMU" && (r.position || "").trim());
         const counts = {};
         positions.forEach((x) => (counts[x] = (counts[x] || 0) + 1));
         const common = Object.keys(counts).sort((a, b) => counts[b] - counts[a])[0];
-        const position = cmu ? cmu.position.trim().toUpperCase() : common;
-        return { ...p, position, hsPosition: p.position, positionFromOffers: true };
+        return { ...p, position: cmu ? normalizePosition(cmu.position) : common, hsPosition: p.position, positionFromOffers: true };
       }),
-    [hs.players, offers] // eslint-disable-line react-hooks/exhaustive-deps
+    [hs.players, matchRows] // eslint-disable-line react-hooks/exhaustive-deps
   );
   // The open tab and week are kept in the address (#/hs/weekly/2026-09-14) so a refresh returns here.
   const [initial] = useState(initialSubRoute);
@@ -1009,7 +1025,7 @@ export default function HsGameUpdate({ onBack }) {
   // so a surprising color can be traced to its source (shown when hovering the name).
   function statusInfo(p) {
     if (p.status) return { key: p.status, why: `Set by hand on this tracker (${STATUS_BY_KEY[p.status]?.label || p.status}). Choose "Auto" to follow the Offer Tracker instead.` };
-    const rows = offers.rowsForPlayer(p.classYear, p.name);
+    const rows = matchRows(p);
     if (!rows.length) return { key: "", why: "Not on the Offer Tracker." };
     const spelled = rows[0].player && rows[0].player.toLowerCase() !== (p.name || "").toLowerCase() ? ` (listed there as ${rows[0].player})` : "";
     const committed = rows.find((r) => /^COMMITTED TO /i.test((r.status || "").trim()));
@@ -1109,7 +1125,7 @@ export default function HsGameUpdate({ onBack }) {
     return out.sort((a, b) => a.game.date.localeCompare(b.game.date) || a.player.name.localeCompare(b.player.name));
   }, [players]);
 
-  const hasProfile = (p) => offers.rowsForPlayer(p.classYear, p.name).length > 0;
+  const hasProfile = (p) => matchRows(p).length > 0;
 
   const openPlayer = (id) => {
     setFocusId(id);
@@ -1254,7 +1270,7 @@ export default function HsGameUpdate({ onBack }) {
 
       {profile && (hasProfile(profile) ? (
         <ThemeContext.Provider value={theme}>
-          <PlayerProfileModal player={profile.name} classYear={profile.classYear} tracker={offers} onClose={() => setProfile(null)} />
+          <PlayerProfileModal player={matchRows(profile)[0].player} classYear={profile.classYear} tracker={offers} onClose={() => setProfile(null)} />
         </ThemeContext.Provider>
       ) : (
         <div onClick={() => setProfile(null)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20, zIndex: 70 }}>
