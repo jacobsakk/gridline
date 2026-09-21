@@ -4,7 +4,7 @@ import cmuHelmet from "./assets/cmu-helmet.png";
 import { ThemeSwitcher, useTheme } from "./theme.jsx";
 import { confirmAction } from "./ConfirmDialog.jsx";
 import { firstNameKey, lastNameKey, normalizePlayerKey, normalizePosition, useOfferTracker } from "./offerData.js";
-import { initialSubRoute, setSubRoute } from "./route.js";
+import { initialSubRoute, setSubRoute, useBack } from "./route.js";
 import { PlayerProfileModal, ThemeContext, toTitleCase } from "./OfferTracker.jsx";
 import { fetchSchedule, teamKey } from "./collegeData.js";
 import {
@@ -1184,7 +1184,9 @@ function StatusSelect({ player, status, updatePlayer, style }) {
 
 // ------------------------------------------------------------------- page
 
-export default function HsGameUpdate({ onBack }) {
+export default function HsGameUpdate({ onBack: toDashboard }) {
+  const back = useBack(toDashboard);
+  const onBack = back.go;
   const [theme, setTheme] = useTheme();
   const hs = useHsTracker();
   const offers = useOfferTracker();
@@ -1421,7 +1423,7 @@ export default function HsGameUpdate({ onBack }) {
               onClick={onBack}
               style={{ display: "flex", alignItems: "center", gap: 7, background: "var(--bg-surface)", border: "1px solid var(--border)", color: "var(--text-primary)", borderRadius: 5, padding: "8px 14px", fontSize: 13, fontWeight: 600, cursor: "pointer" }}
             >
-              <ArrowLeft size={15} /> Dashboard
+              <ArrowLeft size={15} /> {back.label}
             </button>
             <img src={cmuHelmet} alt="Central Michigan Chippewas helmet" style={{ height: 34, width: "auto", flexShrink: 0 }} />
             <h1 className="oswald app-title" style={{ fontSize: 22, fontWeight: 700, margin: 0, letterSpacing: "0.01em" }}>HS Game Update</h1>

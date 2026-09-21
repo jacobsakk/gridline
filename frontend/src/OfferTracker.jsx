@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
-import { initialSubRoute, setSubRoute } from "./route.js";
+import { initialSubRoute, setSubRoute, useBack } from "./route.js";
 import NameFixModal from "./NameFixModal.jsx";
 import { ArrowLeft, Upload, X, Loader2, ChevronUp, ChevronDown, ChevronsUpDown, TrendingUp, MapPin, Search, Plus, ExternalLink, Pencil } from "lucide-react";
 import { confirmAction } from "./ConfirmDialog.jsx";
@@ -997,7 +997,9 @@ function parseOfferDate(value) {
   return Number.isNaN(t) ? null : t;
 }
 
-export default function OfferTracker({ onBack }) {
+export default function OfferTracker({ onBack: toDashboard }) {
+  const back = useBack(toDashboard);
+  const onBack = back.go;
   const [theme, setTheme] = useTheme();
   const [uploadOpen, setUploadOpen] = useState(false);
   // Where you are (#/offers/2027/MAC/teams/CMU) is kept in the address so a refresh returns here.
@@ -1125,14 +1127,14 @@ export default function OfferTracker({ onBack }) {
           <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
             <button
               onClick={onBack}
-              title="Back to dashboard"
+              title={`Back to ${back.label}`}
               style={{
                 display: "flex", alignItems: "center", gap: 6, flexShrink: 0,
                 background: "var(--bg-surface)", border: "1px solid var(--border)", color: "var(--text-secondary)",
                 borderRadius: 5, padding: "8px 12px", fontSize: 13, fontWeight: 600, cursor: "pointer",
               }}
             >
-              <ArrowLeft size={15} /> Dashboard
+              <ArrowLeft size={15} /> {back.label}
             </button>
             <img src={cmuHelmet} alt="Central Michigan Chippewas helmet" style={{ height: 34, width: "auto", flexShrink: 0 }} />
             <h1 className="oswald app-title" style={{ fontSize: 22, fontWeight: 700, margin: 0, letterSpacing: "0.01em" }}>

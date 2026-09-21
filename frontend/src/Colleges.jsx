@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { initialSubRoute, setSubRoute } from "./route.js";
+import { initialSubRoute, setSubRoute, useBack } from "./route.js";
 import { ArrowLeft, Search, ChevronUp, ChevronDown, ChevronsUpDown, Trophy } from "lucide-react";
 import { ThemeSwitcher, useTheme } from "./theme.jsx";
 import cmuHelmet from "./assets/cmu-helmet.png";
@@ -371,7 +371,9 @@ function FragmentGroup({ name, children }) {
   );
 }
 
-export default function Colleges({ onBack }) {
+export default function Colleges({ onBack: toDashboard }) {
+  const back = useBack(toDashboard);
+  const onBack = back.go;
   const [theme, setTheme] = useTheme();
   // The open team is kept in the address (#/colleges/2117) so a refresh returns to it.
   const [selectedId, setSelectedId] = useState(() => {
@@ -398,14 +400,14 @@ export default function Colleges({ onBack }) {
     if (history.length) {
       setSelectedId(history[history.length - 1]);
       setHistory(history.slice(0, -1));
-    } else if (selectedId) {
+    } else if (selectedId && !back.fromTrail) {
       setSelectedId(null);
     } else {
       onBack();
     }
   }
 
-  const backLabel = history.length ? "Back" : selectedId ? "Colleges" : "Dashboard";
+  const backLabel = history.length ? "Back" : selectedId && !back.fromTrail ? "Colleges" : back.label;
 
   return (
     <ThemeContext.Provider value={theme}>

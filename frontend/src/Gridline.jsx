@@ -7,7 +7,7 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { REAL_STATS, loadRealStats } from "./statsData.js";
 import { ThemeSwitcher, useTheme } from "./theme.jsx";
-import { initialSubRoute } from "./route.js";
+import { initialSubRoute, setSubRoute, useBack } from "./route.js";
 import StatsUploadModal from "./StatsUploadModal.jsx";
 import { loadUploads } from "./statsUpload.js";
 import cmuHelmet from "./assets/cmu-helmet.png";
@@ -1604,7 +1604,9 @@ function CompareModal({ players, onClose }) {
 
 // ---------- Component ----------
 
-function GridlineMain({ onBack, initialSearch, onUploadStats }) {
+function GridlineMain({ onBack: toDashboard, initialSearch, onUploadStats }) {
+  const back = useBack(toDashboard);
+  const onBack = toDashboard ? back.go : undefined;
   // #/tracker/FBS/Some Player opens that division with the player searched (the Roster page links here)
   const [linked] = useState(() => initialSubRoute());
   const [division, setDivision] = useState(() => (DIVISIONS.includes(linked[0]) ? linked[0] : "NAIA"));
@@ -1613,6 +1615,10 @@ function GridlineMain({ onBack, initialSearch, onUploadStats }) {
   const [position, setPosition] = useState("All");
   const [conference, setConference] = useState("All");
   const [search, setSearch] = useState(initialSearch || (DIVISIONS.includes(linked[0]) ? linked[1] || "" : ""));
+  // the division and search live in the address, so coming back to this screen lands on the same list
+  useEffect(() => {
+    setSubRoute("tracker", [division, ...(search.trim() ? [search.trim()] : [])]);
+  }, [division, search]);
   const [sortKey, setSortKey] = useState("yards");
   const [sortDir, setSortDir] = useState("desc");
   const [watchlistOpen, setWatchlistOpen] = useState(false);
@@ -1778,14 +1784,14 @@ function GridlineMain({ onBack, initialSearch, onUploadStats }) {
               {onBack && (
                 <button
                   onClick={onBack}
-                  title="Back to dashboard"
+                  title={`Back to ${back.label}`}
                   style={{
                     display: "flex", alignItems: "center", gap: 6, flexShrink: 0,
                     background: "var(--bg-surface)", border: "1px solid var(--border)", color: "var(--text-secondary)",
                     borderRadius: 5, padding: "8px 12px", fontSize: 13, fontWeight: 600, cursor: "pointer",
                   }}
                 >
-                  <ArrowLeft size={15} /> Dashboard
+                  <ArrowLeft size={15} /> {back.label}
                 </button>
               )}
               <img src={cmuHelmet} alt="Central Michigan Chippewas helmet" style={{ height: 34, width: "auto", flexShrink: 0 }} />

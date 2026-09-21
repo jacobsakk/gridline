@@ -4,7 +4,7 @@ import { ArrowLeft, Download, ExternalLink, Loader2, Pencil, Plus, Search, Trash
 import cmuHelmet from "./assets/cmu-helmet.png";
 import { ThemeSwitcher, useTheme } from "./theme.jsx";
 import { confirmAction } from "./ConfirmDialog.jsx";
-import { initialSubRoute, setSubRoute } from "./route.js";
+import { initialSubRoute, setSubRoute, useBack } from "./route.js";
 import { REAL_STATS, loadRealStats } from "./statsData.js";
 import { isCommitment, normalizePlayerKey, useOfferTracker } from "./offerData.js";
 import { fetchLatestDepthCharts, lazyDepthCharts, teamKey } from "./collegeData.js";
@@ -691,7 +691,9 @@ function GoalsModal({ label, goals, onSave, onClose }) {
 
 // ------------------------------------------------------------------- page
 
-export default function RosterPage({ onBack, session }) {
+export default function RosterPage({ onBack: toDashboard, session }) {
+  const back = useBack(toDashboard);
+  const onBack = back.go;
   const [theme, setTheme] = useTheme();
   const admin = !!session?.profile?.admin;
   const real = useRoster({ isAdmin: admin });
@@ -717,9 +719,11 @@ export default function RosterPage({ onBack, session }) {
   const current = season ?? (Number(initial[0]) && seasonList.includes(Number(initial[0])) ? Number(initial[0]) : base);
   const isProjection = current > base;
   const label = isProjection ? `${current} Projection` : String(current);
+  // the season, view and open player live in the address, so coming back from another screen lands on the same spot
+  const openId = modal?.type === "player" ? modal.player.id : "";
   useEffect(() => {
-    setSubRoute("roster", [current, view]);
-  }, [current, view]);
+    setSubRoute("roster", [current, view, ...(openId ? [openId] : [])]);
+  }, [current, view, openId]);
 
   // Which players have Central Michigan stat lines in the Pre-Portal Tracker (loads on demand).
   useEffect(() => {
@@ -771,6 +775,13 @@ export default function RosterPage({ onBack, session }) {
     [inSeason, current, base, roster.eligibilityYears, roster.privateInfo, roster.finance]
   );
   const byId = useMemo(() => new Map(rows.map((p) => [p.id, p])), [rows]);
+  const reopened = useRef(false);
+  useEffect(() => {
+    if (reopened.current || !initial[2] || !rows.length) return;
+    reopened.current = true;
+    const p = rows.find((r) => r.id === initial[2]);
+    if (p) setModal({ type: "player", player: p });
+  }, [rows]); // eslint-disable-line react-hooks/exhaustive-deps
   // The Colleges depth chart for Central Michigan (the deployed copy, then GitHub's if it's newer)
   const [ourlads, setOurlads] = useState(null);
   useEffect(() => {
@@ -843,7 +854,7 @@ export default function RosterPage({ onBack, session }) {
         <div style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: 3, background: "linear-gradient(90deg, var(--gold), var(--maroon))" }} />
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 14, flexWrap: "wrap" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-            <button onClick={onBack} style={{ display: "flex", alignItems: "center", gap: 7, background: "var(--bg-surface)", border: "1px solid var(--border)", color: "var(--text-primary)", borderRadius: 5, padding: "8px 14px", fontSize: 13, fontWeight: 600, cursor: "pointer" }}><ArrowLeft size={15} /> Dashboard</button>
+            <button onClick={onBack} style={{ display: "flex", alignItems: "center", gap: 7, background: "var(--bg-surface)", border: "1px solid var(--border)", color: "var(--text-primary)", borderRadius: 5, padding: "8px 14px", fontSize: 13, fontWeight: 600, cursor: "pointer" }}><ArrowLeft size={15} /> {back.label}</button>
             <img src={cmuHelmet} alt="Central Michigan Chippewas helmet" style={{ height: 34, width: "auto", flexShrink: 0 }} />
             <h1 className="oswald app-title" style={{ fontSize: 22, fontWeight: 700, margin: 0 }}>Roster Management</h1>
           </div>

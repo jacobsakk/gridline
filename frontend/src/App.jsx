@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { navigate, useRoute } from "./route.js";
+import { useEffect, useState } from "react";
+import { navigate, restorePendingScroll, useRoute } from "./route.js";
 import Dashboard from "./Dashboard.jsx";
 import Gridline from "./Gridline.jsx";
 import SettingsPage from "./SettingsPage.jsx";
@@ -33,6 +33,10 @@ function prefersReducedMotion() {
 function Screens({ session }) {
   // Which screen you're on lives in the address (#/offers ...), so a refresh stays put.
   const route = useRoute();
+  // coming back to a screen from a link: put the page where it was
+  useEffect(() => {
+    restorePendingScroll();
+  }, [route[0]]); // eslint-disable-line react-hooks/exhaustive-deps
   const view = { name: SCREENS.has(route[0]) ? route[0] : "dashboard" };
   const [transition, setTransition] = useState(null);
   const toDashboard = () => navigate([]);
