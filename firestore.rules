@@ -48,6 +48,10 @@ service cloud.firestore {
     match /offers/{docId} {
       allow read, write: if invited();
     }
+    // Stats loaded by hand for divisions the scrapers can't reach (NAIA, California JUCO).
+    match /statsUploads/{docId} {
+      allow read, write: if invited();
+    }
     match /hsPlayers/{docId} {
       allow read, write: if invited();
     }

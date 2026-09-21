@@ -1,12 +1,14 @@
 import { confirmAction } from "./ConfirmDialog.jsx";
-import { useState, useMemo, useEffect, useRef, Fragment } from "react";
-import { ChevronUp, ChevronDown, ChevronsUpDown, Crown, BadgeCheck, FlaskConical, Star, X, Plus, ExternalLink, Search, Download, Columns3, TrendingUp, GripVertical, CheckCircle2, AlertTriangle, ArrowLeft } from "lucide-react";
+import { useState, useMemo, useEffect, useRef, useCallback, Fragment } from "react";
+import { ChevronUp, ChevronDown, ChevronsUpDown, Crown, BadgeCheck, FlaskConical, Star, X, Plus, ExternalLink, Search, Download, Columns3, TrendingUp, GripVertical, CheckCircle2, AlertTriangle, ArrowLeft, Upload } from "lucide-react";
 import { collection, doc, addDoc, updateDoc, onSnapshot, query, orderBy } from "firebase/firestore";
 import { db } from "./firebase";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import realStats from "./data/real-stats.json";
 import { ThemeSwitcher, useTheme } from "./theme.jsx";
+import StatsUploadModal from "./StatsUploadModal.jsx";
+import { loadUploads } from "./statsUpload.js";
 import cmuHelmet from "./assets/cmu-helmet.png";
 import { canonicalSchool } from "./schoolNames.js";
 
@@ -115,7 +117,7 @@ const LEADER_BOARDS = [
   { key: "interceptions", categoryKey: "tackling", label: "Interceptions", sortKey: "int" },
 ];
 
-const DATA = realStats;
+export const DATA = realStats;
 
 // None of the four sources sends completion % directly -- they all report
 // a "comp/att" string (compAtt) plus season totals, so it's derived once
@@ -125,6 +127,27 @@ for (const r of DATA) {
     const [comp, att] = r.compAtt.split("/").map(Number);
     r.pct = att > 0 ? `${((comp / att) * 100).toFixed(1)}%` : "0.0%";
   }
+}
+
+// Rows someone uploaded by hand (see statsUpload.js) replace the scraped season totals for that division and stat
+// category. DATA is rebuilt from the untouched bundle each time, so removing an upload restores the scraped rows.
+const BUNDLED = DATA.slice();
+export function applyUploads(uploads) {
+  DATA.length = 0;
+  DATA.push(...BUNDLED);
+  uploads.forEach((u) => {
+    for (let i = DATA.length - 1; i >= 0; i--) {
+      const r = DATA[i];
+      if (r.division === u.division && r.category === u.category && r.week === "total") DATA.splice(i, 1);
+    }
+    u.rows.forEach((r) => {
+      if (r.category === "passing" && r.compAtt) {
+        const [comp, att] = r.compAtt.split("/").map(Number);
+        r.pct = att > 0 ? `${((comp / att) * 100).toFixed(1)}%` : "0.0%";
+      }
+      DATA.push(r);
+    });
+  });
 }
 
 const DIVISION_LABEL = { NAIA: "NAIA", JUCO: "Junior College", D2: "NCAA Division II", D3: "NCAA Division III", FCS: "FCS", FBS: "FBS" };
@@ -1576,7 +1599,7 @@ function CompareModal({ players, onClose }) {
 
 // ---------- Component ----------
 
-export default function Gridline({ onBack, initialSearch }) {
+function GridlineMain({ onBack, initialSearch, onUploadStats }) {
   const [division, setDivision] = useState("NAIA");
   const [category, setCategory] = useState("passing");
   const [week, setWeek] = useState("total");
@@ -1767,6 +1790,19 @@ export default function Gridline({ onBack, initialSearch }) {
               </div>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
+              {onUploadStats && (
+                <button
+                  onClick={onUploadStats}
+                  title="Load NAIA / JUCO stats by hand when the automatic refresh can't reach them"
+                  style={{
+                    display: "flex", alignItems: "center", gap: 6, flexShrink: 0,
+                    background: "var(--bg-surface)", border: "1px solid var(--border)", color: "var(--text-primary)",
+                    borderRadius: 5, padding: "8px 12px", fontSize: 13, fontWeight: 600, cursor: "pointer",
+                  }}
+                >
+                  <Upload size={14} /> Upload stats
+                </button>
+              )}
               <button
                 onClick={() => setWatchlistOpen(true)}
                 style={{
@@ -2200,3 +2236,45 @@ const selectStyle = {
   minWidth: 140,
   cursor: "pointer",
 };
+
+// Loads any hand-uploaded stats before the tracker draws (so its filters see them), and re-draws it after an upload.
+export default function Gridline(props) {
+  const [theme] = useTheme();
+  const [ready, setReady] = useState(false);
+  const [uploads, setUploads] = useState([]);
+  const [version, setVersion] = useState(0);
+  const [modal, setModal] = useState(false);
+
+  const reload = useCallback(async () => {
+    try {
+      const found = await loadUploads();
+      applyUploads(found);
+      setUploads(found);
+      setVersion((v) => v + 1);
+    } catch (err) {
+      console.error("Couldn't load uploaded stats", err); // the tracker still works from the bundled data
+    }
+    setReady(true);
+  }, []);
+  useEffect(() => {
+    reload();
+  }, [reload]);
+
+  if (!ready) {
+    return (
+      <div className="app-shell" data-theme={theme} style={{ display: "flex", alignItems: "center", justifyContent: "center", background: "var(--bg-page)", color: "var(--text-faint)" }}>
+        Loading…
+      </div>
+    );
+  }
+  return (
+    <>
+      <GridlineMain key={version} {...props} onUploadStats={() => setModal(true)} />
+      {modal && (
+        <div className="app-shell" data-theme={theme} style={{ display: "contents" }}>
+          <StatsUploadModal uploads={uploads} onChanged={reload} onClose={() => setModal(false)} />
+        </div>
+      )}
+    </>
+  );
+}
