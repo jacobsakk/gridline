@@ -978,7 +978,7 @@ function FaceSheetTab(props) {
 // Everything a person needs to settle: games whose two sources disagree, and past games no source has
 // a score for. Either way the score entered here is final for that game -- the flag stops, and the
 // scraper can't change it (a game's box has "Use the sources again" to hand it back).
-function ReviewModal({ conflicts, missing, updateGame, onOpenGame, onClose }) {
+function ReviewModal({ conflicts, missing, updateGame, onOpenGame, onDeleteGame, onClose }) {
   const [tab, setTab] = useState(conflicts.length || !missing.length ? "conflicts" : "missing");
   const [draft, setDraft] = useState({});
   const [saving, setSaving] = useState("");
@@ -1047,6 +1047,9 @@ function ReviewModal({ conflicts, missing, updateGame, onOpenGame, onClose }) {
                 <input aria-label="Our score" inputMode="numeric" placeholder="Us" value={d.ours} onChange={(e) => set(r, { ours: e.target.value.replace(/\D/g, "") })} style={num} />
                 <span style={{ color: "var(--text-faint)" }}>-</span>
                 <input aria-label="Their score" inputMode="numeric" placeholder="Them" value={d.theirs} onChange={(e) => set(r, { theirs: e.target.value.replace(/\D/g, "") })} style={num} />
+                <button onClick={() => onDeleteGame(r.player, r.game)} title="Delete this game" aria-label={`Delete the ${r.game.opponent} game for ${r.player.name}`} style={{ background: "none", border: "1px solid var(--border)", borderRadius: 6, color: "var(--danger-text)", cursor: "pointer", lineHeight: 0, padding: 7 }}>
+                  <Trash2 size={14} />
+                </button>
                 <button
                   onClick={() => settle(r, { result: d.result, ours: Number(d.ours), theirs: Number(d.theirs) })}
                   disabled={d.ours === "" || d.theirs === "" || busy}
@@ -1574,6 +1577,7 @@ export default function HsGameUpdate({ onBack }) {
           missing={missingScores}
           updateGame={hs.updateGame}
           onOpenGame={(player, game) => setGameSource({ id: player.id, key: game.date || game.opponent })}
+          onDeleteGame={deleteGame}
           onClose={() => setReviewOpen(false)}
         />
       )}

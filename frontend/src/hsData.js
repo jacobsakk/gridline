@@ -309,8 +309,10 @@ const daysApart = (a, b) => Math.abs((fromIso(a) - fromIso(b)) / 86400000);
 // simply lack it) and dropped if they're just an un-played placeholder, which
 // is what a rescheduled game looks like.
 export function overlayScraped(games, teamDoc) {
-  const teamGames = teamDoc?.games;
+  // The same game can be listed more than once (MaxPreps keeps stale copies): one game before anything is matched.
+  const teamGames = teamDoc?.games?.length ? dedupeGames(teamDoc.games) : teamDoc?.games;
   if (!teamGames?.length) return games;
+  const deleted = games.filter((g) => g.removed && g.date);
   const findStored = (t, pool) =>
     pool
       .filter((g) => g.date && daysApart(g.date, t.date) <= 1 && sameSchool(g.opponent, t.opponent))
@@ -318,6 +320,8 @@ export function overlayScraped(games, teamDoc) {
 
   const claimed = new Set();
   const merged = teamGames.map((t) => {
+    // Deleted by hand: hidden, whichever copy of the game this is.
+    if (deleted.some((d) => daysApart(d.date, t.date) <= 1 && sameSchool(d.opponent, t.opponent))) return null;
     const mine = findStored(t, games.filter((g) => !claimed.has(g)));
     if (mine) claimed.add(mine);
     if (mine?.removed) return null; // deleted by hand: the scraper's copy stays hidden
@@ -573,10 +577,12 @@ export function useHsTracker() {
   async function updateGame(player, game, fields) {
     // A player who has no stored schedule is showing the school's scraped one; the first edit saves it.
     const base = player.storedGames?.length ? player.storedGames : player.games || [];
-    // The stored copy may sit on a slightly different date than the scraped one shown on screen.
+    // The stored copy may sit on a slightly different date than the scraped one shown on screen, and two
+    // different opponents can be listed for the same date: the opponent has to match too.
     const key = game.storedKey || gameKey(game);
-    let games = base.map((g) => (gameKey(g) === key ? { ...g, ...fields } : g));
-    if (!base.some((g) => gameKey(g) === key)) games = [...base, { date: game.date, opponent: game.opponent, homeAway: game.homeAway || "", ...fields }];
+    const isIt = (g) => gameKey(g) === key && (!g.opponent || !game.opponent || sameSchool(g.opponent, game.opponent));
+    let games = base.map((g) => (isIt(g) ? { ...g, ...fields } : g));
+    if (!base.some(isIt)) games = [...base, { date: game.date, opponent: game.opponent, homeAway: game.homeAway || "", ...fields }];
     await updatePlayer(player.id, { games });
   }
 
