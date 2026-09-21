@@ -203,7 +203,9 @@ def _team_key(name):
     """'Butler', 'Butler Community College' -> 'butler' (same team across sources)."""
     import re
 
-    text = (name or "").lower()
+    text = (name or "").lower().strip()
+    # NJCAA tags some names with a state: "Butler Community College-KS", "Highland Community College-Kansas".
+    text = re.sub(r"(college|university)-[a-z]+$", r"\1", text)
     for word in ("community college", "junior college", "college", "university"):
         text = text.replace(word, "")
     return re.sub(r"[^a-z]", "", text)
