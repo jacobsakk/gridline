@@ -1826,30 +1826,6 @@ function GridlineMain({ onBack, initialSearch, onUploadStats }) {
             </div>
           </div>
 
-          <div style={{ position: "relative", marginTop: 14, maxWidth: 640 }}>
-            <Search size={18} color="var(--text-faint)" style={{ position: "absolute", left: 16, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} />
-            <input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search player or school…"
-              style={{
-                width: "100%", background: "var(--bg-surface)", border: "1px solid var(--border)", color: "var(--text-primary)",
-                borderRadius: 8, padding: "13px 42px", fontSize: 15.5, fontFamily: "inherit",
-              }}
-            />
-            {search && (
-              <button
-                onClick={() => setSearch("")}
-                title="Clear search"
-                style={{
-                  position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)",
-                  background: "none", border: "none", color: "var(--text-faint)", cursor: "pointer", padding: 4, lineHeight: 0,
-                }}
-              >
-                <X size={14} />
-              </button>
-            )}
-          </div>
         </div>
       </div>
 
@@ -1894,6 +1870,30 @@ function GridlineMain({ onBack, initialSearch, onUploadStats }) {
               {d}
             </button>
           ))}
+        </div>
+        <div style={{ position: "relative", marginTop: 14, maxWidth: 640 }}>
+          <Search size={18} color="var(--text-faint)" style={{ position: "absolute", left: 16, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} />
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search player or school…"
+            style={{
+              width: "100%", background: "var(--bg-surface)", border: "1px solid var(--border)", color: "var(--text-primary)",
+              borderRadius: 8, padding: "13px 42px", fontSize: 15.5, fontFamily: "inherit",
+            }}
+          />
+          {search && (
+            <button
+              onClick={() => setSearch("")}
+              title="Clear search"
+              style={{
+                position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)",
+                background: "none", border: "none", color: "var(--text-faint)", cursor: "pointer", padding: 4, lineHeight: 0,
+              }}
+            >
+              <X size={14} />
+            </button>
+          )}
         </div>
       </div>
 
