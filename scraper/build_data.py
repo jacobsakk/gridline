@@ -228,9 +228,30 @@ def main():
         fbs_rows, fcs_rows = build_fbs_fcs(run_date)
         all_rows += fbs_rows + fcs_rows
     else:
-        all_rows = build_ncaa_api_divisions(run_date)
-        all_rows += build_naia_division(run_date)
-        all_rows += build_juco_division(run_date)
+        # One source being down must not take the others with it: a division that fails keeps the rows
+        # it had last time (and shows up as a warning), while the rest refresh normally.
+        try:
+            with open(OUTPUT_PATH) as f:
+                existing = json.load(f)
+        except (OSError, ValueError):
+            existing = []
+        failed = []
+
+        def guarded(label, divisions, build):
+            try:
+                return build(run_date)
+            except Exception as err:  # noqa: BLE001 -- any failure in one source is contained here
+                failed.append(label)
+                print(f"::warning::{label} refresh failed ({err}); keeping the last saved {label} rows")
+                return [r for r in existing if r["division"] in divisions]
+
+        all_rows = guarded("FBS/FCS/D2/D3 (NCAA + ESPN)", {"FBS", "FCS", "D2", "D3"}, build_ncaa_api_divisions)
+        all_rows += guarded("NAIA", {"NAIA"}, build_naia_division)
+        all_rows += guarded("JUCO", {"JUCO"}, build_juco_division)
+        if len(failed) == 3:
+            raise RuntimeError("Every division failed to refresh -- nothing new to save.")
+        if failed:
+            print(f"\nRefreshed everything except: {', '.join(failed)} (those keep their previous data).")
 
     print("\nScrubbing duplicates across every division...")
     all_rows, report = scrub_duplicates(all_rows)

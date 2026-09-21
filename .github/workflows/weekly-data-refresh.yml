@@ -4,10 +4,12 @@ name: Weekly stats refresh
 # all NAIA/JUCO/D2/FCS games for the week are complete. Also runnable
 # manually from the Actions tab (workflow_dispatch) for testing.
 #
-# What this does: re-runs the scraper for all 4 divisions and commits the
+# What this does: re-runs the scraper for every division and commits the
 # refreshed frontend/src/data/real-stats.json + scraper/snapshots/ straight
-# back to this repo. It does NOT rebuild or redeploy the frontend, or touch
-# the published Claude Artifact -- that's a separate, still-manual step
+# back to this repo, then asks the Pages workflow to redeploy the site (the
+# stats are bundled into it). If one source is unreachable -- NAIA's site puts a
+# bot check in front of the scraper at times -- that division keeps its last
+# data, shows as a yellow warning on the run, and the rest still refresh.
 # (Claude's own scheduled cloud routines can't reach these stats sites at
 # all, confirmed directly -- see scraper/README.md).
 on:
@@ -17,6 +19,7 @@ on:
 
 permissions:
   contents: write
+  actions: write   # to ask the Pages workflow to redeploy (a push made with the built-in token doesn't trigger it)
 
 jobs:
   refresh:
@@ -39,7 +42,9 @@ jobs:
         working-directory: scraper
         run: python3 build_data.py
 
-      - name: Commit and push refreshed data
+      - name: Commit, push and redeploy
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           git config user.name "gridline-bot"
           git config user.email "actions@users.noreply.github.com"
@@ -49,4 +54,5 @@ jobs:
           else
             git commit -m "Weekly stats refresh ($(date -u +%Y-%m-%d))"
             git push
+            gh workflow run deploy-pages.yml
           fi
