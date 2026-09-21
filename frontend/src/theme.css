@@ -133,3 +133,20 @@ tbody tr:hover { background: var(--row-hover) !important; }
   .hs-shell .hs-card { break-inside: avoid; }
   .hs-shell textarea { border: none !important; resize: none; }
 }
+
+/* Staff face sheet: sized for the screen, shrunk to eight-per-page on paper. */
+.hs-sheet { --hs-row: 27px; --hs-font: 13px; }
+.hs-print-only { display: none; }
+.hs-block .hs-tools { opacity: 0; transition: opacity 0.15s; }
+.hs-block:hover .hs-tools, .hs-block:focus-within .hs-tools { opacity: 1; }
+@media (hover: none) { .hs-block .hs-tools { opacity: 1; } }
+@page hs { size: letter portrait; margin: 0.35in; }
+@media print {
+  .hs-sheet { --hs-row: 0.185in; --hs-font: 8.5pt; }
+  .hs-shell.hs-face-print { page: hs; }
+  .hs-shell .hs-page { break-after: page; margin: 0 !important; max-width: none !important; }
+  .hs-shell .hs-page:last-child { break-after: auto; }
+  .hs-shell .hs-print-only { display: flex !important; }
+  .hs-shell * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .hs-shell input, .hs-shell select { appearance: none; }
+}

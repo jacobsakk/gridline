@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { AlertTriangle, ArrowDown, ArrowLeft, ArrowUp, ChevronLeft, ChevronRight, FileText, Loader2, Plus, Printer, Search, Trash2, Upload, X } from "lucide-react";
+import { AlertTriangle, ArrowDown, Camera, ArrowLeft, ArrowUp, ChevronLeft, ChevronRight, FileText, Loader2, Plus, Printer, Search, Trash2, Upload, X } from "lucide-react";
 import cmuHelmet from "./assets/cmu-helmet.png";
 import { ThemeSwitcher, useTheme } from "./theme.jsx";
 import { confirmAction } from "./ConfirmDialog.jsx";
@@ -12,7 +12,9 @@ import {
   STATUS_BY_KEY,
   STATUS_OPTIONS,
   fromIso,
+  matchPhotoFiles,
   mondayOf,
+  photoFromFile,
   toIso,
   useHsTracker,
   weekKey,
@@ -505,94 +507,202 @@ function WeeklyTab({ players, week, statusOf, updateGame, onOpenPlayer, onProfil
 
 // ------------------------------------------------------- staff face sheet
 
-function FaceCard({ player, week, status, updatePlayer, updateGame, removePlayer, onProfile, hasProfile }) {
+// Laid out like the printed staff sheet: a title bar and key, then for each
+// player a photo, name and school, record, area coach, opponent, score, next
+// opponent, next-week date and a summary box -- eight to a page. Colours are
+// fixed rather than themed so the screen matches the paper.
+const SHEET = { maroon: "#5B1B2B", grey: "#D9D9D9", ink: "#111" };
+const PER_PAGE = 8;
+const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const sheetDate = (iso) => {
+  const d = fromIso(iso);
+  return d ? `${WEEKDAYS[d.getDay()]}, ${String(d.getMonth() + 1).padStart(2, "0")}/${String(d.getDate()).padStart(2, "0")}` : "—";
+};
+
+const valueCell = { background: "#fff", color: SHEET.ink, display: "flex", alignItems: "center", justifyContent: "center", textAlign: "center", fontSize: "var(--hs-font)", lineHeight: 1.05, padding: "0 6px", overflow: "hidden", minWidth: 0 };
+const headCell = { ...valueCell, background: SHEET.maroon, color: "#fff", fontWeight: 800, letterSpacing: "0.02em" };
+// Long names shrink to stay on one line instead of wrapping and clipping.
+const fit = (text) => {
+  const n = (text || "").length;
+  const scale = n <= 19 ? 1 : n <= 24 ? 0.86 : n <= 30 ? 0.74 : 0.64;
+  return { fontSize: `calc(var(--hs-font) * ${scale})`, whiteSpace: "nowrap" };
+};
+
+function FaceBlock({ player, week, status, updatePlayer, updateGame, removePlayer, onProfile, hasProfile }) {
   const { game, next } = pickWeekGames(player, week);
   const s = STATUS_BY_KEY[status];
-  const label = { fontSize: 10, letterSpacing: "0.1em", color: "var(--text-faint)", textTransform: "uppercase", marginBottom: 3 };
-  const value = { fontSize: 14, fontWeight: 600, color: "var(--text-primary)", minHeight: 20 };
+  const [photoError, setPhotoError] = useState("");
+  const fileInput = useRef(null);
+
+  async function choosePhoto(file) {
+    setPhotoError("");
+    try {
+      await updatePlayer(player.id, { photo: await photoFromFile(file) });
+    } catch (err) {
+      setPhotoError(err.message || "Couldn't save that photo.");
+    }
+  }
+
+  const summaryText = game?.summary || "";
   return (
-    <article style={{ border: "1px solid var(--border)", borderRadius: 10, background: "var(--bg-panel)", overflow: "hidden", breakInside: "avoid" }} className="hs-card">
-      <div style={{ background: s?.bg || "var(--bg-surface)", color: s?.fg || "var(--text-primary)", padding: "10px 14px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
-        <div style={{ minWidth: 0 }}>
-          <div className="oswald" style={{ fontSize: 18, fontWeight: 700 }}>
-            <PlayerLink player={player} linked={hasProfile(player)} onProfile={onProfile} style={hasProfile(player) ? { textDecoration: "underline", textDecorationThickness: 1, textUnderlineOffset: 3 } : undefined}>{player.name}</PlayerLink> ({player.position || "—"}){player.injured && " (Injured)"}
-          </div>
-          <div style={{ fontSize: 12.5, opacity: 0.85 }}>{player.highSchool}{player.state ? ` (${player.state})` : ""} · Class of {player.classYear}</div>
-        </div>
-        <div className="hs-no-print" style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
-          <select
-            aria-label="Status"
-            value={player.status || ""}
-            onChange={(e) => updatePlayer(player.id, { status: e.target.value })}
-            style={{ ...controlStyle, padding: "4px 6px", fontSize: 11.5, background: "rgba(255,255,255,0.7)", color: "#1A1206" }}
-          >
-            <option value="">Auto{status && !player.status ? ` (${STATUS_BY_KEY[status]?.label})` : ""}</option>
-            {STATUS_OPTIONS.map((o) => <option key={o.key} value={o.key}>{o.label}</option>)}
-          </select>
-          <label style={{ fontSize: 11.5, display: "flex", alignItems: "center", gap: 4, cursor: "pointer" }}>
-            <input type="checkbox" checked={!!player.injured} onChange={(e) => updatePlayer(player.id, { injured: e.target.checked })} /> Injured
-          </label>
-        </div>
-      </div>
-      <div style={{ padding: 14, display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px 16px" }}>
-        <div><div style={label}>Record</div><div style={value} className="tabular">{player.record.played ? player.record.text : "—"}</div></div>
-        <div>
-          <div style={label}>Area coach</div>
-          <input
-            defaultValue={player.coach || ""}
-            onBlur={(e) => e.target.value !== (player.coach || "") && updatePlayer(player.id, { coach: e.target.value.trim() })}
-            className="offer-cell-input"
-            style={{ ...value, width: "100%", padding: "0 4px" }}
-            aria-label="Area coach"
-          />
-        </div>
-        <div><div style={label}>Opponent</div><div style={value}>{game ? `${game.homeAway === "A" ? "@ " : ""}${game.opponent}` : "—"}</div></div>
-        <div><div style={label}>Next opponent</div><div style={value}>{next ? `${next.homeAway === "A" ? "@ " : ""}${next.opponent}` : "—"}</div></div>
-        <div><div style={label}>Score</div><div style={value}>{game?.result ? <ResultChip game={game} big /> : "—"}</div></div>
-        <div><div style={label}>Next week date</div><div style={value} className="tabular">{next ? mmdd(next.date) : "—"}</div></div>
-        <div style={{ gridColumn: "1 / -1" }}>
-          <div style={label}>Stats / game summary</div>
-          {game ? (
-            <EditableSummary value={game.summary} onSave={(text) => updateGame(player, game, { summary: text })} rows={3} placeholder="Add stats or a game summary…" style={{ border: "1px solid var(--border-subtle)" }} />
-          ) : (
-            <div style={{ ...value, color: "var(--text-faint)", fontWeight: 400 }}>No game this week.</div>
+    <article
+      className="hs-block"
+      style={{
+        position: "relative", display: "grid", gridTemplateColumns: "22% 20% 17.5% 1fr", gridTemplateRows: "repeat(6, var(--hs-row))",
+        gap: 1, background: SHEET.ink, border: `1px solid ${SHEET.ink}`, breakInside: "avoid",
+      }}
+    >
+      <div style={{ ...valueCell, gridColumn: 1, gridRow: "1 / 5", padding: 0, position: "relative" }}>
+        {player.photo ? (
+          <img src={player.photo} alt={`${player.name}`} style={{ height: "100%", width: "auto", maxWidth: "100%", objectFit: "contain", display: "block" }} />
+        ) : (
+          <span className="hs-no-print" style={{ color: "#8a8a8a", fontSize: 11.5, padding: 6 }}>No photo</span>
+        )}
+        <div className="hs-no-print hs-tools" style={{ position: "absolute", left: 4, bottom: 4, display: "flex", gap: 4 }}>
+          <input ref={fileInput} type="file" accept="image/*" style={{ display: "none" }} onChange={(e) => e.target.files[0] && choosePhoto(e.target.files[0])} />
+          <button onClick={() => fileInput.current?.click()} title={player.photo ? "Replace photo" : "Add photo"} aria-label={`${player.photo ? "Replace" : "Add"} photo for ${player.name}`} style={toolButton}>
+            <Camera size={13} />
+          </button>
+          {player.photo && (
+            <button onClick={() => updatePlayer(player.id, { photo: "" })} title="Remove photo" aria-label={`Remove photo for ${player.name}`} style={toolButton}>
+              <X size={13} />
+            </button>
           )}
         </div>
+        {photoError && <div role="alert" className="hs-no-print" style={{ position: "absolute", inset: "auto 4px 30px 4px", background: "#fff", color: "#B3261E", fontSize: 11, padding: 3, border: "1px solid #B3261E" }}>{photoError}</div>}
       </div>
-      <div className="hs-no-print" style={{ padding: "0 14px 10px", display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 12 }}>
-        <span style={{ display: "flex", gap: 12 }}>
-          {player.sources?.maxpreps && <a href={player.sources.maxpreps} target="_blank" rel="noreferrer" style={{ color: "var(--accent)" }}>MaxPreps</a>}
-          {player.sources?.scorestream && <a href={player.sources.scorestream} target="_blank" rel="noreferrer" style={{ color: "var(--accent)" }}>ScoreStream</a>}
-          {player.sources?.profile && <a href={player.sources.profile} target="_blank" rel="noreferrer" style={{ color: "var(--accent)" }}>Profile</a>}
-        </span>
-        <button
-          onClick={() => removePlayer(player)}
-          title="Remove this player from the tracker"
-          style={{ background: "none", border: "none", color: "var(--text-faint)", cursor: "pointer", lineHeight: 0 }}
-        >
-          <Trash2 size={14} />
-        </button>
+      <div style={{ ...valueCell, gridColumn: 1, gridRow: 5, background: s?.bg || SHEET.grey, color: s?.fg || SHEET.ink, fontWeight: 800, ...fit(`${player.name} (${player.position || "—"})${player.injured ? " (Injured)" : ""}`) }}>
+        <PlayerLink player={player} linked={hasProfile(player)} onProfile={onProfile}>
+          {player.name} ({player.position || "—"}){player.injured && " (Injured)"}
+        </PlayerLink>
+      </div>
+      <div style={{ ...valueCell, gridColumn: 1, gridRow: 6, background: SHEET.grey, fontWeight: 700, ...fit(player.highSchool) }}>
+        {player.highSchool}{player.state && !/\(\w{2}\)\s*$/.test(player.highSchool || "") ? ` (${player.state})` : ""}
+      </div>
+
+      <div style={{ ...headCell, gridColumn: 2, gridRow: 1 }}>RECORD</div>
+      <div style={{ ...valueCell, gridColumn: 2, gridRow: 2 }} className="tabular">{player.record.played ? player.record.text : "—"}</div>
+      <div style={{ ...headCell, gridColumn: 2, gridRow: 3 }}>OPPONENT</div>
+      <div style={{ ...valueCell, gridColumn: 2, gridRow: 4, ...fit(game?.opponent) }}>{game?.opponent || "—"}</div>
+      <div style={{ ...headCell, gridColumn: 2, gridRow: 5 }}>SCORE</div>
+      <div style={{ ...valueCell, gridColumn: 2, gridRow: 6 }} className="tabular">
+        {game?.result ? (
+          <span title={game.conflict ? `Sources disagree: MaxPreps ${game.ours}-${game.theirs}, ScoreStream ${game.conflict.scorestream?.ours}-${game.conflict.scorestream?.theirs}` : undefined}>
+            {game.result} {game.ours}-{game.theirs}{game.conflict && <span className="hs-no-print" style={{ color: "#B3261E", fontWeight: 800 }}> ⚠</span>}
+          </span>
+        ) : "—"}
+      </div>
+
+      <div style={{ ...headCell, gridColumn: 3, gridRow: 1 }}>AREA COACH</div>
+      <div style={{ ...valueCell, gridColumn: 3, gridRow: 2, padding: 0 }}>
+        <input
+          key={player.coach || ""}
+          defaultValue={player.coach || ""}
+          onBlur={(e) => e.target.value.trim() !== (player.coach || "") && updatePlayer(player.id, { coach: e.target.value.trim() })}
+          aria-label={`Area coach for ${player.name}`}
+          placeholder="—"
+          style={{ width: "100%", height: "100%", border: "none", background: "transparent", textAlign: "center", fontWeight: 800, fontStyle: "italic", textTransform: "uppercase", color: SHEET.ink, fontFamily: "inherit", fontSize: "var(--hs-font)", padding: "0 4px", minWidth: 0 }}
+        />
+      </div>
+      <div style={{ ...headCell, gridColumn: 3, gridRow: 3 }}>NEXT OPPONENT</div>
+      <div style={{ ...valueCell, gridColumn: 3, gridRow: 4, ...fit(next?.opponent) }}>{next?.opponent || "—"}</div>
+      <div style={{ ...headCell, gridColumn: 3, gridRow: 5 }}>NEXT WEEK DATE</div>
+      <div style={{ ...valueCell, gridColumn: 3, gridRow: 6 }} className="tabular">{next ? sheetDate(next.date) : "—"}</div>
+
+      <div style={{ ...headCell, gridColumn: 4, gridRow: 1 }}>STATS/GAME SUMMARY</div>
+      <div style={{ ...valueCell, gridColumn: 4, gridRow: "2 / 7", padding: 0, alignItems: "stretch" }}>
+        {game ? (
+          <>
+            <textarea
+              className="hs-no-print"
+              key={summaryText}
+              defaultValue={summaryText}
+              placeholder="Add stats or a game summary…"
+              aria-label={`Game summary for ${player.name}`}
+              onBlur={(e) => e.target.value.trim() !== summaryText && updateGame(player, game, { summary: e.target.value.trim() })}
+              style={{ width: "100%", border: "none", background: "transparent", resize: "none", textAlign: "center", color: SHEET.ink, fontFamily: "inherit", fontSize: "var(--hs-font)", lineHeight: 1.3, padding: "6px 10px" }}
+            />
+            <div className="hs-print-only" style={{ alignItems: "center", justifyContent: "center", textAlign: "center", padding: "0 10px", lineHeight: 1.25, width: "100%" }}>{summaryText}</div>
+          </>
+        ) : null}
+      </div>
+
+      <div className="hs-no-print hs-tools" style={{ position: "absolute", top: 3, right: 3, display: "flex", alignItems: "center", gap: 6, background: "rgba(255,255,255,0.92)", border: `1px solid ${SHEET.ink}`, borderRadius: 4, padding: "2px 6px", fontSize: 11.5, color: SHEET.ink, zIndex: 2 }}>
+        <select aria-label={`Status for ${player.name}`} value={player.status || ""} onChange={(e) => updatePlayer(player.id, { status: e.target.value })} style={{ fontSize: 11.5, background: "#fff", color: SHEET.ink, border: "1px solid #999", borderRadius: 3 }}>
+          <option value="">Auto{status && !player.status ? ` (${STATUS_BY_KEY[status]?.label})` : ""}</option>
+          {STATUS_OPTIONS.map((o) => <option key={o.key} value={o.key}>{o.label}</option>)}
+        </select>
+        <label style={{ display: "flex", alignItems: "center", gap: 3, cursor: "pointer" }}>
+          <input type="checkbox" checked={!!player.injured} onChange={(e) => updatePlayer(player.id, { injured: e.target.checked })} /> Injured
+        </label>
+        <button onClick={() => removePlayer(player)} title="Remove this player from the tracker" aria-label={`Remove ${player.name}`} style={{ background: "none", border: "none", cursor: "pointer", lineHeight: 0, color: "#555" }}><Trash2 size={13} /></button>
       </div>
     </article>
   );
 }
 
+const toolButton = { background: "rgba(255,255,255,0.92)", border: "1px solid #444", borderRadius: 4, padding: 3, cursor: "pointer", lineHeight: 0, color: "#111" };
+
 function FaceSheetTab(props) {
-  const { players, week, statusOf, focusId, clearFocus } = props;
+  const { players, allPlayers, week, statusOf, focusId, clearFocus, updatePlayer } = props;
   const shown = focusId ? players.filter((p) => p.id === focusId) : players;
+  const pages = [];
+  for (let i = 0; i < shown.length; i += PER_PAGE) pages.push(shown.slice(i, i + PER_PAGE));
+  const [note, setNote] = useState("");
+  const [busy, setBusy] = useState(false);
+  const photoInput = useRef(null);
+
+  // Drop in a folder of pictures named after the players ("Sam Rouleau.jpg").
+  async function addPhotos(fileList) {
+    const { matched, unmatched } = matchPhotoFiles([...fileList], allPlayers);
+    setBusy(true);
+    let saved = 0;
+    const failed = [];
+    for (const { file, player } of matched) {
+      try {
+        await updatePlayer(player.id, { photo: await photoFromFile(file) });
+        saved += 1;
+      } catch {
+        failed.push(file.name);
+      }
+    }
+    setBusy(false);
+    setNote(
+      `${saved} photo${saved === 1 ? "" : "s"} added.` +
+        (unmatched.length ? ` No player matched: ${unmatched.slice(0, 4).join(", ")}${unmatched.length > 4 ? "…" : ""} (name each file after the player).` : "") +
+        (failed.length ? ` Couldn't read: ${failed.join(", ")}.` : "")
+    );
+  }
+
   return (
     <div className="hs-scroll" style={{ flex: 1, minHeight: 0, overflow: "auto", paddingBottom: 30 }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, flexWrap: "wrap", marginBottom: 14 }}>
-        <div className="oswald" style={{ fontSize: 20, fontWeight: 700, letterSpacing: "0.03em" }}>{players[0]?.classYear || ""} HIGH SCHOOL GAME TRACKER · WEEK OF {weekLabel(fromIso(week))}</div>
-        <Legend />
+      <div className="hs-no-print" style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap", marginBottom: 14, maxWidth: 940, marginInline: "auto" }}>
+        {focusId && <button onClick={clearFocus} style={{ ...controlStyle, cursor: "pointer" }}>← Show everyone</button>}
+        <input ref={photoInput} type="file" accept="image/*" multiple style={{ display: "none" }} onChange={(e) => { if (e.target.files.length) addPhotos(e.target.files); e.target.value = ""; }} />
+        <button onClick={() => photoInput.current?.click()} disabled={busy} style={{ ...controlStyle, cursor: "pointer", display: "flex", alignItems: "center", gap: 7, fontWeight: 700 }}>
+          {busy ? <Loader2 size={14} className="spin" /> : <Camera size={14} />} Add photos
+        </button>
+        <span style={{ fontSize: 12.5, color: "var(--text-muted)" }}>
+          {note || "Name each picture after the player (Sam Rouleau.jpg) to add many at once, or hover a card to add one."}
+        </span>
       </div>
-      {focusId && (
-        <button onClick={clearFocus} className="hs-no-print" style={{ ...controlStyle, cursor: "pointer", marginBottom: 12 }}>← Show everyone</button>
-      )}
       {shown.length === 0 && <div style={{ padding: 40, textAlign: "center", color: "var(--text-faint)" }}>No players match.</div>}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))", gap: 14 }}>
-        {shown.map((p) => (
-          <FaceCard key={p.id} player={p} week={week} status={statusOf(p)} updatePlayer={props.updatePlayer} updateGame={props.updateGame} removePlayer={props.removePlayer} onProfile={props.onProfile} hasProfile={props.hasProfile} />
+      <div className="hs-sheet">
+        {pages.map((page, i) => (
+          <section key={i} className="hs-page" style={{ maxWidth: 940, marginInline: "auto", marginBottom: 30 }}>
+            <div style={{ background: SHEET.maroon, color: "#fff", textAlign: "center", fontWeight: 800, letterSpacing: "0.03em", fontSize: "calc(var(--hs-font) * 1.25)", padding: "5px 8px", border: `1px solid ${SHEET.ink}` }} className="oswald">
+              {shown[0]?.classYear || ""} HIGH SCHOOL GAME TRACKER · WEEK OF {weekLabel(fromIso(week))}
+            </div>
+            <div style={{ display: "flex", border: `1px solid ${SHEET.ink}`, borderTop: "none", background: SHEET.ink, gap: 1 }}>
+              <div style={{ ...valueCell, background: SHEET.grey, fontWeight: 800, flex: "0 0 22%", minHeight: "calc(var(--hs-row) * 0.85)" }}>KEY:</div>
+              {STATUS_OPTIONS.map((o) => (
+                <div key={o.key} style={{ ...valueCell, background: o.bg, color: o.fg, fontWeight: 800, flex: "1 1 0", textTransform: "uppercase", fontSize: "calc(var(--hs-font) * 0.85)" }}>{o.label}</div>
+              ))}
+            </div>
+            {page.map((p) => (
+              <FaceBlock key={p.id} player={p} week={week} status={statusOf(p)} updatePlayer={updatePlayer} updateGame={props.updateGame} removePlayer={props.removePlayer} onProfile={props.onProfile} hasProfile={props.hasProfile} />
+            ))}
+          </section>
         ))}
       </div>
     </div>
@@ -673,6 +783,16 @@ export default function HsGameUpdate({ onBack }) {
 
   const sortedForMaster = useMemo(() => sortPlayers(filtered, sort, statusOf), [filtered, sort]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Face sheets read like the printed one: by position group, then name, unless a master sort is on.
+  const faceSheetOrder = useMemo(() => {
+    if (sort.key) return sortedForMaster;
+    const rank = (p) => {
+      const i = POSITION_GROUPS.findIndex((g) => g.key === groupOf(p.position));
+      return i < 0 ? 99 : i;
+    };
+    return [...filtered].sort((a, b) => rank(a) - rank(b) || (a.name || "").localeCompare(b.name || ""));
+  }, [filtered, sortedForMaster, sort.key]);
+
   async function removePlayer(p) {
     const ok = await confirmAction({ title: `Remove ${p.name}?`, message: "This takes them out of the game tracker." });
     if (ok) {
@@ -717,7 +837,7 @@ export default function HsGameUpdate({ onBack }) {
 
   return (
     <div
-      className="app-shell hs-shell"
+      className={`app-shell hs-shell${tab === "Staff Face Sheet" ? " hs-face-print" : ""}`}
       data-theme={theme}
       style={{
         display: "flex", flexDirection: "column", overflow: "hidden", background: "var(--bg-page)", color: "var(--text-primary)",
@@ -826,7 +946,8 @@ export default function HsGameUpdate({ onBack }) {
           <WeeklyTab players={filtered} week={week} statusOf={statusOf} updateGame={hs.updateGame} onOpenPlayer={openPlayer} onProfile={setProfile} hasProfile={hasProfile} />
         ) : (
           <FaceSheetTab
-            players={filtered}
+            players={faceSheetOrder}
+            allPlayers={hs.players}
             week={week}
             statusOf={statusOf}
             focusId={focusId}

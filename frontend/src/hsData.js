@@ -335,6 +335,52 @@ export function overlayScraped(games, teamDoc) {
   return [...merged, ...leftovers].sort((a, b) => (a.date || "").localeCompare(b.date || ""));
 }
 
+// ------------------------------------------------------------------ photos
+
+// A profile picture is shrunk in the browser (longest side 360px, JPEG) and stored
+// on the player document itself, so there's no separate file storage to set up.
+// Around 20-40 KB each.
+export async function photoFromFile(file) {
+  if (!file || !/^image\//.test(file.type)) throw new Error("Choose an image file (JPG or PNG).");
+  const url = URL.createObjectURL(file);
+  try {
+    const img = await new Promise((resolve, reject) => {
+      const el = new Image();
+      el.onload = () => resolve(el);
+      el.onerror = () => reject(new Error("That image couldn't be read."));
+      el.src = url;
+    });
+    const scale = Math.min(1, 360 / Math.max(img.naturalWidth, img.naturalHeight));
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.max(1, Math.round(img.naturalWidth * scale));
+    canvas.height = Math.max(1, Math.round(img.naturalHeight * scale));
+    const ctx = canvas.getContext("2d");
+    ctx.fillStyle = "#fff"; // transparent PNGs become white, like the printed sheet
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    return canvas.toDataURL("image/jpeg", 0.82);
+  } finally {
+    URL.revokeObjectURL(url);
+  }
+}
+
+const letters = (text) => String(text || "").toLowerCase().replace(/[^a-z]/g, "");
+
+// Matches dropped files to players by file name ("Sam Rouleau.jpg", "sam_rouleau_qb.png").
+export function matchPhotoFiles(files, players) {
+  const matched = [];
+  const unmatched = [];
+  files.forEach((file) => {
+    const base = letters(file.name.replace(/\.[^.]+$/, ""));
+    const hit = players
+      .filter((p) => letters(p.name) && base.includes(letters(p.name)))
+      .sort((a, b) => letters(b.name).length - letters(a.name).length)[0];
+    if (hit) matched.push({ file, player: hit });
+    else unmatched.push(file.name);
+  });
+  return { matched, unmatched };
+}
+
 // ------------------------------------------------------------ Firestore hook
 
 export function useHsTracker() {
