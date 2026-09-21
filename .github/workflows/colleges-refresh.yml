@@ -52,6 +52,10 @@ jobs:
             echo "No changes -- nothing to commit."
           else
             git commit -m "Colleges data refresh ($(date -u +%Y-%m-%d))"
-            git push
+            for attempt in 1 2 3; do
+              git pull --rebase origin main && git push && break
+              echo "push attempt $attempt failed; retrying"
+              sleep 5
+            done
             gh workflow run deploy-pages.yml
           fi
