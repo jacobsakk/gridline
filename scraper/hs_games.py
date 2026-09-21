@@ -293,6 +293,27 @@ def cross_reference(mp_games, ss_games):
     return merged
 
 
+def collapse_games(games, today):
+    """Tidy a schedule. MaxPreps keeps stale entries: the same opponent listed twice (or a day
+    apart), and old placeholders for a game that was rescheduled or replaced. So:
+      - the same opponent within a day is one game (the copy with a score wins);
+      - a past game with no score, next to a game that has one, is dropped as a leftover."""
+    merged = []
+    for g in games:
+        for i, o in enumerate(merged):
+            if same_school(o["opponent"], g["opponent"]) and _days_apart(o["date"], g["date"]) <= 1:
+                keep, other = (g, o) if "result" in g and "result" not in o else (o, g)
+                merged[i] = {**other, **keep, "source": sorted(set(o.get("source", [])) | set(g.get("source", [])))}
+                break
+        else:
+            merged.append(dict(g))
+    return [
+        g for g in merged
+        if "result" in g or g["date"] >= today
+        or not any("result" in o and o is not g and _days_apart(o["date"], g["date"]) <= 1 for o in merged)
+    ]
+
+
 # --------------------------------------------------------------------- run
 
 def scrape(pairs):
@@ -312,7 +333,7 @@ def scrape(pairs):
         ss_games = ss_results.get(src.get("scorestream"))
         if mp_games is None and ss_games is None:
             continue  # both failed: keep whatever is already stored
-        games = cross_reference(mp_games, ss_games)
+        games = collapse_games(cross_reference(mp_games, ss_games), dt.datetime.now(dt.timezone(dt.timedelta(hours=-8))).date().isoformat())
         docs[doc_id] = {
             "sources": {k: v for k, v in src.items() if v},
             "games": games,

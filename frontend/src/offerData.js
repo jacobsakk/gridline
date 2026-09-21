@@ -627,9 +627,19 @@ export function useOfferTracker() {
   // competing schools' boards is seeing who else is after the same
   // player, so this spans every conference, not just the one currently
   // open.
+  // Indexed once per data change, so asking for one recruit's rows doesn't rescan every offer.
+  const rowsByPlayer = useMemo(() => {
+    const index = new Map();
+    effectiveDocs.forEach((d) => {
+      const k = `${d.classYear}|${normalizePlayerKey(d.player)}`;
+      if (!index.has(k)) index.set(k, []);
+      index.get(k).push(d);
+    });
+    return index;
+  }, [effectiveDocs]);
+
   function rowsForPlayer(classYear, player) {
-    const key = normalizePlayerKey(player);
-    return effectiveDocs.filter((d) => d.classYear === classYear && normalizePlayerKey(d.player) === key);
+    return rowsByPlayer.get(`${classYear}|${normalizePlayerKey(player)}`) || [];
   }
 
   // Hides one team's offer for a recruit -- for when that school's

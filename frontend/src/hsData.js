@@ -411,6 +411,16 @@ export function dedupeGames(games) {
   return out.sort((x, y) => (x.date || "").localeCompare(y.date || ""));
 }
 
+// A schedule with the leftovers taken out: the same game listed twice is one game, and a past
+// game with no score sitting next to a game that has one is a placeholder for something that
+// was rescheduled or replaced (sites keep those around), so it's dropped.
+export function cleanSchedule(games, today = toIso(new Date())) {
+  const merged = dedupeGames(games);
+  return merged.filter(
+    (g) => g.result || !g.date || g.date >= today || !merged.some((o) => o !== g && o.result && o.date && daysApart(o.date, g.date) <= 1)
+  );
+}
+
 // ------------------------------------------------------------ Firestore hook
 
 export function useHsTracker() {
@@ -447,7 +457,7 @@ export function useHsTracker() {
       docs
         .map((p) => {
           const stored = dedupeGames(p.games || []);
-          const games = overlayScraped(stored, teams[teamDocId(p.sources)]);
+          const games = cleanSchedule(overlayScraped(stored, teams[teamDocId(p.sources)]));
           const computed = computeRecord(games);
           const m = /(\d+)\s*W\s*-\s*(\d+)\s*L/i.exec(p.recordText || "");
           const record = m && Number(m[1]) + Number(m[2]) > computed.played ? { w: Number(m[1]), l: Number(m[2]), t: 0, text: p.recordText.trim(), played: Number(m[1]) + Number(m[2]) } : computed;
@@ -571,9 +581,17 @@ export function useHsTracker() {
       await batch.commit();
     }
   }
+  // A hand-arranged face sheet: everyone gets a number in the order given.
+  async function setSheetOrder(ids) {
+    for (let i = 0; i < ids.length; i += 400) {
+      const batch = writeBatch(db);
+      ids.slice(i, i + 400).forEach((id, j) => batch.update(doc(db, "hsPlayers", id), { sheetOrder: i + j }));
+      await batch.commit();
+    }
+  }
   const removePlayers = (ids) => setRemoved(ids, true);
   const restorePlayers = (ids) => setRemoved(ids, false);
   const removePlayer = (id) => setRemoved([id], true);
 
-  return { ready, players, teams, importFile, importParsed, updatePlayer, updateGame, addPlayer, removePlayer, removePlayers, restorePlayers, setFaceSheet };
+  return { ready, players, teams, importFile, importParsed, updatePlayer, updateGame, addPlayer, removePlayer, removePlayers, restorePlayers, setFaceSheet, setSheetOrder };
 }
