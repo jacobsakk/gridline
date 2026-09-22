@@ -10,7 +10,7 @@ import { isCommitment, normalizePlayerKey, useOfferTracker } from "./offerData.j
 import { fetchLatestDepthCharts, lazyDepthCharts, teamKey } from "./collegeData.js";
 import { toTitleCase } from "./OfferTracker.jsx";
 import {
-  BOARD, GROUPS, UNIT_LABEL, depthFromOurlads, fetchEspnBio, matchEspnBio, splitHighSchool, UNIT_OF_GROUP, YL_STYLE, classLabelFor, depthFor, groupOfPosition, idFor, parseRosterFile, playersInSeason,
+  BOARD, GROUPS, UNIT_LABEL, depthFromOurlads, splitHighSchool, UNIT_OF_GROUP, YL_STYLE, classLabelFor, depthFor, groupOfPosition, idFor, parseRosterFile, playersInSeason,
   snapshotFor, styleForYearsLeft, useRoster, yearsLeftIn,
 } from "./rosterData.js";
 
@@ -708,7 +708,6 @@ export default function RosterPage({ onBack: toDashboard, session }) {
   const [snapshotOpen, setSnapshotOpen] = useState(false);
   const [showFinance, setShowFinance] = useState(false);
   const [modal, setModal] = useState(null); // {type, player?}
-  const [espn, setEspn] = useState({ busy: false, error: "", done: "" });
   const [splitFix, setSplitFix] = useState({ busy: false, error: "", done: "" });
   const needsSplitFix = roster.players.some((p) => /\//.test(p.highSchool || ""));
 
@@ -854,24 +853,6 @@ export default function RosterPage({ onBack: toDashboard, session }) {
     await roster.addSeason(next);
     setSeason(next);
   }
-  // Fills height/weight from ESPN's Central Michigan roster for anyone missing them; never overwrites a value
-  // someone entered by hand.
-  async function pullEspnBio() {
-    setEspn({ busy: true, error: "", done: "" });
-    try {
-      const athletes = await fetchEspnBio();
-      const { updates, missing } = matchEspnBio(athletes, roster.players);
-      if (!updates.length) {
-        setEspn({ busy: false, error: "", done: missing.length ? `Nobody needed it. ${missing.length} on ESPN's roster couldn't be matched.` : "Everybody already has a height and weight." });
-        return;
-      }
-      for (const u of updates) await roster.savePlayer(u.id, u.fields);
-      setEspn({ busy: false, error: "", done: `Filled in ${updates.length} player${updates.length === 1 ? "" : "s"}.${missing.length ? ` ${missing.length} on ESPN's roster couldn't be matched.` : ""}` });
-    } catch (err) {
-      setEspn({ busy: false, error: err.message || "That didn't work. Try again.", done: "" });
-    }
-  }
-
   async function dropYear() {
     const ok = await confirmAction({ title: `Delete the ${label}?`, message: "This removes its depth chart and goals. Players stay on the roster.", confirmLabel: "Delete" });
     if (!ok) return;
@@ -920,7 +901,6 @@ export default function RosterPage({ onBack: toDashboard, session }) {
             {admin && <button onClick={() => setModal({ type: "goals" })} style={ghostBtn}>Edit snapshot</button>}
             {admin && <button onClick={() => setModal({ type: "add" })} style={primaryBtn}><Plus size={14} /> Add player</button>}
             {admin && <button onClick={() => setModal({ type: "upload" })} style={ghostBtn}><Upload size={14} /> Upload roster</button>}
-            {admin && <button onClick={pullEspnBio} disabled={espn.busy} style={ghostBtn} title="Fills in height and weight from ESPN's roster for anyone missing them">{espn.busy ? <Loader2 size={14} className="spin" /> : null} Height/weight from ESPN</button>}
             {admin && view === "board" && <button onClick={() => setEdit((v) => !v)} style={{ ...ghostBtn, ...(edit ? { borderColor: "var(--accent)", color: "var(--accent)" } : {}) }}><Pencil size={14} /> {edit ? "Done editing" : "Edit roster"}</button>}
           </span>
         </div>
@@ -932,10 +912,10 @@ export default function RosterPage({ onBack: toDashboard, session }) {
             {splitFix.error && <span style={{ color: "var(--danger-text)" }}>{splitFix.error}</span>}
           </div>
         )}
-        {(espn.done || espn.error || splitFix.done) && (
-          <div role="status" style={{ marginBottom: 12, fontSize: 13, color: espn.error ? "var(--danger-text)" : "var(--success)", display: "flex", alignItems: "center", gap: 10 }}>
-            {espn.error || espn.done || splitFix.done}
-            <button onClick={() => { setEspn({ busy: false, error: "", done: "" }); setSplitFix({ busy: false, error: "", done: "" }); }} aria-label="Dismiss" style={{ background: "none", border: "none", color: "inherit", cursor: "pointer", lineHeight: 0, opacity: 0.7 }}><X size={13} /></button>
+        {splitFix.done && (
+          <div role="status" style={{ marginBottom: 12, fontSize: 13, color: "var(--success)", display: "flex", alignItems: "center", gap: 10 }}>
+            {splitFix.done}
+            <button onClick={() => setSplitFix({ busy: false, error: "", done: "" })} aria-label="Dismiss" style={{ background: "none", border: "none", color: "inherit", cursor: "pointer", lineHeight: 0, opacity: 0.7 }}><X size={13} /></button>
           </div>
         )}
         {!roster.ready ? (
@@ -952,8 +932,6 @@ export default function RosterPage({ onBack: toDashboard, session }) {
               <YlKey />
               <span style={{ fontSize: 12.5, color: "var(--text-faint)" }}>
                 {seed && !handArranged && `Depth chart follows Colleges (${seed.placed} placed, updated ${new Date(seed.updated).toLocaleDateString([], { month: "short", day: "numeric" })}${seed.missing.length ? `; not on your roster: ${seed.missing.join(", ")}` : ""}) · `}
-                {handArranged && seed && admin && <button onClick={async () => { if (await confirmAction({ title: "Use the Colleges depth chart?", message: "This replaces the depth chart you arranged by hand for the current season with the one on the Colleges page. It then keeps following Colleges as it updates.", confirmLabel: "Use Colleges" })) roster.clearDepth(base); }} style={{ background: "none", border: "none", color: "var(--accent)", cursor: "pointer", fontSize: 12.5, padding: 0, textDecoration: "underline", fontFamily: "inherit" }}>Reset to the Colleges depth chart</button>}
-                {handArranged && seed && admin && " · "}
                 {shown.length} of {rows.length} players{isProjection ? " · players leave when their eligibility runs out" : ""}{edit ? " · drag a player to move him" : ""}</span>
             </div>
             {units.map((u) => (

@@ -1,5 +1,5 @@
 import * as XLSX from "xlsx";
-import { collection, deleteDoc, deleteField, doc, onSnapshot, setDoc, updateDoc, writeBatch } from "firebase/firestore";
+import { collection, deleteDoc, doc, onSnapshot, setDoc, updateDoc, writeBatch } from "firebase/firestore";
 import { useEffect, useMemo, useState } from "react";
 import { db } from "./firebase";
 
@@ -232,60 +232,6 @@ export function depthFromOurlads(team, players) {
     });
   });
   return { depth, placed: placed.size, missing };
-}
-
-// ------------------------------------------------------------------ ESPN bio lookup
-
-const ESPN_ROSTER = "https://site.api.espn.com/apis/site/v2/sports/football/college-football/teams/2117/roster";
-const espnHeight = (h) => (Number.isFinite(h) ? `${Math.floor(h / 12)}'${h % 12}"` : "");
-
-// Central Michigan's roster on ESPN, for height and weight the staff sheet doesn't carry. Matched to your
-// roster by jersey number and last name first, then by full name, then by last name plus first initial when
-// that's unique. Returns who was found and matched, and who on ESPN's roster couldn't be matched.
-export async function fetchEspnBio() {
-  const res = await fetch(ESPN_ROSTER);
-  if (!res.ok) throw new Error("ESPN didn't respond. Try again in a minute.");
-  const data = await res.json();
-  const athletes = (data.athletes || []).flatMap((g) => g.items || []);
-  if (!athletes.length) throw new Error("ESPN's roster page came back empty.");
-  return athletes.map((a) => ({
-    name: a.fullName, jersey: a.jersey || "", position: a.position?.abbreviation || "", height: espnHeight(a.height), weight: Number.isFinite(a.weight) ? String(Math.round(a.weight)) : "",
-  }));
-}
-
-// Fills in height/weight for roster players who don't already have them (never overwrites a value someone
-// entered by hand). Matching mirrors depthFromOurlads: jersey + last name, then full name, then last name +
-// first initial when that leaves exactly one person.
-export function matchEspnBio(athletes, players) {
-  const lastOf = (n) => {
-    const w = stripSuffix(n).trim().split(/\s+/).filter(Boolean);
-    return norm(w[w.length - 1] || "");
-  };
-  const firstOf = (n) => norm((stripSuffix(n).trim().split(/\s+/)[0] || "")[0] || "");
-  const byFull = new Map(players.map((p) => [norm(stripSuffix(p.name)), p]));
-  const used = new Set();
-  const updates = [];
-  const missing = [];
-  athletes.forEach((a) => {
-    if (!a.height && !a.weight) return;
-    const last = lastOf(a.name);
-    let hit = String(a.jersey ?? "") !== "" ? players.find((p) => !used.has(p.id) && String(p.jersey ?? "") !== "" && String(p.jersey) === String(a.jersey) && lastOf(p.name) === last) : null;
-    if (!hit) hit = byFull.get(norm(stripSuffix(a.name)));
-    if (!hit) {
-      const same = players.filter((p) => !used.has(p.id) && lastOf(p.name) === last && firstOf(p.name) === firstOf(a.name));
-      if (same.length === 1) hit = same[0];
-    }
-    if (!hit || used.has(hit.id)) {
-      missing.push(a.name);
-      return;
-    }
-    used.add(hit.id);
-    const fields = {};
-    if (a.height && !hit.height) fields.height = a.height;
-    if (a.weight && !hit.weight) fields.weight = a.weight;
-    if (Object.keys(fields).length) updates.push({ id: hit.id, name: hit.name, fields });
-  });
-  return { updates, missing };
 }
 
 // ------------------------------------------------------------------ upload
@@ -632,10 +578,6 @@ export function useRoster({ isAdmin }) {
     async saveDepth(season, depth) {
       await setDoc(doc(db, "rosterSeasons", String(season)), { season, projection: season > base, depth, updatedAt: now() }, { merge: true });
       await touch();
-    },
-    // Back to following the Colleges depth chart
-    async clearDepth(season) {
-      await setDoc(doc(db, "rosterSeasons", String(season)), { depth: deleteField(), updatedAt: now() }, { merge: true });
     },
     // Splits any roster player still storing "High School / Previous School" together in the highSchool field
     // (from before uploads split it automatically). Doesn't touch anyone already fixed.
