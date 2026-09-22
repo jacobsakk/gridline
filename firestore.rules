@@ -82,6 +82,17 @@ service cloud.firestore {
       allow read, write: if isAdmin();
     }
 
+    // Maps: the area-coach color legend and the county -> coach assignments. Every invited coach can view
+    // the map; only admins add/edit coaches or repaint counties.
+    match /areaCoaches/{docId} {
+      allow read: if invited();
+      allow write: if isAdmin();
+    }
+    match /areaAssignments/{docId} {
+      allow read: if invited();
+      allow write: if isAdmin();
+    }
+
     match /{document=**} {
       allow read, write: if false;
     }

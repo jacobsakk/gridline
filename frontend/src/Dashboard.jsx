@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Settings, ClipboardList, ChevronRight, FileSpreadsheet, GraduationCap, LogOut, Trophy, Users } from "lucide-react";
+import { Settings, ClipboardList, ChevronRight, FileSpreadsheet, GraduationCap, LogOut, Trophy, Users, Map } from "lucide-react";
 import { coachTitle } from "./auth.js";
 import { ThemeSwitcher, useTheme } from "./theme.jsx";
 import actionCDark from "./assets/cmu-action-c-dark.png";
@@ -40,6 +40,12 @@ const CARDS = [
     label: "Roster Management",
     description: "Depth chart by years left, projections for future seasons, and the full roster spreadsheet",
     icon: Users,
+  },
+  {
+    key: "maps",
+    label: "Maps",
+    description: "Area coach territory by county, with more map studies to come",
+    icon: Map,
   },
 ];
 

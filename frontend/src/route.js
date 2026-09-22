@@ -55,7 +55,7 @@ export function useRoute() {
 // spot: same season, same open player, same scroll position. Going back to a screen already on the trail
 // pops it; landing on the dashboard clears it.
 
-const SECTION_LABELS = { tracker: "Pre-Portal Tracker", offers: "Offer Tracker", colleges: "Colleges", hs: "HS Game Update", roster: "Roster Management", settings: "Settings" };
+const SECTION_LABELS = { tracker: "Pre-Portal Tracker", offers: "Offer Tracker", colleges: "Colleges", hs: "HS Game Update", roster: "Roster Management", maps: "Maps", settings: "Settings" };
 const trail = [];
 let pendingScroll = null;
 
