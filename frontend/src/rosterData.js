@@ -120,7 +120,8 @@ export function playersInSeason(players, season, base) {
 
 // ------------------------------------------------------------------ depth chart
 
-const byJersey = (a, b) => (Number(a.jersey) || 999) - (Number(b.jersey) || 999) || (a.name || "").localeCompare(b.name || "");
+const jerseyNo = (p) => (p.jersey !== "" && p.jersey != null && Number.isFinite(Number(p.jersey)) ? Number(p.jersey) : 999);
+const byJersey = (a, b) => jerseyNo(a) - jerseyNo(b) || (a.name || "").localeCompare(b.name || "");
 
 // Spreads players across the board by position; used until someone arranges a season by hand.
 export function autoDepth(roster) {
@@ -298,7 +299,7 @@ function scholarshipFrom(v) {
 }
 const cleanText = (v) => String(v ?? "").replace(/\s+/g, " ").trim();
 const nameKey = (first, last) => norm(`${first} ${last}`);
-export const idFor = (name, jersey) => `${norm(name)}${jersey ? `-${jersey}` : ""}`.slice(0, 80) || `p${Math.random().toString(36).slice(2, 9)}`;
+export const idFor = (name, jersey) => `${norm(name)}${jersey !== "" && jersey != null ? `-${jersey}` : ""}`.slice(0, 80) || `p${Math.random().toString(36).slice(2, 9)}`;
 
 // "Fall 2027" -> 2027, "Spring 2026" -> 2026 (a spring enrollee plays that fall).
 const seasonFromClock = (clock) => {

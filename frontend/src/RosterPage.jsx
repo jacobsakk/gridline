@@ -21,6 +21,8 @@ const control = {
 };
 const primaryBtn = { background: "var(--accent)", border: "1px solid var(--accent)", color: "var(--bg-page)", borderRadius: 6, padding: "8px 14px", fontSize: 13, fontWeight: 700, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 7 };
 const ghostBtn = { ...control, cursor: "pointer", fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 7 };
+// #0 is a real jersey number, so "has a number" can't be a plain truthiness check
+const hasJersey = (j) => j !== "" && j != null && Number.isFinite(Number(j));
 const norm = (t) => String(t ?? "").toLowerCase().replace(/[^a-z0-9]/g, "");
 const money = (n) => (n == null ? "" : `$${Number(n).toLocaleString()}`);
 const SCHOLARSHIP_LABEL = { full: "Scholarship", split: "Split", "walk-on": "Walk-on", "": "—" };
@@ -50,7 +52,7 @@ function Chip({ player, yl, onClick, draggable, onDragStart, onDragOver, onDrop,
         whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", minWidth: 0,
       }}
     >
-      <span style={{ overflow: "hidden", textOverflow: "ellipsis" }}>{player.jersey ? `#${player.jersey} ` : ""}{player.name}</span>
+      <span style={{ overflow: "hidden", textOverflow: "ellipsis" }}>{hasJersey(player.jersey) ? `#${player.jersey} ` : ""}{player.name}</span>
       {player.commit && <span style={{ marginLeft: "auto", background: "#B6862C", color: "#fff", borderRadius: 3, fontSize: 9, padding: "0 4px" }}>COMMIT</span>}
       {player.injured && <span style={{ marginLeft: "auto", background: "#D9483B", color: "#fff", borderRadius: 3, fontSize: 9, padding: "0 4px" }}>INJ</span>}
     </button>
@@ -306,7 +308,7 @@ function SnapshotPanel({ snap, season, label, goals, admin, showFinance, setShow
 // -------------------------------------------------------------- spreadsheet
 
 const SHEET_COLUMNS = [
-  { key: "jersey", label: "#", get: (p) => Number(p.jersey) || "", w: 52 },
+  { key: "jersey", label: "#", get: (p) => (hasJersey(p.jersey) ? Number(p.jersey) : ""), w: 52 },
   { key: "name", label: "Name", get: (p) => p.name, w: 170 },
   { key: "position", label: "Pos", get: (p) => p.position, w: 60 },
   { key: "unit", label: "Unit", get: (p) => UNIT_LABEL[UNIT_OF_GROUP[groupOfPosition(p.position)]] || "", w: 96 },
@@ -408,7 +410,7 @@ function Modal({ children, onClose, width = 760 }) {
 
 function PlayerModal({ player, season, label, admin, roster, depthSlot, statsLinked, onClose }) {
   const [f, setF] = useState(() => ({
-    name: player.name || "", jersey: player.jersey || "", position: player.position || "", yearsLeftNow: String(player._yl), height: player.height || "", weight: player.weight || "",
+    name: player.name || "", jersey: hasJersey(player.jersey) ? String(player.jersey) : "", position: player.position || "", yearsLeftNow: String(player._yl), height: player.height || "", weight: player.weight || "",
     hometown: player.hometown || "", highSchool: player.highSchool || "", previousSchool: player.previousSchool || "", scholarship: player.scholarship || "",
     redshirt: !!player.redshirt, injured: !!player.injured, notes: player.notes || "", instagram: player.instagram || "", twitter: player.twitter || "", lastSeason: player.lastSeason || "",
     dob: player._private?.dob || "", email: player._private?.email || "", cell: player._private?.cell || "", revenue: player._revenue ?? "",
