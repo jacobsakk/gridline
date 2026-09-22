@@ -1,11 +1,11 @@
 import { useState, useEffect, useMemo } from "react";
+import { BackButton, HomeButton } from "./HomeButton.jsx";
 import { collection, deleteDoc, doc, onSnapshot, orderBy, query, setDoc } from "firebase/firestore";
 import { db } from "./firebase";
-import { ArrowLeft, Mail, Send, Trash2 } from "lucide-react";
+import { Mail, Send, Trash2 } from "lucide-react";
 import { useBack } from "./route.js";
 import { normalizeEmail, sendInviteEmail } from "./auth.js";
 import { ThemeSwitcher, useTheme } from "./theme.jsx";
-import cmuHelmet from "./assets/cmu-helmet.png";
 
 const ROLES = ["Head Coach", "Assistant Coach", "Director of Player Personnel", "Recruiting Coordinator", "Analyst"];
 
@@ -63,7 +63,6 @@ function inviteError(err) {
 
 export default function SettingsPage({ onBack: toDashboard, session }) {
   const back = useBack(toDashboard);
-  const onBack = back.go;
   const [theme, setTheme] = useTheme();
   const { accounts, inviteAccount, removeAccount } = useAccounts();
   const [name, setName] = useState("");
@@ -144,18 +143,8 @@ export default function SettingsPage({ onBack: toDashboard, session }) {
         />
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 14, flexWrap: "wrap" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-            <button
-              onClick={onBack}
-              title={`Back to ${back.label}`}
-              style={{
-                display: "flex", alignItems: "center", gap: 6, flexShrink: 0,
-                background: "var(--bg-surface)", border: "1px solid var(--border)", color: "var(--text-secondary)",
-                borderRadius: 5, padding: "8px 12px", fontSize: 13, fontWeight: 600, cursor: "pointer",
-              }}
-            >
-              <ArrowLeft size={15} /> {back.label}
-            </button>
-            <img src={cmuHelmet} alt="Central Michigan Chippewas helmet" style={{ height: 34, width: "auto", flexShrink: 0 }} />
+            {back.fromTrail && <BackButton label={back.label} onClick={back.go} />}
+            <HomeButton onHome={toDashboard} />
             <h1 className="oswald app-title" style={{ fontSize: 22, fontWeight: 700, margin: 0, letterSpacing: "0.01em" }}>
               Settings
             </h1>

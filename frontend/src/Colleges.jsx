@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
+import { BackButton, HomeButton } from "./HomeButton.jsx";
 import { initialSubRoute, setSubRoute, useBack } from "./route.js";
-import { ArrowLeft, Search, ChevronUp, ChevronDown, ChevronsUpDown, Trophy } from "lucide-react";
+import { Search, ChevronUp, ChevronDown, ChevronsUpDown, Trophy } from "lucide-react";
 import { ThemeSwitcher, useTheme } from "./theme.jsx";
-import cmuHelmet from "./assets/cmu-helmet.png";
 import { ThemeContext } from "./OfferTracker.jsx";
 import CollegeProfile from "./CollegeProfile.jsx";
 import {
@@ -423,16 +423,8 @@ export default function Colleges({ onBack: toDashboard }) {
           <div style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: 3, background: "linear-gradient(90deg, var(--gold), var(--maroon))" }} />
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 14, flexWrap: "wrap" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-              <button
-                onClick={goBack}
-                style={{
-                  display: "flex", alignItems: "center", gap: 7, background: "var(--bg-surface)", border: "1px solid var(--border)",
-                  color: "var(--text-primary)", borderRadius: 5, padding: "8px 14px", fontSize: 13, fontWeight: 600, cursor: "pointer",
-                }}
-              >
-                <ArrowLeft size={15} /> {backLabel}
-              </button>
-              <img src={cmuHelmet} alt="Central Michigan Chippewas helmet" style={{ height: 34, width: "auto", flexShrink: 0 }} />
+              {(history.length > 0 || selectedId || back.fromTrail) && <BackButton label={backLabel} onClick={goBack} />}
+            <HomeButton onHome={toDashboard} />
               <h1 className="oswald app-title" style={{ fontSize: 22, fontWeight: 700, margin: 0, letterSpacing: "0.01em" }}>Colleges</h1>
             </div>
             <ThemeSwitcher theme={theme} onChange={setTheme} />

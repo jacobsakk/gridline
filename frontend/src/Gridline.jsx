@@ -1,6 +1,7 @@
 import { confirmAction } from "./ConfirmDialog.jsx";
+import { BackButton, HomeButton } from "./HomeButton.jsx";
 import { useState, useMemo, useEffect, useRef, useCallback, Fragment } from "react";
-import { ChevronUp, ChevronDown, ChevronsUpDown, Crown, BadgeCheck, FlaskConical, Star, X, Plus, ExternalLink, Search, Download, Columns3, TrendingUp, GripVertical, CheckCircle2, AlertTriangle, ArrowLeft, Upload } from "lucide-react";
+import { ChevronUp, ChevronDown, ChevronsUpDown, Crown, BadgeCheck, FlaskConical, Star, X, Plus, ExternalLink, Search, Download, Columns3, TrendingUp, GripVertical, CheckCircle2, AlertTriangle, Upload } from "lucide-react";
 import { collection, doc, addDoc, updateDoc, onSnapshot, query, orderBy } from "firebase/firestore";
 import { db } from "./firebase";
 import L from "leaflet";
@@ -10,7 +11,6 @@ import { ThemeSwitcher, useTheme } from "./theme.jsx";
 import { initialSubRoute, setSubRoute, useBack } from "./route.js";
 import StatsUploadModal from "./StatsUploadModal.jsx";
 import { loadUploads } from "./statsUpload.js";
-import cmuHelmet from "./assets/cmu-helmet.png";
 import { canonicalSchool } from "./schoolNames.js";
 
 const DIVISIONS = ["NAIA", "JUCO", "D3", "D2", "FCS", "FBS"];
@@ -1606,7 +1606,6 @@ function CompareModal({ players, onClose }) {
 
 function GridlineMain({ onBack: toDashboard, initialSearch, onUploadStats }) {
   const back = useBack(toDashboard);
-  const onBack = toDashboard ? back.go : undefined;
   // #/tracker/FBS/Some Player opens that division with the player searched (the Roster page links here)
   const [linked] = useState(() => initialSubRoute());
   const [division, setDivision] = useState(() => (DIVISIONS.includes(linked[0]) ? linked[0] : "NAIA"));
@@ -1781,20 +1780,8 @@ function GridlineMain({ onBack: toDashboard, initialSearch, onUploadStats }) {
         <div style={{ maxWidth: "100%", margin: 0 }}>
           <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 14, flexWrap: "wrap" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-              {onBack && (
-                <button
-                  onClick={onBack}
-                  title={`Back to ${back.label}`}
-                  style={{
-                    display: "flex", alignItems: "center", gap: 6, flexShrink: 0,
-                    background: "var(--bg-surface)", border: "1px solid var(--border)", color: "var(--text-secondary)",
-                    borderRadius: 5, padding: "8px 12px", fontSize: 13, fontWeight: 600, cursor: "pointer",
-                  }}
-                >
-                  <ArrowLeft size={15} /> {back.label}
-                </button>
-              )}
-              <img src={cmuHelmet} alt="Central Michigan Chippewas helmet" style={{ height: 34, width: "auto", flexShrink: 0 }} />
+              {back.fromTrail && <BackButton label={back.label} onClick={back.go} />}
+            <HomeButton onHome={toDashboard} />
               <div style={{ display: "flex", alignItems: "baseline", gap: 14, flexWrap: "wrap" }}>
                 <h1 className="oswald app-title" style={{ fontSize: 26, fontWeight: 700, margin: 0, letterSpacing: "0.01em" }}>
                   Pre-Portal Tracker

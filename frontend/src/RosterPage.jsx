@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { BackButton, HomeButton } from "./HomeButton.jsx";
 import * as XLSX from "xlsx";
-import { ArrowLeft, Download, ExternalLink, Loader2, Pencil, Plus, Search, Trash2, Upload, X } from "lucide-react";
-import cmuHelmet from "./assets/cmu-helmet.png";
+import { Download, ExternalLink, Loader2, Pencil, Plus, Search, Trash2, Upload, X } from "lucide-react";
 import { ThemeSwitcher, useTheme } from "./theme.jsx";
 import { confirmAction } from "./ConfirmDialog.jsx";
 import { initialSubRoute, setSubRoute, useBack } from "./route.js";
@@ -693,7 +693,6 @@ function GoalsModal({ label, goals, onSave, onClose }) {
 
 export default function RosterPage({ onBack: toDashboard, session }) {
   const back = useBack(toDashboard);
-  const onBack = back.go;
   const [theme, setTheme] = useTheme();
   const admin = !!session?.profile?.admin;
   const real = useRoster({ isAdmin: admin });
@@ -854,8 +853,8 @@ export default function RosterPage({ onBack: toDashboard, session }) {
         <div style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: 3, background: "linear-gradient(90deg, var(--gold), var(--maroon))" }} />
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 14, flexWrap: "wrap" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-            <button onClick={onBack} style={{ display: "flex", alignItems: "center", gap: 7, background: "var(--bg-surface)", border: "1px solid var(--border)", color: "var(--text-primary)", borderRadius: 5, padding: "8px 14px", fontSize: 13, fontWeight: 600, cursor: "pointer" }}><ArrowLeft size={15} /> {back.label}</button>
-            <img src={cmuHelmet} alt="Central Michigan Chippewas helmet" style={{ height: 34, width: "auto", flexShrink: 0 }} />
+            {back.fromTrail && <BackButton label={back.label} onClick={back.go} />}
+            <HomeButton onHome={toDashboard} />
             <h1 className="oswald app-title" style={{ fontSize: 22, fontWeight: 700, margin: 0 }}>Roster Management</h1>
           </div>
           <ThemeSwitcher theme={theme} onChange={setTheme} />
