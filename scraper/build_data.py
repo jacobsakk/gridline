@@ -36,6 +36,21 @@ from ncaa_api import (
 from conference_sites import fetch_supplemental_rows
 from espn_stats import build_espn_rows, fetch_athlete_lines, fetch_espn_athletes, fetch_roster_athletes, load_colleges, merge_division, scrub_duplicates
 
+OFFENSE_AND_SPECIAL_TEAMS_POSITIONS = {"QB", "RB", "FB", "WR", "TE", "OL", "K", "PK", "P", "LS"}
+
+
+def drop_offense_from_defense(rows):
+    """Every source (ESPN, the NCAA API, JUCO, NAIA...) builds a "tackling" (Defense) row for any
+    player with a nonzero tackle/sack/PBU/interception number in their stat line, with no check that
+    the player is actually a defender. A QB or receiver picks one up from a fake punt, a fumble return,
+    a busted trick play, or occasionally bad source data -- not real defensive production, and it was
+    showing up in the Defense tables and the Sacks/Interceptions leader boards. Dropped only for
+    unambiguous offense/special-teams positions; "ATH" (common in JUCO/NAIA data with no position on
+    file) is left alone since plenty of those really are defensive backs."""
+    kept = [r for r in rows if r.get("category") != "tackling" or r.get("position") not in OFFENSE_AND_SPECIAL_TEAMS_POSITIONS]
+    return kept, len(rows) - len(kept)
+
+
 OUTPUT_PATH = os.path.join(
     os.path.dirname(__file__), "..", "frontend", "src", "data", "real-stats.json"
 )
@@ -302,6 +317,10 @@ def main():
     print(f"  removed {report['removed']} duplicate rows, repaired {report['ids_repaired']} duplicate ids")
     for example in report["examples"]:
         print(f"    {example}")
+
+    all_rows, offense_removed = drop_offense_from_defense(all_rows)
+    if offense_removed:
+        print(f"  removed {offense_removed} Defense rows for offense/special-teams players (trick plays, bad source data)")
 
     os.makedirs(os.path.dirname(OUTPUT_PATH), exist_ok=True)
     with open(OUTPUT_PATH, "w") as f:
