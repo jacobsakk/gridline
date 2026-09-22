@@ -10,7 +10,7 @@ import { isCommitment, normalizePlayerKey, useOfferTracker } from "./offerData.j
 import { fetchLatestDepthCharts, lazyDepthCharts, teamKey } from "./collegeData.js";
 import { toTitleCase } from "./OfferTracker.jsx";
 import {
-  BOARD, GROUPS, UNIT_LABEL, depthFromOurlads, fetchEspnBio, matchEspnBio, UNIT_OF_GROUP, YL_STYLE, classLabelFor, depthFor, groupOfPosition, idFor, parseRosterFile, playersInSeason,
+  BOARD, GROUPS, UNIT_LABEL, depthFromOurlads, fetchEspnBio, matchEspnBio, splitHighSchool, UNIT_OF_GROUP, YL_STYLE, classLabelFor, depthFor, groupOfPosition, idFor, parseRosterFile, playersInSeason,
   snapshotFor, styleForYearsLeft, useRoster, yearsLeftIn,
 } from "./rosterData.js";
 
@@ -709,6 +709,18 @@ export default function RosterPage({ onBack: toDashboard, session }) {
   const [showFinance, setShowFinance] = useState(false);
   const [modal, setModal] = useState(null); // {type, player?}
   const [espn, setEspn] = useState({ busy: false, error: "", done: "" });
+  const [splitFix, setSplitFix] = useState({ busy: false, error: "", done: "" });
+  const needsSplitFix = roster.players.some((p) => /\//.test(p.highSchool || ""));
+
+  async function runHighSchoolSplit() {
+    setSplitFix({ busy: true, error: "", done: "" });
+    try {
+      const { fixed } = await roster.fixHighSchoolSplit();
+      setSplitFix({ busy: false, error: "", done: `Moved the previous school out of the high school field for ${fixed} player${fixed === 1 ? "" : "s"}.` });
+    } catch (err) {
+      setSplitFix({ busy: false, error: err.message || "That didn't work. Try again.", done: "" });
+    }
+  }
   const [statsNames, setStatsNames] = useState(new Set());
 
   const base = roster.base;
@@ -913,10 +925,17 @@ export default function RosterPage({ onBack: toDashboard, session }) {
           </span>
         </div>
 
-        {(espn.done || espn.error) && (
+        {admin && needsSplitFix && !splitFix.done && (
+          <div role="status" style={{ marginBottom: 12, fontSize: 13, background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 8, padding: "10px 14px", display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+            <span>Some players still have their previous school folded into the High school field (e.g. "Esperanza High School / Saddleback College").</span>
+            <button onClick={runHighSchoolSplit} disabled={splitFix.busy} style={primaryBtn}>{splitFix.busy ? <Loader2 size={13} className="spin" /> : null} Split them out</button>
+            {splitFix.error && <span style={{ color: "var(--danger-text)" }}>{splitFix.error}</span>}
+          </div>
+        )}
+        {(espn.done || espn.error || splitFix.done) && (
           <div role="status" style={{ marginBottom: 12, fontSize: 13, color: espn.error ? "var(--danger-text)" : "var(--success)", display: "flex", alignItems: "center", gap: 10 }}>
-            {espn.error || espn.done}
-            <button onClick={() => setEspn({ busy: false, error: "", done: "" })} aria-label="Dismiss" style={{ background: "none", border: "none", color: "inherit", cursor: "pointer", lineHeight: 0, opacity: 0.7 }}><X size={13} /></button>
+            {espn.error || espn.done || splitFix.done}
+            <button onClick={() => { setEspn({ busy: false, error: "", done: "" }); setSplitFix({ busy: false, error: "", done: "" }); }} aria-label="Dismiss" style={{ background: "none", border: "none", color: "inherit", cursor: "pointer", lineHeight: 0, opacity: 0.7 }}><X size={13} /></button>
           </div>
         )}
         {!roster.ready ? (

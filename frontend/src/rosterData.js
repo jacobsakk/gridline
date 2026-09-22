@@ -356,7 +356,7 @@ const cleanText = (v) => String(v ?? "").replace(/\s+/g, " ").trim();
 // "Esperanza High School / Saddleback College", "Gretna High School/Nebraska/Northwestern College",
 // "Everett High School / The Williston Northampton School / College of Holy Cross" -> the high school, then
 // everywhere else he's been since, joined back with " / ".
-function splitHighSchool(text) {
+export function splitHighSchool(text) {
   const clean = cleanText(text);
   const at = clean.indexOf("/");
   if (at < 0) return [clean, ""];
@@ -636,6 +636,22 @@ export function useRoster({ isAdmin }) {
     // Back to following the Colleges depth chart
     async clearDepth(season) {
       await setDoc(doc(db, "rosterSeasons", String(season)), { depth: deleteField(), updatedAt: now() }, { merge: true });
+    },
+    // Splits any roster player still storing "High School / Previous School" together in the highSchool field
+    // (from before uploads split it automatically). Doesn't touch anyone already fixed.
+    async fixHighSchoolSplit() {
+      const targets = players.filter((p) => /\//.test(p.highSchool || ""));
+      const ops = targets.map((p) => {
+        const [highSchool, previous] = splitHighSchool(p.highSchool);
+        return { id: p.id, highSchool, previousSchool: p.previousSchool || previous };
+      });
+      for (let i = 0; i < ops.length; i += 400) {
+        const batch = writeBatch(db);
+        ops.slice(i, i + 400).forEach((op) => batch.update(doc(db, "rosterPlayers", op.id), { highSchool: op.highSchool, previousSchool: op.previousSchool, updatedAt: now() }));
+        await batch.commit();
+      }
+      await touch();
+      return { fixed: ops.length };
     },
     async saveGoals(season, goals) {
       await setDoc(doc(db, "rosterSeasons", String(season)), { season, projection: season > base, goals, updatedAt: now() }, { merge: true });
