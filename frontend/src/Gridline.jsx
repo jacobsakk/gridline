@@ -253,6 +253,7 @@ export function useWatchlist() {
       team: trimmedTeam,
       division: division || "",
       position: position || "",
+      questionnaire: false,
       pipelined: false,
       notes: "",
       hometown: "",
@@ -728,6 +729,16 @@ function WatchListRow({
       </td>
       <td style={tdStyle}>
         <div style={{ display: "flex", gap: 6 }}>
+          <button style={pillStyle(p.questionnaire === true)} onClick={() => onUpdate("questionnaire", true)}>
+            Yes
+          </button>
+          <button style={pillStyle(p.questionnaire === false)} onClick={() => onUpdate("questionnaire", false)}>
+            No
+          </button>
+        </div>
+      </td>
+      <td style={tdStyle}>
+        <div style={{ display: "flex", gap: 6 }}>
           <button style={pillStyle(p.pipelined === true)} onClick={() => onUpdate("pipelined", true)}>
             Yes
           </button>
@@ -798,7 +809,7 @@ function WatchListRow({
   );
 }
 
-const WATCHLIST_COLUMNS = ["", "", "Player", "Team", "Division", "Pos", "Ht", "Wt", "Eligibility", "Pipelined?", "Hometown", "X", "Film Link", "Notes", ""];
+const WATCHLIST_COLUMNS = ["", "", "Player", "Team", "Division", "Pos", "Ht", "Wt", "Eligibility", "Questionnaire?", "Pipelined?", "Hometown", "X", "Film Link", "Notes", ""];
 // Which of the columns above can be clicked to sort the watch list --
 // keyed by the doc field each one reads. Only active on the "All"
 // position tab (see positionTab check in WatchListPanel) -- sorting by
@@ -810,6 +821,7 @@ const WATCHLIST_SORTABLE = {
   Ht: "height",
   Wt: "weight",
   Eligibility: "eligibility",
+  "Questionnaire?": "questionnaire",
   "Pipelined?": "pipelined",
 };
 // Alphabetical (not numeric) comparison, defaulting to ascending on
@@ -825,7 +837,7 @@ function heightToInches(height) {
 // table (sticky header, gridlines) instead of a narrow sidebar, so editing
 // a dozen watched players' notes/hometown/eligibility doesn't feel cramped.
 function exportWatchListCsv(players) {
-  const headers = ["Player", "Team", "Division", "Position", "Height", "Weight", "Eligibility", "Pipelined", "Hometown", "X", "Film Link", "Notes"];
+  const headers = ["Player", "Team", "Division", "Position", "Height", "Weight", "Eligibility", "Questionnaire", "Pipelined", "Hometown", "X", "Film Link", "Notes"];
   const escape = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`;
   const lines = [headers.map(escape).join(",")];
   for (const p of players) {
@@ -838,6 +850,7 @@ function exportWatchListCsv(players) {
         p.height,
         p.weight,
         p.eligibility ? `${p.eligibility} year${p.eligibility === "1" ? "" : "s"}` : "",
+        p.questionnaire === true ? "Yes" : p.questionnaire === false ? "No" : "",
         p.pipelined === true ? "Yes" : p.pipelined === false ? "No" : "",
         p.hometown,
         p.xLink,
@@ -909,6 +922,9 @@ function WatchListPanel({ watchlist, onClose, onSelectPlayer, portalStatus }) {
       if (wlSortActive === "height") {
         av = heightToInches(a.height);
         bv = heightToInches(b.height);
+      } else if (wlSortActive === "questionnaire") {
+        av = a.questionnaire === true ? 1 : a.questionnaire === false ? -1 : 0;
+        bv = b.questionnaire === true ? 1 : b.questionnaire === false ? -1 : 0;
       } else if (wlSortActive === "pipelined") {
         av = a.pipelined === true ? 1 : a.pipelined === false ? -1 : 0;
         bv = b.pipelined === true ? 1 : b.pipelined === false ? -1 : 0;
@@ -1388,6 +1404,17 @@ export function PlayerDetailModal({ sel, onClose, watchlist, portalStatus }) {
                       </option>
                     ))}
                   </select>
+                </div>
+                <div>
+                  <label style={fieldLabelStyle}>Questionnaire?</label>
+                  <div style={{ display: "flex", gap: 6 }}>
+                    <button style={pillStyle(watched.questionnaire === true)} onClick={() => watchlist.updateField(watched.id, "questionnaire", true)}>
+                      Yes
+                    </button>
+                    <button style={pillStyle(watched.questionnaire === false)} onClick={() => watchlist.updateField(watched.id, "questionnaire", false)}>
+                      No
+                    </button>
+                  </div>
                 </div>
                 <div>
                   <label style={fieldLabelStyle}>Pipelined?</label>
