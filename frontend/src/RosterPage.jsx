@@ -10,7 +10,7 @@ import { isCommitment, normalizePlayerKey, useOfferTracker } from "./offerData.j
 import { fetchLatestDepthCharts, lazyDepthCharts, teamKey } from "./collegeData.js";
 import { toTitleCase } from "./OfferTracker.jsx";
 import {
-  BOARD, GROUPS, UNIT_LABEL, depthFromOurlads, UNIT_OF_GROUP, YL_STYLE, classLabelFor, depthFor, groupOfPosition, idFor, parseRosterFile, playersInSeason,
+  BOARD, GROUPS, UNIT_LABEL, depthFromOurlads, fetchEspnBio, matchEspnBio, UNIT_OF_GROUP, YL_STYLE, classLabelFor, depthFor, groupOfPosition, idFor, parseRosterFile, playersInSeason,
   snapshotFor, styleForYearsLeft, useRoster, yearsLeftIn,
 } from "./rosterData.js";
 
@@ -708,6 +708,7 @@ export default function RosterPage({ onBack: toDashboard, session }) {
   const [snapshotOpen, setSnapshotOpen] = useState(false);
   const [showFinance, setShowFinance] = useState(false);
   const [modal, setModal] = useState(null); // {type, player?}
+  const [espn, setEspn] = useState({ busy: false, error: "", done: "" });
   const [statsNames, setStatsNames] = useState(new Set());
 
   const base = roster.base;
@@ -841,6 +842,24 @@ export default function RosterPage({ onBack: toDashboard, session }) {
     await roster.addSeason(next);
     setSeason(next);
   }
+  // Fills height/weight from ESPN's Central Michigan roster for anyone missing them; never overwrites a value
+  // someone entered by hand.
+  async function pullEspnBio() {
+    setEspn({ busy: true, error: "", done: "" });
+    try {
+      const athletes = await fetchEspnBio();
+      const { updates, missing } = matchEspnBio(athletes, roster.players);
+      if (!updates.length) {
+        setEspn({ busy: false, error: "", done: missing.length ? `Nobody needed it. ${missing.length} on ESPN's roster couldn't be matched.` : "Everybody already has a height and weight." });
+        return;
+      }
+      for (const u of updates) await roster.savePlayer(u.id, u.fields);
+      setEspn({ busy: false, error: "", done: `Filled in ${updates.length} player${updates.length === 1 ? "" : "s"}.${missing.length ? ` ${missing.length} on ESPN's roster couldn't be matched.` : ""}` });
+    } catch (err) {
+      setEspn({ busy: false, error: err.message || "That didn't work. Try again.", done: "" });
+    }
+  }
+
   async function dropYear() {
     const ok = await confirmAction({ title: `Delete the ${label}?`, message: "This removes its depth chart and goals. Players stay on the roster.", confirmLabel: "Delete" });
     if (!ok) return;
@@ -889,10 +908,17 @@ export default function RosterPage({ onBack: toDashboard, session }) {
             {admin && <button onClick={() => setModal({ type: "goals" })} style={ghostBtn}>Edit snapshot</button>}
             {admin && <button onClick={() => setModal({ type: "add" })} style={primaryBtn}><Plus size={14} /> Add player</button>}
             {admin && <button onClick={() => setModal({ type: "upload" })} style={ghostBtn}><Upload size={14} /> Upload roster</button>}
+            {admin && <button onClick={pullEspnBio} disabled={espn.busy} style={ghostBtn} title="Fills in height and weight from ESPN's roster for anyone missing them">{espn.busy ? <Loader2 size={14} className="spin" /> : null} Height/weight from ESPN</button>}
             {admin && view === "board" && <button onClick={() => setEdit((v) => !v)} style={{ ...ghostBtn, ...(edit ? { borderColor: "var(--accent)", color: "var(--accent)" } : {}) }}><Pencil size={14} /> {edit ? "Done editing" : "Edit roster"}</button>}
           </span>
         </div>
 
+        {(espn.done || espn.error) && (
+          <div role="status" style={{ marginBottom: 12, fontSize: 13, color: espn.error ? "var(--danger-text)" : "var(--success)", display: "flex", alignItems: "center", gap: 10 }}>
+            {espn.error || espn.done}
+            <button onClick={() => setEspn({ busy: false, error: "", done: "" })} aria-label="Dismiss" style={{ background: "none", border: "none", color: "inherit", cursor: "pointer", lineHeight: 0, opacity: 0.7 }}><X size={13} /></button>
+          </div>
+        )}
         {!roster.ready ? (
           <div style={{ padding: 40, textAlign: "center", color: "var(--text-faint)" }}>Loading…</div>
         ) : roster.players.length === 0 ? (
