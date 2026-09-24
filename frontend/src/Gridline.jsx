@@ -179,6 +179,10 @@ function positionsFor(division, category) {
   return [...new Set(DATA.filter((r) => r.division === division && r.category === category).map((r) => r.position))].sort();
 }
 
+function homeStatesFor(division, category) {
+  return [...new Set(DATA.filter((r) => r.division === division && r.category === category && r.homeState).map((r) => r.homeState))].sort();
+}
+
 // Which weeks actually have data for this division. JUCO's sample data
 // always has weeks 1-4; D2/FCS only gain a real single-week entry once the
 // scraper has run at least twice (see scraper/build_data.py) -- until then
@@ -1640,6 +1644,7 @@ function GridlineMain({ onBack: toDashboard, initialSearch, onUploadStats }) {
   const [week, setWeek] = useState("total");
   const [position, setPosition] = useState("All");
   const [conference, setConference] = useState("All");
+  const [homeState, setHomeState] = useState("All");
   const [search, setSearch] = useState(initialSearch || (DIVISIONS.includes(linked[0]) ? linked[1] || "" : ""));
   // the division and search live in the address, so coming back to this screen lands on the same list
   useEffect(() => {
@@ -1657,12 +1662,14 @@ function GridlineMain({ onBack: toDashboard, initialSearch, onUploadStats }) {
   const isLiveView = LIVE_DIVISIONS.has(division);
   const positions = useMemo(() => ["All", ...positionsFor(division, category)], [division, category]);
   const conferences = useMemo(() => ["All", ...conferencesFor(division)], [division]);
+  const homeStates = useMemo(() => ["All", ...homeStatesFor(division, category)], [division, category]);
   const weekOptions = useMemo(() => weeksFor(division), [division]);
 
   const rows = useMemo(() => {
     let filtered = DATA.filter((r) => r.division === division && r.category === category && r.week === week);
     if (position !== "All") filtered = filtered.filter((r) => r.position === position);
     if (conference !== "All") filtered = filtered.filter((r) => r.conference === conference);
+    if (homeState !== "All") filtered = filtered.filter((r) => r.homeState === homeState);
     const q = search.trim().toLowerCase();
     if (q) filtered = filtered.filter((r) => r.player.toLowerCase().includes(q) || (r.team.toLowerCase().includes(q) || canonicalSchool(r.team).toLowerCase().includes(q)));
 
@@ -1677,7 +1684,7 @@ function GridlineMain({ onBack: toDashboard, initialSearch, onUploadStats }) {
       return sortDir === "desc" ? bv - av : av - bv;
     });
     return filtered;
-  }, [division, category, week, position, conference, search, sortKey, sortDir]);
+  }, [division, category, week, position, conference, homeState, search, sortKey, sortDir]);
 
   // A search shouldn't be scoped to whatever tab happens to be open -- if
   // there's no match in the current division/category, jump to wherever a
@@ -2076,6 +2083,16 @@ function GridlineMain({ onBack: toDashboard, initialSearch, onUploadStats }) {
             </select>
           </FilterGroup>
 
+          <FilterGroup label="Home State">
+            <select value={homeState} onChange={(e) => setHomeState(e.target.value)} style={selectStyle}>
+              {homeStates.map((s2) => (
+                <option key={s2} value={s2}>
+                  {s2}
+                </option>
+              ))}
+            </select>
+          </FilterGroup>
+
           <FilterGroup label="Week">
             <select
               value={week}
@@ -2110,7 +2127,7 @@ function GridlineMain({ onBack: toDashboard, initialSearch, onUploadStats }) {
                 <Th label="Team" sticky sortable active={sortKey === "team"} dir={sortDir} onClick={() => handleSort("team")} />
                 <Th label="Conf" sticky sortable active={sortKey === "conference"} dir={sortDir} onClick={() => handleSort("conference")} />
                 <Th label="Pos" sticky />
-                <Th label="State" sticky sortable active={sortKey === "homeState"} dir={sortDir} onClick={() => handleSort("homeState")} />
+                <Th label="Home State" sticky sortable active={sortKey === "homeState"} dir={sortDir} onClick={() => handleSort("homeState")} />
                 {cat.columns.map((col) => (
                   <Th
                     key={col.key}

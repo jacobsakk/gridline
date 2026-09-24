@@ -455,22 +455,26 @@ function RosterTab({ college }) {
   const table = STAT_TABLES[active];
   const [sort, setSort] = useState({ key: null, dir: "desc" });
   const sortKey = sort.key || table.defaultSort;
+  const [homeState, setHomeState] = useState("All");
   const [selected, setSelected] = useState(null);
   const watchlist = useWatchlist();
   const portalStatus = usePortalStatus();
+
+  const homeStates = useMemo(() => ["All", ...new Set(lines[active].filter((r) => r.homeState).map((r) => r.homeState))].sort(), [lines, active]);
 
   const rows = useMemo(() => {
     const dir = sort.key ? sort.dir : "desc"; // untouched headers use the category default, highest first
     const column = table.columns.find((c) => c.key === sortKey);
     const valueKey = sortKey === "player" || sortKey === "position" || sortKey === "homeState" ? sortKey : column?.sortKey || sortKey;
-    return [...lines[active]].sort((a, b) => {
+    const filtered = homeState === "All" ? lines[active] : lines[active].filter((r) => r.homeState === homeState);
+    return [...filtered].sort((a, b) => {
       let cmp;
       if (valueKey === "player" || valueKey === "position" || valueKey === "homeState") cmp = String(a[valueKey] || "").localeCompare(String(b[valueKey] || ""));
       else cmp = statValue(a, valueKey) - statValue(b, valueKey);
       if (cmp === 0) cmp = String(a.player).localeCompare(String(b.player));
       return dir === "desc" ? -cmp : cmp;
     });
-  }, [lines, active, sortKey, sort]);
+  }, [lines, active, sortKey, sort, homeState]);
 
   function sortBy(key) {
     const alpha = key === "player" || key === "position" || key === "homeState";
@@ -491,7 +495,18 @@ function RosterTab({ college }) {
             click a column to sort · click a player for their full card
           </span>
         </div>
-        <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+        <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
+          <select
+            value={homeState}
+            onChange={(e) => setHomeState(e.target.value)}
+            aria-label="Filter by home state"
+            style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", color: "var(--text-primary)", borderRadius: 6, padding: "7px 10px", fontSize: 13, fontFamily: "inherit", cursor: "pointer" }}
+          >
+            {homeStates.map((s2) => (
+              <option key={s2} value={s2}>{s2 === "All" ? "All home states" : s2}</option>
+            ))}
+          </select>
+          <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
           {Object.entries(STAT_TABLES).map(([key, t]) => {
             const isActive = key === active;
             return (
@@ -512,6 +527,7 @@ function RosterTab({ college }) {
               </button>
             );
           })}
+          </div>
         </div>
       </div>
 
@@ -523,7 +539,7 @@ function RosterTab({ college }) {
             <tr>
               <th style={th} onClick={() => sortBy("player")}>Player {arrow("player")}</th>
               <th style={th} onClick={() => sortBy("position")}>Pos {arrow("position")}</th>
-              <th style={th} onClick={() => sortBy("homeState")}>State {arrow("homeState")}</th>
+              <th style={th} onClick={() => sortBy("homeState")}>Home State {arrow("homeState")}</th>
               {table.columns.map((c) => (
                 <th key={c.key} style={{ ...th, textAlign: "right" }} onClick={() => sortBy(c.key)}>
                   {c.label} {arrow(c.key)}
