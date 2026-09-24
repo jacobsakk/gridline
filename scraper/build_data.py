@@ -34,7 +34,7 @@ from ncaa_api import (
     save_snapshot,
 )
 from conference_sites import fetch_supplemental_rows
-from espn_stats import build_espn_rows, fetch_athlete_lines, fetch_espn_athletes, fetch_roster_athletes, load_colleges, merge_division, scrub_duplicates
+from espn_stats import attach_espn_bio, build_espn_rows, fetch_athlete_lines, fetch_espn_athletes, fetch_espn_team_ids, fetch_roster_athletes, load_colleges, merge_division, scrub_duplicates
 
 OFFENSE_AND_SPECIAL_TEAMS_POSITIONS = {"QB", "RB", "FB", "WR", "TE", "OL", "K", "PK", "P", "LS"}
 
@@ -193,6 +193,22 @@ def build_ncaa_api_divisions(run_date):
             f"and were tagged 'Independent' -- expected for now, D3_KNOWN_CONFERENCES "
             f"in ncaa_api.py starts empty (e.g. {', '.join(unmapped_d3_teams[:5])}...)"
         )
+
+    # D2/D3 get their stats from the NCAA API, which has no home state/hometown/height/weight -- ESPN has a
+    # roster page for these schools too, just not tagged by division, so it's matched by name instead.
+    print("Fetching D2/D3 home state, hometown, height and weight from ESPN's rosters...")
+    try:
+        espn_team_ids = fetch_espn_team_ids()
+        d2_rows, d2_unmatched = attach_espn_bio(d2_rows, espn_team_ids)
+        d3_rows, d3_unmatched = attach_espn_bio(d3_rows, espn_team_ids)
+        if d2_unmatched:
+            print(f"  {len(d2_unmatched)} D2 teams have no ESPN match (e.g. {', '.join(d2_unmatched[:5])}...)")
+        if d3_unmatched:
+            print(f"  {len(d3_unmatched)} D3 teams have no ESPN match (e.g. {', '.join(d3_unmatched[:5])}...)")
+        with_bio = len([r for r in d2_rows + d3_rows if r.get("homeState") or r.get("height")])
+        print(f"  {with_bio} D2/D3 rows matched to an ESPN player")
+    except Exception as err:  # noqa: BLE001 -- bio is a bonus; never let it block D2/D3 stats themselves
+        print(f"  !! couldn't fetch ESPN bio for D2/D3 ({err}) -- their stats are unaffected")
 
     return fbs_rows + fcs_rows + d2_rows + d3_rows
 

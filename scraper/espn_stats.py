@@ -30,7 +30,7 @@ import urllib.error
 import urllib.request
 from concurrent.futures import ThreadPoolExecutor
 
-from naming import compact_name, same_person_name, team_key
+from naming import compact_name, name_key, same_person_name, team_key
 from ncaa_api import _avg, _to_int, normalize_position, passing_efficiency
 
 UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36"
@@ -64,11 +64,14 @@ class NotFound(RuntimeError):
     """ESPN has no record at this URL (e.g. a player who never played)."""
 
 
-def _get_json(url, retries=3):
+def _get_json(url, retries=3, spoof_ua=True):
+    """`spoof_ua=False` for site.api.espn.com's plain team-list endpoint, which (confirmed directly) 403s a
+    browser-style User-Agent but is happy with Python's own default one -- the opposite of every other ESPN
+    endpoint this module calls, all of which need the spoofed one."""
     last = None
     for attempt in range(retries):
         try:
-            req = urllib.request.Request(url, headers={"User-Agent": UA, "Accept": "application/json"})
+            req = urllib.request.Request(url, headers={"User-Agent": UA, "Accept": "application/json"} if spoof_ua else {"Accept": "application/json"})
             with urllib.request.urlopen(req, timeout=90) as resp:
                 return json.loads(resp.read().decode("utf-8"))
         except urllib.error.HTTPError as err:
@@ -166,17 +169,7 @@ def fetch_roster_athletes(colleges, division, skip_ids=()):
                 continue
             for group in data.get("athletes", []):
                 for a in group.get("items", []):
-                    place = a.get("birthPlace") or {}
-                    entry = {}
-                    if place.get("state"):
-                        entry["state"] = place["state"]
-                        entry["hometown"] = place.get("displayText") or ""
-                    height = a.get("height")
-                    if isinstance(height, (int, float)) and height > 0:
-                        entry["height"] = f"{int(height) // 12}'{int(height) % 12}\""
-                    weight = a.get("weight")
-                    if isinstance(weight, (int, float)) and weight > 0:
-                        entry["weight"] = str(int(weight))
+                    entry = _bio_from_athlete(a)
                     if entry:
                         bio[a["id"]] = entry
                     pos = ((a.get("position") or {}).get("abbreviation") or "").upper()
@@ -184,6 +177,87 @@ def fetch_roster_athletes(colleges, division, skip_ids=()):
                         continue
                     out.append({"athlete": {"id": a["id"], "displayName": a.get("displayName", ""), "teamId": college["id"], "position": a.get("position")}})
     return out, bio, failed_teams
+
+
+def _bio_from_athlete(a):
+    """Home state/hometown/height/weight from one athlete entry on an ESPN roster feed (birthPlace, height
+    and weight -- none of which the bulk stat list carries), in the shape build_espn_rows / attach_espn_bio
+    expect. Empty dict for a player with none of these on file."""
+    entry = {}
+    place = a.get("birthPlace") or {}
+    if place.get("state"):
+        entry["state"] = place["state"]
+        entry["hometown"] = place.get("displayText") or ""
+    height = a.get("height")
+    if isinstance(height, (int, float)) and height > 0:
+        entry["height"] = f"{int(height) // 12}'{int(height) % 12}\""
+    weight = a.get("weight")
+    if isinstance(weight, (int, float)) and weight > 0:
+        entry["weight"] = str(int(weight))
+    return entry
+
+
+ESPN_TEAMS_URL = "https://site.api.espn.com/apis/site/v2/sports/football/college-football/teams?limit=2000"
+
+
+def fetch_espn_team_ids():
+    """Every school ESPN has a college-football team page for -- FBS through D3, one flat list with no
+    division tag -- keyed by team_key() so a D2/D3 team (which gets its stats from the NCAA API, not ESPN)
+    can still be matched to its ESPN roster feed by name."""
+    data = _get_json(ESPN_TEAMS_URL, spoof_ua=False)
+    teams = data["sports"][0]["leagues"][0]["teams"]
+    # "location" is the bare school name ("Grand Valley State"); "displayName" also carries the mascot
+    # ("Grand Valley State Lakers"), which the NCAA API's team names never do.
+    return {team_key(t["team"]["location"]): t["team"]["id"] for t in teams}
+
+
+def fetch_bio_for_teams(team_ids):
+    """Roster bio for every player on each of `team_ids`, keyed by name_key(fullName) within each team id:
+    {team_id: {name_key: {"state", "hometown", "height", "weight"}}}."""
+    def one(team_id):
+        try:
+            return team_id, _get_json(f"https://site.web.api.espn.com/apis/site/v2/sports/football/college-football/teams/{team_id}/roster", retries=3)
+        except RuntimeError:
+            return team_id, None
+
+    out = {}
+    with ThreadPoolExecutor(max_workers=8) as pool:
+        for team_id, data in pool.map(one, team_ids):
+            if not data:
+                continue
+            by_name = {}
+            for group in data.get("athletes", []):
+                for a in group.get("items", []):
+                    entry = _bio_from_athlete(a)
+                    if entry:
+                        by_name[name_key(a.get("fullName", ""))] = entry
+            out[team_id] = by_name
+    return out
+
+
+def attach_espn_bio(rows, team_ids_by_key):
+    """Stamps homeState/hometown/height/weight onto `rows` (a new list; `rows` itself is untouched) by
+    matching each row's team to an ESPN team id by name, then its player to that team's ESPN roster by
+    name. For divisions whose stats don't already come from ESPN directly (D2, D3 -- FBS/FCS get this from
+    build_espn_rows instead). A row with no team or player match just doesn't get these fields, the same as
+    any other lookup miss elsewhere in this pipeline. Returns (rows, unmatched_team_names)."""
+    wanted_keys = {team_key(r["team"]) for r in rows}
+    matched_ids = {k: team_ids_by_key[k] for k in wanted_keys if k in team_ids_by_key}
+    unmatched = sorted({r["team"] for r in rows if team_key(r["team"]) not in matched_ids})
+    bio_by_team = fetch_bio_for_teams(set(matched_ids.values()))
+
+    out = []
+    for r in rows:
+        team_id = matched_ids.get(team_key(r["team"]))
+        bio = bio_by_team.get(team_id, {}).get(name_key(r["player"])) if team_id else None
+        out.append({
+            **r,
+            "homeState": bio.get("state", "") if bio else "",
+            "hometown": bio.get("hometown", "") if bio else "",
+            "height": bio.get("height", "") if bio else "",
+            "weight": bio.get("weight", "") if bio else "",
+        })
+    return out, unmatched
 
 
 def _num(value):
