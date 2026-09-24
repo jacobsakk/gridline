@@ -193,3 +193,30 @@ def same_person_name(a, b):
     if not wa or not wb:
         return False
     return wa[-1] == wb[-1] and first_names_match(wa[0], wb[0])
+
+
+STATE_ABBR = {
+    "alabama": "AL", "alaska": "AK", "arizona": "AZ", "arkansas": "AR", "california": "CA", "colorado": "CO",
+    "connecticut": "CT", "delaware": "DE", "district of columbia": "DC", "florida": "FL", "georgia": "GA",
+    "hawaii": "HI", "idaho": "ID", "illinois": "IL", "indiana": "IN", "iowa": "IA", "kansas": "KS",
+    "kentucky": "KY", "louisiana": "LA", "maine": "ME", "maryland": "MD", "massachusetts": "MA", "michigan": "MI",
+    "minnesota": "MN", "mississippi": "MS", "missouri": "MO", "montana": "MT", "nebraska": "NE", "nevada": "NV",
+    "new hampshire": "NH", "new jersey": "NJ", "new mexico": "NM", "new york": "NY", "north carolina": "NC",
+    "north dakota": "ND", "ohio": "OH", "oklahoma": "OK", "oregon": "OR", "pennsylvania": "PA",
+    "rhode island": "RI", "south carolina": "SC", "south dakota": "SD", "tennessee": "TN", "texas": "TX",
+    "utah": "UT", "vermont": "VT", "virginia": "VA", "washington": "WA", "west virginia": "WV",
+    "wisconsin": "WI", "wyoming": "WY",
+}
+VALID_ABBRS = set(STATE_ABBR.values())
+
+
+def home_state_from(hometown):
+    """A player's home state from a "City, State" or "City, ST" hometown string --
+    sources spell it either way (NJCAA's own data has both). Returns "" for
+    anything else (blank, a foreign country, or a shape this doesn't recognize)."""
+    if not hometown or "," not in hometown:
+        return ""
+    tail = hometown.rsplit(",", 1)[1].strip()
+    if tail.upper() in VALID_ABBRS:
+        return tail.upper()
+    return STATE_ABBR.get(tail.lower(), "")

@@ -25,6 +25,8 @@ const ALIASES = {
   team: ["team", "school", "college", "institution", "teamname"],
   conference: ["conference", "conf"],
   position: ["pos", "position"],
+  homeState: ["state", "homestate", "st"],
+  hometown: ["hometown", "home", "hometowncity"],
   games: ["gp", "games", "gamesplayed", "g"],
   comp: ["comp", "cmp", "completions", "pc", "cmpl"],
   compatt: ["compatt", "cmpatt", "ca", "cmpatts"],
@@ -58,6 +60,30 @@ function mapColumns(headers) {
   return map;
 }
 
+// US state full names -> the two-letter abbreviation, for a "Hometown" column that spells it out
+// ("Houston, Texas") rather than abbreviating it ("Houston, TX") -- real exports do both.
+const STATE_ABBR = {
+  alabama: "AL", alaska: "AK", arizona: "AZ", arkansas: "AR", california: "CA", colorado: "CO", connecticut: "CT",
+  delaware: "DE", "district of columbia": "DC", florida: "FL", georgia: "GA", hawaii: "HI", idaho: "ID", illinois: "IL",
+  indiana: "IN", iowa: "IA", kansas: "KS", kentucky: "KY", louisiana: "LA", maine: "ME", maryland: "MD", massachusetts: "MA",
+  michigan: "MI", minnesota: "MN", mississippi: "MS", missouri: "MO", montana: "MT", nebraska: "NE", nevada: "NV",
+  "new hampshire": "NH", "new jersey": "NJ", "new mexico": "NM", "new york": "NY", "north carolina": "NC", "north dakota": "ND",
+  ohio: "OH", oklahoma: "OK", oregon: "OR", pennsylvania: "PA", "rhode island": "RI", "south carolina": "SC",
+  "south dakota": "SD", tennessee: "TN", texas: "TX", utah: "UT", vermont: "VT", virginia: "VA", washington: "WA",
+  "west virginia": "WV", wisconsin: "WI", wyoming: "WY",
+};
+const VALID_STATE_ABBRS = new Set(Object.values(STATE_ABBR));
+
+// A player's home state from either a plain "State" column, or a "Hometown" column ("City, ST"/"City, State").
+function homeStateOf(get) {
+  const direct = String(get("homeState") || "").trim();
+  if (direct) return VALID_STATE_ABBRS.has(direct.toUpperCase()) ? direct.toUpperCase() : STATE_ABBR[direct.toLowerCase()] || "";
+  const hometown = String(get("hometown") || "").trim();
+  if (!hometown.includes(",")) return "";
+  const tail = hometown.split(",").pop().trim();
+  return VALID_STATE_ABBRS.has(tail.toUpperCase()) ? tail.toUpperCase() : STATE_ABBR[tail.toLowerCase()] || "";
+}
+
 const num = (v) => {
   const n = parseFloat(String(v ?? "").replace(/,/g, ""));
   return Number.isFinite(n) ? n : 0;
@@ -80,6 +106,7 @@ function buildRow(category, division, cells, col, teamOverride) {
     games: int(get("games")),
     sample: false,
     profileUrl: "",
+    homeState: homeStateOf(get),
     id: `upload-${division.toLowerCase()}-${slug(team)}-${slug(player)}-${category}`,
     category,
   };

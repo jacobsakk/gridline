@@ -16,6 +16,7 @@ import re
 import urllib.request
 
 from ncaa_api import normalize_position
+from naming import home_state_from
 
 API_URL = "https://public-graphql-api.ardorsportshub.com/public/graphql"
 TENANT_ID = "404933495157163011"  # NJCAA
@@ -34,7 +35,7 @@ query SiteTemplateSeasonStats(
     includePlayers: $includePlayers, includeGames: $includeGames, useRegionLeaders: $useRegionLeaders
   ) {
     playerTotal
-    schools { school teamId players { playerId name position year stats } }
+    schools { school teamId players { playerId name position year stats hometown highSchool } }
   }
 }
 """
@@ -136,7 +137,7 @@ def to_rows(school, player, conference):
     base = {
         "division": "JUCO", "week": "total", "position": normalize_position((player.get("position") or "").upper().split("_")[0]),
         "player": player["name"], "team": school, "conference": conference, "games": _int(s.get("gp")),
-        "sample": False, "profileUrl": "",
+        "sample": False, "profileUrl": "", "homeState": home_state_from(player.get("hometown")),
     }
     prefix = f"real-juco-{_slug(school)}-njcaa{player['playerId']}"
     rows = []
