@@ -142,11 +142,12 @@ def fetch_roster_athletes(colleges, division, skip_ids=()):
     full roster feed and each player's season line is available the same way,
     so FCS goes team by team. Skips ids already in `skip_ids`.
 
-    The roster feed also carries each player's home state (birthPlace), which
-    the bulk list doesn't -- collected here into `birth_state` for every player
+    The roster feed also carries each player's hometown (birthPlace) and
+    height/weight, none of which the bulk list has -- collected here into
+    `bio` ({id: {"state", "hometown", "height", "weight"}}) for every player
     on the roster, not just the new ones `out` is for, since most of them
-    (anyone the bulk list already found) are in `skip_ids` and would otherwise
-    be skipped entirely. Returns (out, birth_state, failed_teams)."""
+    (anyone the bulk list already found) are in `skip_ids` and would
+    otherwise be skipped entirely. Returns (out, bio, failed_teams)."""
     skip = set(skip_ids)
     teams = [c for c in colleges if c["division"] == division]
 
@@ -157,7 +158,7 @@ def fetch_roster_athletes(colleges, division, skip_ids=()):
             return college, None
         return college, data
 
-    out, birth_state, failed_teams = [], {}, []
+    out, bio, failed_teams = [], {}, []
     with ThreadPoolExecutor(max_workers=6) as pool:
         for college, data in pool.map(one, teams):
             if data is None:
@@ -165,14 +166,24 @@ def fetch_roster_athletes(colleges, division, skip_ids=()):
                 continue
             for group in data.get("athletes", []):
                 for a in group.get("items", []):
-                    state = (a.get("birthPlace") or {}).get("state") or ""
-                    if state:
-                        birth_state[a["id"]] = state
+                    place = a.get("birthPlace") or {}
+                    entry = {}
+                    if place.get("state"):
+                        entry["state"] = place["state"]
+                        entry["hometown"] = place.get("displayText") or ""
+                    height = a.get("height")
+                    if isinstance(height, (int, float)) and height > 0:
+                        entry["height"] = f"{int(height) // 12}'{int(height) % 12}\""
+                    weight = a.get("weight")
+                    if isinstance(weight, (int, float)) and weight > 0:
+                        entry["weight"] = str(int(weight))
+                    if entry:
+                        bio[a["id"]] = entry
                     pos = ((a.get("position") or {}).get("abbreviation") or "").upper()
                     if a["id"] in skip or pos in NO_STATS_POSITIONS:
                         continue
                     out.append({"athlete": {"id": a["id"], "displayName": a.get("displayName", ""), "teamId": college["id"], "position": a.get("position")}})
-    return out, birth_state, failed_teams
+    return out, bio, failed_teams
 
 
 def _num(value):
@@ -197,11 +208,11 @@ def _general_games(athlete):
     return 0
 
 
-def build_espn_rows(division, colleges, athletes, lines, birth_state=None):
+def build_espn_rows(division, colleges, athletes, lines, bio=None):
     """Season-total rows for one division ("FBS" or "FCS") in the pipeline's
     row shape. `team` is the ESPN school name for now; merge_division swaps in
     the NCAA spelling where one exists so weekly diffs keep matching."""
-    birth_state = birth_state or {}
+    bio = bio or {}
     college_by_id = {c["id"]: c for c in colleges if c["division"] == division}
     slug = division.lower()
     rows = []
@@ -215,6 +226,7 @@ def build_espn_rows(division, colleges, athletes, lines, birth_state=None):
             continue
         games = _to_int(_num(s.get("general", {}).get("gamesPlayed") or _general_games(a)))
         position = _position((info.get("position") or {}).get("abbreviation"))
+        player_bio = bio.get(info.get("id"), {})
         base = {
             "division": division,
             "week": "total",
@@ -226,7 +238,10 @@ def build_espn_rows(division, colleges, athletes, lines, birth_state=None):
             "sample": False,
             "source": "espn",
             "_collegeId": college["id"],
-            "homeState": birth_state.get(info.get("id"), ""),
+            "homeState": player_bio.get("state", ""),
+            "hometown": player_bio.get("hometown", ""),
+            "height": player_bio.get("height", ""),
+            "weight": player_bio.get("weight", ""),
         }
         rid = f"real-{slug}-%s-espn-{info.get('id')}"
 

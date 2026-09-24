@@ -234,7 +234,7 @@ export function useWatchlist() {
 
   const players = useMemo(() => allDocs.filter((p) => !p.removed), [allDocs]);
 
-  async function addPlayer({ player, team, division, position }) {
+  async function addPlayer({ player, team, division, position, hometown }) {
     const trimmedPlayer = player.trim();
     if (!trimmedPlayer) return;
     const trimmedTeam = (team || "").trim();
@@ -248,6 +248,7 @@ export function useWatchlist() {
         removed: false,
         division: division || archived.division || "",
         position: position || archived.position || "",
+        hometown: archived.hometown || hometown || "",
       });
       return;
     }
@@ -260,7 +261,7 @@ export function useWatchlist() {
       questionnaire: false,
       pipelined: false,
       notes: "",
-      hometown: "",
+      hometown: hometown || "",
       height: "",
       weight: "",
       eligibility: "",
@@ -1318,7 +1319,7 @@ export function PlayerDetailModal({ sel, onClose, watchlist, portalStatus }) {
               )}
               <button
                 className="watch-toggle"
-                onClick={() => (watched ? confirmRemoveFromWatchlist(watchlist, watched.id, sel.player) : watchlist.addPlayer(sel))}
+                onClick={() => (watched ? confirmRemoveFromWatchlist(watchlist, watched.id, sel.player) : watchlist.addPlayer({ ...sel, hometown: first?.hometown || "" }))}
                 title={watched ? "Remove from watch list" : "Add to watch list"}
                 style={watchToggleButtonStyle}
               >
@@ -2128,6 +2129,8 @@ function GridlineMain({ onBack: toDashboard, initialSearch, onUploadStats }) {
                 <Th label="Conf" sticky sortable active={sortKey === "conference"} dir={sortDir} onClick={() => handleSort("conference")} />
                 <Th label="Pos" sticky />
                 <Th label="Home State" sticky sortable active={sortKey === "homeState"} dir={sortDir} onClick={() => handleSort("homeState")} />
+                <Th label="Ht" sticky sortable active={sortKey === "height"} dir={sortDir} onClick={() => handleSort("height")} />
+                <Th label="Wt" sticky sortable active={sortKey === "weight"} dir={sortDir} onClick={() => handleSort("weight")} />
                 {cat.columns.map((col) => (
                   <Th
                     key={col.key}
@@ -2163,7 +2166,7 @@ function GridlineMain({ onBack: toDashboard, initialSearch, onUploadStats }) {
                             e.stopPropagation();
                             const watched = watchlist.players.find((p) => p.player === r.player && p.team === r.team);
                             if (watched) confirmRemoveFromWatchlist(watchlist, watched.id, r.player);
-                            else watchlist.addPlayer({ player: r.player, team: r.team, division, position: r.position });
+                            else watchlist.addPlayer({ player: r.player, team: r.team, division, position: r.position, hometown: r.hometown || "" });
                           }}
                           title={watchlist.isWatched(r.player, r.team) ? "Remove from watch list" : "Add to watch list"}
                           style={watchToggleButtonStyle}
@@ -2206,6 +2209,8 @@ function GridlineMain({ onBack: toDashboard, initialSearch, onUploadStats }) {
                       {r.position}
                     </td>
                     <td style={{ ...tdStyle, color: "var(--text-muted)" }}>{r.homeState || "—"}</td>
+                    <td className="tabular" style={{ ...tdStyle, color: "var(--text-muted)" }}>{r.height || "—"}</td>
+                    <td className="tabular" style={{ ...tdStyle, color: "var(--text-muted)" }}>{r.weight || "—"}</td>
                     {cat.columns.map((col) => (
                       <td key={col.key} className="tabular" style={{ ...tdStyle, textAlign: "right" }}>
                         {r[col.key]}
@@ -2216,7 +2221,7 @@ function GridlineMain({ onBack: toDashboard, initialSearch, onUploadStats }) {
               })}
               {rows.length === 0 && (
                 <tr>
-                  <td colSpan={5 + cat.columns.length} style={{ ...tdStyle, textAlign: "center", color: "var(--text-faint)", padding: 32 }}>
+                  <td colSpan={7 + cat.columns.length} style={{ ...tdStyle, textAlign: "center", color: "var(--text-faint)", padding: 32 }}>
                     No players match this filter for the selected week.
                   </td>
                 </tr>

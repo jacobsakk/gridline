@@ -138,6 +138,7 @@ def to_rows(school, player, conference):
         "division": "JUCO", "week": "total", "position": normalize_position((player.get("position") or "").upper().split("_")[0]),
         "player": player["name"], "team": school, "conference": conference, "games": _int(s.get("gp")),
         "sample": False, "profileUrl": "", "homeState": home_state_from(player.get("hometown")),
+        "hometown": player.get("hometown") or "", "height": player.get("height") or "", "weight": player.get("weight") or "",
     }
     prefix = f"real-juco-{_slug(school)}-njcaa{player['playerId']}"
     rows = []

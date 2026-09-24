@@ -540,6 +540,8 @@ function RosterTab({ college }) {
               <th style={th} onClick={() => sortBy("player")}>Player {arrow("player")}</th>
               <th style={th} onClick={() => sortBy("position")}>Pos {arrow("position")}</th>
               <th style={th} onClick={() => sortBy("homeState")}>Home State {arrow("homeState")}</th>
+              <th style={{ ...th, textAlign: "right" }} onClick={() => sortBy("height")}>Ht {arrow("height")}</th>
+              <th style={{ ...th, textAlign: "right" }} onClick={() => sortBy("weight")}>Wt {arrow("weight")}</th>
               {table.columns.map((c) => (
                 <th key={c.key} style={{ ...th, textAlign: "right" }} onClick={() => sortBy(c.key)}>
                   {c.label} {arrow(c.key)}
@@ -560,6 +562,8 @@ function RosterTab({ college }) {
                 </td>
                 <td style={{ ...tdStyle, color: "var(--accent)", fontWeight: 700 }}>{r.position || "—"}</td>
                 <td style={{ ...tdStyle, color: "var(--text-muted)" }}>{r.homeState || "—"}</td>
+                <td className="tabular" style={{ ...tdStyle, textAlign: "right", color: "var(--text-muted)" }}>{r.height || "—"}</td>
+                <td className="tabular" style={{ ...tdStyle, textAlign: "right", color: "var(--text-muted)" }}>{r.weight || "—"}</td>
                 {table.columns.map((c) => (
                   <td
                     key={c.key}

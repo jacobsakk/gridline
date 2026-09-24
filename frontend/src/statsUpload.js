@@ -107,6 +107,7 @@ function buildRow(category, division, cells, col, teamOverride) {
     sample: false,
     profileUrl: "",
     homeState: homeStateOf(get),
+    hometown: String(get("hometown") || "").trim(),
     id: `upload-${division.toLowerCase()}-${slug(team)}-${slug(player)}-${category}`,
     category,
   };

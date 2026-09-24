@@ -109,16 +109,16 @@ def build_fbs_fcs(run_date):
         athletes = fetch_espn_athletes()
         print(f"  {len(athletes)} athletes in ESPN's bulk list (covers FBS well, FCS barely)")
         bulk_ids = {a["athlete"]["id"] for a in athletes}
-        roster_athletes, fcs_birth_state, failed_teams = fetch_roster_athletes(colleges, "FCS", skip_ids=bulk_ids)
+        roster_athletes, fcs_bio, failed_teams = fetch_roster_athletes(colleges, "FCS", skip_ids=bulk_ids)
         print(f"  +{len(roster_athletes)} FCS roster players" + (f" (rosters unavailable: {', '.join(failed_teams)})" if failed_teams else ""))
         athletes += roster_athletes
-        # FBS players are already all in the bulk list, but it doesn't carry a home state -- that only
-        # comes from each team's own roster feed, so it's fetched here too, purely for that.
-        print("  fetching home states from each FBS team's roster...")
-        _, fbs_birth_state, fbs_failed_teams = fetch_roster_athletes(colleges, "FBS", skip_ids=bulk_ids)
+        # FBS players are already all in the bulk list, but it doesn't carry a hometown or height/weight --
+        # those only come from each team's own roster feed, so it's fetched here too, purely for that.
+        print("  fetching hometown/height/weight from each FBS team's roster...")
+        _, fbs_bio, fbs_failed_teams = fetch_roster_athletes(colleges, "FBS", skip_ids=bulk_ids)
         if fbs_failed_teams:
-            print(f"  home states unavailable for: {', '.join(fbs_failed_teams)}")
-        birth_state = {**fbs_birth_state, **fcs_birth_state}
+            print(f"  bio unavailable for: {', '.join(fbs_failed_teams)}")
+        bio = {**fbs_bio, **fcs_bio}
         print("  fetching each player's season line...")
         lines, failures = fetch_athlete_lines(athletes, colleges)
     except Exception as err:  # noqa: BLE001 -- any ESPN failure means fall back, loudly
@@ -130,7 +130,7 @@ def build_fbs_fcs(run_date):
 
     results = {}
     for slug, label in (("fbs", "FBS"), ("fcs", "FCS")):
-        espn_rows = build_espn_rows(label, colleges, athletes, lines, birth_state)
+        espn_rows = build_espn_rows(label, colleges, athletes, lines, bio)
         print(f"  {len(espn_rows)} {label} rows from ESPN")
 
         fallback_sets = []
