@@ -462,10 +462,10 @@ function RosterTab({ college }) {
   const rows = useMemo(() => {
     const dir = sort.key ? sort.dir : "desc"; // untouched headers use the category default, highest first
     const column = table.columns.find((c) => c.key === sortKey);
-    const valueKey = sortKey === "player" || sortKey === "position" ? sortKey : column?.sortKey || sortKey;
+    const valueKey = sortKey === "player" || sortKey === "position" || sortKey === "homeState" ? sortKey : column?.sortKey || sortKey;
     return [...lines[active]].sort((a, b) => {
       let cmp;
-      if (valueKey === "player" || valueKey === "position") cmp = String(a[valueKey] || "").localeCompare(String(b[valueKey] || ""));
+      if (valueKey === "player" || valueKey === "position" || valueKey === "homeState") cmp = String(a[valueKey] || "").localeCompare(String(b[valueKey] || ""));
       else cmp = statValue(a, valueKey) - statValue(b, valueKey);
       if (cmp === 0) cmp = String(a.player).localeCompare(String(b.player));
       return dir === "desc" ? -cmp : cmp;
@@ -473,7 +473,7 @@ function RosterTab({ college }) {
   }, [lines, active, sortKey, sort]);
 
   function sortBy(key) {
-    const alpha = key === "player" || key === "position";
+    const alpha = key === "player" || key === "position" || key === "homeState";
     if (sortKey === key) setSort({ key, dir: sort.dir === "desc" ? "asc" : "desc" });
     else setSort({ key, dir: alpha ? "asc" : "desc" });
   }
@@ -523,6 +523,7 @@ function RosterTab({ college }) {
             <tr>
               <th style={th} onClick={() => sortBy("player")}>Player {arrow("player")}</th>
               <th style={th} onClick={() => sortBy("position")}>Pos {arrow("position")}</th>
+              <th style={th} onClick={() => sortBy("homeState")}>State {arrow("homeState")}</th>
               {table.columns.map((c) => (
                 <th key={c.key} style={{ ...th, textAlign: "right" }} onClick={() => sortBy(c.key)}>
                   {c.label} {arrow(c.key)}
@@ -542,6 +543,7 @@ function RosterTab({ college }) {
                   </span>
                 </td>
                 <td style={{ ...tdStyle, color: "var(--accent)", fontWeight: 700 }}>{r.position || "—"}</td>
+                <td style={{ ...tdStyle, color: "var(--text-muted)" }}>{r.homeState || "—"}</td>
                 {table.columns.map((c) => (
                   <td
                     key={c.key}

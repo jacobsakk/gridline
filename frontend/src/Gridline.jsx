@@ -40,7 +40,7 @@ function playerSearchUrl(player, team, position) {
 
 // Sort keys that need alphabetical (not numeric) comparison, and default
 // to ascending on first click rather than the stat columns' descending.
-const STRING_SORT_KEYS = new Set(["team", "conference"]);
+const STRING_SORT_KEYS = new Set(["team", "conference", "homeState"]);
 
 // leaderKey = the stat used to rank "leader" for this category
 const CATEGORIES = {
@@ -1323,7 +1323,7 @@ export function PlayerDetailModal({ sel, onClose, watchlist, portalStatus }) {
             </div>
             <div style={{ fontSize: 13, color: "var(--text-muted)", marginTop: 3 }}>
               {canonicalSchool(sel.team)}
-              {first ? ` · ${first.conference} · ${first.position} · ${DIVISION_LABEL[sel.division] || sel.division}` : ""}
+              {first ? ` · ${first.conference} · ${first.position} · ${DIVISION_LABEL[sel.division] || sel.division}${first.homeState ? ` · Home: ${first.homeState}` : ""}` : ""}
             </div>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
@@ -2110,6 +2110,7 @@ function GridlineMain({ onBack: toDashboard, initialSearch, onUploadStats }) {
                 <Th label="Team" sticky sortable active={sortKey === "team"} dir={sortDir} onClick={() => handleSort("team")} />
                 <Th label="Conf" sticky sortable active={sortKey === "conference"} dir={sortDir} onClick={() => handleSort("conference")} />
                 <Th label="Pos" sticky />
+                <Th label="State" sticky sortable active={sortKey === "homeState"} dir={sortDir} onClick={() => handleSort("homeState")} />
                 {cat.columns.map((col) => (
                   <Th
                     key={col.key}
@@ -2187,6 +2188,7 @@ function GridlineMain({ onBack: toDashboard, initialSearch, onUploadStats }) {
                     <td style={{ ...tdStyle, color: "var(--accent)", fontWeight: 600 }} className="oswald">
                       {r.position}
                     </td>
+                    <td style={{ ...tdStyle, color: "var(--text-muted)" }}>{r.homeState || "—"}</td>
                     {cat.columns.map((col) => (
                       <td key={col.key} className="tabular" style={{ ...tdStyle, textAlign: "right" }}>
                         {r[col.key]}
@@ -2197,7 +2199,7 @@ function GridlineMain({ onBack: toDashboard, initialSearch, onUploadStats }) {
               })}
               {rows.length === 0 && (
                 <tr>
-                  <td colSpan={4 + cat.columns.length} style={{ ...tdStyle, textAlign: "center", color: "var(--text-faint)", padding: 32 }}>
+                  <td colSpan={5 + cat.columns.length} style={{ ...tdStyle, textAlign: "center", color: "var(--text-faint)", padding: 32 }}>
                     No players match this filter for the selected week.
                   </td>
                 </tr>
