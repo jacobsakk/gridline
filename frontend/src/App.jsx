@@ -7,7 +7,6 @@ import OfferTracker from "./OfferTracker.jsx";
 import Colleges from "./Colleges.jsx";
 import HsGameUpdate from "./HsGameUpdate.jsx";
 import RosterPage from "./RosterPage.jsx";
-import MapsPage from "./MapsPage.jsx";
 import { ConfirmHost } from "./ConfirmDialog.jsx";
 import CardTransition from "./CardTransition.jsx";
 import LoginGate from "./LoginGate.jsx";
@@ -25,7 +24,7 @@ export default function App() {
   );
 }
 
-const SCREENS = new Set(["tracker", "offers", "colleges", "hs", "roster", "maps", "settings"]);
+const SCREENS = new Set(["tracker", "offers", "colleges", "hs", "roster", "settings"]);
 
 function prefersReducedMotion() {
   return typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
@@ -56,7 +55,6 @@ function Screens({ session }) {
   else if (view.name === "colleges") screen = <Colleges onBack={toDashboard} />;
   else if (view.name === "hs") screen = <HsGameUpdate onBack={toDashboard} />;
   else if (view.name === "roster") screen = <RosterPage onBack={toDashboard} session={session} />;
-  else if (view.name === "maps") screen = <MapsPage onBack={toDashboard} session={session} />;
   else if (view.name === "settings") screen = <SettingsPage onBack={toDashboard} session={session} />;
   else {
     screen = (
