@@ -99,6 +99,10 @@ def clean_school_name(name):
     t = re.sub(r"\([^)]*\)", " ", name or "")
     t = re.sub(r"\b(HS|H\.S\.|High School|High)\b", " ", t, flags=re.I)
     t = re.sub(r"\bAcad\b\.?", "Academy", t, flags=re.I)
+    # MaxPreps' own search barely matches "Saint" spelled out (confirmed directly: "Saint Joseph" finds
+    # nothing at all, "St Joseph" finds it right away) -- every school on the site is "St." regardless of
+    # how a coach spells it.
+    t = re.sub(r"\bSaint\b\.?", "St.", t, flags=re.I)
     return re.sub(r"\s+", " ", t).strip(" -,")
 
 
