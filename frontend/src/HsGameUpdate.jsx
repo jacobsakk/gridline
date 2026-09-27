@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { BackButton, HomeButton } from "./HomeButton.jsx";
-import { AlertTriangle, ArrowDown, Camera, GripVertical, ArrowUp, ChevronLeft, ChevronRight, Eye, EyeOff, FileText, Loader2, Plus, Printer, Search, Trash2, Upload, X } from "lucide-react";
+import { AlertTriangle, ArrowDown, Camera, GripVertical, ArrowUp, ChevronLeft, ChevronRight, Eye, EyeOff, FileText, Loader2, Pencil, Plus, Printer, Search, Trash2, Upload, X } from "lucide-react";
 import { ThemeSwitcher, useTheme } from "./theme.jsx";
 import { confirmAction } from "./ConfirmDialog.jsx";
 import { firstNameKey, lastNameKey, normalizePlayerKey, normalizePosition, useOfferTracker } from "./offerData.js";
@@ -323,6 +323,67 @@ function CoachCell({ player, coaches, updatePlayer }) {
   );
 }
 
+// A transfer, or a school the scraper matched to the wrong page -- both fixed the same way: change the
+// school/state, or hand it a correct MaxPreps/ScoreStream link directly. Leaving a link blank has the
+// scraper search for it again on its next run rather than reusing whatever it found (or failed to find)
+// before.
+function EditSchoolModal({ player, editSchool, onClose }) {
+  const [f, setF] = useState({ highSchool: player.highSchool || "", state: player.state || "", maxpreps: player.sources?.maxpreps || "", scorestream: player.sources?.scorestream || "" });
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const set = (k) => (e) => setF((p) => ({ ...p, [k]: e.target.value }));
+  const field = { ...controlStyle, width: "100%" };
+  async function submit(e) {
+    e.preventDefault();
+    if (!f.highSchool.trim()) return setError("A school is required.");
+    setBusy(true);
+    try {
+      await editSchool(player.id, f);
+      onClose();
+    } catch {
+      setError("Couldn't save that. Try again.");
+      setBusy(false);
+    }
+  }
+  return (
+    <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20, zIndex: 70 }}>
+      <form onClick={(e) => e.stopPropagation()} onSubmit={submit} style={{ background: "var(--bg-panel)", border: "1px solid var(--border)", borderRadius: 10, width: 440, maxWidth: "100%", padding: 22, display: "grid", gap: 10 }}>
+        <h2 className="oswald" style={{ margin: 0, fontSize: 19 }}>{player.name}'s school</h2>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 90px", gap: 10 }}>
+          <input placeholder="High school" value={f.highSchool} onChange={set("highSchool")} style={field} autoFocus />
+          <input placeholder="State" value={f.state} onChange={set("state")} style={field} />
+        </div>
+        <label style={{ fontSize: 11.5, color: "var(--text-faint)", marginTop: 4 }}>MaxPreps / ScoreStream links (leave blank to have these searched for again)</label>
+        <input placeholder="MaxPreps schedule link" value={f.maxpreps} onChange={set("maxpreps")} style={field} />
+        <input placeholder="ScoreStream team link" value={f.scorestream} onChange={set("scorestream")} style={field} />
+        {error && <div role="alert" style={{ fontSize: 13, color: "var(--danger-text)" }}>{error}</div>}
+        <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
+          <button type="button" onClick={onClose} style={{ ...controlStyle, cursor: "pointer" }}>Cancel</button>
+          <button type="submit" disabled={busy} style={{ background: "var(--accent-bg)", border: "1px solid var(--accent)", color: "var(--accent)", borderRadius: 6, padding: "8px 16px", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>{busy ? "Saving…" : "Save"}</button>
+        </div>
+      </form>
+    </div>
+  );
+}
+
+function SchoolCell({ player, editSchool }) {
+  const [editing, setEditing] = useState(false);
+  return (
+    <>
+      <button
+        onClick={() => setEditing(true)}
+        title="Edit school, or a MaxPreps/ScoreStream link the scraper got wrong"
+        aria-label={`Edit school for ${player.name}`}
+        style={{ background: "none", border: "none", padding: 0, cursor: "pointer", color: "inherit", font: "inherit", display: "inline-flex", alignItems: "center", gap: 5, textAlign: "left" }}
+      >
+        <span>{player.highSchool}{player.state ? ` (${player.state})` : ""}</span>
+        <Pencil size={11} className="hs-no-print" style={{ color: "var(--text-faint)", flexShrink: 0 }} />
+      </button>
+      {editing && <EditSchoolModal player={player} editSchool={editSchool} onClose={() => setEditing(false)} />}
+    </>
+  );
+}
+
 const STATUS_ORDER = Object.fromEntries(STATUS_OPTIONS.map((o, i) => [o.key, i + 1]));
 // W > T > L > scheduled-but-unplayed > nothing that week
 const resultRank = (g) => (!g ? 0 : g.result === "W" ? 4 : g.result === "T" ? 3 : g.result === "L" ? 2 : 1);
@@ -353,7 +414,7 @@ function sortPlayers(players, sort, statusOf) {
   });
 }
 
-function MasterTab({ players, weeks, currentWeek, cmuByWeek, statusOf, statusWhy, autoStatusOf, onGame, onDeleteGame, onOpenPlayer, onProfile, hasProfile, selected, setSelected, sort, setSort, coaches, updatePlayer }) {
+function MasterTab({ players, weeks, currentWeek, cmuByWeek, statusOf, statusWhy, autoStatusOf, onGame, onDeleteGame, onOpenPlayer, onProfile, hasProfile, selected, setSelected, sort, setSort, coaches, updatePlayer, editSchool }) {
   const thBase = {
     position: "sticky", top: 0, zIndex: 2, background: "var(--bg-surface)", padding: "9px 10px", fontSize: 11, color: "var(--text-faint)", textTransform: "uppercase",
     textAlign: "left", whiteSpace: "nowrap", borderBottom: "1px solid var(--border)", letterSpacing: "0.04em",
@@ -439,7 +500,7 @@ function MasterTab({ players, weeks, currentWeek, cmuByWeek, statusOf, statusWhy
                   <StatusSelect player={p} status={statusOf(p)} updatePlayer={updatePlayer} />
                 </td>
                 <td style={{ ...td, background: on ? rowBg : undefined }} className="tabular">{p.classYear}</td>
-                <td style={{ ...td, whiteSpace: "nowrap", background: on ? rowBg : undefined }}>{p.highSchool}{p.state ? ` (${p.state})` : ""}</td>
+                <td style={{ ...td, whiteSpace: "nowrap", background: on ? rowBg : undefined }}><SchoolCell player={p} editSchool={editSchool} /></td>
                 <td style={{ ...td, whiteSpace: "nowrap", fontWeight: 700, color: "var(--text-primary)", background: on ? rowBg : undefined }} className="tabular">{p.record.played ? p.record.text : "—"}</td>
                 {weeks.map((w) => {
                   const inWeek = p.games.filter((x) => x.date && weekKey(fromIso(x.date)) === w);
@@ -1522,7 +1583,7 @@ export default function HsGameUpdate({ onBack: toDashboard }) {
             </div>
           </div>
         ) : tab === "Master Tracker" ? (
-          <MasterTab players={sortedForMaster} weeks={weeks} currentWeek={weekKey(new Date())} cmuByWeek={cmuByWeek} statusOf={statusOf} statusWhy={statusWhy} onOpenPlayer={openPlayer} onProfile={setProfile} hasProfile={hasProfile} selected={selected} setSelected={setSelected} sort={sort} setSort={setSort} coaches={coaches} updatePlayer={hs.updatePlayer} autoStatusOf={autoStatusOf} onGame={(player, game) => setGameSource({ id: player.id, key: game.date || game.opponent })} onDeleteGame={deleteGame} />
+          <MasterTab players={sortedForMaster} weeks={weeks} currentWeek={weekKey(new Date())} cmuByWeek={cmuByWeek} statusOf={statusOf} statusWhy={statusWhy} onOpenPlayer={openPlayer} onProfile={setProfile} hasProfile={hasProfile} selected={selected} setSelected={setSelected} sort={sort} setSort={setSort} coaches={coaches} updatePlayer={hs.updatePlayer} editSchool={hs.editSchool} autoStatusOf={autoStatusOf} onGame={(player, game) => setGameSource({ id: player.id, key: game.date || game.opponent })} onDeleteGame={deleteGame} />
         ) : tab === "Weekly Tracker" ? (
           <WeeklyTab players={filtered} week={week} statusOf={statusOf} autoStatusOf={autoStatusOf} updatePlayer={hs.updatePlayer} onGame={(player, game) => setGameSource({ id: player.id, key: game.date || game.opponent })} updateGame={hs.updateGame} onOpenPlayer={openPlayer} onProfile={setProfile} hasProfile={hasProfile} />
         ) : (

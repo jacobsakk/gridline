@@ -563,6 +563,15 @@ def resolve_sources(client, players, write=True):
     need_ss = []
     for key, d in schools.items():
         have = known.get(key, {})
+        # A borrowed MaxPreps link is only trusted once it's actually checked here -- if it's gone stale
+        # (the school moved pages, or a wrong match slipped through some other way) it's worth re-searching
+        # rather than carrying the same dead link forward onto every player at that school.
+        if have.get("maxpreps"):
+            try:
+                if not fetch_maxpreps(have["maxpreps"]):
+                    have = {k: v for k, v in have.items() if k != "maxpreps"}
+            except Exception:
+                have = {k: v for k, v in have.items() if k != "maxpreps"}
         links = dict(have)
         if not links.get("maxpreps"):
             url = find_maxpreps(d.get("highSchool"), d.get("state"))

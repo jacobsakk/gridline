@@ -1,5 +1,5 @@
 import * as XLSX from "xlsx";
-import { collection, doc, onSnapshot, setDoc, updateDoc, writeBatch } from "firebase/firestore";
+import { collection, deleteField, doc, onSnapshot, setDoc, updateDoc, writeBatch } from "firebase/firestore";
 import { db } from "./firebase";
 import { useEffect, useMemo, useState } from "react";
 
@@ -586,6 +586,20 @@ export function useHsTracker() {
     await updatePlayer(player.id, { games });
   }
 
+  // Changing a player's school (a transfer) or fixing a bad MaxPreps/ScoreStream link the scraper found on
+  // its own. Leaving a link blank clears it and clears sourcesTriedAt too, so the scraper searches again on
+  // its next run instead of waiting out its usual few-day cooldown on a search that already "succeeded"
+  // (even if what it found was wrong).
+  async function editSchool(id, { highSchool, state, maxpreps = "", scorestream = "" }) {
+    await updateDoc(doc(db, "hsPlayers", id), {
+      highSchool: highSchool.trim(),
+      state: toStateCode(state),
+      sources: { maxpreps: maxpreps.trim(), scorestream: scorestream.trim() },
+      sourcesTriedAt: deleteField(),
+      updatedAt: new Date().toISOString(),
+    });
+  }
+
   async function addPlayer({ name, classYear, position, highSchool, state, coach, maxpreps = "", scorestream = "" }) {
     const id = playerId(classYear, name);
     await setDoc(doc(db, "hsPlayers", id), {
@@ -626,5 +640,5 @@ export function useHsTracker() {
   const restorePlayers = (ids) => setRemoved(ids, false);
   const removePlayer = (id) => setRemoved([id], true);
 
-  return { ready, players, teams, importFile, importParsed, updatePlayer, updateGame, addPlayer, removePlayer, removePlayers, restorePlayers, setFaceSheet, setSheetOrder };
+  return { ready, players, teams, importFile, importParsed, updatePlayer, updateGame, addPlayer, editSchool, removePlayer, removePlayers, restorePlayers, setFaceSheet, setSheetOrder };
 }
