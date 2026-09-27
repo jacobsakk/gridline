@@ -468,16 +468,25 @@ def collapse_games(games, today):
 # --------------------------------------------------------------------- run
 
 def scrape(pairs):
-    """pairs: {team_doc_id: {"maxpreps": url, "scorestream": url}} -> {team_doc_id: doc}."""
+    """pairs: {team_doc_id: {"maxpreps": url, "scorestream": url}} -> ({team_doc_id: doc}, dead_maxpreps).
+
+    dead_maxpreps: {url: team_doc_id} for a MaxPreps link that loaded fine but came back with zero games --
+    the same page-loaded-but-empty signal find_maxpreps itself requires (it never accepts a candidate page
+    unless it has games on it), so a link that no longer clears that bar almost certainly moved or was a
+    wrong match to begin with. main() uses this to clear the link off every player who has it, so the next
+    run searches fresh instead of carrying a dead page forward forever."""
     ss_urls = sorted({p["scorestream"] for p in pairs.values() if p.get("scorestream")})
     ss_results = asyncio.run(fetch_scorestream_many(ss_urls)) if ss_urls else {}
 
     docs = {}
+    dead_maxpreps = {}
     for i, (doc_id, src) in enumerate(pairs.items(), 1):
         mp_games = None
         if src.get("maxpreps"):
             try:
                 mp_games = fetch_maxpreps(src["maxpreps"])
+                if not mp_games:
+                    dead_maxpreps[src["maxpreps"]] = doc_id
             except Exception as err:
                 print(f"  MaxPreps failed for {src['maxpreps']}: {err}", file=sys.stderr)
             time.sleep(DELAY_SECONDS)
@@ -493,7 +502,7 @@ def scrape(pairs):
             "updatedAt": dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds"),
         }
         print(f"[{i}/{len(pairs)}] {doc_id}: {len(games)} games, {docs[doc_id]['conflicts']} conflicts")
-    return docs
+    return docs, dead_maxpreps
 
 
 def firestore_client():
@@ -672,7 +681,7 @@ def main():
     if not pairs:
         return
 
-    docs = scrape(pairs)
+    docs, dead_maxpreps = scrape(pairs)
 
     if args.dump:
         with open(args.dump, "w") as f:
@@ -688,6 +697,25 @@ def main():
                 batch = client.batch()
         batch.commit()
         print(f"wrote {n} team documents")
+
+        # Self-healing: a MaxPreps link that loaded but had zero games is cleared off every player who has
+        # it, with sourcesTriedAt cleared too, so resolve_sources() searches for it fresh next run instead
+        # of this dead page sitting there forever (this is what fixes a bad match on its own, with no one
+        # needing to notice and fix it by hand).
+        if dead_maxpreps and client is not None:
+            from google.cloud import firestore as _fs
+
+            affected = [ref for ref, d in players if (d.get("sources") or {}).get("maxpreps") in dead_maxpreps]
+            if affected:
+                print(f"clearing {len(affected)} players' dead MaxPreps link{'s' if len(affected) != 1 else ''} ({len(dead_maxpreps)} page{'s' if len(dead_maxpreps) != 1 else ''}) for a fresh search next run")
+                batch, n = client.batch(), 0
+                for ref in affected:
+                    batch.update(ref, {"sources.maxpreps": _fs.DELETE_FIELD, "sourcesTriedAt": _fs.DELETE_FIELD})
+                    n += 1
+                    if n % 400 == 0:
+                        batch.commit()
+                        batch = client.batch()
+                batch.commit()
     total_conflicts = sum(d["conflicts"] for d in docs.values())
     print(f"done: {len(docs)} schools, {total_conflicts} score disagreements between sources")
 
