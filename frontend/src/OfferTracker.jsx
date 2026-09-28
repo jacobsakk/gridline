@@ -43,6 +43,8 @@ export function toTitleCase(text) {
 }
 
 
+const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
+
 const filterSelectStyle = {
   background: "var(--bg-surface)", border: "1px solid var(--border)", color: "var(--text-primary)",
   borderRadius: 5, padding: "7px 10px", fontSize: 13, fontFamily: "inherit", cursor: "pointer",
@@ -858,7 +860,7 @@ function SortIcon({ active, dir }) {
   return dir === "desc" ? <ChevronDown size={13} /> : <ChevronUp size={13} />;
 }
 
-function TeamOffersTable({ rows, onEdit, onOpenProfile, onRemove, sortKey, sortDir, onSort, teamColor, teamTextColor, showTeam, commitTeam }) {
+function TeamOffersTable({ rows, onEdit, onOpenProfile, onRemove, sortKey, sortDir, onSort, teamColor, teamTextColor, showTeam, commitTeam, selected, onToggleSelect }) {
   const theme = useContext(ThemeContext);
   const tdStyle = { padding: "4px 10px", fontSize: 13.5, color: "var(--text-secondary)", borderRight: "1px solid var(--border-faint)" };
   const headerBackground = teamColor ? `color-mix(in srgb, ${teamColor} 22%, var(--bg-surface))` : "var(--bg-surface)";
@@ -880,6 +882,7 @@ function TeamOffersTable({ rows, onEdit, onOpenProfile, onRemove, sortKey, sortD
     <table style={{ width: "100%", borderCollapse: "collapse" }}>
       <thead>
         <tr>
+          {onToggleSelect && <th style={{ ...thStyle, cursor: "default", width: 30 }} />}
           {showTeam && (
             <th style={thStyle} onClick={() => onSort("teamLabel")}>
               <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
@@ -901,7 +904,18 @@ function TeamOffersTable({ rows, onEdit, onOpenProfile, onRemove, sortKey, sortD
       </thead>
       <tbody>
         {rows.map((r) => (
-          <tr key={r.id} style={{ borderTop: "1px solid var(--border-subtle)", background: "var(--bg-panel)" }}>
+          <tr key={r.id} style={{ borderTop: "1px solid var(--border-subtle)", background: selected?.has(r.player) ? "var(--accent-hover-tint)" : "var(--bg-panel)" }}>
+            {onToggleSelect && (
+              <td style={{ ...tdStyle, textAlign: "center" }}>
+                <input
+                  type="checkbox"
+                  checked={selected.has(r.player)}
+                  onChange={() => onToggleSelect(r.player)}
+                  aria-label={`Select ${r.player} to merge`}
+                  style={{ cursor: "pointer" }}
+                />
+              </td>
+            )}
             {showTeam && (
               <td style={{ ...tdStyle, fontWeight: 700, whiteSpace: "nowrap", color: textAccentFor(TEAM_CONFERENCE[r.team], theme) || "var(--text-primary)" }}>
                 {TEAM_CONFERENCE[r.team]?.label || r.team}
@@ -1013,6 +1027,36 @@ export default function OfferTracker({ onBack: toDashboard }) {
   const [profilePlayer, setProfilePlayer] = useState(null);
   const [adding, setAdding] = useState(false);
   const [fixingNames, setFixingNames] = useState(false);
+  // Merging duplicate spellings: check two or more names' rows (on this team's sheet, or across every team
+  // while searching), pick which one is correct, then merge -- persists across a team switch, so a name on
+  // one team's board and a different spelling on another's can be checked together.
+  const [mergeSelection, setMergeSelection] = useState(() => new Set());
+  const [mergeKeep, setMergeKeep] = useState("");
+  const [mergeBusy, setMergeBusy] = useState(false);
+  const [mergeError, setMergeError] = useState("");
+  const [mergeMessage, setMergeMessage] = useState("");
+  function toggleMergeSelect(player) {
+    setMergeSelection((set) => {
+      const next = new Set(set);
+      next.has(player) ? next.delete(player) : next.add(player);
+      if (!next.has(mergeKeep)) setMergeKeep(next.size ? [...next][0] : "");
+      return next;
+    });
+  }
+  async function runMerge() {
+    setMergeBusy(true);
+    setMergeError("");
+    setMergeMessage("");
+    try {
+      const r = await tracker.mergeProfiles(activeClassYear, [...mergeSelection], mergeKeep);
+      setMergeSelection(new Set());
+      setMergeKeep("");
+      setMergeMessage(`${toTitleCase(r.canonical)}: ${r.merged ? plural(r.merged, "duplicate row", "duplicate rows") + " combined" : ""}${r.merged && r.renamed ? ", " : ""}${r.renamed ? plural(r.renamed, "row", "rows") + " renamed" : ""}.`);
+    } catch (err) {
+      setMergeError(err.message || "That didn't save. Try again.");
+    }
+    setMergeBusy(false);
+  }
 
   const tracker = useOfferTracker();
   // Opens on the earliest class year (2027).
@@ -1349,6 +1393,36 @@ export default function OfferTracker({ onBack: toDashboard }) {
                   />
                 )}
 
+                {mergeSelection.size > 0 && (
+                  <div style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap", background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 6, padding: "8px 12px", marginBottom: 8 }}>
+                    <span style={{ fontSize: 12.5, color: "var(--text-muted)" }}>{plural(mergeSelection.size, "profile", "profiles")} checked{mergeSelection.size === 1 ? " — check another to merge" : ""}</span>
+                    {mergeSelection.size >= 2 && (
+                      <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+                        <span style={{ fontSize: 12.5, color: "var(--text-muted)" }}>Correct name:</span>
+                        {[...mergeSelection].map((n) => (
+                          <label key={n} style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 13, cursor: "pointer" }}>
+                            <input type="radio" name="merge-keep" checked={mergeKeep === n} onChange={() => setMergeKeep(n)} />
+                            {toTitleCase(n)}
+                          </label>
+                        ))}
+                        <button disabled={!mergeKeep || mergeBusy} onClick={runMerge} style={{ background: "var(--accent-bg)", border: "1px solid var(--accent)", color: "var(--accent)", borderRadius: 5, padding: "6px 12px", fontSize: 13, fontWeight: 700, cursor: "pointer", opacity: mergeKeep ? 1 : 0.5 }}>
+                          {mergeBusy ? "Merging…" : `Merge ${mergeSelection.size}`}
+                        </button>
+                      </div>
+                    )}
+                    <button onClick={() => { setMergeSelection(new Set()); setMergeKeep(""); setMergeError(""); }} style={{ background: "none", border: "none", color: "var(--text-faint)", cursor: "pointer", fontSize: 12.5, textDecoration: "underline", marginLeft: "auto" }}>
+                      Clear
+                    </button>
+                  </div>
+                )}
+                {mergeError && <div role="alert" style={{ fontSize: 12.5, color: "var(--danger-text)", marginBottom: 8 }}>{mergeError}</div>}
+                {mergeMessage && (
+                  <div role="status" style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 12.5, color: "var(--success)", marginBottom: 8 }}>
+                    {mergeMessage}
+                    <button onClick={() => setMergeMessage("")} style={{ background: "none", border: "none", color: "inherit", cursor: "pointer", lineHeight: 0, opacity: 0.7 }}><X size={12} /></button>
+                  </div>
+                )}
+
                 <div style={{ flex: 1, minHeight: 0, overflow: "auto", border: "1px solid var(--border)", borderRadius: 6, marginBottom: "var(--gutter)" }}>
                   <TeamOffersTable
                     rows={teamRows}
@@ -1362,6 +1436,8 @@ export default function OfferTracker({ onBack: toDashboard }) {
                     teamColor={teamAccent}
                     teamTextColor={teamTextAccent}
                     commitTeam={commitsOnly && !searching ? activeTeamMeta : null}
+                    selected={mergeSelection}
+                    onToggleSelect={toggleMergeSelect}
                   />
                 </div>
               </>
@@ -1383,7 +1459,7 @@ export default function OfferTracker({ onBack: toDashboard }) {
         />
       )}
 
-      {fixingNames && activeClassYear && <NameFixModal tracker={tracker} classYear={activeClassYear} onClose={() => setFixingNames(false)} />}
+      {fixingNames && <NameFixModal tracker={tracker} onClose={() => setFixingNames(false)} />}
 
       {uploadOpen && (
         <UploadModal
