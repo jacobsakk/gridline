@@ -7,7 +7,7 @@ import { confirmAction } from "./ConfirmDialog.jsx";
 import { collegeForLabel, logoFor, teamKey } from "./collegeData.js";
 import { canonicalSchool, fixBrandCase } from "./schoolNames.js";
 import { ThemeSwitcher, useTheme } from "./theme.jsx";
-import { CONFERENCE_ORDER, TEAM_CONFERENCE, normalizePosition, useOfferTracker } from "./offerData.js";
+import { CONFERENCE_ORDER, PIPELINE_OPTIONS, TEAM_CONFERENCE, normalizePipelineStatus, normalizePosition, useOfferTracker } from "./offerData.js";
 
 const CONFERENCE_LABEL = { MAC: "MAC", MVC: "MVC / MVFC", IVY: "Ivy League" };
 
@@ -42,7 +42,6 @@ export function toTitleCase(text) {
   );
 }
 
-const PIPELINE_OPTIONS = ["Reject", "Recruit", "0 - Partial", "1 - Solid Starter", "2 - All Mac Player"];
 
 const filterSelectStyle = {
   background: "var(--bg-surface)", border: "1px solid var(--border)", color: "var(--text-primary)",
@@ -196,12 +195,10 @@ function PlayerNameCell({ player, width, onOpenProfile, onCommit }) {
 }
 
 function PipelineSelect({ value, onCommit, width }) {
-  const raw = (value || "").trim();
-  // Imported data is all caps ("1 - SOLID STARTER") and a <select> only
-  // matches an option's exact text, so point it at the canonical option.
-  const canonical = PIPELINE_OPTIONS.find((o) => o.toLowerCase() === raw.toLowerCase());
-  const current = canonical || raw;
-  const isKnown = !raw || !!canonical;
+  // Imported/typed data varies in case, dash character and spacing ("1 - SOLID STARTER", "1- Solid Starter")
+  // and a <select> only matches an option's exact text, so it's folded onto the one canonical spelling.
+  const current = normalizePipelineStatus(value);
+  const isKnown = !current || PIPELINE_OPTIONS.includes(current);
 
   return (
     <select
@@ -561,7 +558,7 @@ export function PlayerProfileModal({ player, classYear, tracker, onClose }) {
             <div>
               <div style={sectionLabel}>Pipeline</div>
               <span style={{ fontSize: 13.5, color: "var(--text-secondary)" }}>
-                {PIPELINE_OPTIONS.find((o) => o.toLowerCase() === pipeline.toLowerCase()) || pipeline || "—"}
+                {normalizePipelineStatus(pipeline) || "—"}
               </span>
             </div>
           </div>

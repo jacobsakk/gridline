@@ -26,18 +26,27 @@ export default function NameFixModal({ tracker, classYear, onClose }) {
   const [replacement, setReplacement] = useState("");
   const [inNames, setInNames] = useState(true);
   const [inSchools, setInSchools] = useState(true);
-  // merge or rename
-  const [from, setFrom] = useState("");
-  const [to, setTo] = useState("");
+  // merge or rename -- check two or more profiles on the left, then pick which of those is the right name
+  const [mergeSearch, setMergeSearch] = useState("");
+  const [checked, setChecked] = useState(() => new Set());
+  const [keepName, setKeepName] = useState("");
 
   const suggestions = useMemo(() => tracker.suggestFixes(), [tracker]);
   const open = suggestions.filter((s) => !done.has(s.from));
   const names = useMemo(() => tracker.profileNames(classYear), [tracker, classYear]);
+  const q = mergeSearch.trim().toLowerCase();
+  const filteredNames = q ? names.filter((n) => n.toLowerCase().includes(q)) : names;
+  const checkedNames = names.filter((n) => checked.has(n));
+  function toggleChecked(n) {
+    setChecked((set) => {
+      const next = new Set(set);
+      next.has(n) ? next.delete(n) : next.add(n);
+      if (!next.has(keepName)) setKeepName(next.size ? [...next][0] : "");
+      return next;
+    });
+  }
 
   const preview = tracker.wordReplacementPreview(word, { names: inNames, schools: inSchools });
-  const fromRows = from.trim() ? tracker.rowsForPlayer(classYear, from) : [];
-  const toRows = to.trim() ? tracker.rowsForPlayer(classYear, to) : [];
-  const sameProfile = from.trim() && to.trim() && from.trim().toUpperCase() === to.trim().toUpperCase();
 
   async function guard(key, work) {
     setBusy(key);
@@ -86,10 +95,11 @@ export default function NameFixModal({ tracker, classYear, onClose }) {
 
   const applyMerge = () =>
     guard("merge", async () => {
-      const r = await tracker.mergeProfile(classYear, from, to);
+      const r = await tracker.mergeProfiles(classYear, checkedNames, keepName);
       setMessage(`${toTitleCase(r.canonical)}: ${r.merged ? plural(r.merged, "duplicate row", "duplicate rows") + " combined" : ""}${r.merged && r.renamed ? ", " : ""}${r.renamed ? plural(r.renamed, "row", "rows") + " renamed" : ""}.`);
-      setFrom("");
-      setTo("");
+      setChecked(new Set());
+      setKeepName("");
+      setMergeSearch("");
     });
 
   const tabBtn = (id, label) => (
@@ -189,27 +199,45 @@ export default function NameFixModal({ tracker, classYear, onClose }) {
 
         {tab === "merge" && (
           <>
-            <p style={{ margin: "0 0 12px", fontSize: 13, color: "var(--text-muted)", lineHeight: 1.5 }}>
-              Pick the profile with the wrong name, then type the right one. If the right name already has a profile they're merged into it (rows for the same team are combined); if not, the profile is renamed on every team's sheet. Class of {classYear}.
+            <p style={{ margin: "0 0 10px", fontSize: 13, color: "var(--text-muted)", lineHeight: 1.5 }}>
+              Check two or more profiles on the left that are really the same recruit, then pick which name is correct. Rows for the same team are combined; every row keeps its old name as an alias, so a re-uploaded sheet still lands on the right profile. Class of {classYear}.
             </p>
-            <datalist id="fix-names">{names.map((n) => <option key={n} value={toTitleCase(n)} />)}</datalist>
-            <label style={{ fontSize: 12.5, color: "var(--text-muted)" }}>
-              Profile to fix
-              <input id="fix-from" list="fix-names" value={from} onChange={(e) => setFrom(e.target.value)} placeholder="Start typing a name…" style={{ ...field, marginTop: 5 }} />
-            </label>
-            <div style={{ fontSize: 12, color: "var(--text-faint)", margin: "5px 0 12px" }}>
-              {from.trim() ? (fromRows.length ? `${plural(fromRows.length, "row", "rows")} across ${plural(new Set(fromRows.map((r) => r.team)).size, "team", "teams")}` : "No profile by that name.") : ""}
+            <input
+              value={mergeSearch}
+              onChange={(e) => setMergeSearch(e.target.value)}
+              placeholder="Search names…"
+              style={{ ...field, marginBottom: 8 }}
+            />
+            <div style={{ border: "1px solid var(--border)", borderRadius: 8, maxHeight: 220, overflowY: "auto", marginBottom: 12 }}>
+              {filteredNames.length === 0 ? (
+                <div style={{ padding: 12, fontSize: 13, color: "var(--text-faint)" }}>No names match.</div>
+              ) : (
+                filteredNames.map((n) => {
+                  const rows = tracker.rowsForPlayer(classYear, n);
+                  return (
+                    <label key={n} style={{ display: "flex", alignItems: "center", gap: 9, padding: "7px 12px", borderBottom: "1px solid var(--border-subtle)", cursor: "pointer", fontSize: 13.5 }}>
+                      <input type="checkbox" checked={checked.has(n)} onChange={() => toggleChecked(n)} />
+                      <span style={{ flex: 1, color: "var(--text-primary)" }}>{toTitleCase(n)}</span>
+                      <span style={{ fontSize: 11.5, color: "var(--text-faint)" }}>{plural(rows.length, "row", "rows")} · {plural(new Set(rows.map((r) => r.team)).size, "team", "teams")}</span>
+                    </label>
+                  );
+                })
+              )}
             </div>
-            <label style={{ fontSize: 12.5, color: "var(--text-muted)" }}>
-              Correct name
-              <input id="fix-to" list="fix-names" value={to} onChange={(e) => setTo(e.target.value)} placeholder="The right spelling" style={{ ...field, marginTop: 5 }} />
-            </label>
-            <div style={{ fontSize: 12, color: "var(--text-faint)", margin: "5px 0 14px" }}>
-              {to.trim() && (toRows.length ? `An existing profile with ${plural(toRows.length, "row", "rows")}: they'll be merged.` : "No profile by that name: this one will be renamed.")}
-            </div>
+            {checkedNames.length > 0 && (
+              <div style={{ marginBottom: 14 }}>
+                <div style={{ fontSize: 12.5, color: "var(--text-muted)", marginBottom: 6 }}>Which name is correct?</div>
+                {checkedNames.map((n) => (
+                  <label key={n} style={{ display: "flex", alignItems: "center", gap: 8, padding: "3px 0", fontSize: 13.5, cursor: "pointer" }}>
+                    <input type="radio" name="keep-name" checked={keepName === n} onChange={() => setKeepName(n)} />
+                    {toTitleCase(n)}
+                  </label>
+                ))}
+              </div>
+            )}
             <div>
-              <button disabled={!fromRows.length || !to.trim() || sameProfile || busy === "merge"} onClick={applyMerge} style={{ ...primary, padding: "9px 18px", opacity: !fromRows.length || !to.trim() || sameProfile ? 0.5 : 1 }}>
-                {busy === "merge" ? "Saving…" : toRows.length ? "Merge profiles" : "Rename profile"}
+              <button disabled={checkedNames.length < 2 || !keepName || busy === "merge"} onClick={applyMerge} style={{ ...primary, padding: "9px 18px", opacity: checkedNames.length < 2 || !keepName ? 0.5 : 1 }}>
+                {busy === "merge" ? "Saving…" : `Merge ${checkedNames.length || ""} profiles`.trim()}
               </button>
             </div>
           </>

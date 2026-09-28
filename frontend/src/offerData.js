@@ -168,6 +168,23 @@ export function normalizeStatus(status) {
   return `COMMITTED TO ${canonicalSchool(school).toUpperCase()}`;
 }
 
+// The fixed pipeline-status ladder (see PipelineSelect in OfferTracker.jsx).
+export const PIPELINE_OPTIONS = ["Reject", "Recruit", "0 - Partial", "1 - Solid Starter", "2 - All Mac Player"];
+
+// Data typed or imported before the dropdown enforced one spelling -- a different dash character, extra or
+// missing spaces around it, all-caps from an import -- otherwise reads as two different pipeline statuses
+// that are really the same one. Folds any of those onto the canonical spelling; a value that's genuinely
+// not on the list (someone typed something else entirely) is returned cleaned up but unchanged, so it still
+// shows up rather than silently vanishing.
+export function normalizePipelineStatus(value) {
+  const text = (value ?? "").toString().replace(/[‐-―−]/g, "-").replace(/\s+/g, " ").trim();
+  if (!text) return "";
+  const exact = PIPELINE_OPTIONS.find((o) => o.toLowerCase() === text.toLowerCase());
+  if (exact) return exact;
+  const spaced = text.replace(/^(\d+)\s*-\s*/, "$1 - "); // "1-Solid Starter" / "1- Solid Starter" -> "1 - Solid Starter"
+  return PIPELINE_OPTIONS.find((o) => o.toLowerCase() === spaced.toLowerCase()) || spaced;
+}
+
 // A commitment is a fact about the recruit, not about whose board you're
 // looking at.
 export function isCommitment(status) {
@@ -638,25 +655,27 @@ export function useOfferTracker() {
           snap.docs
             .map((d) => {
               const data = d.data() || {};
-              return { id: d.id, ...data, status: normalizeStatus(data.status), dateOffered: normalizeOfferDate(data.dateOffered) };
+              return { id: d.id, ...data, status: normalizeStatus(data.status), dateOffered: normalizeOfferDate(data.dateOffered), pipelineStatus: normalizePipelineStatus(data.pipelineStatus) };
             })
             .filter((d) => !d.removed)
         );
         // Misspelled commitments already in the database get rewritten
         // once (shown corrected either way; this keeps the stored value
         // clean too). Idempotent: nothing is left to fix afterwards.
-        // (Dates get the same treatment: stored as M/D/YY.)
+        // (Dates and pipeline status get the same treatment: dates stored as M/D/YY, pipeline status folded
+        // onto its one canonical spelling.)
         const untidy = snap.docs.filter((d) => {
           const data = d.data();
           const status = (data.status || "").trim();
           const date = data.dateOffered == null ? "" : String(data.dateOffered);
-          return (status && normalizeStatus(status) !== status) || (date && normalizeOfferDate(date) !== date);
+          const pipeline = (data.pipelineStatus || "").trim();
+          return (status && normalizeStatus(status) !== status) || (date && normalizeOfferDate(date) !== date) || (pipeline && normalizePipelineStatus(pipeline) !== pipeline);
         });
         for (let i = 0; i < untidy.length; i += 450) {
           const batch = writeBatch(db);
           untidy.slice(i, i + 450).forEach((d) => {
             const data = d.data();
-            batch.update(d.ref, { status: normalizeStatus(data.status), dateOffered: normalizeOfferDate(data.dateOffered) });
+            batch.update(d.ref, { status: normalizeStatus(data.status), dateOffered: normalizeOfferDate(data.dateOffered), pipelineStatus: normalizePipelineStatus(data.pipelineStatus) });
           });
           batch.commit().catch(() => {});
         }
@@ -795,52 +814,60 @@ export function useOfferTracker() {
     return { rows: changes.length };
   }
 
-  // Makes `fromName` and `toName` one profile under `toName`'s spelling (the correct one). If `toName` isn't on
-  // file it's a plain rename. Where both profiles have a row for the same team the rows are combined and the
-  // duplicate is removed; every row keeps the old spelling as an alias so re-uploads land on the right name.
-  async function mergeProfile(classYear, fromName, toName) {
+  // Makes every name in `names` (2 or more distinct profiles) one profile under `toName`'s spelling. Where
+  // more than one of them has a row for the same team, one row is kept (favoring the one already under
+  // `toName`) and filled in from whichever of the others has something it doesn't; the rest are removed.
+  // Every row keeps every old spelling as an alias, so re-uploading a sheet with the old name lands on the
+  // right profile instead of recreating it.
+  async function mergeProfiles(classYear, names, toName) {
     const target = (toName || "").trim().toUpperCase();
-    if (!target) throw new Error("Enter the correct name.");
+    if (!target) throw new Error("Choose which name to keep.");
+    const targetKey = normalizePlayerKey(target);
+    const selectedKeys = new Set(names.map((n) => normalizePlayerKey(n)));
+    if (selectedKeys.size < 2) throw new Error("Select at least two profiles to merge.");
     const inYear = docs.filter((d) => d.classYear === classYear && !d.removed);
-    const fromKey = normalizePlayerKey(fromName);
-    const fromRows = inYear.filter((d) => normalizePlayerKey(d.player) === fromKey);
-    const toRows = inYear.filter((d) => normalizePlayerKey(d.player) === normalizePlayerKey(target) && !fromRows.includes(d));
-    if (!fromRows.length) throw new Error("That profile wasn't found.");
-    const canonical = toRows[0]?.player || target;
-    const aliases = new Set([
-      ...fromRows.map((d) => d.player),
-      ...fromRows.flatMap((d) => d.alsoKnownAs || []),
-      ...toRows.flatMap((d) => d.alsoKnownAs || []),
-    ]);
+    const rows = inYear.filter((d) => selectedKeys.has(normalizePlayerKey(d.player)));
+    if (!rows.length) throw new Error("Those profiles weren't found.");
+    const canonical = rows.find((d) => normalizePlayerKey(d.player) === targetKey)?.player || target;
+
+    const aliases = new Set(rows.flatMap((d) => [d.player, ...(d.alsoKnownAs || [])]));
     aliases.delete(canonical);
     const alsoKnownAs = [...aliases];
     const now = new Date().toISOString();
     const FILL = ["dateOffered", "status", "pipelineStatus", "notes", "highSchool", "state", "position"];
     const blank = (v) => v === undefined || v === null || (typeof v === "string" && !v.trim()) || (Array.isArray(v) && !v.length);
 
+    const byTeam = new Map();
+    rows.forEach((r) => byTeam.set(r.team, [...(byTeam.get(r.team) || []), r]));
+
     const batch = writeBatch(db);
     let merged = 0;
     let renamed = 0;
-    const sharedInfo = {};
-    toRows.forEach((t) => FILL.forEach((k) => blank(sharedInfo[k]) && !blank(t[k]) && (sharedInfo[k] = t[k])));
-    fromRows.forEach((f) => {
-      const t = toRows.find((x) => x.team === f.team);
-      if (t) {
-        const patch = { alsoKnownAs, updatedAt: now };
-        [...FILL, "otherOffers"].forEach((k) => blank(t[k]) && !blank(f[k]) && (patch[k] = f[k]));
-        batch.update(doc(db, "offers", t.id), patch);
-        batch.update(doc(db, "offers", f.id), { removed: true, removedAt: now, mergedInto: canonical });
-        merged += 1;
-      } else {
-        const patch = { player: canonical, alsoKnownAs, updatedAt: now };
-        FILL.forEach((k) => blank(f[k]) && !blank(sharedInfo[k]) && (patch[k] = sharedInfo[k]));
-        batch.update(doc(db, "offers", f.id), patch);
-        renamed += 1;
-      }
+    byTeam.forEach((teamRows, team) => {
+      const keeper = teamRows.find((r) => r.player === canonical) || teamRows[0];
+      const patch = { player: canonical, alsoKnownAs, updatedAt: now };
+      [...FILL, "otherOffers"].forEach((k) => {
+        if (!blank(keeper[k])) return;
+        const source = teamRows.find((r) => !blank(r[k]));
+        if (source) patch[k] = source[k];
+      });
+      batch.update(doc(db, "offers", keeper.id), patch);
+      if (keeper.player !== canonical) renamed += 1;
+      teamRows
+        .filter((r) => r !== keeper)
+        .forEach((r) => {
+          batch.update(doc(db, "offers", r.id), { removed: true, removedAt: now, mergedInto: canonical });
+          merged += 1;
+        });
     });
-    toRows.forEach((t) => !fromRows.some((f) => f.team === t.team) && batch.update(doc(db, "offers", t.id), { alsoKnownAs, updatedAt: now }));
     await batch.commit();
-    return { canonical, merged, renamed };
+    return { canonical, merged, renamed, teams: byTeam.size };
+  }
+
+  // Two profiles at a time, kept for the "type a name" fix-suggestion flow -- see mergeProfiles above for
+  // what actually happens.
+  async function mergeProfile(classYear, fromName, toName) {
+    return mergeProfiles(classYear, [fromName, toName], toName);
   }
 
   async function removeOffer(row) {
@@ -944,5 +971,5 @@ export function useOfferTracker() {
     return { teams, states, counts, stateTotals };
   }
 
-  return { ready, classYears, teamsForConference, rowsForClassYear, rowsForTeam, rowsForPlayer, rowsByPlayer, rowsByLast, profileNames, suggestFixes, wordReplacementPreview, replaceWord, mergeProfile, positionBreakdown, areaBreakdown, importWorkbook, importActivityFeed, updateOfferField, removeOffer, addOffer };
+  return { ready, classYears, teamsForConference, rowsForClassYear, rowsForTeam, rowsForPlayer, rowsByPlayer, rowsByLast, profileNames, suggestFixes, wordReplacementPreview, replaceWord, mergeProfile, mergeProfiles, positionBreakdown, areaBreakdown, importWorkbook, importActivityFeed, updateOfferField, removeOffer, addOffer };
 }
