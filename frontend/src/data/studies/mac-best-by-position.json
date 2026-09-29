@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-29T18:23:47.079501Z",
+  "generatedAt": "2026-09-29T22:22:17.415692Z",
   "seasons": [
     2023,
     2024,
@@ -21,7 +21,7 @@
             "int": 9.0
           },
           "score": 3072.0,
-          "hudlLink": ""
+          "hudlLink": "https://www.hudl.com/profile/5432884"
         },
         {
           "player": "Kurtis Rourke",
@@ -36,7 +36,7 @@
             "int": 5.0
           },
           "score": 2407.0,
-          "hudlLink": ""
+          "hudlLink": "https://www.hudl.com/profile/5350951"
         },
         {
           "player": "Cole Snyder",
@@ -51,7 +51,7 @@
             "int": 9.0
           },
           "score": 2298.0,
-          "hudlLink": ""
+          "hudlLink": "https://www.hudl.com/profile/9846654/Cole-Snyder"
         },
         {
           "player": "Connor Bazelak",
@@ -81,7 +81,7 @@
             "int": 8.0
           },
           "score": 2061.0,
-          "hudlLink": ""
+          "hudlLink": "https://www.hudl.com/profile/8901906"
         }
       ],
       "2024": [
@@ -113,7 +113,7 @@
             "int": 10.0
           },
           "score": 3379.0,
-          "hudlLink": ""
+          "hudlLink": "https://www.hudl.com/profile/11412934"
         },
         {
           "player": "Tucker Gleason",
@@ -143,7 +143,7 @@
             "int": 11.0
           },
           "score": 3281.0,
-          "hudlLink": ""
+          "hudlLink": "https://www.hudl.com/profile/5629221"
         },
         {
           "player": "Cole Snyder",
@@ -158,7 +158,7 @@
             "int": 9.0
           },
           "score": 2924.0,
-          "hudlLink": ""
+          "hudlLink": "https://www.hudl.com/profile/9846654/Cole-Snyder"
         }
       ],
       "2025": [
@@ -253,7 +253,7 @@
             "td": 15.0
           },
           "score": 1550.0,
-          "hudlLink": ""
+          "hudlLink": "https://www.hudl.com/profile/8007756/Peny-Boone"
         },
         {
           "player": "Kay'Ron Lynch-Adams",
@@ -295,7 +295,7 @@
             "td": 10.0
           },
           "score": 1103.0,
-          "hudlLink": ""
+          "hudlLink": "https://www.hudl.com/profile/11214131/Jalen-Buckley"
         },
         {
           "player": "Marquez Cooper",
@@ -309,7 +309,7 @@
             "td": 4.0
           },
           "score": 1083.0,
-          "hudlLink": ""
+          "hudlLink": "https://www.hudl.com/profile/8152806"
         }
       ],
       "2024": [
@@ -325,7 +325,7 @@
             "td": 9.0
           },
           "score": 1305.0,
-          "hudlLink": ""
+          "hudlLink": "https://www.hudl.com/profile/9706872/Anthony-Tyus-III"
         },
         {
           "player": "Al-Jay Henderson",
@@ -353,7 +353,7 @@
             "td": 4.0
           },
           "score": 1138.0,
-          "hudlLink": ""
+          "hudlLink": "https://www.hudl.com/profile/7893734/Keyon-Mozee"
         },
         {
           "player": "Jaden Nixon",
@@ -367,7 +367,7 @@
             "td": 12.0
           },
           "score": 1039.0,
-          "hudlLink": ""
+          "hudlLink": "https://www.hudl.com/profile/10011114"
         },
         {
           "player": "Terion Stewart",
@@ -381,7 +381,7 @@
             "td": 6.0
           },
           "score": 958.0,
-          "hudlLink": ""
+          "hudlLink": "https://www.hudl.com/profile/8033536"
         }
       ],
       "2025": [
@@ -425,7 +425,7 @@
             "td": 9.0
           },
           "score": 1093.0,
-          "hudlLink": ""
+          "hudlLink": "https://www.hudl.com/profile/11214131/Jalen-Buckley"
         },
         {
           "player": "Jordan Gant",
@@ -439,7 +439,7 @@
             "td": 6.0
           },
           "score": 1092.0,
-          "hudlLink": ""
+          "hudlLink": "https://www.hudl.com/profile/11416944"
         },
         {
           "player": "Dontae McMillan",
@@ -485,7 +485,7 @@
             "td": 9.0
           },
           "score": 786.0,
-          "hudlLink": ""
+          "hudlLink": "https://www.hudl.com/profile/7594187"
         },
         {
           "player": "Gage Larvadain",
@@ -499,7 +499,7 @@
             "td": 6.0
           },
           "score": 739.0,
-          "hudlLink": ""
+          "hudlLink": "https://www.hudl.com/profile/9382708/Gage-Larvadain/about"
         },
         {
           "player": "Junior Vandeross III",
@@ -513,7 +513,7 @@
             "td": 4.0
           },
           "score": 704.0,
-          "hudlLink": ""
+          "hudlLink": "https://www.hudl.com/profile/11292601"
         },
         {
           "player": "Kenneth Womack",
@@ -543,7 +543,7 @@
             "td": 8.0
           },
           "score": 1325.0,
-          "hudlLink": ""
+          "hudlLink": "https://www.hudl.com/profile/5390873"
         },
         {
           "player": "Jerjuan Newton",
@@ -557,7 +557,7 @@
             "td": 11.0
           },
           "score": 1158.0,
-          "hudlLink": ""
+          "hudlLink": "https://www.hudl.com/profile/7594187"
         },
         {
           "player": "Junior Vandeross III",
@@ -571,7 +571,7 @@
             "td": 5.0
           },
           "score": 1007.0,
-          "hudlLink": ""
+          "hudlLink": "https://www.hudl.com/profile/11292601"
         },
         {
           "player": "Reggie Virgil",
@@ -585,7 +585,7 @@
             "td": 9.0
           },
           "score": 906.0,
-          "hudlLink": ""
+          "hudlLink": "https://www.hudl.com/profile/10206377/Reginald-Virgil/highlights"
         },
         {
           "player": "Adrian Norton",
@@ -615,7 +615,7 @@
             "td": 11.0
           },
           "score": 1118.0,
-          "hudlLink": ""
+          "hudlLink": "https://www.hudl.com/profile/11292601"
         },
         {
           "player": "Chase Hendricks",
@@ -629,7 +629,7 @@
             "td": 7.0
           },
           "score": 1107.0,
-          "hudlLink": ""
+          "hudlLink": "https://www.hudl.com/profile/13059623"
         },
         {
           "player": "Kam Perry",
@@ -657,7 +657,7 @@
             "td": 3.0
           },
           "score": 1011.0,
-          "hudlLink": ""
+          "hudlLink": "https://www.hudl.com/profile/10811486"
         },
         {
           "player": "Victor Snow",
@@ -683,13 +683,69 @@
           "position": "TE",
           "season": 2023,
           "totals": {
-            "games": 11.0,
-            "rec": 44.0,
-            "yards": 623.0,
-            "td": 6.0
+            "games": 11,
+            "rec": 44,
+            "yards": 623,
+            "td": 6
           },
-          "score": 683.0,
+          "score": 683,
+          "hudlLink": "https://www.hudl.com/profile/11087814"
+        },
+        {
+          "player": "Anthony Torres",
+          "team": "Toledo",
+          "position": "TE",
+          "season": 2023,
+          "totals": {
+            "games": 12,
+            "rec": 26,
+            "yards": 464,
+            "td": 3
+          },
+          "score": 494,
+          "hudlLink": "http://www.hudl.com/profile/5006033"
+        },
+        {
+          "player": "Tanner Koziol",
+          "team": "Ball St.",
+          "position": "TE",
+          "season": 2023,
+          "totals": {
+            "games": 12,
+            "rec": 34,
+            "yards": 295,
+            "td": 3
+          },
+          "score": 325,
           "hudlLink": ""
+        },
+        {
+          "player": "TJ Banks",
+          "team": "Akron",
+          "position": "TE",
+          "season": 2023,
+          "totals": {
+            "games": 12,
+            "rec": 21,
+            "yards": 175,
+            "td": 0
+          },
+          "score": 175,
+          "hudlLink": "http://www.hudl.com/athlete/4121354/tj-banks"
+        },
+        {
+          "player": "Mitchel Collier",
+          "team": "Central Mich.",
+          "position": "TE",
+          "season": 2023,
+          "totals": {
+            "games": 12,
+            "rec": 10,
+            "yards": 88,
+            "td": 3
+          },
+          "score": 118,
+          "hudlLink": "https://www.hudl.com/profile/7626285"
         }
       ],
       "2024": [
@@ -699,13 +755,13 @@
           "position": "TE",
           "season": 2024,
           "totals": {
-            "games": 13.0,
-            "rec": 117.0,
-            "yards": 1555.0,
-            "td": 10.0
+            "games": 13,
+            "rec": 117,
+            "yards": 1555,
+            "td": 10
           },
-          "score": 1655.0,
-          "hudlLink": ""
+          "score": 1655,
+          "hudlLink": "https://www.hudl.com/profile/11087814"
         },
         {
           "player": "Tanner Koziol",
@@ -713,16 +769,129 @@
           "position": "TE",
           "season": 2024,
           "totals": {
-            "games": 12.0,
-            "rec": 94.0,
-            "yards": 839.0,
-            "td": 8.0
+            "games": 12,
+            "rec": 94,
+            "yards": 839,
+            "td": 8
           },
-          "score": 919.0,
+          "score": 919,
           "hudlLink": ""
+        },
+        {
+          "player": "Anthony Torres",
+          "team": "Toledo",
+          "position": "TE",
+          "season": 2024,
+          "totals": {
+            "games": 13,
+            "rec": 31,
+            "yards": 404,
+            "td": 9
+          },
+          "score": 494,
+          "hudlLink": "http://www.hudl.com/profile/5006033"
+        },
+        {
+          "player": "Blake Bosma",
+          "team": "Western Mich.",
+          "position": "TE",
+          "season": 2024,
+          "totals": {
+            "games": 12,
+            "rec": 37,
+            "yards": 403,
+            "td": 6
+          },
+          "score": 463,
+          "hudlLink": "https://www.hudl.com/profile/15667208"
+        },
+        {
+          "player": "Jacob Orlando",
+          "team": "Buffalo",
+          "position": "TE",
+          "season": 2024,
+          "totals": {
+            "games": 12,
+            "rec": 11,
+            "yards": 101,
+            "td": 2
+          },
+          "score": 121,
+          "hudlLink": "https://www.hudl.com/profile/5636709"
         }
       ],
-      "2025": []
+      "2025": [
+        {
+          "player": "Jyrin Johnson",
+          "team": "Bowling Green",
+          "position": "TE",
+          "season": 2025,
+          "totals": {
+            "games": 12,
+            "rec": 37,
+            "yards": 466,
+            "td": 2
+          },
+          "score": 486,
+          "hudlLink": "https://www.hudl.com/profile/8257929/Jyrin-Johnson/highlights"
+        },
+        {
+          "player": "Joshua Long",
+          "team": "Eastern Mich.",
+          "position": "TE",
+          "season": 2025,
+          "totals": {
+            "games": 12,
+            "rec": 37,
+            "yards": 357,
+            "td": 3
+          },
+          "score": 387,
+          "hudlLink": ""
+        },
+        {
+          "player": "Mason Williams",
+          "team": "Ohio",
+          "position": "TE",
+          "season": 2025,
+          "totals": {
+            "games": 13,
+            "rec": 26,
+            "yards": 276,
+            "td": 3
+          },
+          "score": 306,
+          "hudlLink": ""
+        },
+        {
+          "player": "DeCorion Temple",
+          "team": "Central Mich.",
+          "position": "TE",
+          "season": 2025,
+          "totals": {
+            "games": 12,
+            "rec": 15,
+            "yards": 131,
+            "td": 2
+          },
+          "score": 151,
+          "hudlLink": ""
+        },
+        {
+          "player": "Brian Shane",
+          "team": "Miami (OH)",
+          "position": "TE",
+          "season": 2025,
+          "totals": {
+            "games": 14,
+            "rec": 13,
+            "yards": 116,
+            "td": 2
+          },
+          "score": 136,
+          "hudlLink": "https://www.hudl.com/profile/10529446"
+        }
+      ]
     },
     "DL": {
       "2023": [
@@ -740,7 +909,7 @@
             "int": 0.0
           },
           "score": 141.0,
-          "hudlLink": ""
+          "hudlLink": "https://www.hudl.com/profile/8281342"
         },
         {
           "player": "CJ Nunnally",
@@ -756,7 +925,7 @@
             "int": 0.0
           },
           "score": 138.0,
-          "hudlLink": ""
+          "hudlLink": "https://www.hudl.com/profile/10872962"
         },
         {
           "player": "Marshawn Kneeland",
@@ -772,7 +941,7 @@
             "int": 0.0
           },
           "score": 84.0,
-          "hudlLink": ""
+          "hudlLink": "https://www.hudl.com/profile/5587621"
         },
         {
           "player": "Caiden Woullard",
@@ -788,7 +957,7 @@
             "int": 0.0
           },
           "score": 57.0,
-          "hudlLink": ""
+          "hudlLink": "https://www.hudl.com/profile/9691288/Caiden-Woullard/about"
         },
         {
           "player": "Judge Culpepper",
@@ -804,7 +973,7 @@
             "int": 0.0
           },
           "score": 54.0,
-          "hudlLink": ""
+          "hudlLink": "https://www.hudl.com/profile/4137781"
         }
       ],
       "2024": [
@@ -822,7 +991,7 @@
             "int": 0.0
           },
           "score": 92.0,
-          "hudlLink": ""
+          "hudlLink": "https://www.hudl.com/profile/10872962"
         },
         {
           "player": "Riley Tolsma",
@@ -838,7 +1007,7 @@
             "int": 0.0
           },
           "score": 91.0,
-          "hudlLink": ""
+          "hudlLink": "https://www.hudl.com/profile/9891992"
         },
         {
           "player": "Peyton Price",
@@ -920,7 +1089,7 @@
             "int": 0.0
           },
           "score": 106.0,
-          "hudlLink": ""
+          "hudlLink": "https://www.hudl.com/profile/11220839/Nathan-Voorhis"
         },
         {
           "player": "Michael Heldman",
@@ -936,7 +1105,7 @@
             "int": 0.0
           },
           "score": 96.0,
-          "hudlLink": ""
+          "hudlLink": "https://www.hudl.com/profile/9702111"
         },
         {
           "player": "Donovan Green",
@@ -988,7 +1157,7 @@
             "int": 0.0
           },
           "score": 170.0,
-          "hudlLink": ""
+          "hudlLink": "https://www.hudl.com/profile/7673970"
         },
         {
           "player": "Bryce Houston",
@@ -1070,7 +1239,7 @@
             "int": 5.0
           },
           "score": 284.0,
-          "hudlLink": ""
+          "hudlLink": "https://www.hudl.com/profile/6316923/Shaun-Dolac/about"
         },
         {
           "player": "Red Murdock",
@@ -1086,7 +1255,7 @@
             "int": 0.0
           },
           "score": 189.0,
-          "hudlLink": ""
+          "hudlLink": "https://www.hudl.com/video/3/9349397/606b230f420771195cea645e"
         },
         {
           "player": "Matt Salopek",
@@ -1152,7 +1321,7 @@
             "int": 0.0
           },
           "score": 172.0,
-          "hudlLink": ""
+          "hudlLink": "https://www.hudl.com/video/3/9349397/606b230f420771195cea645e"
         },
         {
           "player": "Gideon Lampron",
@@ -1234,7 +1403,7 @@
             "int": 0.0
           },
           "score": 72.0,
-          "hudlLink": ""
+          "hudlLink": "https://www.hudl.com/video/3/7624493/5c40ce3c4797ed1060561168"
         },
         {
           "player": "Jordan Oladokun",
@@ -1248,7 +1417,7 @@
             "int": 4.0
           },
           "score": 32.0,
-          "hudlLink": ""
+          "hudlLink": "https://www.hudl.com/profile/11269460"
         },
         {
           "player": "Jalen Huskey",
@@ -1276,7 +1445,7 @@
             "int": 3.0
           },
           "score": 24.0,
-          "hudlLink": ""
+          "hudlLink": "https://www.hudl.com/profile/12953144"
         }
       ],
       "2024": [
@@ -1334,7 +1503,7 @@
             "int": 5.0
           },
           "score": 40.0,
-          "hudlLink": ""
+          "hudlLink": "https://www.hudl.com/profile/11269460"
         },
         {
           "player": "Tank Pearson",
@@ -1364,7 +1533,7 @@
             "int": 0.0
           },
           "score": 64.0,
-          "hudlLink": ""
+          "hudlLink": "https://www.hudl.com/profile/11281944"
         },
         {
           "player": "MJ Cannon",
@@ -1392,7 +1561,7 @@
             "int": 0.0
           },
           "score": 55.0,
-          "hudlLink": ""
+          "hudlLink": "https://www.hudl.com/profile/10964406"
         },
         {
           "player": "JoJo Johnson",
@@ -1406,7 +1575,7 @@
             "int": 0.0
           },
           "score": 52.0,
-          "hudlLink": ""
+          "hudlLink": "https://www.hudl.com/profile/9454727"
         },
         {
           "player": "Tank Pearson",
@@ -1454,7 +1623,7 @@
             "int": 0.0
           },
           "score": 79.0,
-          "hudlLink": ""
+          "hudlLink": "https://www.hudl.com/profile/5124830/Bryce-Sheppert/about"
         },
         {
           "player": "Tate Hallock",
@@ -1469,7 +1638,7 @@
             "int": 0.0
           },
           "score": 75.0,
-          "hudlLink": ""
+          "hudlLink": "https://www.hudl.com/profile/5409851"
         },
         {
           "player": "Darrian Lewis",
@@ -1516,7 +1685,7 @@
             "int": 4.0
           },
           "score": 108.0,
-          "hudlLink": ""
+          "hudlLink": "https://www.hudl.com/profile/5409851"
         },
         {
           "player": "Maxen Hook",
@@ -1561,7 +1730,7 @@
             "int": 4.0
           },
           "score": 96.0,
-          "hudlLink": ""
+          "hudlLink": "https://www.hudl.com/profile/14213226/Braden-Awls"
         },
         {
           "player": "Silas Walters",
@@ -1576,7 +1745,7 @@
             "int": 0.0
           },
           "score": 95.0,
-          "hudlLink": ""
+          "hudlLink": "https://www.hudl.com/profile/8856518"
         }
       ],
       "2025": [
@@ -1593,7 +1762,7 @@
             "int": 0.0
           },
           "score": 118.0,
-          "hudlLink": ""
+          "hudlLink": "https://www.hudl.com/profile/9739430/eli-blakey"
         },
         {
           "player": "Bryce Llewellyn",
@@ -1623,7 +1792,7 @@
             "int": 3.0
           },
           "score": 89.0,
-          "hudlLink": ""
+          "hudlLink": "https://www.hudl.com/profile/8856518"
         },
         {
           "player": "Jalen Thomeson",
@@ -1653,7 +1822,7 @@
             "int": 0.0
           },
           "score": 80.0,
-          "hudlLink": ""
+          "hudlLink": "https://www.hudl.com/profile/15335920/KalEl-Pascal"
         }
       ]
     }

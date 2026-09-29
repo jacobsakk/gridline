@@ -21,7 +21,7 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from ncaa_api import build_division_rows
-from studies._hudl_links import HUDL_LINKS
+from studies._hudl_links import HUDL_LINKS, TE_SUPPLEMENT
 
 OUT_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "frontend", "src", "data", "studies", "mac-best-by-position.json")
 
@@ -91,9 +91,17 @@ def build():
                     # yet; an admin can paste one in directly from the Studies page.
                     "hudlLink": HUDL_LINKS.get(r["player"].upper(), ""),
                 })
+            if group_key == "TE":
+                # The leaderboard pull above still runs (kept, in case a future season has more nationally-
+                # ranked MAC tight ends) but the hand-researched list is what's actually used for TE.
+                ranked = [
+                    {"player": e["player"], "team": e["team"], "position": "TE", "season": int(season), "totals": e["totals"],
+                     "score": round(cfg["score"](e["totals"]), 1), "hudlLink": HUDL_LINKS.get(e["player"].upper(), "")}
+                    for e in TE_SUPPLEMENT.get(season, [])
+                ]
             ranked.sort(key=lambda x: -x["score"])
             study[group_key][season] = ranked[:TOP_N]
-            print(f"  {group_key} {season}: {len(rows)} candidates, {len(ranked)} qualified, top {min(TOP_N, len(ranked))} kept")
+            print(f"  {group_key} {season}: {len(rows)} leaderboard candidates, {len(ranked)} in the final list")
 
     os.makedirs(os.path.dirname(OUT_PATH), exist_ok=True)
     with open(OUT_PATH, "w") as f:
