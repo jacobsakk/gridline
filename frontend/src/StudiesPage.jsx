@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ChevronRight, Download, ExternalLink, Link2, Loader2 } from "lucide-react";
 import { BackButton, HomeButton } from "./HomeButton.jsx";
 import { ThemeSwitcher, useTheme } from "./theme.jsx";
@@ -78,12 +78,18 @@ function StudyDetail({ studyId, admin, onBack }) {
   const study = useStudy(studyId);
   const [initial] = useState(initialSubRoute);
   const [group, setGroup] = useState(() => study.meta.groups.some((g) => g.key === initial[1]) ? initial[1] : study.meta.groups[0].key);
+  const [season, setSeason] = useState(() => (/^\d{4}$/.test(initial[2]) ? Number(initial[2]) : null));
   const [sort, setSort] = useState({ key: "score", dir: "desc" });
 
   const activeGroup = study.meta.groups.find((g) => g.key === group);
-  const rows = study.groups[group] || [];
+  const seasons = study.seasons;
+  const activeSeason = seasons.includes(season) ? season : seasons[seasons.length - 1];
+  const rows = study.groups[group]?.[String(activeSeason)] || [];
+  useEffect(() => {
+    if (activeSeason != null) setSubRoute("studies", [studyId, group, activeSeason]);
+  }, [studyId, group, activeSeason]);
   const sorted = useMemo(() => {
-    const get = (r) => (sort.key === "player" || sort.key === "teams" ? String(sort.key === "teams" ? r.teams.join(", ") : r.player) : sort.key === "score" ? r.score : r.totals[sort.key] ?? 0);
+    const get = (r) => (sort.key === "player" || sort.key === "team" ? String(r[sort.key]) : sort.key === "score" ? r.score : r.totals[sort.key] ?? 0);
     return [...rows].sort((a, b) => {
       const av = get(a);
       const bv = get(b);
@@ -95,8 +101,7 @@ function StudyDetail({ studyId, admin, onBack }) {
   const columns = useMemo(
     () => [
       { key: "player", label: "Player", get: (r) => r.player },
-      { key: "teams", label: "Team", get: (r) => r.teams.join(", ") },
-      { key: "seasons", label: "Seasons", get: (r) => r.seasonsPlayed.join(", ") },
+      { key: "team", label: "Team", get: (r) => r.team },
       ...activeGroup.stats.map((s) => ({ key: s.key, label: s.label, get: (r) => r.totals[s.key] ?? 0 })),
       { key: "score", label: "Score", get: (r) => r.score },
       { key: "hudlLink", label: "Hudl", get: (r) => r.hudlLink || "" },
@@ -118,31 +123,47 @@ function StudyDetail({ studyId, admin, onBack }) {
           <h1 className="oswald" style={{ fontSize: 22, fontWeight: 700, margin: 0 }}>{study.meta.title}</h1>
           <p style={{ margin: "4px 0 0", fontSize: 13, color: "var(--text-muted)", maxWidth: 720, lineHeight: 1.5 }}>{study.meta.description}</p>
         </div>
-        <button onClick={() => downloadCsv(sorted, columns, `${study.meta.id}-${group}.csv`)} style={ghostBtn}><Download size={14} /> Download</button>
+        <button onClick={() => downloadCsv(sorted, columns, `${study.meta.id}-${group}-${activeSeason}.csv`)} style={ghostBtn}><Download size={14} /> Download</button>
       </div>
 
-      <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-        {study.meta.groups.map((g) => {
-          const isActive = g.key === group;
-          const count = study.groups[g.key]?.length ?? 0;
-          return (
-            <button
-              key={g.key}
-              onClick={() => {
-                setGroup(g.key);
-                setSubRoute("studies", [studyId, g.key]);
-              }}
-              style={{
-                display: "flex", alignItems: "center", gap: 7, borderRadius: 999, padding: "7px 14px", fontSize: 13, fontWeight: 700, fontFamily: "inherit", cursor: "pointer",
-                background: isActive ? "var(--accent-bg)" : "var(--bg-surface)", border: `1px solid ${isActive ? "var(--accent)" : "var(--border)"}`,
-                color: isActive ? "var(--accent)" : "var(--text-secondary)",
-              }}
-            >
-              {g.label}
-              {study.ready && <span className="tabular" style={{ fontSize: 11.5, opacity: 0.8 }}>{count}</span>}
-            </button>
-          );
-        })}
+      <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+        <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+          {study.meta.groups.map((g) => {
+            const isActive = g.key === group;
+            const count = study.groups[g.key]?.[String(activeSeason)]?.length ?? 0;
+            return (
+              <button
+                key={g.key}
+                onClick={() => setGroup(g.key)}
+                style={{
+                  display: "flex", alignItems: "center", gap: 7, borderRadius: 999, padding: "7px 14px", fontSize: 13, fontWeight: 700, fontFamily: "inherit", cursor: "pointer",
+                  background: isActive ? "var(--accent-bg)" : "var(--bg-surface)", border: `1px solid ${isActive ? "var(--accent)" : "var(--border)"}`,
+                  color: isActive ? "var(--accent)" : "var(--text-secondary)",
+                }}
+              >
+                {g.label}
+                {study.ready && <span className="tabular" style={{ fontSize: 11.5, opacity: 0.8 }}>{count}</span>}
+              </button>
+            );
+          })}
+        </div>
+        {seasons.length > 0 && (
+          <div style={{ display: "flex", gap: 4, background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 8, padding: 3 }}>
+            {seasons.map((y) => (
+              <button
+                key={y}
+                onClick={() => setSeason(y)}
+                style={{
+                  border: "none", borderRadius: 6, padding: "6px 14px", fontSize: 13, fontWeight: 700, fontFamily: "inherit", cursor: "pointer",
+                  background: y === activeSeason ? "var(--accent)" : "transparent", color: y === activeSeason ? "var(--bg-page)" : "var(--text-muted)",
+                }}
+                className="tabular"
+              >
+                {y}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       {!study.ready ? (
@@ -155,8 +176,8 @@ function StudyDetail({ studyId, admin, onBack }) {
             <thead>
               <tr>
                 {columns.map((c) => (
-                  <th key={c.key} style={th} onClick={() => sortBy(c.key === "seasons" ? "player" : c.key === "hudlLink" ? "player" : c.key)}>
-                    {c.label}{c.key !== "seasons" && c.key !== "hudlLink" ? arrow(c.key) : ""}
+                  <th key={c.key} style={th} onClick={() => sortBy(c.key === "hudlLink" ? "player" : c.key)}>
+                    {c.label}{c.key !== "hudlLink" ? arrow(c.key) : ""}
                   </th>
                 ))}
               </tr>
@@ -164,14 +185,13 @@ function StudyDetail({ studyId, admin, onBack }) {
             <tbody>
               {sorted.length === 0 && (
                 <tr>
-                  <td colSpan={columns.length} style={{ ...td, textAlign: "center", color: "var(--text-faint)", padding: 32 }}>Nobody qualified for this position over the window studied.</td>
+                  <td colSpan={columns.length} style={{ ...td, textAlign: "center", color: "var(--text-faint)", padding: 32 }}>Nobody qualified for this position in {activeSeason}.</td>
                 </tr>
               )}
               {sorted.map((r, i) => (
                 <tr key={r.player} style={{ background: i % 2 === 0 ? "var(--bg-panel)" : "var(--bg-page)" }}>
                   <td style={{ ...td, fontWeight: 700, color: "var(--text-primary)" }}>{r.player}</td>
-                  <td style={td}>{r.teams.join(", ")}</td>
-                  <td style={{ ...td, color: "var(--text-faint)" }} className="tabular">{r.seasonsPlayed.join(", ")}</td>
+                  <td style={td}>{r.team}</td>
                   {activeGroup.stats.map((s) => (
                     <td key={s.key} style={td} className="tabular">{r.totals[s.key] ?? 0}</td>
                   ))}

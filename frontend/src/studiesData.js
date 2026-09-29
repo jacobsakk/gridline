@@ -9,8 +9,8 @@ import { db } from "./firebase";
 export const STUDIES = [
   {
     id: "mac-best-by-position",
-    title: "MAC's Most Productive, 2024-2026",
-    description: "The best-producing player at each position in the MAC over the last three seasons, with career film.",
+    title: "MAC's Most Productive, 2023-2025",
+    description: "The top 5 at each position in the MAC, kept separately for each season -- who had the best year in the league at that position, that year -- with career film.",
     file: () => import("./data/studies/mac-best-by-position.json"),
     groups: [
       { key: "QB", label: "Quarterback", stats: [{ key: "games", label: "G" }, { key: "att", label: "Att" }, { key: "yards", label: "Pass Yds" }, { key: "td", label: "Pass TD" }, { key: "int", label: "INT" }] },
@@ -22,7 +22,7 @@ export const STUDIES = [
       { key: "CB", label: "Cornerback", stats: [{ key: "games", label: "G" }, { key: "total", label: "Tackles" }, { key: "pbu", label: "PBU" }, { key: "int", label: "INT" }] },
       { key: "SAF", label: "Safety", stats: [{ key: "games", label: "G" }, { key: "total", label: "Tackles" }, { key: "tfl", label: "TFL" }, { key: "pbu", label: "PBU" }, { key: "int", label: "INT" }] },
     ],
-    note: "2024/2025 come from the NCAA's national leaderboards, which only carry a player who cracks roughly the national top 100-150 in a category that season -- a truly elite conference performer is covered, a solid-but-unranked one may be missing for those two years. 2026 (in progress) is far more complete. Hudl links are best-effort, found by hand; a blank one just hasn't been found yet -- paste one in directly.",
+    note: "Each season's top 5 is ranked separately -- the same player can show up in more than one year. Data comes from the NCAA's national leaderboards, which only carry a player who cracks roughly the national top 100-150 in a category that season, so a genuinely elite performer is covered but a solid-but-unranked one may be missing. Hudl links are best-effort, found by hand; a blank one just hasn't been found yet -- paste one in directly.",
   },
 ];
 
@@ -63,13 +63,18 @@ export function useStudy(studyId) {
     return off;
   }, [studyId]);
 
+  // Deliberately keyed by group + player only, not season -- the same person's Hudl link is the same link
+  // no matter which year's top 5 they show up in, so fixing it once fixes every season's row for them.
   const overrideKey = (group, player) => `${studyId}__${group}__${norm(player)}`;
 
   const groups = useMemo(() => {
     if (!data) return {};
     const out = {};
-    Object.entries(data.groups || {}).forEach(([group, players]) => {
-      out[group] = players.map((p) => ({ ...p, ...overrides[overrideKey(group, p.player)] }));
+    Object.entries(data.groups || {}).forEach(([group, bySeason]) => {
+      out[group] = {};
+      Object.entries(bySeason).forEach(([season, players]) => {
+        out[group][season] = players.map((p) => ({ ...p, ...overrides[overrideKey(group, p.player)] }));
+      });
     });
     return out;
   }, [data, overrides]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -78,6 +83,7 @@ export function useStudy(studyId) {
     meta,
     ready: ready && !!data,
     generatedAt: data?.generatedAt || "",
+    seasons: data?.seasons || [],
     groups,
     async saveField(group, player, fields) {
       await setDoc(doc(db, "studyOverrides", overrideKey(group, player)), fields, { merge: true });

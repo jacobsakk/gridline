@@ -1,800 +1,1083 @@
 {
-  "generatedAt": "2026-09-29T17:58:46.423499Z",
+  "generatedAt": "2026-09-29T18:23:47.079501Z",
+  "seasons": [
+    2023,
+    2024,
+    2025
+  ],
   "groups": {
-    "QB": [
-      {
-        "player": "Tucker Gleason",
-        "position": "QB",
-        "teams": [
-          "Toledo"
-        ],
-        "seasonsPlayed": [
-          2024,
-          2025
-        ],
-        "totals": {
-          "games": 24.0,
-          "att": 705.0,
-          "yards": 5323.0,
-          "td": 45.0,
-          "int": 17.0
+    "QB": {
+      "2023": [
+        {
+          "player": "Dequan Finn",
+          "team": "Toledo",
+          "position": "QB",
+          "season": 2023,
+          "totals": {
+            "games": 13.0,
+            "att": 317.0,
+            "yards": 2657.0,
+            "td": 22.0,
+            "int": 9.0
+          },
+          "score": 3072.0,
+          "hudlLink": ""
         },
-        "bySeasson": {
-          "2024": {
-            "team": "Toledo",
+        {
+          "player": "Kurtis Rourke",
+          "team": "Ohio",
+          "position": "QB",
+          "season": 2023,
+          "totals": {
+            "games": 11.0,
+            "att": 307.0,
+            "yards": 2207.0,
+            "td": 11.0,
+            "int": 5.0
+          },
+          "score": 2407.0,
+          "hudlLink": ""
+        },
+        {
+          "player": "Cole Snyder",
+          "team": "Buffalo",
+          "position": "QB",
+          "season": 2023,
+          "totals": {
+            "games": 12.0,
+            "att": 372.0,
+            "yards": 2108.0,
+            "td": 13.0,
+            "int": 9.0
+          },
+          "score": 2298.0,
+          "hudlLink": ""
+        },
+        {
+          "player": "Connor Bazelak",
+          "team": "Bowling Green",
+          "position": "QB",
+          "season": 2023,
+          "totals": {
+            "games": 11.0,
+            "att": 278.0,
+            "yards": 1935.0,
+            "td": 12.0,
+            "int": 7.0
+          },
+          "score": 2130.0,
+          "hudlLink": ""
+        },
+        {
+          "player": "Jase Bauer",
+          "team": "Central Mich.",
+          "position": "QB",
+          "season": 2023,
+          "totals": {
+            "games": 12.0,
+            "att": 287.0,
+            "yards": 1881.0,
+            "td": 12.0,
+            "int": 8.0
+          },
+          "score": 2061.0,
+          "hudlLink": ""
+        }
+      ],
+      "2024": [
+        {
+          "player": "Connor Bazelak",
+          "team": "Bowling Green",
+          "position": "QB",
+          "season": 2024,
+          "totals": {
+            "games": 13.0,
+            "att": 402.0,
+            "yards": 3044.0,
+            "td": 18.0,
+            "int": 5.0
+          },
+          "score": 3419.0,
+          "hudlLink": ""
+        },
+        {
+          "player": "Kadin Semonza",
+          "team": "Ball St.",
+          "position": "QB",
+          "season": 2024,
+          "totals": {
+            "games": 12.0,
+            "att": 427.0,
+            "yards": 2904.0,
+            "td": 25.0,
+            "int": 10.0
+          },
+          "score": 3379.0,
+          "hudlLink": ""
+        },
+        {
+          "player": "Tucker Gleason",
+          "team": "Toledo",
+          "position": "QB",
+          "season": 2024,
+          "totals": {
             "games": 12.0,
             "att": 385.0,
             "yards": 2808.0,
             "td": 24.0,
             "int": 8.0
           },
-          "2025": {
-            "team": "Toledo",
-            "games": 12.0,
-            "att": 320.0,
-            "yards": 2515.0,
+          "score": 3288.0,
+          "hudlLink": "https://m.hudl.com/profile/7196933/Tucker-Gleason"
+        },
+        {
+          "player": "Brett Gabbert",
+          "team": "Miami (OH)",
+          "position": "QB",
+          "season": 2024,
+          "totals": {
+            "games": 14.0,
+            "att": 379.0,
+            "yards": 2921.0,
             "td": 21.0,
-            "int": 9.0
-          }
+            "int": 11.0
+          },
+          "score": 3281.0,
+          "hudlLink": ""
         },
-        "score": 6193.0,
-        "hudlLink": "https://m.hudl.com/profile/7196933/Tucker-Gleason"
-      },
-      {
-        "player": "Ben Finley",
-        "position": "QB",
-        "teams": [
-          "Akron"
-        ],
-        "seasonsPlayed": [
-          2024,
-          2025
-        ],
-        "totals": {
-          "games": 23.0,
-          "att": 749.0,
-          "yards": 5079.0,
-          "td": 35.0,
-          "int": 18.0
-        },
-        "bySeasson": {
-          "2024": {
-            "team": "Akron",
+        {
+          "player": "Cole Snyder",
+          "team": "Eastern Mich.",
+          "position": "QB",
+          "season": 2024,
+          "totals": {
             "games": 12.0,
-            "att": 387.0,
-            "yards": 2604.0,
-            "td": 16.0,
-            "int": 9.0
-          },
-          "2025": {
-            "team": "Akron",
-            "games": 11.0,
-            "att": 362.0,
-            "yards": 2475.0,
-            "td": 19.0,
-            "int": 9.0
-          }
-        },
-        "score": 5684.0,
-        "hudlLink": ""
-      },
-      {
-        "player": "Parker Navarro",
-        "position": "QB",
-        "teams": [
-          "Ohio"
-        ],
-        "seasonsPlayed": [
-          2024,
-          2025
-        ],
-        "totals": {
-          "games": 26.0,
-          "att": 598.0,
-          "yards": 4798.0,
-          "td": 27.0,
-          "int": 22.0
-        },
-        "bySeasson": {
-          "2024": {
-            "team": "Ohio",
-            "games": 13.0,
-            "att": 295.0,
-            "yards": 2423.0,
-            "td": 13.0,
-            "int": 11.0
-          },
-          "2025": {
-            "team": "Ohio",
-            "games": 13.0,
-            "att": 303.0,
-            "yards": 2375.0,
-            "td": 14.0,
-            "int": 11.0
-          }
-        },
-        "score": 5143.0,
-        "hudlLink": "https://www.hudl.com/profile/7815205/Parker-Navarros/about"
-      },
-      {
-        "player": "Connor Bazelak",
-        "position": "QB",
-        "teams": [
-          "Bowling Green"
-        ],
-        "seasonsPlayed": [
-          2024
-        ],
-        "totals": {
-          "games": 13.0,
-          "att": 402.0,
-          "yards": 3044.0,
-          "td": 18.0,
-          "int": 5.0
-        },
-        "bySeasson": {
-          "2024": {
-            "team": "Bowling Green",
-            "games": 13.0,
             "att": 402.0,
-            "yards": 3044.0,
-            "td": 18.0,
-            "int": 5.0
-          }
-        },
-        "score": 3419.0,
-        "hudlLink": ""
-      },
-      {
-        "player": "Noah Kim",
-        "position": "QB",
-        "teams": [
-          "Eastern Mich."
-        ],
-        "seasonsPlayed": [
-          2025,
-          2026
-        ],
-        "totals": {
-          "games": 13.0,
-          "att": 440.0,
-          "yards": 3074.0,
-          "td": 20.0,
-          "int": 11.0
-        },
-        "bySeasson": {
-          "2025": {
-            "team": "Eastern Mich.",
+            "yards": 2684.0,
+            "td": 15.0,
+            "int": 9.0
+          },
+          "score": 2924.0,
+          "hudlLink": ""
+        }
+      ],
+      "2025": [
+        {
+          "player": "Noah Kim",
+          "team": "Eastern Mich.",
+          "position": "QB",
+          "season": 2025,
+          "totals": {
             "games": 12.0,
             "att": 402.0,
             "yards": 2817.0,
             "td": 18.0,
             "int": 11.0
           },
-          "2026": {
-            "team": "Eastern Mich.",
-            "games": 1.0,
-            "att": 38.0,
-            "yards": 257.0,
-            "td": 2.0,
-            "int": 0.0
-          }
+          "score": 3102.0,
+          "hudlLink": ""
         },
-        "score": 3409.0,
-        "hudlLink": ""
-      }
-    ],
-    "RB": [
-      {
-        "player": "Al-Jay Henderson",
-        "position": "RB",
-        "teams": [
-          "Buffalo"
-        ],
-        "seasonsPlayed": [
-          2024,
-          2025
-        ],
-        "totals": {
-          "games": 25.0,
-          "att": 386.0,
-          "yards": 1833.0,
-          "td": 15.0
+        {
+          "player": "Tucker Gleason",
+          "team": "Toledo",
+          "position": "QB",
+          "season": 2025,
+          "totals": {
+            "games": 12.0,
+            "att": 320.0,
+            "yards": 2515.0,
+            "td": 21.0,
+            "int": 9.0
+          },
+          "score": 2905.0,
+          "hudlLink": "https://m.hudl.com/profile/7196933/Tucker-Gleason"
         },
-        "bySeasson": {
-          "2024": {
-            "team": "Buffalo",
+        {
+          "player": "Ben Finley",
+          "team": "Akron",
+          "position": "QB",
+          "season": 2025,
+          "totals": {
+            "games": 11.0,
+            "att": 362.0,
+            "yards": 2475.0,
+            "td": 19.0,
+            "int": 9.0
+          },
+          "score": 2815.0,
+          "hudlLink": ""
+        },
+        {
+          "player": "Ta'Quan Roberson",
+          "team": "Buffalo",
+          "position": "QB",
+          "season": 2025,
+          "totals": {
+            "games": 11.0,
+            "att": 357.0,
+            "yards": 2520.0,
+            "td": 17.0,
+            "int": 12.0
+          },
+          "score": 2765.0,
+          "hudlLink": ""
+        },
+        {
+          "player": "Parker Navarro",
+          "team": "Ohio",
+          "position": "QB",
+          "season": 2025,
+          "totals": {
+            "games": 13.0,
+            "att": 303.0,
+            "yards": 2375.0,
+            "td": 14.0,
+            "int": 11.0
+          },
+          "score": 2560.0,
+          "hudlLink": "https://www.hudl.com/profile/7815205/Parker-Navarros/about"
+        }
+      ]
+    },
+    "RB": {
+      "2023": [
+        {
+          "player": "Peny Boone",
+          "team": "Toledo",
+          "position": "RB",
+          "season": 2023,
+          "totals": {
+            "games": 13.0,
+            "att": 194.0,
+            "yards": 1400.0,
+            "td": 15.0
+          },
+          "score": 1550.0,
+          "hudlLink": ""
+        },
+        {
+          "player": "Kay'Ron Lynch-Adams",
+          "team": "Massachusetts",
+          "position": "RB",
+          "season": 2023,
+          "totals": {
+            "games": 12.0,
+            "att": 236.0,
+            "yards": 1157.0,
+            "td": 12.0
+          },
+          "score": 1277.0,
+          "hudlLink": ""
+        },
+        {
+          "player": "Rashad Amos",
+          "team": "Miami (OH)",
+          "position": "RB",
+          "season": 2023,
+          "totals": {
+            "games": 14.0,
+            "att": 210.0,
+            "yards": 1075.0,
+            "td": 13.0
+          },
+          "score": 1205.0,
+          "hudlLink": ""
+        },
+        {
+          "player": "Jalen Buckley",
+          "team": "Western Mich.",
+          "position": "RB",
+          "season": 2023,
+          "totals": {
+            "games": 11.0,
+            "att": 189.0,
+            "yards": 1003.0,
+            "td": 10.0
+          },
+          "score": 1103.0,
+          "hudlLink": ""
+        },
+        {
+          "player": "Marquez Cooper",
+          "team": "Ball St.",
+          "position": "RB",
+          "season": 2023,
+          "totals": {
+            "games": 12.0,
+            "att": 227.0,
+            "yards": 1043.0,
+            "td": 4.0
+          },
+          "score": 1083.0,
+          "hudlLink": ""
+        }
+      ],
+      "2024": [
+        {
+          "player": "Anthony Tyus III",
+          "team": "Ohio",
+          "position": "RB",
+          "season": 2024,
+          "totals": {
+            "games": 13.0,
+            "att": 237.0,
+            "yards": 1215.0,
+            "td": 9.0
+          },
+          "score": 1305.0,
+          "hudlLink": ""
+        },
+        {
+          "player": "Al-Jay Henderson",
+          "team": "Buffalo",
+          "position": "RB",
+          "season": 2024,
+          "totals": {
             "games": 13.0,
             "att": 204.0,
             "yards": 1078.0,
             "td": 9.0
           },
-          "2025": {
-            "team": "Buffalo",
-            "games": 12.0,
-            "att": 182.0,
-            "yards": 755.0,
-            "td": 6.0
-          }
+          "score": 1168.0,
+          "hudlLink": "https://www.hudl.com/profile/9822949"
         },
-        "score": 1983.0,
-        "hudlLink": "https://www.hudl.com/profile/9822949"
-      },
-      {
-        "player": "Jalen Buckley",
-        "position": "RB",
-        "teams": [
-          "Western Mich."
-        ],
-        "seasonsPlayed": [
-          2024,
-          2025,
-          2026
-        ],
-        "totals": {
-          "games": 24.0,
-          "att": 312.0,
-          "yards": 1704.0,
-          "td": 18.0
-        },
-        "bySeasson": {
-          "2024": {
-            "team": "Western Mich.",
-            "games": 10.0,
-            "att": 128.0,
-            "yards": 683.0,
-            "td": 9.0
+        {
+          "player": "Keyon Mozee",
+          "team": "Miami (OH)",
+          "position": "RB",
+          "season": 2024,
+          "totals": {
+            "games": 14.0,
+            "att": 178.0,
+            "yards": 1098.0,
+            "td": 4.0
           },
-          "2025": {
-            "team": "Western Mich.",
+          "score": 1138.0,
+          "hudlLink": ""
+        },
+        {
+          "player": "Jaden Nixon",
+          "team": "Western Mich.",
+          "position": "RB",
+          "season": 2024,
+          "totals": {
+            "games": 13.0,
+            "att": 143.0,
+            "yards": 919.0,
+            "td": 12.0
+          },
+          "score": 1039.0,
+          "hudlLink": ""
+        },
+        {
+          "player": "Terion Stewart",
+          "team": "Bowling Green",
+          "position": "RB",
+          "season": 2024,
+          "totals": {
+            "games": 11.0,
+            "att": 166.0,
+            "yards": 898.0,
+            "td": 6.0
+          },
+          "score": 958.0,
+          "hudlLink": ""
+        }
+      ],
+      "2025": [
+        {
+          "player": "Sieh Bangura",
+          "team": "Ohio",
+          "position": "RB",
+          "season": 2025,
+          "totals": {
+            "games": 13.0,
+            "att": 241.0,
+            "yards": 1392.0,
+            "td": 15.0
+          },
+          "score": 1542.0,
+          "hudlLink": "https://www.hudl.com/profile/6174794/Sieh-Bangura"
+        },
+        {
+          "player": "Chip Trayanum",
+          "team": "Toledo",
+          "position": "RB",
+          "season": 2025,
+          "totals": {
+            "games": 11.0,
+            "att": 182.0,
+            "yards": 1015.0,
+            "td": 12.0
+          },
+          "score": 1135.0,
+          "hudlLink": ""
+        },
+        {
+          "player": "Jalen Buckley",
+          "team": "Western Mich.",
+          "position": "RB",
+          "season": 2025,
+          "totals": {
             "games": 13.0,
             "att": 179.0,
             "yards": 1003.0,
             "td": 9.0
           },
-          "2026": {
-            "team": "Western Mich.",
-            "games": 1.0,
-            "att": 5.0,
-            "yards": 18.0,
-            "td": 0.0
-          }
+          "score": 1093.0,
+          "hudlLink": ""
         },
-        "score": 1884.0,
-        "hudlLink": ""
-      },
-      {
-        "player": "Sieh Bangura",
-        "position": "RB",
-        "teams": [
-          "Ohio"
-        ],
-        "seasonsPlayed": [
-          2025
-        ],
-        "totals": {
-          "games": 13.0,
-          "att": 241.0,
-          "yards": 1392.0,
-          "td": 15.0
-        },
-        "bySeasson": {
-          "2025": {
-            "team": "Ohio",
-            "games": 13.0,
-            "att": 241.0,
-            "yards": 1392.0,
-            "td": 15.0
-          }
-        },
-        "score": 1542.0,
-        "hudlLink": "https://www.hudl.com/profile/6174794/Sieh-Bangura"
-      },
-      {
-        "player": "Anthony Tyus III",
-        "position": "RB",
-        "teams": [
-          "Ohio"
-        ],
-        "seasonsPlayed": [
-          2024
-        ],
-        "totals": {
-          "games": 13.0,
-          "att": 237.0,
-          "yards": 1215.0,
-          "td": 9.0
-        },
-        "bySeasson": {
-          "2024": {
-            "team": "Ohio",
-            "games": 13.0,
-            "att": 237.0,
-            "yards": 1215.0,
-            "td": 9.0
-          }
-        },
-        "score": 1305.0,
-        "hudlLink": ""
-      },
-      {
-        "player": "Jordan Gant",
-        "position": "RB",
-        "teams": [
-          "Akron"
-        ],
-        "seasonsPlayed": [
-          2025,
-          2026
-        ],
-        "totals": {
-          "games": 13.0,
-          "att": 232.0,
-          "yards": 1112.0,
-          "td": 7.0
-        },
-        "bySeasson": {
-          "2025": {
-            "team": "Akron",
+        {
+          "player": "Jordan Gant",
+          "team": "Akron",
+          "position": "RB",
+          "season": 2025,
+          "totals": {
             "games": 12.0,
             "att": 213.0,
             "yards": 1032.0,
             "td": 6.0
           },
-          "2026": {
-            "team": "Akron",
-            "games": 1.0,
-            "att": 19.0,
-            "yards": 80.0,
+          "score": 1092.0,
+          "hudlLink": ""
+        },
+        {
+          "player": "Dontae McMillan",
+          "team": "Eastern Mich.",
+          "position": "RB",
+          "season": 2025,
+          "totals": {
+            "games": 12.0,
+            "att": 177.0,
+            "yards": 1014.0,
+            "td": 4.0
+          },
+          "score": 1054.0,
+          "hudlLink": ""
+        }
+      ]
+    },
+    "WR": {
+      "2023": [
+        {
+          "player": "Anthony Simpson",
+          "team": "Massachusetts",
+          "position": "WR",
+          "season": 2023,
+          "totals": {
+            "games": 12.0,
+            "rec": 57.0,
+            "yards": 792.0,
+            "td": 3.0
+          },
+          "score": 822.0,
+          "hudlLink": ""
+        },
+        {
+          "player": "Jerjuan Newton",
+          "team": "Toledo",
+          "position": "WR",
+          "season": 2023,
+          "totals": {
+            "games": 14.0,
+            "rec": 52.0,
+            "yards": 696.0,
+            "td": 9.0
+          },
+          "score": 786.0,
+          "hudlLink": ""
+        },
+        {
+          "player": "Gage Larvadain",
+          "team": "Miami (OH)",
+          "position": "WR",
+          "season": 2023,
+          "totals": {
+            "games": 10.0,
+            "rec": 42.0,
+            "yards": 679.0,
+            "td": 6.0
+          },
+          "score": 739.0,
+          "hudlLink": ""
+        },
+        {
+          "player": "Junior Vandeross III",
+          "team": "Toledo",
+          "position": "WR",
+          "season": 2023,
+          "totals": {
+            "games": 14.0,
+            "rec": 47.0,
+            "yards": 664.0,
+            "td": 4.0
+          },
+          "score": 704.0,
+          "hudlLink": ""
+        },
+        {
+          "player": "Kenneth Womack",
+          "team": "Western Mich.",
+          "position": "WR",
+          "season": 2023,
+          "totals": {
+            "games": 12.0,
+            "rec": 76.0,
+            "yards": 691.0,
             "td": 1.0
-          }
+          },
+          "score": 701.0,
+          "hudlLink": ""
+        }
+      ],
+      "2024": [
+        {
+          "player": "Coleman Owen",
+          "team": "Ohio",
+          "position": "WR",
+          "season": 2024,
+          "totals": {
+            "games": 14.0,
+            "rec": 78.0,
+            "yards": 1245.0,
+            "td": 8.0
+          },
+          "score": 1325.0,
+          "hudlLink": ""
         },
-        "score": 1182.0,
-        "hudlLink": ""
-      }
-    ],
-    "WR": [
-      {
-        "player": "Junior Vandeross III",
-        "position": "WR",
-        "teams": [
-          "Toledo"
-        ],
-        "seasonsPlayed": [
-          2024,
-          2025
-        ],
-        "totals": {
-          "games": 26.0,
-          "rec": 167.0,
-          "yards": 1965.0,
-          "td": 16.0
+        {
+          "player": "Jerjuan Newton",
+          "team": "Toledo",
+          "position": "WR",
+          "season": 2024,
+          "totals": {
+            "games": 13.0,
+            "rec": 72.0,
+            "yards": 1048.0,
+            "td": 11.0
+          },
+          "score": 1158.0,
+          "hudlLink": ""
         },
-        "bySeasson": {
-          "2024": {
-            "team": "Toledo",
+        {
+          "player": "Junior Vandeross III",
+          "team": "Toledo",
+          "position": "WR",
+          "season": 2024,
+          "totals": {
             "games": 13.0,
             "rec": 85.0,
             "yards": 957.0,
             "td": 5.0
           },
-          "2025": {
-            "team": "Toledo",
+          "score": 1007.0,
+          "hudlLink": ""
+        },
+        {
+          "player": "Reggie Virgil",
+          "team": "Miami (OH)",
+          "position": "WR",
+          "season": 2024,
+          "totals": {
+            "games": 13.0,
+            "rec": 41.0,
+            "yards": 816.0,
+            "td": 9.0
+          },
+          "score": 906.0,
+          "hudlLink": ""
+        },
+        {
+          "player": "Adrian Norton",
+          "team": "Akron",
+          "position": "WR",
+          "season": 2024,
+          "totals": {
+            "games": 12.0,
+            "rec": 43.0,
+            "yards": 831.0,
+            "td": 7.0
+          },
+          "score": 901.0,
+          "hudlLink": ""
+        }
+      ],
+      "2025": [
+        {
+          "player": "Junior Vandeross III",
+          "team": "Toledo",
+          "position": "WR",
+          "season": 2025,
+          "totals": {
             "games": 13.0,
             "rec": 82.0,
             "yards": 1008.0,
             "td": 11.0
-          }
-        },
-        "score": 2125.0,
-        "hudlLink": ""
-      },
-      {
-        "player": "Victor Snow",
-        "position": "WR",
-        "teams": [
-          "Buffalo"
-        ],
-        "seasonsPlayed": [
-          2024,
-          2025
-        ],
-        "totals": {
-          "games": 25.0,
-          "rec": 117.0,
-          "yards": 1466.0,
-          "td": 14.0
-        },
-        "bySeasson": {
-          "2024": {
-            "team": "Buffalo",
-            "games": 13.0,
-            "rec": 55.0,
-            "yards": 651.0,
-            "td": 6.0
           },
-          "2025": {
-            "team": "Buffalo",
-            "games": 12.0,
-            "rec": 62.0,
-            "yards": 815.0,
-            "td": 8.0
-          }
+          "score": 1118.0,
+          "hudlLink": ""
         },
-        "score": 1606.0,
-        "hudlLink": ""
-      },
-      {
-        "player": "Coleman Owen",
-        "position": "WR",
-        "teams": [
-          "Ohio"
-        ],
-        "seasonsPlayed": [
-          2024
-        ],
-        "totals": {
-          "games": 14.0,
-          "rec": 78.0,
-          "yards": 1245.0,
-          "td": 8.0
-        },
-        "bySeasson": {
-          "2024": {
-            "team": "Ohio",
-            "games": 14.0,
-            "rec": 78.0,
-            "yards": 1245.0,
-            "td": 8.0
-          }
-        },
-        "score": 1325.0,
-        "hudlLink": ""
-      },
-      {
-        "player": "Jerjuan Newton",
-        "position": "WR",
-        "teams": [
-          "Toledo"
-        ],
-        "seasonsPlayed": [
-          2024
-        ],
-        "totals": {
-          "games": 13.0,
-          "rec": 72.0,
-          "yards": 1048.0,
-          "td": 11.0
-        },
-        "bySeasson": {
-          "2024": {
-            "team": "Toledo",
-            "games": 13.0,
-            "rec": 72.0,
-            "yards": 1048.0,
-            "td": 11.0
-          }
-        },
-        "score": 1158.0,
-        "hudlLink": ""
-      },
-      {
-        "player": "Chase Hendricks",
-        "position": "WR",
-        "teams": [
-          "Ohio"
-        ],
-        "seasonsPlayed": [
-          2025
-        ],
-        "totals": {
-          "games": 13.0,
-          "rec": 71.0,
-          "yards": 1037.0,
-          "td": 7.0
-        },
-        "bySeasson": {
-          "2025": {
-            "team": "Ohio",
+        {
+          "player": "Chase Hendricks",
+          "team": "Ohio",
+          "position": "WR",
+          "season": 2025,
+          "totals": {
             "games": 13.0,
             "rec": 71.0,
             "yards": 1037.0,
             "td": 7.0
-          }
+          },
+          "score": 1107.0,
+          "hudlLink": ""
         },
-        "score": 1107.0,
-        "hudlLink": ""
-      }
-    ],
-    "TE": [
-      {
-        "player": "Harold Fannin Jr.",
-        "position": "TE",
-        "teams": [
-          "Bowling Green"
-        ],
-        "seasonsPlayed": [
-          2024
-        ],
-        "totals": {
-          "games": 13.0,
-          "rec": 117.0,
-          "yards": 1555.0,
-          "td": 10.0
+        {
+          "player": "Kam Perry",
+          "team": "Miami (OH)",
+          "position": "WR",
+          "season": 2025,
+          "totals": {
+            "games": 14.0,
+            "rec": 43.0,
+            "yards": 976.0,
+            "td": 6.0
+          },
+          "score": 1036.0,
+          "hudlLink": ""
         },
-        "bySeasson": {
-          "2024": {
-            "team": "Bowling Green",
+        {
+          "player": "Nik McMillan",
+          "team": "Buffalo",
+          "position": "WR",
+          "season": 2025,
+          "totals": {
+            "games": 12.0,
+            "rec": 62.0,
+            "yards": 981.0,
+            "td": 3.0
+          },
+          "score": 1011.0,
+          "hudlLink": ""
+        },
+        {
+          "player": "Victor Snow",
+          "team": "Buffalo",
+          "position": "WR",
+          "season": 2025,
+          "totals": {
+            "games": 12.0,
+            "rec": 62.0,
+            "yards": 815.0,
+            "td": 8.0
+          },
+          "score": 895.0,
+          "hudlLink": ""
+        }
+      ]
+    },
+    "TE": {
+      "2023": [
+        {
+          "player": "Harold Fannin Jr.",
+          "team": "Bowling Green",
+          "position": "TE",
+          "season": 2023,
+          "totals": {
+            "games": 11.0,
+            "rec": 44.0,
+            "yards": 623.0,
+            "td": 6.0
+          },
+          "score": 683.0,
+          "hudlLink": ""
+        }
+      ],
+      "2024": [
+        {
+          "player": "Harold Fannin Jr.",
+          "team": "Bowling Green",
+          "position": "TE",
+          "season": 2024,
+          "totals": {
             "games": 13.0,
             "rec": 117.0,
             "yards": 1555.0,
             "td": 10.0
-          }
+          },
+          "score": 1655.0,
+          "hudlLink": ""
         },
-        "score": 1655.0,
-        "hudlLink": ""
-      },
-      {
-        "player": "Tanner Koziol",
-        "position": "TE",
-        "teams": [
-          "Ball St."
-        ],
-        "seasonsPlayed": [
-          2024
-        ],
-        "totals": {
-          "games": 12.0,
-          "rec": 94.0,
-          "yards": 839.0,
-          "td": 8.0
-        },
-        "bySeasson": {
-          "2024": {
-            "team": "Ball St.",
+        {
+          "player": "Tanner Koziol",
+          "team": "Ball St.",
+          "position": "TE",
+          "season": 2024,
+          "totals": {
             "games": 12.0,
             "rec": 94.0,
             "yards": 839.0,
             "td": 8.0
-          }
-        },
-        "score": 919.0,
-        "hudlLink": ""
-      },
-      {
-        "player": "Trevor Wilson",
-        "position": "TE",
-        "teams": [
-          "Buffalo"
-        ],
-        "seasonsPlayed": [
-          2026
-        ],
-        "totals": {
-          "games": 4.0,
-          "rec": 5.0,
-          "yards": 52.0,
-          "td": 0.0
-        },
-        "bySeasson": {
-          "2026": {
-            "team": "Buffalo",
-            "games": 4.0,
-            "rec": 5.0,
-            "yards": 52.0,
-            "td": 0.0
-          }
-        },
-        "score": 52.0,
-        "hudlLink": ""
-      },
-      {
-        "player": "Gavin Spillers",
-        "position": "TE",
-        "teams": [
-          "Central Mich."
-        ],
-        "seasonsPlayed": [
-          2026
-        ],
-        "totals": {
-          "games": 4.0,
-          "rec": 1.0,
-          "yards": 8.0,
-          "td": 0.0
-        },
-        "bySeasson": {
-          "2026": {
-            "team": "Central Mich.",
-            "games": 4.0,
-            "rec": 1.0,
-            "yards": 8.0,
-            "td": 0.0
-          }
-        },
-        "score": 8.0,
-        "hudlLink": ""
-      }
-    ],
-    "DL": [
-      {
-        "player": "Nadame Tucker",
-        "position": "DL",
-        "teams": [
-          "Western Mich."
-        ],
-        "seasonsPlayed": [
-          2025
-        ],
-        "totals": {
-          "games": 13.0,
-          "total": 0.0,
-          "tfl": 21.0,
-          "sacks": 14.5,
-          "pbu": 0.0,
-          "int": 0.0
-        },
-        "bySeasson": {
-          "2025": {
-            "team": "Western Mich.",
-            "games": 13.0,
-            "total": 0.0,
-            "tfl": 21.0,
-            "sacks": 14.5,
-            "pbu": 0.0,
-            "int": 0.0
-          }
-        },
-        "score": 129.0,
-        "hudlLink": "https://www.hudl.com/v/2G4MYE"
-      },
-      {
-        "player": "Nathan Voorhis",
-        "position": "DL",
-        "teams": [
-          "Ball St."
-        ],
-        "seasonsPlayed": [
-          2025
-        ],
-        "totals": {
-          "games": 12.0,
-          "total": 0.0,
-          "tfl": 17.0,
-          "sacks": 12.0,
-          "pbu": 0.0,
-          "int": 0.0
-        },
-        "bySeasson": {
-          "2025": {
-            "team": "Ball St.",
+          },
+          "score": 919.0,
+          "hudlLink": ""
+        }
+      ],
+      "2025": []
+    },
+    "DL": {
+      "2023": [
+        {
+          "player": "Sidney Houston",
+          "team": "Ball St.",
+          "position": "DL",
+          "season": 2023,
+          "totals": {
             "games": 12.0,
-            "total": 0.0,
+            "total": 59.0,
             "tfl": 17.0,
-            "sacks": 12.0,
+            "sacks": 8.0,
             "pbu": 0.0,
             "int": 0.0
-          }
+          },
+          "score": 141.0,
+          "hudlLink": ""
         },
-        "score": 106.0,
-        "hudlLink": ""
-      },
-      {
-        "player": "Michael Heldman",
-        "position": "DL",
-        "teams": [
-          "Central Mich."
-        ],
-        "seasonsPlayed": [
-          2025
-        ],
-        "totals": {
-          "games": 13.0,
-          "total": 0.0,
-          "tfl": 16.5,
-          "sacks": 10.5,
-          "pbu": 0.0,
-          "int": 0.0
+        {
+          "player": "CJ Nunnally",
+          "team": "Akron",
+          "position": "DL",
+          "season": 2023,
+          "totals": {
+            "games": 12.0,
+            "total": 65.0,
+            "tfl": 15.5,
+            "sacks": 7.0,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 138.0,
+          "hudlLink": ""
         },
-        "bySeasson": {
-          "2025": {
-            "team": "Central Mich.",
-            "games": 13.0,
+        {
+          "player": "Marshawn Kneeland",
+          "team": "Western Mich.",
+          "position": "DL",
+          "season": 2023,
+          "totals": {
+            "games": 10.0,
+            "total": 57.0,
+            "tfl": 0.0,
+            "sacks": 4.5,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 84.0,
+          "hudlLink": ""
+        },
+        {
+          "player": "Caiden Woullard",
+          "team": "Miami (OH)",
+          "position": "DL",
+          "season": 2023,
+          "totals": {
+            "games": 14.0,
             "total": 0.0,
-            "tfl": 16.5,
-            "sacks": 10.5,
+            "tfl": 0.0,
+            "sacks": 9.5,
             "pbu": 0.0,
             "int": 0.0
-          }
+          },
+          "score": 57.0,
+          "hudlLink": ""
         },
-        "score": 96.0,
-        "hudlLink": ""
-      },
-      {
-        "player": "CJ Nunnally",
-        "position": "DL",
-        "teams": [
-          "Akron"
-        ],
-        "seasonsPlayed": [
-          2024
-        ],
-        "totals": {
-          "games": 12.0,
-          "total": 56.0,
-          "tfl": 0.0,
-          "sacks": 6.0,
-          "pbu": 0.0,
-          "int": 0.0
-        },
-        "bySeasson": {
-          "2024": {
-            "team": "Akron",
+        {
+          "player": "Judge Culpepper",
+          "team": "Toledo",
+          "position": "DL",
+          "season": 2023,
+          "totals": {
+            "games": 14.0,
+            "total": 0.0,
+            "tfl": 0.0,
+            "sacks": 9.0,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 54.0,
+          "hudlLink": ""
+        }
+      ],
+      "2024": [
+        {
+          "player": "CJ Nunnally",
+          "team": "Akron",
+          "position": "DL",
+          "season": 2024,
+          "totals": {
             "games": 12.0,
             "total": 56.0,
             "tfl": 0.0,
             "sacks": 6.0,
             "pbu": 0.0,
             "int": 0.0
-          }
+          },
+          "score": 92.0,
+          "hudlLink": ""
         },
-        "score": 92.0,
-        "hudlLink": ""
-      },
-      {
-        "player": "Riley Tolsma",
-        "position": "DL",
-        "teams": [
-          "Ball St."
-        ],
-        "seasonsPlayed": [
-          2024
-        ],
-        "totals": {
-          "games": 12.0,
-          "total": 58.0,
-          "tfl": 0.0,
-          "sacks": 5.5,
-          "pbu": 0.0,
-          "int": 0.0
-        },
-        "bySeasson": {
-          "2024": {
-            "team": "Ball St.",
+        {
+          "player": "Riley Tolsma",
+          "team": "Ball St.",
+          "position": "DL",
+          "season": 2024,
+          "totals": {
             "games": 12.0,
             "total": 58.0,
             "tfl": 0.0,
             "sacks": 5.5,
             "pbu": 0.0,
             "int": 0.0
-          }
+          },
+          "score": 91.0,
+          "hudlLink": ""
         },
-        "score": 91.0,
-        "hudlLink": ""
-      }
-    ],
-    "LB": [
-      {
-        "player": "Red Murdock",
-        "position": "LB",
-        "teams": [
-          "Buffalo"
-        ],
-        "seasonsPlayed": [
-          2024,
-          2025
-        ],
-        "totals": {
-          "games": 25.0,
-          "total": 298.0,
-          "tfl": 16.5,
-          "sacks": 5.0,
-          "pbu": 0.0,
-          "int": 0.0
+        {
+          "player": "Peyton Price",
+          "team": "Eastern Mich.",
+          "position": "DL",
+          "season": 2024,
+          "totals": {
+            "games": 12.0,
+            "total": 53.0,
+            "tfl": 0.0,
+            "sacks": 5.0,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 83.0,
+          "hudlLink": ""
         },
-        "bySeasson": {
-          "2024": {
-            "team": "Buffalo",
+        {
+          "player": "Kobe Stewart",
+          "team": "Buffalo",
+          "position": "DL",
+          "season": 2024,
+          "totals": {
+            "games": 13.0,
+            "total": 0.0,
+            "tfl": 0.0,
+            "sacks": 9.5,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 57.0,
+          "hudlLink": ""
+        },
+        {
+          "player": "Bradley Weaver",
+          "team": "Ohio",
+          "position": "DL",
+          "season": 2024,
+          "totals": {
+            "games": 13.0,
+            "total": 0.0,
+            "tfl": 0.0,
+            "sacks": 8.5,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 51.0,
+          "hudlLink": ""
+        }
+      ],
+      "2025": [
+        {
+          "player": "Nadame Tucker",
+          "team": "Western Mich.",
+          "position": "DL",
+          "season": 2025,
+          "totals": {
+            "games": 13.0,
+            "total": 0.0,
+            "tfl": 21.0,
+            "sacks": 14.5,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 129.0,
+          "hudlLink": "https://www.hudl.com/v/2G4MYE"
+        },
+        {
+          "player": "Nathan Voorhis",
+          "team": "Ball St.",
+          "position": "DL",
+          "season": 2025,
+          "totals": {
+            "games": 12.0,
+            "total": 0.0,
+            "tfl": 17.0,
+            "sacks": 12.0,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 106.0,
+          "hudlLink": ""
+        },
+        {
+          "player": "Michael Heldman",
+          "team": "Central Mich.",
+          "position": "DL",
+          "season": 2025,
+          "totals": {
+            "games": 13.0,
+            "total": 0.0,
+            "tfl": 16.5,
+            "sacks": 10.5,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 96.0,
+          "hudlLink": ""
+        },
+        {
+          "player": "Donovan Green",
+          "team": "Eastern Mich.",
+          "position": "DL",
+          "season": 2025,
+          "totals": {
+            "games": 12.0,
+            "total": 55.0,
+            "tfl": 0.0,
+            "sacks": 0.0,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 55.0,
+          "hudlLink": ""
+        },
+        {
+          "player": "Rodney McGraw",
+          "team": "Western Mich.",
+          "position": "DL",
+          "season": 2025,
+          "totals": {
+            "games": 14.0,
+            "total": 0.0,
+            "tfl": 0.0,
+            "sacks": 7.0,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 42.0,
+          "hudlLink": ""
+        }
+      ]
+    },
+    "LB": {
+      "2023": [
+        {
+          "player": "Ty Wise",
+          "team": "Miami (OH)",
+          "position": "LB",
+          "season": 2023,
+          "totals": {
+            "games": 14.0,
+            "total": 122.0,
+            "tfl": 0.0,
+            "sacks": 8.0,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 170.0,
+          "hudlLink": ""
+        },
+        {
+          "player": "Bryce Houston",
+          "team": "Ohio",
+          "position": "LB",
+          "season": 2023,
+          "totals": {
+            "games": 13.0,
+            "total": 127.0,
+            "tfl": 0.0,
+            "sacks": 0.0,
+            "pbu": 0.0,
+            "int": 3.0
+          },
+          "score": 151.0,
+          "hudlLink": ""
+        },
+        {
+          "player": "Chase Kline",
+          "team": "Eastern Mich.",
+          "position": "LB",
+          "season": 2023,
+          "totals": {
+            "games": 11.0,
+            "total": 143.0,
+            "tfl": 0.0,
+            "sacks": 0.0,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 143.0,
+          "hudlLink": ""
+        },
+        {
+          "player": "Matt Salopek",
+          "team": "Miami (OH)",
+          "position": "LB",
+          "season": 2023,
+          "totals": {
+            "games": 14.0,
+            "total": 143.0,
+            "tfl": 0.0,
+            "sacks": 0.0,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 143.0,
+          "hudlLink": ""
+        },
+        {
+          "player": "Joe Sparacio",
+          "team": "Eastern Mich.",
+          "position": "LB",
+          "season": 2023,
+          "totals": {
+            "games": 13.0,
+            "total": 137.0,
+            "tfl": 0.0,
+            "sacks": 0.0,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 137.0,
+          "hudlLink": ""
+        }
+      ],
+      "2024": [
+        {
+          "player": "Shaun Dolac",
+          "team": "Buffalo",
+          "position": "LB",
+          "season": 2024,
+          "totals": {
+            "games": 13.0,
+            "total": 168.0,
+            "tfl": 18.5,
+            "sacks": 6.5,
+            "pbu": 0.0,
+            "int": 5.0
+          },
+          "score": 284.0,
+          "hudlLink": ""
+        },
+        {
+          "player": "Red Murdock",
+          "team": "Buffalo",
+          "position": "LB",
+          "season": 2024,
+          "totals": {
             "games": 13.0,
             "total": 156.0,
             "tfl": 16.5,
@@ -802,112 +1085,113 @@
             "pbu": 0.0,
             "int": 0.0
           },
-          "2025": {
-            "team": "Buffalo",
+          "score": 189.0,
+          "hudlLink": ""
+        },
+        {
+          "player": "Matt Salopek",
+          "team": "Miami (OH)",
+          "position": "LB",
+          "season": 2024,
+          "totals": {
+            "games": 14.0,
+            "total": 122.0,
+            "tfl": 0.0,
+            "sacks": 0.0,
+            "pbu": 0.0,
+            "int": 3.0
+          },
+          "score": 146.0,
+          "hudlLink": ""
+        },
+        {
+          "player": "Joseph Sipp Jr.",
+          "team": "Bowling Green",
+          "position": "LB",
+          "season": 2024,
+          "totals": {
+            "games": 13.0,
+            "total": 79.0,
+            "tfl": 0.0,
+            "sacks": 7.0,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 121.0,
+          "hudlLink": ""
+        },
+        {
+          "player": "Bryan McCoy",
+          "team": "Akron",
+          "position": "LB",
+          "season": 2024,
+          "totals": {
+            "games": 12.0,
+            "total": 120.0,
+            "tfl": 0.0,
+            "sacks": 0.0,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 120.0,
+          "hudlLink": ""
+        }
+      ],
+      "2025": [
+        {
+          "player": "Red Murdock",
+          "team": "Buffalo",
+          "position": "LB",
+          "season": 2025,
+          "totals": {
             "games": 12.0,
             "total": 142.0,
             "tfl": 0.0,
             "sacks": 5.0,
             "pbu": 0.0,
             "int": 0.0
-          }
+          },
+          "score": 172.0,
+          "hudlLink": ""
         },
-        "score": 361.0,
-        "hudlLink": ""
-      },
-      {
-        "player": "Shaun Dolac",
-        "position": "LB",
-        "teams": [
-          "Buffalo"
-        ],
-        "seasonsPlayed": [
-          2024
-        ],
-        "totals": {
-          "games": 13.0,
-          "total": 168.0,
-          "tfl": 18.5,
-          "sacks": 6.5,
-          "pbu": 0.0,
-          "int": 5.0
-        },
-        "bySeasson": {
-          "2024": {
-            "team": "Buffalo",
-            "games": 13.0,
-            "total": 168.0,
-            "tfl": 18.5,
-            "sacks": 6.5,
-            "pbu": 0.0,
-            "int": 5.0
-          }
-        },
-        "score": 284.0,
-        "hudlLink": ""
-      },
-      {
-        "player": "Jordan Kwiatkowski",
-        "position": "LB",
-        "teams": [
-          "Central Mich."
-        ],
-        "seasonsPlayed": [
-          2024,
-          2025
-        ],
-        "totals": {
-          "games": 25.0,
-          "total": 213.0,
-          "tfl": 0.0,
-          "sacks": 0.0,
-          "pbu": 0.0,
-          "int": 0.0
-        },
-        "bySeasson": {
-          "2024": {
-            "team": "Central Mich.",
+        {
+          "player": "Gideon Lampron",
+          "team": "Bowling Green",
+          "position": "LB",
+          "season": 2025,
+          "totals": {
             "games": 12.0,
-            "total": 96.0,
-            "tfl": 0.0,
+            "total": 119.0,
+            "tfl": 17.5,
             "sacks": 0.0,
             "pbu": 0.0,
             "int": 0.0
           },
-          "2025": {
-            "team": "Central Mich.",
+          "score": 154.0,
+          "hudlLink": ""
+        },
+        {
+          "player": "Jordan Kwiatkowski",
+          "team": "Central Mich.",
+          "position": "LB",
+          "season": 2025,
+          "totals": {
             "games": 13.0,
             "total": 117.0,
             "tfl": 0.0,
             "sacks": 0.0,
             "pbu": 0.0,
             "int": 0.0
-          }
+          },
+          "score": 117.0,
+          "hudlLink": ""
         },
-        "score": 213.0,
-        "hudlLink": ""
-      },
-      {
-        "player": "Dion Crawford",
-        "position": "LB",
-        "teams": [
-          "Buffalo"
-        ],
-        "seasonsPlayed": [
-          2024,
-          2025
-        ],
-        "totals": {
-          "games": 24.0,
-          "total": 140.0,
-          "tfl": 0.0,
-          "sacks": 8.5,
-          "pbu": 0.0,
-          "int": 0.0
-        },
-        "bySeasson": {
-          "2024": {
-            "team": "Buffalo",
+        {
+          "player": "Adam Trick",
+          "team": "Miami (OH)",
+          "position": "LB",
+          "season": 2025,
+          "totals": {
             "games": 13.0,
             "total": 59.0,
             "tfl": 0.0,
@@ -915,405 +1199,463 @@
             "pbu": 0.0,
             "int": 0.0
           },
-          "2025": {
-            "team": "Buffalo",
-            "games": 11.0,
-            "total": 81.0,
-            "tfl": 0.0,
-            "sacks": 0.0,
-            "pbu": 0.0,
-            "int": 0.0
-          }
+          "score": 110.0,
+          "hudlLink": ""
         },
-        "score": 191.0,
-        "hudlLink": ""
-      },
-      {
-        "player": "Mason Woods",
-        "position": "LB",
-        "teams": [
-          "Kent St."
-        ],
-        "seasonsPlayed": [
-          2024,
-          2025
-        ],
-        "totals": {
-          "games": 24.0,
-          "total": 162.0,
-          "tfl": 0.0,
-          "sacks": 0.0,
-          "pbu": 0.0,
-          "int": 0.0
-        },
-        "bySeasson": {
-          "2024": {
-            "team": "Kent St.",
-            "games": 12.0,
-            "total": 68.0,
+        {
+          "player": "Jackson Kuwatch",
+          "team": "Miami (OH)",
+          "position": "LB",
+          "season": 2025,
+          "totals": {
+            "games": 14.0,
+            "total": 109.0,
             "tfl": 0.0,
             "sacks": 0.0,
             "pbu": 0.0,
             "int": 0.0
           },
-          "2025": {
-            "team": "Kent St.",
-            "games": 12.0,
-            "total": 94.0,
-            "tfl": 0.0,
-            "sacks": 0.0,
-            "pbu": 0.0,
+          "score": 109.0,
+          "hudlLink": ""
+        }
+      ]
+    },
+    "CB": {
+      "2023": [
+        {
+          "player": "Quinyon Mitchell",
+          "team": "Toledo",
+          "position": "CB",
+          "season": 2023,
+          "totals": {
+            "games": 13.0,
+            "total": 0.0,
+            "pbu": 18.0,
             "int": 0.0
-          }
+          },
+          "score": 72.0,
+          "hudlLink": ""
         },
-        "score": 162.0,
-        "hudlLink": ""
-      }
-    ],
-    "CB": [
-      {
-        "player": "Avery Smith",
-        "position": "CB",
-        "teams": [
-          "Toledo"
-        ],
-        "seasonsPlayed": [
-          2024
-        ],
-        "totals": {
-          "games": 13.0,
-          "total": 58.0,
-          "pbu": 14.0,
-          "int": 0.0
+        {
+          "player": "Jordan Oladokun",
+          "team": "Bowling Green",
+          "position": "CB",
+          "season": 2023,
+          "totals": {
+            "games": 11.0,
+            "total": 0.0,
+            "pbu": 0.0,
+            "int": 4.0
+          },
+          "score": 32.0,
+          "hudlLink": ""
         },
-        "bySeasson": {
-          "2024": {
-            "team": "Toledo",
+        {
+          "player": "Jalen Huskey",
+          "team": "Bowling Green",
+          "position": "CB",
+          "season": 2023,
+          "totals": {
+            "games": 12.0,
+            "total": 0.0,
+            "pbu": 0.0,
+            "int": 4.0
+          },
+          "score": 32.0,
+          "hudlLink": ""
+        },
+        {
+          "player": "Charles McCartherens",
+          "team": "Buffalo",
+          "position": "CB",
+          "season": 2023,
+          "totals": {
+            "games": 12.0,
+            "total": 0.0,
+            "pbu": 0.0,
+            "int": 3.0
+          },
+          "score": 24.0,
+          "hudlLink": ""
+        }
+      ],
+      "2024": [
+        {
+          "player": "Avery Smith",
+          "team": "Toledo",
+          "position": "CB",
+          "season": 2024,
+          "totals": {
             "games": 13.0,
             "total": 58.0,
             "pbu": 14.0,
             "int": 0.0
-          }
+          },
+          "score": 114.0,
+          "hudlLink": ""
         },
-        "score": 114.0,
-        "hudlLink": ""
-      },
-      {
-        "player": "Tank Pearson",
-        "position": "CB",
-        "teams": [
-          "Ohio"
-        ],
-        "seasonsPlayed": [
-          2024,
-          2025
-        ],
-        "totals": {
-          "games": 25.0,
-          "total": 0.0,
-          "pbu": 12.0,
-          "int": 4.0
+        {
+          "player": "Paul Lewis III",
+          "team": "Akron",
+          "position": "CB",
+          "season": 2024,
+          "totals": {
+            "games": 12.0,
+            "total": 77.0,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 77.0,
+          "hudlLink": ""
         },
-        "bySeasson": {
-          "2024": {
-            "team": "Ohio",
+        {
+          "player": "Bilhal Kone",
+          "team": "Western Mich.",
+          "position": "CB",
+          "season": 2024,
+          "totals": {
+            "games": 13.0,
+            "total": 70.0,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 70.0,
+          "hudlLink": ""
+        },
+        {
+          "player": "Jordan Oladokun",
+          "team": "Bowling Green",
+          "position": "CB",
+          "season": 2024,
+          "totals": {
+            "games": 13.0,
+            "total": 0.0,
+            "pbu": 0.0,
+            "int": 5.0
+          },
+          "score": 40.0,
+          "hudlLink": ""
+        },
+        {
+          "player": "Tank Pearson",
+          "team": "Ohio",
+          "position": "CB",
+          "season": 2024,
+          "totals": {
             "games": 13.0,
             "total": 0.0,
             "pbu": 0.0,
             "int": 4.0
           },
-          "2025": {
-            "team": "Ohio",
-            "games": 12.0,
-            "total": 0.0,
-            "pbu": 12.0,
-            "int": 0.0
-          }
-        },
-        "score": 80.0,
-        "hudlLink": ""
-      },
-      {
-        "player": "Paul Lewis III",
-        "position": "CB",
-        "teams": [
-          "Akron"
-        ],
-        "seasonsPlayed": [
-          2024
-        ],
-        "totals": {
-          "games": 12.0,
-          "total": 77.0,
-          "pbu": 0.0,
-          "int": 0.0
-        },
-        "bySeasson": {
-          "2024": {
-            "team": "Akron",
-            "games": 12.0,
-            "total": 77.0,
-            "pbu": 0.0,
-            "int": 0.0
-          }
-        },
-        "score": 77.0,
-        "hudlLink": ""
-      },
-      {
-        "player": "Bilhal Kone",
-        "position": "CB",
-        "teams": [
-          "Western Mich."
-        ],
-        "seasonsPlayed": [
-          2024
-        ],
-        "totals": {
-          "games": 13.0,
-          "total": 70.0,
-          "pbu": 0.0,
-          "int": 0.0
-        },
-        "bySeasson": {
-          "2024": {
-            "team": "Western Mich.",
-            "games": 13.0,
-            "total": 70.0,
-            "pbu": 0.0,
-            "int": 0.0
-          }
-        },
-        "score": 70.0,
-        "hudlLink": ""
-      },
-      {
-        "player": "Jarvarius Sims",
-        "position": "CB",
-        "teams": [
-          "Western Mich."
-        ],
-        "seasonsPlayed": [
-          2025,
-          2026
-        ],
-        "totals": {
-          "games": 15.0,
-          "total": 69.0,
-          "pbu": 0.0,
-          "int": 0.0
-        },
-        "bySeasson": {
-          "2025": {
-            "team": "Western Mich.",
+          "score": 32.0,
+          "hudlLink": ""
+        }
+      ],
+      "2025": [
+        {
+          "player": "Jarvarius Sims",
+          "team": "Western Mich.",
+          "position": "CB",
+          "season": 2025,
+          "totals": {
             "games": 14.0,
             "total": 64.0,
             "pbu": 0.0,
             "int": 0.0
           },
-          "2026": {
-            "team": "Western Mich.",
-            "games": 1.0,
-            "total": 5.0,
-            "pbu": 0.0,
-            "int": 0.0
-          }
+          "score": 64.0,
+          "hudlLink": ""
         },
-        "score": 69.0,
-        "hudlLink": ""
-      }
-    ],
-    "SAF": [
-      {
-        "player": "Eli Blakey",
-        "position": "SAF",
-        "teams": [
-          "Miami (OH)"
-        ],
-        "seasonsPlayed": [
-          2024,
-          2025
-        ],
-        "totals": {
-          "games": 26.0,
-          "total": 207.0,
-          "tfl": 0.0,
-          "pbu": 0.0,
-          "int": 0.0
-        },
-        "bySeasson": {
-          "2024": {
-            "team": "Miami (OH)",
+        {
+          "player": "MJ Cannon",
+          "team": "Bowling Green",
+          "position": "CB",
+          "season": 2025,
+          "totals": {
             "games": 12.0,
-            "total": 89.0,
+            "total": 57.0,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 57.0,
+          "hudlLink": ""
+        },
+        {
+          "player": "Jalen McClendon",
+          "team": "Bowling Green",
+          "position": "CB",
+          "season": 2025,
+          "totals": {
+            "games": 12.0,
+            "total": 55.0,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 55.0,
+          "hudlLink": ""
+        },
+        {
+          "player": "JoJo Johnson",
+          "team": "Bowling Green",
+          "position": "CB",
+          "season": 2025,
+          "totals": {
+            "games": 11.0,
+            "total": 0.0,
+            "pbu": 13.0,
+            "int": 0.0
+          },
+          "score": 52.0,
+          "hudlLink": ""
+        },
+        {
+          "player": "Tank Pearson",
+          "team": "Ohio",
+          "position": "CB",
+          "season": 2025,
+          "totals": {
+            "games": 12.0,
+            "total": 0.0,
+            "pbu": 12.0,
+            "int": 0.0
+          },
+          "score": 48.0,
+          "hudlLink": ""
+        }
+      ]
+    },
+    "SAF": {
+      "2023": [
+        {
+          "player": "Devin Grant",
+          "team": "Buffalo",
+          "position": "SAF",
+          "season": 2023,
+          "totals": {
+            "games": 12.0,
+            "total": 79.0,
+            "tfl": 0.0,
+            "pbu": 0.0,
+            "int": 5.0
+          },
+          "score": 109.0,
+          "hudlLink": ""
+        },
+        {
+          "player": "Bryce Sheppert",
+          "team": "Kent St.",
+          "position": "SAF",
+          "season": 2023,
+          "totals": {
+            "games": 12.0,
+            "total": 79.0,
             "tfl": 0.0,
             "pbu": 0.0,
             "int": 0.0
           },
-          "2025": {
-            "team": "Miami (OH)",
-            "games": 14.0,
-            "total": 118.0,
-            "tfl": 0.0,
-            "pbu": 0.0,
-            "int": 0.0
-          }
+          "score": 79.0,
+          "hudlLink": ""
         },
-        "score": 207.0,
-        "hudlLink": ""
-      },
-      {
-        "player": "Silas Walters",
-        "position": "SAF",
-        "teams": [
-          "Miami (OH)"
-        ],
-        "seasonsPlayed": [
-          2024,
-          2025
-        ],
-        "totals": {
-          "games": 26.0,
-          "total": 166.0,
-          "tfl": 0.0,
-          "pbu": 0.0,
-          "int": 3.0
-        },
-        "bySeasson": {
-          "2024": {
-            "team": "Miami (OH)",
-            "games": 14.0,
-            "total": 95.0,
+        {
+          "player": "Tate Hallock",
+          "team": "Western Mich.",
+          "position": "SAF",
+          "season": 2023,
+          "totals": {
+            "games": 11.0,
+            "total": 75.0,
             "tfl": 0.0,
             "pbu": 0.0,
             "int": 0.0
           },
-          "2025": {
-            "team": "Miami (OH)",
+          "score": 75.0,
+          "hudlLink": ""
+        },
+        {
+          "player": "Darrian Lewis",
+          "team": "Akron",
+          "position": "SAF",
+          "season": 2023,
+          "totals": {
+            "games": 12.0,
+            "total": 75.0,
+            "tfl": 0.0,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 75.0,
+          "hudlLink": ""
+        },
+        {
+          "player": "Aaron Wofford",
+          "team": "Western Mich.",
+          "position": "SAF",
+          "season": 2023,
+          "totals": {
             "games": 12.0,
             "total": 71.0,
             "tfl": 0.0,
             "pbu": 0.0,
-            "int": 3.0
-          }
-        },
-        "score": 184.0,
-        "hudlLink": ""
-      },
-      {
-        "player": "Tate Hallock",
-        "position": "SAF",
-        "teams": [
-          "Western Mich."
-        ],
-        "seasonsPlayed": [
-          2024,
-          2025
-        ],
-        "totals": {
-          "games": 27.0,
-          "total": 151.0,
-          "tfl": 0.0,
-          "pbu": 0.0,
-          "int": 4.0
-        },
-        "bySeasson": {
-          "2024": {
-            "team": "Western Mich.",
+            "int": 0.0
+          },
+          "score": 71.0,
+          "hudlLink": ""
+        }
+      ],
+      "2024": [
+        {
+          "player": "Tate Hallock",
+          "team": "Western Mich.",
+          "position": "SAF",
+          "season": 2024,
+          "totals": {
             "games": 13.0,
             "total": 84.0,
             "tfl": 0.0,
             "pbu": 0.0,
             "int": 4.0
           },
-          "2025": {
-            "team": "Western Mich.",
-            "games": 14.0,
-            "total": 67.0,
+          "score": 108.0,
+          "hudlLink": ""
+        },
+        {
+          "player": "Maxen Hook",
+          "team": "Toledo",
+          "position": "SAF",
+          "season": 2024,
+          "totals": {
+            "games": 12.0,
+            "total": 107.0,
             "tfl": 0.0,
             "pbu": 0.0,
             "int": 0.0
-          }
+          },
+          "score": 107.0,
+          "hudlLink": ""
         },
-        "score": 175.0,
-        "hudlLink": ""
-      },
-      {
-        "player": "Braden Awls",
-        "position": "SAF",
-        "teams": [
-          "Toledo"
-        ],
-        "seasonsPlayed": [
-          2024,
-          2025
-        ],
-        "totals": {
-          "games": 25.0,
-          "total": 72.0,
-          "tfl": 0.0,
-          "pbu": 0.0,
-          "int": 9.0
+        {
+          "player": "Raion Strader",
+          "team": "Miami (OH)",
+          "position": "SAF",
+          "season": 2024,
+          "totals": {
+            "games": 12.0,
+            "total": 53.0,
+            "tfl": 0.0,
+            "pbu": 18.0,
+            "int": 0.0
+          },
+          "score": 107.0,
+          "hudlLink": ""
         },
-        "bySeasson": {
-          "2024": {
-            "team": "Toledo",
+        {
+          "player": "Braden Awls",
+          "team": "Toledo",
+          "position": "SAF",
+          "season": 2024,
+          "totals": {
             "games": 13.0,
             "total": 72.0,
             "tfl": 0.0,
             "pbu": 0.0,
             "int": 4.0
           },
-          "2025": {
-            "team": "Toledo",
-            "games": 12.0,
-            "total": 0.0,
-            "tfl": 0.0,
-            "pbu": 0.0,
-            "int": 5.0
-          }
+          "score": 96.0,
+          "hudlLink": ""
         },
-        "score": 126.0,
-        "hudlLink": ""
-      },
-      {
-        "player": "Solomon Brown",
-        "position": "SAF",
-        "teams": [
-          "Buffalo"
-        ],
-        "seasonsPlayed": [
-          2024,
-          2025
-        ],
-        "totals": {
-          "games": 25.0,
-          "total": 122.0,
-          "tfl": 0.0,
-          "pbu": 0.0,
-          "int": 0.0
-        },
-        "bySeasson": {
-          "2024": {
-            "team": "Buffalo",
-            "games": 13.0,
-            "total": 66.0,
+        {
+          "player": "Silas Walters",
+          "team": "Miami (OH)",
+          "position": "SAF",
+          "season": 2024,
+          "totals": {
+            "games": 14.0,
+            "total": 95.0,
             "tfl": 0.0,
             "pbu": 0.0,
             "int": 0.0
           },
-          "2025": {
-            "team": "Buffalo",
-            "games": 12.0,
-            "total": 56.0,
+          "score": 95.0,
+          "hudlLink": ""
+        }
+      ],
+      "2025": [
+        {
+          "player": "Eli Blakey",
+          "team": "Miami (OH)",
+          "position": "SAF",
+          "season": 2025,
+          "totals": {
+            "games": 14.0,
+            "total": 118.0,
             "tfl": 0.0,
             "pbu": 0.0,
             "int": 0.0
-          }
+          },
+          "score": 118.0,
+          "hudlLink": ""
         },
-        "score": 122.0,
-        "hudlLink": ""
-      }
-    ]
+        {
+          "player": "Bryce Llewellyn",
+          "team": "Eastern Mich.",
+          "position": "SAF",
+          "season": 2025,
+          "totals": {
+            "games": 12.0,
+            "total": 102.0,
+            "tfl": 0.0,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 102.0,
+          "hudlLink": ""
+        },
+        {
+          "player": "Silas Walters",
+          "team": "Miami (OH)",
+          "position": "SAF",
+          "season": 2025,
+          "totals": {
+            "games": 12.0,
+            "total": 71.0,
+            "tfl": 0.0,
+            "pbu": 0.0,
+            "int": 3.0
+          },
+          "score": 89.0,
+          "hudlLink": ""
+        },
+        {
+          "player": "Jalen Thomeson",
+          "team": "Ohio",
+          "position": "SAF",
+          "season": 2025,
+          "totals": {
+            "games": 13.0,
+            "total": 86.0,
+            "tfl": 0.0,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 86.0,
+          "hudlLink": ""
+        },
+        {
+          "player": "Kal-El Pascal",
+          "team": "Bowling Green",
+          "position": "SAF",
+          "season": 2025,
+          "totals": {
+            "games": 12.0,
+            "total": 80.0,
+            "tfl": 0.0,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 80.0,
+          "hudlLink": ""
+        }
+      ]
+    }
   }
 }
