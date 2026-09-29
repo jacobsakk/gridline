@@ -150,3 +150,6 @@ HUDL_LINKS.update({
     "DARRIAN LEWIS": "https://www.hudl.com/profile/11011761",
     "BRYAN MCCOY": "https://www.hudl.com/profile/11229287",
 })
+HUDL_LINKS.update({
+    "JOE SPARACIO": "https://www.hudl.com:443/profile/6265342/joseph-sparacio",
+})
