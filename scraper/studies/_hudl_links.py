@@ -112,3 +112,16 @@ HUDL_LINKS.update({
     "KEYON MOZEE": "https://www.hudl.com/profile/7893734/Keyon-Mozee",
     "JADEN NIXON": "https://www.hudl.com/profile/10011114",
 })
+HUDL_LINKS.update({
+    "CHASE KLINE": "https://www.hudl.com/profile/4712759/Chase-Kline/about",
+    "KENNETH WOMACK": "https://www.hudl.com/profile/8356629",
+    "ADRIAN NORTON": "https://www.hudl.com/profile/15134018",
+})
+HUDL_LINKS.update({
+    "BILHAL KONE": "https://www.hudl.com/profile/8203660",
+    "AVERY SMITH": "https://www.hudl.com/profile/13236427",
+    "JORDAN KWIATKOWSKI": "https://www.hudl.com/profile/11394344/Jordan-Kwiatkowski/about",
+    "MAXEN HOOK": "https://www.hudl.com/profile/4193936/Maxen-Hook/about",
+    "NOAH KIM": "https://www.hudl.com/profile/8588249",
+    "CHIP TRAYANUM": "https://www.hudl.com/profile/7855094",
+})
