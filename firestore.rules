@@ -92,6 +92,12 @@ service cloud.firestore {
       allow read: if invited();
       allow write: if isAdmin();
     }
+    // Studies: a hand-edited field (a Hudl link a study's own data pull couldn't find) layered on top of
+    // the study's bundled JSON. Every invited coach can view; only admins add or fix a link.
+    match /studyOverrides/{docId} {
+      allow read: if invited();
+      allow write: if isAdmin();
+    }
 
     match /{document=**} {
       allow read, write: if false;

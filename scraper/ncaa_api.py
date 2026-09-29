@@ -236,12 +236,14 @@ def _get(path, params=None):
         return json.load(resp)
 
 
-def fetch_all_pages(division, stat_id):
-    """Fetches every page of a stat leaderboard and returns the combined rows."""
+def fetch_all_pages(division, stat_id, season="current"):
+    """Fetches every page of a stat leaderboard and returns the combined rows. `season` is "current" for
+    the live pipeline, or a past year ("2024") for a look back -- the NCAA API serves both under the same
+    path, just with that segment swapped."""
     rows = []
     page = 1
     while True:
-        data = _get(f"/stats/football/{division}/current/individual/{stat_id}", {"page": page})
+        data = _get(f"/stats/football/{division}/{season}/individual/{stat_id}", {"page": page})
         rows.extend(data["data"])
         if page >= data.get("pages", 1):
             break
@@ -495,7 +497,7 @@ def build_weekly_delta_rows(current_rows, previous_rows, week_label):
     return weekly
 
 
-def build_defense_rows(division_slug, division_label, conference_lookup):
+def build_defense_rows(division_slug, division_label, conference_lookup, season="current"):
     """The "tackling" (Defense) category merges five separate NCAA
     leaderboards -- Total Tackles, Tackles For Loss, Passes Defended,
     Interceptions, and Sacks -- into one row per player, keyed by
@@ -528,7 +530,7 @@ def build_defense_rows(division_slug, division_label, conference_lookup):
     # any of these five leaderboards individually -- skip a raw row with no
     # "G" rather than merging in fabricated zeros for whichever stat that
     # particular leaderboard was supposed to supply.
-    for raw in fetch_all_pages(division_slug, STAT_IDS_DEFENSE_MERGE["tackles"]):
+    for raw in fetch_all_pages(division_slug, STAT_IDS_DEFENSE_MERGE["tackles"], season):
         if "G" not in raw:
             continue
         row = get_or_create(raw)
@@ -537,7 +539,7 @@ def build_defense_rows(division_slug, division_label, conference_lookup):
         row["total"] = _to_int(raw.get("TT"))
     time.sleep(REQUEST_PAUSE_SECONDS)
 
-    for raw in fetch_all_pages(division_slug, STAT_IDS_DEFENSE_MERGE["tfl"]):
+    for raw in fetch_all_pages(division_slug, STAT_IDS_DEFENSE_MERGE["tfl"], season):
         if "G" not in raw:
             continue
         row = get_or_create(raw)
@@ -545,7 +547,7 @@ def build_defense_rows(division_slug, division_label, conference_lookup):
         row["games"] = max(row["games"], _to_int(raw.get("G")))
     time.sleep(REQUEST_PAUSE_SECONDS)
 
-    for raw in fetch_all_pages(division_slug, STAT_IDS_DEFENSE_MERGE["pbu"]):
+    for raw in fetch_all_pages(division_slug, STAT_IDS_DEFENSE_MERGE["pbu"], season):
         if "G" not in raw:
             continue
         row = get_or_create(raw)
@@ -553,7 +555,7 @@ def build_defense_rows(division_slug, division_label, conference_lookup):
         row["games"] = max(row["games"], _to_int(raw.get("G")))
     time.sleep(REQUEST_PAUSE_SECONDS)
 
-    for raw in fetch_all_pages(division_slug, STAT_IDS_DEFENSE_MERGE["int"]):
+    for raw in fetch_all_pages(division_slug, STAT_IDS_DEFENSE_MERGE["int"], season):
         if "G" not in raw:
             continue
         row = get_or_create(raw)
@@ -561,7 +563,7 @@ def build_defense_rows(division_slug, division_label, conference_lookup):
         row["games"] = max(row["games"], _to_int(raw.get("G")))
     time.sleep(REQUEST_PAUSE_SECONDS)
 
-    for raw in fetch_all_pages(division_slug, STAT_IDS_DEFENSE_MERGE["sacks"]):
+    for raw in fetch_all_pages(division_slug, STAT_IDS_DEFENSE_MERGE["sacks"], season):
         if "G" not in raw:
             continue
         row = get_or_create(raw)
@@ -575,17 +577,18 @@ def build_defense_rows(division_slug, division_label, conference_lookup):
     return list(merged.values())
 
 
-def build_division_rows(division_slug, division_label, conference_lookup):
+def build_division_rows(division_slug, division_label, conference_lookup, season="current"):
     """division_slug is the NCAA API's URL path segment (e.g. "fcs", "d2");
-    division_label is what Gridline's front-end expects (e.g. "FCS", "D2")."""
+    division_label is what Gridline's front-end expects (e.g. "FCS", "D2"). `season` looks back to a past,
+    final season instead of the live one -- see fetch_all_pages."""
     rows = []
     for category, stat_id in STAT_IDS.items():
-        raw_rows = fetch_all_pages(division_slug, stat_id)
+        raw_rows = fetch_all_pages(division_slug, stat_id, season)
         for i, raw in enumerate(raw_rows):
-            row_id = f"real-{division_slug}-{category}-{i}"
+            row_id = f"real-{division_slug}-{category}-{season}-{i}"
             row = transform_row(division_label, category, conference_lookup, raw, row_id)
             if row is not None:
                 rows.append(row)
         time.sleep(REQUEST_PAUSE_SECONDS)
-    rows.extend(build_defense_rows(division_slug, division_label, conference_lookup))
+    rows.extend(build_defense_rows(division_slug, division_label, conference_lookup, season))
     return rows
