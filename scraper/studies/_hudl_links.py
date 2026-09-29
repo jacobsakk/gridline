@@ -138,3 +138,15 @@ HUDL_LINKS.update({
     "DONTAE MCMILLAN": "https://www.hudl.com/profile/9847731",
     "RAION STRADER": "https://www.hudl.com/profile/15490539",
 })
+HUDL_LINKS.update({
+    "BRYCE LLEWELLYN": "https://www.hudl.com/profile/17498941/bryce-llewellyn",
+    "JACKSON KUWATCH": "https://www.hudl.com/profile/13109292/Jackson-Kuwatch",
+    "JOSEPH SIPP JR.": "https://hudl.com/v/2FsWDU",
+    "DONOVAN GREEN": "https://www.hudl.com/profile/15240510/donovan-green",
+    "BRYCE HOUSTON": "https://www.hudl.com/profile/4012020/Bryce-Houston",
+})
+HUDL_LINKS.update({
+    "AARON WOFFORD": "https://www.hudl.com/profile/19482468/aaron-wofford",
+    "DARRIAN LEWIS": "https://www.hudl.com/profile/11011761",
+    "BRYAN MCCOY": "https://www.hudl.com/profile/11229287",
+})
