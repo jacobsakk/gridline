@@ -125,3 +125,16 @@ HUDL_LINKS.update({
     "NOAH KIM": "https://www.hudl.com/profile/8588249",
     "CHIP TRAYANUM": "https://www.hudl.com/profile/7855094",
 })
+HUDL_LINKS.update({
+    "DECORION TEMPLE": "https://www.hudl.com/profile/13103203",
+    "JOSHUA LONG": "https://www.hudl.com/profile/10307977",
+    "TANNER KOZIOL": "https://www.hudl.com/profile/12822689/tanner-koziol",
+    "VICTOR SNOW": "https://www.hudl.com/profile/11563026",
+    "PEYTON PRICE": "https://www.hudl.com/profile/9298091",
+})
+HUDL_LINKS.update({
+    "JALEN HUSKEY": "https://www.hudl.com/profile/11389555",
+    "KAY'RON LYNCH-ADAMS": "https://www.hudl.com/profile/8748432",
+    "DONTAE MCMILLAN": "https://www.hudl.com/profile/9847731",
+    "RAION STRADER": "https://www.hudl.com/profile/15490539",
+})
