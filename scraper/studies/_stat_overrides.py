@@ -41,9 +41,9 @@ STAT_OVERRIDES = {
     ("MARSHAWN KNEELAND", "2023"): {"tfl": 7.5},    # Western Mich.: 57 tackles, 4.5 sacks, 7.5 TFL
     ("CJ NUNNALLY", "2024"): {"tfl": 11},           # Akron: 56 tackles, 6.0 sacks, 11 TFL
     ("PEYTON PRICE", "2024"): {"tfl": 10.0},        # Eastern Mich.: 53 tackles, 5.0 sacks, 10 TFL
-    ("TY WISE", "2023"): {"tfl": 9.0, "int": 1},    # Miami (OH): 122 tackles, 8.0 sacks, 9.0 TFL, 1 INT
-    ("JOSEPH SIPP JR.", "2024"): {"tfl": 10.5},     # Bowling Green: sacks/TFL recap gives 10.5 TFL
-    ("RED MURDOCK", "2025"): {"tfl": 13.5},         # Buffalo: 142 tackles, 5.0 sacks, 13.5 TFL
+    ("TY WISE", "2023"): {"tfl": 9.0, "int": 1, "pbu": 5},    # Miami (OH): 122 tackles, 8.0 sacks, 9.0 TFL, 1 INT, 5 PBU
+    ("JOSEPH SIPP JR.", "2024"): {"tfl": 10.5, "pbu": 2},     # Bowling Green: sacks/TFL recap gives 10.5 TFL, 2 PBU
+    ("RED MURDOCK", "2025"): {"tfl": 13.5, "pbu": 1},         # Buffalo: 142 tackles, 5.0 sacks, 13.5 TFL, 1 PBU (0 INT confirmed real)
     ("ADAM TRICK", "2025"): {"tfl": 12.5, "pbu": 4, "int": 1},  # Miami (OH): 59 tackles, 8.5 sacks, 12.5 TFL, 4 PBU, 1 INT
     # Riley Tolsma, Ball St., 2024: real TFL is nonzero (he has 5.5 sacks) but no source gave a number
     # that survives a sanity check (one hit claimed 44, implausible for a single season) -- left at 0
@@ -59,14 +59,22 @@ STAT_OVERRIDES = {
     # the Total Tackles board by a mile but landed at a flat 0/0 for TFL and sacks, which is essentially
     # impossible at that tackle volume. Flagged by the user directly; verified against ESPN/team stats
     # per player rather than assumed.
-    ("BRYCE HOUSTON", "2023"): {"tfl": 12.5, "sacks": 2.5},  # Ohio: 127 tackles, 12.5 TFL, 2.5 sacks
-    ("CHASE KLINE", "2023"): {"tfl": 5.0, "sacks": 2.0},     # Eastern Mich.: 143 tackles, 5.0 TFL, 2.0 sacks
-    ("MATT SALOPEK", "2023"): {"tfl": 8.5, "sacks": 3.0},    # Miami (OH): 143 tackles, 8.5 TFL, 3.0 sacks
-    ("JOE SPARACIO", "2023"): {"tfl": 6.5, "sacks": 1.0},    # Eastern Mich.: 131 tackles (leaderboard says 137), 6.5 TFL, 1.0 sacks
-    ("MATT SALOPEK", "2024"): {"tfl": 8.0, "sacks": 1.0},    # Miami (OH): 122 tackles, 8.0 TFL, 1.0 sack (int=3 already correct)
-    ("BRYAN MCCOY", "2024"): {"tfl": 1.5},                   # Akron: 120 tackles, 1.5 TFL (one source said 6.0/19 yds instead -- used the more specific, yardage-matched figure)
-    ("JORDAN KWIATKOWSKI", "2025"): {"tfl": 14.0},           # Central Mich.: 117 tackles, 14.0 TFL
-    ("JACKSON KUWATCH", "2025"): {"tfl": 10.0, "sacks": 5.0},  # Miami (OH): 109 tackles, 10.0 TFL, 5.0 sacks
+    ("BRYCE HOUSTON", "2023"): {"tfl": 12.5, "sacks": 2.5, "pbu": 1},  # Ohio: 127 tackles, 12.5 TFL, 2.5 sacks, 1 PBU (3 INT already correct)
+    ("CHASE KLINE", "2023"): {"tfl": 5.0, "sacks": 2.0, "pbu": 3},     # Eastern Mich.: 143 tackles, 5.0 TFL, 2.0 sacks, 3 PBU (0 INT confirmed real)
+    ("MATT SALOPEK", "2023"): {"tfl": 8.5, "sacks": 3.0, "pbu": 3, "int": 1},    # Miami (OH): 143 tackles, 8.5 TFL, 3.0 sacks, 3 PBU, 1 INT
+    ("JOE SPARACIO", "2023"): {"tfl": 6.5, "sacks": 1.0, "pbu": 3, "int": 1},    # Eastern Mich.: 131 tackles (leaderboard says 137), 6.5 TFL, 1.0 sacks, 3 PBU, 1 INT
+    ("MATT SALOPEK", "2024"): {"tfl": 8.0, "sacks": 1.0, "pbu": 3},    # Miami (OH): 122 tackles, 8.0 TFL, 1.0 sack, 3 PBU (int=3 already correct)
+    ("BRYAN MCCOY", "2024"): {"tfl": 1.5, "pbu": 2},                   # Akron: 120 tackles, 1.5 TFL (one source said 6.0/19 yds instead -- used the more specific, yardage-matched figure), 2 PBU (0 INT confirmed real)
+    # Jordan Kwiatkowski 2025: a later ESPN-summarized search claimed "109 tackles" for him, but that
+    # same response also cited "9.1 tackles/game" -- 9.1 x 13 games = ~118, matching our existing 117/14.0
+    # (leaderboard-sourced), not the 109 it also stated. Treated that total/TFL claim as a summarization
+    # error and kept the leaderboard numbers; the specific sacks/INT/PBU detail (92 INT return yards, a
+    # pick-six) is distinct and specific enough to trust.
+    ("JORDAN KWIATKOWSKI", "2025"): {"tfl": 14.0, "sacks": 3, "int": 3, "pbu": 5},  # Central Mich.: 117 tackles, 14.0 TFL, 3 sacks, 3 INT (92 yds, 1 TD), 5 PBU
+    ("JACKSON KUWATCH", "2025"): {"tfl": 10.0, "sacks": 5.0, "pbu": 1},  # Miami (OH): 109 tackles, 10.0 TFL, 5.0 sacks, 1 PBU (0 INT confirmed real)
+    ("SHAUN DOLAC", "2024"): {"pbu": 5},               # Buffalo: 168 tackles, 6 sacks, 5 INT (already correct), 5 PBU
+    ("RED MURDOCK", "2024"): {"pbu": 1, "int": 1},     # Buffalo: 156 tackles, 11 TFL, 2.0 sacks, 1 PBU, 1 INT (31 yds, TD) -- tfl/sacks left as leaderboard-sourced (16.5/0) since this recap's own numbers didn't reconcile cleanly
+    ("GIDEON LAMPRON", "2025"): {"sacks": 2.5, "pbu": 1},  # Bowling Green: 119 tackles, 17.5 TFL (already correct), 2.5 sacks, 1 PBU (0 INT confirmed real)
 
     # DL 2025, prompted by "is there anyone with better stats" after the Donovan Green fix -- checked
     # every candidate that didn't crack the top 5, since they're all the same total=0/tfl=0-with-only-
