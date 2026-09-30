@@ -158,3 +158,12 @@ HUDL_LINKS.update({
 # college pages sit behind a login for most content, so these are meant to be hand-pasted from the
 # Studies page (admins only) rather than bulk web-searched the way the Hudl links were.
 PFF_LINKS = {}
+HUDL_LINKS.update({
+    "ANTHONY SIMPSON": "https://www.hudl.com/profile/8230503",
+    "BROC LOWRY": "https://www.hudl.com/profile/12907414/Broc-Lowry/about",
+    "GIDEON LAMPRON": "https://www.hudl.com/profile/11293236",
+})
+HUDL_LINKS.update({
+    "MATT SALOPEK": "https://www.hudl.com/profile/6036828/Matt-Salopek",
+    "PAUL LEWIS III": "https://www.hudl.com/video/3/6079625/5721d65764e96b63802202c3",
+})
