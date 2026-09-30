@@ -21,7 +21,7 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from ncaa_api import build_division_rows
-from studies._hudl_links import HUDL_LINKS, TE_SUPPLEMENT
+from studies._hudl_links import HUDL_LINKS, PFF_LINKS, TE_SUPPLEMENT
 
 OUT_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "frontend", "src", "data", "studies", "mac-best-by-position.json")
 
@@ -90,13 +90,15 @@ def build():
                     # Best-effort, found by hand via web search -- not exhaustive. Blank means not found
                     # yet; an admin can paste one in directly from the Studies page.
                     "hudlLink": HUDL_LINKS.get(r["player"].upper(), ""),
+                    "pffLink": PFF_LINKS.get(r["player"].upper(), ""),
                 })
             if group_key == "TE":
                 # The leaderboard pull above still runs (kept, in case a future season has more nationally-
                 # ranked MAC tight ends) but the hand-researched list is what's actually used for TE.
                 ranked = [
                     {"player": e["player"], "team": e["team"], "position": "TE", "season": int(season), "totals": e["totals"],
-                     "score": round(cfg["score"](e["totals"]), 1), "hudlLink": HUDL_LINKS.get(e["player"].upper(), "")}
+                     "score": round(cfg["score"](e["totals"]), 1), "hudlLink": HUDL_LINKS.get(e["player"].upper(), ""),
+                     "pffLink": PFF_LINKS.get(e["player"].upper(), "")}
                     for e in TE_SUPPLEMENT.get(season, [])
                 ]
             ranked.sort(key=lambda x: -x["score"])

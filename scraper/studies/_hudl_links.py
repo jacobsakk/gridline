@@ -153,3 +153,8 @@ HUDL_LINKS.update({
 HUDL_LINKS.update({
     "JOE SPARACIO": "https://www.hudl.com:443/profile/6265342/joseph-sparacio",
 })
+
+# PFF (Pro Football Focus) grade/report links, same idea as HUDL_LINKS above -- starts empty. PFF's
+# college pages sit behind a login for most content, so these are meant to be hand-pasted from the
+# Studies page (admins only) rather than bulk web-searched the way the Hudl links were.
+PFF_LINKS = {}

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { ChevronRight, Download, ExternalLink, Link2, Loader2 } from "lucide-react";
+import { ChevronRight, Download, ExternalLink, Link2, Loader2, X } from "lucide-react";
 import { BackButton, HomeButton } from "./HomeButton.jsx";
 import { ThemeSwitcher, useTheme } from "./theme.jsx";
 import { useBack, initialSubRoute, setSubRoute } from "./route.js";
@@ -21,9 +21,11 @@ function downloadCsv(rows, columns, filename) {
   URL.revokeObjectURL(url);
 }
 
-function HudlCell({ row, admin, onSave }) {
+// Shared editable-link cell -- used for both the Hudl column (film) and the PFF column (grades/reports).
+// `field` is which key on the row this cell reads/writes ("hudlLink" or "pffLink").
+function LinkCell({ row, field, label, placeholder, admin, onSave }) {
   const [editing, setEditing] = useState(false);
-  const [value, setValue] = useState(row.hudlLink || "");
+  const [value, setValue] = useState(row[field] || "");
   if (editing) {
     return (
       <div style={{ display: "flex", gap: 5 }}>
@@ -31,7 +33,7 @@ function HudlCell({ row, admin, onSave }) {
           autoFocus
           value={value}
           onChange={(e) => setValue(e.target.value)}
-          placeholder="Paste a Hudl link…"
+          placeholder={placeholder}
           style={{ ...control, padding: "4px 7px", fontSize: 12.5, width: 190 }}
           onKeyDown={(e) => {
             if (e.key === "Enter") {
@@ -39,26 +41,26 @@ function HudlCell({ row, admin, onSave }) {
               setEditing(false);
             }
             if (e.key === "Escape") {
-              setValue(row.hudlLink || "");
+              setValue(row[field] || "");
               setEditing(false);
             }
           }}
           onBlur={() => {
-            if (value.trim() !== (row.hudlLink || "")) onSave(value.trim());
+            if (value.trim() !== (row[field] || "")) onSave(value.trim());
             setEditing(false);
           }}
         />
       </div>
     );
   }
-  if (row.hudlLink) {
+  if (row[field]) {
     return (
       <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
-        <a href={row.hudlLink} target="_blank" rel="noreferrer" style={{ color: "var(--accent)", display: "inline-flex", alignItems: "center", gap: 4 }}>
-          Film <ExternalLink size={12} />
+        <a href={row[field]} target="_blank" rel="noreferrer" style={{ color: "var(--accent)", display: "inline-flex", alignItems: "center", gap: 4 }}>
+          {label} <ExternalLink size={12} />
         </a>
         {admin && (
-          <button onClick={() => setEditing(true)} title="Change this link" aria-label={`Change Hudl link for ${row.player}`} style={{ background: "none", border: "none", color: "var(--text-faint)", cursor: "pointer", lineHeight: 0 }}>
+          <button onClick={() => setEditing(true)} title={`Change this ${label} link`} aria-label={`Change ${label} link for ${row.player}`} style={{ background: "none", border: "none", color: "var(--text-faint)", cursor: "pointer", lineHeight: 0 }}>
             <Link2 size={12} />
           </button>
         )}
@@ -74,12 +76,61 @@ function HudlCell({ row, admin, onSave }) {
   );
 }
 
+// Shows exactly how a row's score was computed -- the same formula as GROUPS' score lambdas in
+// scraper/studies/mac_best_by_position.py, walked term by term against this player's actual stats,
+// so "why is this score X" never requires reading the Python.
+function ScoreExplainer({ row, group, onClose }) {
+  const terms = group.scoreFormula.map((t) => {
+    const value = row.totals[t.key] ?? 0;
+    return { ...t, value, contribution: Math.round(value * t.coef * 10) / 10 };
+  });
+  const sign = (n) => (n < 0 ? "−" : "+");
+  return (
+    <div
+      onClick={onClose}
+      style={{ position: "fixed", inset: 0, height: "auto", zIndex: 100, background: "rgba(0,0,0,0.6)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}
+    >
+      <div
+        role="dialog"
+        aria-modal="true"
+        onClick={(e) => e.stopPropagation()}
+        style={{ position: "relative", background: "var(--bg-panel)", border: "1px solid var(--border)", borderRadius: 10, width: 380, maxWidth: "100%", padding: "20px 22px", color: "var(--text-primary)", boxShadow: "0 18px 48px rgba(0,0,0,0.5)" }}
+      >
+        <button onClick={onClose} aria-label="Close" style={{ position: "absolute", top: 14, right: 14, background: "none", border: "none", color: "var(--text-faint)", cursor: "pointer", lineHeight: 0 }}>
+          <X size={16} />
+        </button>
+        <div style={{ fontWeight: 700, fontSize: 15 }}>{row.player}</div>
+        <div style={{ fontSize: 12, color: "var(--text-muted)", marginBottom: 14 }}>{row.team} · {row.season} · {group.label}</div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 6, fontSize: 13.5 }}>
+          {terms.map((t, i) => (
+            <div key={t.key} style={{ display: "flex", justifyContent: "space-between", gap: 10 }} className="tabular">
+              <span style={{ color: "var(--text-secondary)" }}>
+                {i > 0 && <span style={{ color: "var(--text-faint)", marginRight: 6 }}>{sign(t.coef)}</span>}
+                {t.value} {t.label}{Math.abs(t.value) === 1 ? "" : "s"} {t.coef !== 1 && t.coef !== -1 ? `× ${Math.abs(t.coef)}` : ""}
+              </span>
+              <span style={{ color: "var(--text-primary)" }}>{sign(i === 0 ? 1 : t.coef) === "−" ? "−" : ""}{Math.abs(t.contribution)}</span>
+            </div>
+          ))}
+          <div style={{ display: "flex", justifyContent: "space-between", gap: 10, borderTop: "1px solid var(--border-subtle)", paddingTop: 8, marginTop: 4, fontWeight: 700 }} className="tabular">
+            <span>Score</span>
+            <span style={{ color: "var(--accent)" }}>{row.score}</span>
+          </div>
+        </div>
+        <p style={{ margin: "14px 0 0", fontSize: 11.5, color: "var(--text-faint)", lineHeight: 1.5 }}>
+          "Most productive" for this position is a stat-weighted formula, not a stat the NCAA reports directly -- it's meant to roughly rank production, not to be an official rating.
+        </p>
+      </div>
+    </div>
+  );
+}
+
 function StudyDetail({ studyId, admin, onBack }) {
   const study = useStudy(studyId);
   const [initial] = useState(initialSubRoute);
   const [group, setGroup] = useState(() => study.meta.groups.some((g) => g.key === initial[1]) ? initial[1] : study.meta.groups[0].key);
   const [season, setSeason] = useState(() => (/^\d{4}$/.test(initial[2]) ? Number(initial[2]) : null));
   const [sort, setSort] = useState({ key: "score", dir: "desc" });
+  const [explainRow, setExplainRow] = useState(null);
 
   const activeGroup = study.meta.groups.find((g) => g.key === group);
   const seasons = study.seasons;
@@ -105,6 +156,7 @@ function StudyDetail({ studyId, admin, onBack }) {
       ...activeGroup.stats.map((s) => ({ key: s.key, label: s.label, get: (r) => r.totals[s.key] ?? 0 })),
       { key: "score", label: "Score", get: (r) => r.score },
       { key: "hudlLink", label: "Hudl", get: (r) => r.hudlLink || "" },
+      { key: "pffLink", label: "PFF", get: (r) => r.pffLink || "" },
     ],
     [activeGroup]
   );
@@ -176,8 +228,8 @@ function StudyDetail({ studyId, admin, onBack }) {
             <thead>
               <tr>
                 {columns.map((c) => (
-                  <th key={c.key} style={th} onClick={() => sortBy(c.key === "hudlLink" ? "player" : c.key)}>
-                    {c.label}{c.key !== "hudlLink" ? arrow(c.key) : ""}
+                  <th key={c.key} style={th} onClick={() => sortBy(c.key === "hudlLink" || c.key === "pffLink" ? "player" : c.key)}>
+                    {c.label}{c.key !== "hudlLink" && c.key !== "pffLink" ? arrow(c.key) : ""}
                   </th>
                 ))}
               </tr>
@@ -195,8 +247,18 @@ function StudyDetail({ studyId, admin, onBack }) {
                   {activeGroup.stats.map((s) => (
                     <td key={s.key} style={td} className="tabular">{r.totals[s.key] ?? 0}</td>
                   ))}
-                  <td style={{ ...td, fontWeight: 700, color: "var(--accent)" }} className="tabular">{r.score}</td>
-                  <td style={td}><HudlCell row={r} admin={admin} onSave={(url) => study.saveField(group, r.player, { hudlLink: url })} /></td>
+                  <td style={{ ...td, fontWeight: 700, color: "var(--accent)" }} className="tabular">
+                    <button
+                      onClick={() => setExplainRow(r)}
+                      title="Why this score?"
+                      aria-label={`Why does ${r.player} have a score of ${r.score}?`}
+                      style={{ background: "none", border: "none", padding: 0, font: "inherit", fontWeight: 700, color: "var(--accent)", cursor: "pointer", textDecoration: "underline", textDecorationStyle: "dotted", textUnderlineOffset: 3 }}
+                    >
+                      {r.score}
+                    </button>
+                  </td>
+                  <td style={td}><LinkCell row={r} field="hudlLink" label="Film" placeholder="Paste a Hudl link…" admin={admin} onSave={(url) => study.saveField(group, r.player, { hudlLink: url })} /></td>
+                  <td style={td}><LinkCell row={r} field="pffLink" label="PFF" placeholder="Paste a PFF link…" admin={admin} onSave={(url) => study.saveField(group, r.player, { pffLink: url })} /></td>
                 </tr>
               ))}
             </tbody>
@@ -204,6 +266,7 @@ function StudyDetail({ studyId, admin, onBack }) {
         </div>
       )}
       {study.meta.note && <p style={{ margin: 0, fontSize: 12, color: "var(--text-faint)", lineHeight: 1.5 }}>{study.meta.note}</p>}
+      {explainRow && <ScoreExplainer row={explainRow} group={activeGroup} onClose={() => setExplainRow(null)} />}
     </div>
   );
 }
