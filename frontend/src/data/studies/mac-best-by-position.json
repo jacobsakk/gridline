@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-30T17:14:20.157595Z",
+  "generatedAt": "2026-09-30T18:36:55.819085Z",
   "seasons": [
     2023,
     2024,
@@ -1055,7 +1055,7 @@
             "total": 59.0,
             "tfl": 17.0,
             "sacks": 8.0,
-            "pbu": 0.0,
+            "pbu": 1,
             "int": 0.0
           },
           "score": 141.0,
@@ -1073,7 +1073,7 @@
             "total": 65.0,
             "tfl": 15.5,
             "sacks": 7.0,
-            "pbu": 0.0,
+            "pbu": 2,
             "int": 0.0
           },
           "score": 138.0,
@@ -1091,7 +1091,7 @@
             "total": 41,
             "tfl": 12,
             "sacks": 9.5,
-            "pbu": 0.0,
+            "pbu": 1,
             "int": 0.0
           },
           "score": 122.0,
@@ -1165,7 +1165,7 @@
             "total": 40,
             "tfl": 12,
             "sacks": 9.5,
-            "pbu": 0.0,
+            "pbu": 2,
             "int": 0.0
           },
           "score": 121.0,
@@ -1239,7 +1239,7 @@
             "total": 55,
             "tfl": 21.0,
             "sacks": 14.5,
-            "pbu": 0.0,
+            "pbu": 1,
             "int": 0.0
           },
           "score": 184.0,
@@ -1275,7 +1275,7 @@
             "total": 48,
             "tfl": 16.5,
             "sacks": 10.5,
-            "pbu": 0.0,
+            "pbu": 4,
             "int": 0.0
           },
           "score": 144.0,
@@ -1311,7 +1311,7 @@
             "total": 50,
             "tfl": 11.0,
             "sacks": 5.0,
-            "pbu": 0.0,
+            "pbu": 2,
             "int": 0.0
           },
           "score": 102.0,
@@ -1676,12 +1676,28 @@
             "games": 13.0,
             "total": 58.0,
             "pbu": 14.0,
-            "int": 0.0
+            "int": 2
           },
-          "score": 114.0,
+          "score": 130.0,
           "hudlLink": "https://www.hudl.com/profile/13236427",
           "pffLink": "",
           "state": "GA"
+        },
+        {
+          "player": "Bilhal Kone",
+          "team": "Western Mich.",
+          "position": "CB",
+          "season": 2024,
+          "totals": {
+            "games": 13.0,
+            "total": 70.0,
+            "pbu": 9,
+            "int": 1
+          },
+          "score": 114.0,
+          "hudlLink": "https://www.hudl.com/profile/8203660",
+          "pffLink": "",
+          "state": "MN"
         },
         {
           "player": "Tank Pearson",
@@ -1723,29 +1739,13 @@
           "totals": {
             "games": 12.0,
             "total": 77.0,
-            "pbu": 0.0,
+            "pbu": 5,
             "int": 0.0
           },
-          "score": 77.0,
+          "score": 97.0,
           "hudlLink": "https://www.hudl.com/video/3/6079625/5721d65764e96b63802202c3",
           "pffLink": "",
           "state": "MD"
-        },
-        {
-          "player": "Bilhal Kone",
-          "team": "Western Mich.",
-          "position": "CB",
-          "season": 2024,
-          "totals": {
-            "games": 13.0,
-            "total": 70.0,
-            "pbu": 0.0,
-            "int": 0.0
-          },
-          "score": 70.0,
-          "hudlLink": "https://www.hudl.com/profile/8203660",
-          "pffLink": "",
-          "state": "MN"
         }
       ],
       "2025": [
@@ -1764,6 +1764,38 @@
           "hudlLink": "",
           "pffLink": "",
           "state": "MS"
+        },
+        {
+          "player": "MJ Cannon",
+          "team": "Bowling Green",
+          "position": "CB",
+          "season": 2025,
+          "totals": {
+            "games": 12.0,
+            "total": 57.0,
+            "pbu": 3,
+            "int": 2
+          },
+          "score": 85.0,
+          "hudlLink": "https://www.hudl.com/profile/13071182",
+          "pffLink": "",
+          "state": "IL"
+        },
+        {
+          "player": "Jalen McClendon",
+          "team": "Bowling Green",
+          "position": "CB",
+          "season": 2025,
+          "totals": {
+            "games": 12.0,
+            "total": 55.0,
+            "pbu": 7,
+            "int": 0.0
+          },
+          "score": 83.0,
+          "hudlLink": "https://www.hudl.com/profile/10964406",
+          "pffLink": "",
+          "state": "FL"
         },
         {
           "player": "JoJo Johnson",
@@ -1789,45 +1821,13 @@
           "totals": {
             "games": 14.0,
             "total": 64.0,
-            "pbu": 0.0,
+            "pbu": 4,
             "int": 0.0
           },
-          "score": 64.0,
+          "score": 80.0,
           "hudlLink": "https://www.hudl.com/profile/11281944",
           "pffLink": "",
           "state": "GA"
-        },
-        {
-          "player": "MJ Cannon",
-          "team": "Bowling Green",
-          "position": "CB",
-          "season": 2025,
-          "totals": {
-            "games": 12.0,
-            "total": 57.0,
-            "pbu": 0.0,
-            "int": 0.0
-          },
-          "score": 57.0,
-          "hudlLink": "https://www.hudl.com/profile/13071182",
-          "pffLink": "",
-          "state": "IL"
-        },
-        {
-          "player": "Jalen McClendon",
-          "team": "Bowling Green",
-          "position": "CB",
-          "season": 2025,
-          "totals": {
-            "games": 12.0,
-            "total": 55.0,
-            "pbu": 0.0,
-            "int": 0.0
-          },
-          "score": 55.0,
-          "hudlLink": "https://www.hudl.com/profile/10964406",
-          "pffLink": "",
-          "state": "FL"
         }
       ]
     },
@@ -1842,10 +1842,10 @@
             "games": 12.0,
             "total": 79.0,
             "tfl": 0.0,
-            "pbu": 0.0,
+            "pbu": 3,
             "int": 5.0
           },
-          "score": 109.0,
+          "score": 118.0,
           "hudlLink": "",
           "pffLink": "",
           "state": "NY"
@@ -1955,6 +1955,23 @@
           "state": "OH"
         },
         {
+          "player": "Tate Hallock",
+          "team": "Western Mich.",
+          "position": "SAF",
+          "season": 2024,
+          "totals": {
+            "games": 13.0,
+            "total": 84.0,
+            "tfl": 0.0,
+            "pbu": 5,
+            "int": 4.0
+          },
+          "score": 123.0,
+          "hudlLink": "https://www.hudl.com/profile/5409851",
+          "pffLink": "",
+          "state": "MI"
+        },
+        {
           "player": "Raion Strader",
           "team": "Miami (OH)",
           "position": "SAF",
@@ -1970,23 +1987,6 @@
           "hudlLink": "https://www.hudl.com/profile/15490539",
           "pffLink": "",
           "state": "PA"
-        },
-        {
-          "player": "Tate Hallock",
-          "team": "Western Mich.",
-          "position": "SAF",
-          "season": 2024,
-          "totals": {
-            "games": 13.0,
-            "total": 84.0,
-            "tfl": 0.0,
-            "pbu": 0.0,
-            "int": 4.0
-          },
-          "score": 108.0,
-          "hudlLink": "https://www.hudl.com/profile/5409851",
-          "pffLink": "",
-          "state": "MI"
         },
         {
           "player": "Braden Awls",
@@ -2033,13 +2033,30 @@
             "games": 12.0,
             "total": 102.0,
             "tfl": 5.0,
-            "pbu": 0.0,
+            "pbu": 4,
             "int": 2
           },
-          "score": 121.5,
+          "score": 133.5,
           "hudlLink": "https://www.hudl.com/profile/17498941/bryce-llewellyn",
           "pffLink": "",
           "state": "IN"
+        },
+        {
+          "player": "Silas Walters",
+          "team": "Miami (OH)",
+          "position": "SAF",
+          "season": 2025,
+          "totals": {
+            "games": 12.0,
+            "total": 71.0,
+            "tfl": 0.0,
+            "pbu": 7,
+            "int": 3.0
+          },
+          "score": 110.0,
+          "hudlLink": "https://www.hudl.com/profile/8856518",
+          "pffLink": "",
+          "state": "OH"
         },
         {
           "player": "Kal-El Pascal",
@@ -2067,30 +2084,13 @@
             "games": 13.0,
             "total": 86.0,
             "tfl": 7,
-            "pbu": 0.0,
+            "pbu": 1,
             "int": 1
           },
-          "score": 102.5,
+          "score": 105.5,
           "hudlLink": "",
           "pffLink": "",
           "state": "IN"
-        },
-        {
-          "player": "Silas Walters",
-          "team": "Miami (OH)",
-          "position": "SAF",
-          "season": 2025,
-          "totals": {
-            "games": 12.0,
-            "total": 71.0,
-            "tfl": 0.0,
-            "pbu": 0.0,
-            "int": 3.0
-          },
-          "score": 89.0,
-          "hudlLink": "https://www.hudl.com/profile/8856518",
-          "pffLink": "",
-          "state": "OH"
         }
       ]
     }
