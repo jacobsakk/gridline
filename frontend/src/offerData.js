@@ -58,6 +58,44 @@ export const TEAM_CONFERENCE = {
 
 export const CONFERENCE_ORDER = ["MAC", "MVC", "IVY"];
 
+// Which staff member is responsible for which team's board -- from the coaching staff's own assignment
+// sheet (design-refs/2027 MAC_MVC_BSC OFFERS - ASSIGNMENTS.csv). This is a fixed roster assignment, not
+// data that comes from an upload, so it's hand-maintained here the same way TEAM_CONFERENCE is: update
+// this list when an assignment changes. "NIU" is kept even though the team itself is retired (see
+// RETIRED_SHEETS below) -- the assignment sheet still lists it, and the Assignments tab shows it as no
+// longer tracked rather than silently dropping it.
+export const COACH_ORDER = ["SAKK", "KYLE", "GRANGER", "JESSE", "LEYTON", "ASHTON", "CARTER", "IAN"];
+export const TEAM_ASSIGNMENTS = [
+  { coach: "SAKK", team: "CMU" },
+  { coach: "GRANGER", team: "BGSU" },
+  { coach: "GRANGER", team: "OHIO" },
+  { coach: "GRANGER", team: "NORTH DAKOTA STATE" },
+  { coach: "GRANGER", team: "COLUMBIA" },
+  { coach: "JESSE", team: "WMU" },
+  { coach: "JESSE", team: "TOLEDO" },
+  { coach: "JESSE", team: "SOUTH DAKOTA STATE" },
+  { coach: "JESSE", team: "YALE" },
+  { coach: "LEYTON", team: "EMU" },
+  { coach: "LEYTON", team: "MIAMI (OH)" },
+  { coach: "LEYTON", team: "SOUTH DAKOTA" },
+  { coach: "LEYTON", team: "HARVARD" },
+  { coach: "ASHTON", team: "NIU", retired: true },
+  { coach: "ASHTON", team: "KENT STATE" },
+  { coach: "ASHTON", team: "NORTH DAKOTA" },
+  { coach: "ASHTON", team: "CORNELL" },
+  { coach: "CARTER", team: "BALL STATE" },
+  { coach: "CARTER", team: "UMASS" },
+  { coach: "CARTER", team: "INDIANA STATE" },
+  { coach: "CARTER", team: "ILLINOIS STATE" },
+  { coach: "CARTER", team: "DARTMOUTH" },
+  { coach: "CARTER", team: "BROWN" },
+  { coach: "IAN", team: "AKRON" },
+  { coach: "IAN", team: "BUFFALO" },
+  { coach: "IAN", team: "YOUNGSTOWN STATE" },
+  { coach: "IAN", team: "PENN" },
+  { coach: "IAN", team: "PRINCETON" },
+];
+
 // Sheets that aren't a team's offer list -- the assignment index, the
 // text-message template, stale archives, and the derived breakdown
 // tabs (those get recomputed live from the team rows instead of read).
@@ -358,6 +396,12 @@ export async function importWorkbook(file, classYear) {
       continue;
     }
 
+    const now = new Date().toISOString();
+    // The Assignments tab's "last uploaded" time for this team -- written whenever a sheet with this
+    // team's name is recognized and imported, whether or not it had any rows, so an admin can tell a
+    // just-cleared board apart from one nobody's touched in months.
+    operations.push({ coll: "teamUploads", type: "set", id: teamKey, data: { team: teamKey, lastUploadedAt: now } });
+
     const records = parseTeamSheet(workbook.Sheets[sheetName], teamKey);
     records.forEach((r) => {
       const fixed = aliasMap.get(`${classYear}|${normalizePlayerKey(r.player)}`);
@@ -385,7 +429,7 @@ export async function importWorkbook(file, classYear) {
           team: teamKey,
           teamLabel: meta.label,
           conference: meta.conference,
-          updatedAt: new Date().toISOString(),
+          updatedAt: now,
         },
       });
     }
@@ -402,7 +446,7 @@ export async function importWorkbook(file, classYear) {
   for (let i = 0; i < operations.length; i += BATCH_SIZE) {
     const batch = writeBatch(db);
     for (const op of operations.slice(i, i + BATCH_SIZE)) {
-      const ref = doc(db, "offers", op.id);
+      const ref = doc(db, op.coll || "offers", op.id);
       if (op.type === "set") batch.set(ref, op.data);
       else batch.delete(ref);
     }
@@ -646,6 +690,20 @@ export async function importActivityFeed(file, { dryRun = false } = {}) {
 export function useOfferTracker() {
   const [docs, setDocs] = useState([]);
   const [ready, setReady] = useState(false);
+  const [teamUploads, setTeamUploads] = useState({}); // team -> ISO timestamp, from the last importWorkbook call
+
+  useEffect(() => {
+    const unsubscribe = onSnapshot(
+      collection(db, "teamUploads"),
+      (snap) => {
+        const map = {};
+        snap.docs.forEach((d) => (map[d.id] = d.data().lastUploadedAt || ""));
+        setTeamUploads(map);
+      },
+      () => {}
+    );
+    return unsubscribe;
+  }, []);
 
   useEffect(() => {
     const unsubscribe = onSnapshot(
@@ -971,5 +1029,16 @@ export function useOfferTracker() {
     return { teams, states, counts, stateTotals };
   }
 
-  return { ready, classYears, teamsForConference, rowsForClassYear, rowsForTeam, rowsForPlayer, rowsByPlayer, rowsByLast, profileNames, suggestFixes, wordReplacementPreview, replaceWord, mergeProfile, mergeProfiles, positionBreakdown, areaBreakdown, importWorkbook, importActivityFeed, updateOfferField, removeOffer, addOffer };
+  // The Assignments tab's "last uploaded" time for a team. The authoritative source is teamUploads,
+  // written by importWorkbook every time that team's sheet is recognized in an upload. For a team that
+  // already had offer rows before this feature existed (or one whose sheet was last touched by the
+  // activity feed rather than a workbook), falls back to the most recent updatedAt among its current
+  // rows -- an approximation, but better than showing "never" for a board that's clearly been worked on.
+  function lastUploadedFor(team) {
+    if (teamUploads[team]) return teamUploads[team];
+    const stamps = docs.filter((d) => d.team === team && d.updatedAt).map((d) => d.updatedAt);
+    return stamps.length ? stamps.sort().pop() : "";
+  }
+
+  return { ready, classYears, teamsForConference, rowsForClassYear, rowsForTeam, rowsForPlayer, rowsByPlayer, rowsByLast, profileNames, suggestFixes, wordReplacementPreview, replaceWord, mergeProfile, mergeProfiles, positionBreakdown, areaBreakdown, importWorkbook, importActivityFeed, updateOfferField, removeOffer, addOffer, lastUploadedFor };
 }

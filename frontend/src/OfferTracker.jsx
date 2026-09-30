@@ -7,7 +7,7 @@ import { confirmAction } from "./ConfirmDialog.jsx";
 import { collegeForLabel, logoFor, teamKey } from "./collegeData.js";
 import { canonicalSchool, fixBrandCase } from "./schoolNames.js";
 import { ThemeSwitcher, useTheme } from "./theme.jsx";
-import { CONFERENCE_ORDER, PIPELINE_OPTIONS, TEAM_CONFERENCE, normalizePipelineStatus, normalizePosition, useOfferTracker } from "./offerData.js";
+import { COACH_ORDER, CONFERENCE_ORDER, PIPELINE_OPTIONS, TEAM_ASSIGNMENTS, TEAM_CONFERENCE, normalizePipelineStatus, normalizePosition, useOfferTracker } from "./offerData.js";
 
 const CONFERENCE_LABEL = { MAC: "MAC", MVC: "MVC / MVFC", IVY: "Ivy League" };
 
@@ -855,6 +855,83 @@ function BreakdownTables({ classYear, conference, tracker }) {
   );
 }
 
+// "2026-09-14T18:03:11.000Z" -> "2 days ago" / "3 weeks ago" / "4/11/26" once it's old enough that a
+// relative count stops being useful at a glance.
+function timeAgo(iso) {
+  if (!iso) return "";
+  const then = new Date(iso).getTime();
+  if (Number.isNaN(then)) return "";
+  const days = Math.floor((Date.now() - then) / 86400000);
+  if (days < 0) return "just now";
+  if (days === 0) return "today";
+  if (days === 1) return "yesterday";
+  if (days < 7) return `${days} days ago`;
+  if (days < 60) return `${Math.floor(days / 7)} week${Math.floor(days / 7) === 1 ? "" : "s"} ago`;
+  const d = new Date(then);
+  return `${d.getMonth() + 1}/${d.getDate()}/${String(d.getFullYear()).slice(-2)}`;
+}
+
+// Who's responsible for which team's board, and when that team's sheet was last uploaded through this
+// tracker (teamUploads, stamped automatically by importWorkbook -- see offerData.js). Not tied to a
+// class year: the assignment is a staff roster fact, not recruiting data, so it's the same across 2027,
+// 2028, etc.
+function AssignmentsTable({ conference, tracker }) {
+  const theme = useContext(ThemeContext);
+  const rows = useMemo(
+    () =>
+      TEAM_ASSIGNMENTS.filter((a) => (TEAM_CONFERENCE[a.team]?.conference || "MAC") === conference)
+        .map((a) => ({ ...a, meta: TEAM_CONFERENCE[a.team], lastUploadedAt: a.retired ? "" : tracker.lastUploadedFor(a.team) }))
+        .sort((x, y) => COACH_ORDER.indexOf(x.coach) - COACH_ORDER.indexOf(y.coach) || (x.meta?.label || x.team).localeCompare(y.meta?.label || y.team)),
+    [conference, tracker]
+  );
+
+  const th = { textAlign: "left", padding: "9px 12px", fontSize: 11, color: "var(--text-faint)", textTransform: "uppercase", letterSpacing: "0.03em", whiteSpace: "nowrap" };
+  const td = { padding: "9px 12px", fontSize: 13.5, color: "var(--text-secondary)", borderTop: "1px solid var(--border-subtle)" };
+
+  return (
+    <div>
+      <p style={{ margin: "0 0 14px", fontSize: 12.5, color: "var(--text-faint)", maxWidth: 640, lineHeight: 1.5 }}>
+        Who's assigned to each {CONFERENCE_LABEL[conference]} board, and when their sheet was last uploaded here. Updates on its own the next time that team's sheet comes in through Upload.
+      </p>
+      <div style={{ border: "1px solid var(--border)", borderRadius: 6, overflow: "hidden" }}>
+        <table style={{ width: "100%", borderCollapse: "collapse" }}>
+          <thead>
+            <tr style={{ background: "var(--bg-surface)" }}>
+              <th style={th}>Coach</th>
+              <th style={th}>Team</th>
+              <th style={th}>Last Uploaded</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.length === 0 && (
+              <tr>
+                <td colSpan={3} style={{ ...td, textAlign: "center", color: "var(--text-faint)", padding: 28 }}>
+                  No assignments on file for {CONFERENCE_LABEL[conference]}.
+                </td>
+              </tr>
+            )}
+            {rows.map((r, i) => (
+              <tr key={`${r.coach}-${r.team}`} style={{ background: i % 2 === 0 ? "var(--bg-panel)" : "var(--bg-page)" }}>
+                <td style={{ ...td, fontWeight: 700, color: "var(--text-primary)" }}>{toTitleCase(r.coach)}</td>
+                <td style={{ ...td, color: textAccentFor(r.meta, theme) || "var(--text-secondary)", fontWeight: 600 }}>{r.meta?.label || toTitleCase(r.team)}</td>
+                <td style={td} className="tabular">
+                  {r.retired ? (
+                    <span style={{ color: "var(--text-faint)", fontStyle: "italic" }}>No longer tracked — left the MAC</span>
+                  ) : r.lastUploadedAt ? (
+                    <span title={new Date(r.lastUploadedAt).toLocaleString()}>{timeAgo(r.lastUploadedAt)}</span>
+                  ) : (
+                    <span style={{ color: "var(--text-faint)" }}>Never uploaded</span>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
 function SortIcon({ active, dir }) {
   if (!active) return <ChevronsUpDown size={12} style={{ opacity: 0.4 }} />;
   return dir === "desc" ? <ChevronDown size={13} /> : <ChevronUp size={13} />;
@@ -1016,7 +1093,7 @@ export default function OfferTracker({ onBack: toDashboard }) {
   const [initial] = useState(initialSubRoute);
   const [classYear, setClassYear] = useState(/^\d{4}$/.test(initial[0] || "") ? initial[0] : null);
   const [conference, setConference] = useState(CONFERENCE_ORDER.includes(initial[1]) ? initial[1] : "MAC");
-  const [subView, setSubView] = useState(initial[2] === "trends" ? "trends" : "teams"); // "teams" | "trends"
+  const [subView, setSubView] = useState(["trends", "assignments"].includes(initial[2]) ? initial[2] : "teams"); // "teams" | "trends" | "assignments"
   const [selectedTeam, setSelectedTeam] = useState(initial[3] && TEAM_CONFERENCE[initial[3]] ? initial[3] : null);
   const [sortKey, setSortKey] = useState("player");
   const [sortDir, setSortDir] = useState("asc");
@@ -1258,7 +1335,7 @@ export default function OfferTracker({ onBack: toDashboard }) {
                 ))}
               </div>
               <div style={{ display: "flex", gap: 6 }}>
-                {["teams", "trends"].map((v) => (
+                {["teams", "trends", "assignments"].map((v) => (
                   <button
                     key={v}
                     onClick={() => setSubView(v)}
@@ -1441,9 +1518,13 @@ export default function OfferTracker({ onBack: toDashboard }) {
                   />
                 </div>
               </>
-            ) : (
+            ) : subView === "trends" ? (
               <div style={{ flex: 1, minHeight: 0, overflow: "auto", paddingBottom: "var(--gutter)" }}>
                 <BreakdownTables classYear={activeClassYear} conference={conference} tracker={tracker} />
+              </div>
+            ) : (
+              <div style={{ flex: 1, minHeight: 0, overflow: "auto", paddingBottom: "var(--gutter)" }}>
+                <AssignmentsTable conference={conference} tracker={tracker} />
               </div>
             )}
           </div>
