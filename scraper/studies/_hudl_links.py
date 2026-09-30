@@ -170,3 +170,8 @@ HUDL_LINKS.update({
 HUDL_LINKS.update({
     "RODNEY MCGRAW": "https://www.hudl.com/profile/11173598/Rodney-McGraw/videos",
 })
+HUDL_LINKS.update({
+    "ADAM TRICK": "https://www.hudl.com/profile/11351013",
+    "MASON WILLIAMS": "https://www.hudl.com/profile/12957817",
+    "MJ CANNON": "https://www.hudl.com/profile/13071182",
+})
