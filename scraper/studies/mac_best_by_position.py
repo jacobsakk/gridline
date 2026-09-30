@@ -22,6 +22,7 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from ncaa_api import build_division_rows
 from studies._hudl_links import HUDL_LINKS, PFF_LINKS, TE_SUPPLEMENT
+from studies._stat_overrides import STAT_OVERRIDES
 
 OUT_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "frontend", "src", "data", "studies", "mac-best-by-position.json")
 
@@ -80,6 +81,10 @@ def build():
                 totals = {k: num(r, k) for k in cfg["stats"]}
                 if totals.get("games", 0) < MIN_GAMES:
                     continue
+                # See _stat_overrides.py -- corrects a real gap in the leaderboard merge (a player who
+                # cracked one defensive leaderboard but not "Total Tackles" specifically defaults to 0
+                # there, which is never actually true for a rostered starter).
+                totals.update(STAT_OVERRIDES.get((r["player"].upper(), season), {}))
                 ranked.append({
                     "player": r["player"],
                     "team": r["team"],

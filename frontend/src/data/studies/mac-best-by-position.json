@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-30T12:48:36.079404Z",
+  "generatedAt": "2026-09-30T13:20:49.922003Z",
   "seasons": [
     2023,
     2024,
@@ -990,6 +990,40 @@
           "pffLink": ""
         },
         {
+          "player": "Caiden Woullard",
+          "team": "Miami (OH)",
+          "position": "DL",
+          "season": 2023,
+          "totals": {
+            "games": 14.0,
+            "total": 41,
+            "tfl": 0.0,
+            "sacks": 9.5,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 98.0,
+          "hudlLink": "https://www.hudl.com/profile/9691288/Caiden-Woullard/about",
+          "pffLink": ""
+        },
+        {
+          "player": "Judge Culpepper",
+          "team": "Toledo",
+          "position": "DL",
+          "season": 2023,
+          "totals": {
+            "games": 14.0,
+            "total": 38,
+            "tfl": 0.0,
+            "sacks": 9.0,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 92.0,
+          "hudlLink": "https://www.hudl.com/profile/4137781",
+          "pffLink": ""
+        },
+        {
           "player": "Marshawn Kneeland",
           "team": "Western Mich.",
           "position": "DL",
@@ -1005,43 +1039,43 @@
           "score": 84.0,
           "hudlLink": "https://www.hudl.com/profile/5587621",
           "pffLink": ""
-        },
+        }
+      ],
+      "2024": [
         {
-          "player": "Caiden Woullard",
-          "team": "Miami (OH)",
+          "player": "Kobe Stewart",
+          "team": "Buffalo",
           "position": "DL",
-          "season": 2023,
+          "season": 2024,
           "totals": {
-            "games": 14.0,
-            "total": 0.0,
+            "games": 13.0,
+            "total": 40,
             "tfl": 0.0,
             "sacks": 9.5,
             "pbu": 0.0,
             "int": 0.0
           },
-          "score": 57.0,
-          "hudlLink": "https://www.hudl.com/profile/9691288/Caiden-Woullard/about",
+          "score": 97.0,
+          "hudlLink": "",
           "pffLink": ""
         },
         {
-          "player": "Judge Culpepper",
-          "team": "Toledo",
+          "player": "Bradley Weaver",
+          "team": "Ohio",
           "position": "DL",
-          "season": 2023,
+          "season": 2024,
           "totals": {
-            "games": 14.0,
-            "total": 0.0,
+            "games": 13.0,
+            "total": 44,
             "tfl": 0.0,
-            "sacks": 9.0,
+            "sacks": 8.5,
             "pbu": 0.0,
             "int": 0.0
           },
-          "score": 54.0,
-          "hudlLink": "https://www.hudl.com/profile/4137781",
+          "score": 95.0,
+          "hudlLink": "",
           "pffLink": ""
-        }
-      ],
-      "2024": [
+        },
         {
           "player": "CJ Nunnally",
           "team": "Akron",
@@ -1092,40 +1126,6 @@
           "score": 83.0,
           "hudlLink": "https://www.hudl.com/profile/9298091",
           "pffLink": ""
-        },
-        {
-          "player": "Kobe Stewart",
-          "team": "Buffalo",
-          "position": "DL",
-          "season": 2024,
-          "totals": {
-            "games": 13.0,
-            "total": 0.0,
-            "tfl": 0.0,
-            "sacks": 9.5,
-            "pbu": 0.0,
-            "int": 0.0
-          },
-          "score": 57.0,
-          "hudlLink": "",
-          "pffLink": ""
-        },
-        {
-          "player": "Bradley Weaver",
-          "team": "Ohio",
-          "position": "DL",
-          "season": 2024,
-          "totals": {
-            "games": 13.0,
-            "total": 0.0,
-            "tfl": 0.0,
-            "sacks": 8.5,
-            "pbu": 0.0,
-            "int": 0.0
-          },
-          "score": 51.0,
-          "hudlLink": "",
-          "pffLink": ""
         }
       ],
       "2025": [
@@ -1136,13 +1136,13 @@
           "season": 2025,
           "totals": {
             "games": 13.0,
-            "total": 0.0,
+            "total": 55,
             "tfl": 21.0,
             "sacks": 14.5,
             "pbu": 0.0,
             "int": 0.0
           },
-          "score": 129.0,
+          "score": 184.0,
           "hudlLink": "https://www.hudl.com/v/2G4MYE",
           "pffLink": ""
         },
@@ -1153,13 +1153,13 @@
           "season": 2025,
           "totals": {
             "games": 12.0,
-            "total": 0.0,
+            "total": 51,
             "tfl": 17.0,
             "sacks": 12.0,
             "pbu": 0.0,
             "int": 0.0
           },
-          "score": 106.0,
+          "score": 157.0,
           "hudlLink": "https://www.hudl.com/profile/11220839/Nathan-Voorhis",
           "pffLink": ""
         },
@@ -1170,14 +1170,31 @@
           "season": 2025,
           "totals": {
             "games": 13.0,
-            "total": 0.0,
+            "total": 48,
             "tfl": 16.5,
             "sacks": 10.5,
             "pbu": 0.0,
             "int": 0.0
           },
-          "score": 96.0,
+          "score": 144.0,
           "hudlLink": "https://www.hudl.com/profile/9702111",
+          "pffLink": ""
+        },
+        {
+          "player": "Rodney McGraw",
+          "team": "Western Mich.",
+          "position": "DL",
+          "season": 2025,
+          "totals": {
+            "games": 14.0,
+            "total": 42,
+            "tfl": 0.0,
+            "sacks": 7.0,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 84.0,
+          "hudlLink": "",
           "pffLink": ""
         },
         {
@@ -1195,23 +1212,6 @@
           },
           "score": 55.0,
           "hudlLink": "https://www.hudl.com/profile/15240510/donovan-green",
-          "pffLink": ""
-        },
-        {
-          "player": "Rodney McGraw",
-          "team": "Western Mich.",
-          "position": "DL",
-          "season": 2025,
-          "totals": {
-            "games": 14.0,
-            "total": 0.0,
-            "tfl": 0.0,
-            "sacks": 7.0,
-            "pbu": 0.0,
-            "int": 0.0
-          },
-          "score": 42.0,
-          "hudlLink": "",
           "pffLink": ""
         }
       ]
@@ -1488,27 +1488,12 @@
           "season": 2023,
           "totals": {
             "games": 13.0,
-            "total": 0.0,
+            "total": 41,
             "pbu": 18.0,
-            "int": 0.0
+            "int": 1
           },
-          "score": 72.0,
+          "score": 121.0,
           "hudlLink": "https://www.hudl.com/video/3/7624493/5c40ce3c4797ed1060561168",
-          "pffLink": ""
-        },
-        {
-          "player": "Jordan Oladokun",
-          "team": "Bowling Green",
-          "position": "CB",
-          "season": 2023,
-          "totals": {
-            "games": 11.0,
-            "total": 0.0,
-            "pbu": 0.0,
-            "int": 4.0
-          },
-          "score": 32.0,
-          "hudlLink": "https://www.hudl.com/profile/11269460",
           "pffLink": ""
         },
         {
@@ -1518,12 +1503,27 @@
           "season": 2023,
           "totals": {
             "games": 12.0,
-            "total": 0.0,
-            "pbu": 0.0,
+            "total": 52,
+            "pbu": 6,
             "int": 4.0
           },
-          "score": 32.0,
+          "score": 108.0,
           "hudlLink": "https://www.hudl.com/profile/11389555",
+          "pffLink": ""
+        },
+        {
+          "player": "Jordan Oladokun",
+          "team": "Bowling Green",
+          "position": "CB",
+          "season": 2023,
+          "totals": {
+            "games": 11.0,
+            "total": 30,
+            "pbu": 5,
+            "int": 4.0
+          },
+          "score": 82.0,
+          "hudlLink": "https://www.hudl.com/profile/11269460",
           "pffLink": ""
         },
         {
@@ -1533,11 +1533,11 @@
           "season": 2023,
           "totals": {
             "games": 12.0,
-            "total": 0.0,
-            "pbu": 0.0,
+            "total": 34,
+            "pbu": 3,
             "int": 3.0
           },
-          "score": 24.0,
+          "score": 70.0,
           "hudlLink": "https://www.hudl.com/profile/12953144",
           "pffLink": ""
         }
@@ -1556,6 +1556,36 @@
           },
           "score": 114.0,
           "hudlLink": "https://www.hudl.com/profile/13236427",
+          "pffLink": ""
+        },
+        {
+          "player": "Tank Pearson",
+          "team": "Ohio",
+          "position": "CB",
+          "season": 2024,
+          "totals": {
+            "games": 13.0,
+            "total": 51,
+            "pbu": 6,
+            "int": 4.0
+          },
+          "score": 107.0,
+          "hudlLink": "",
+          "pffLink": ""
+        },
+        {
+          "player": "Jordan Oladokun",
+          "team": "Bowling Green",
+          "position": "CB",
+          "season": 2024,
+          "totals": {
+            "games": 13.0,
+            "total": 27,
+            "pbu": 8,
+            "int": 5.0
+          },
+          "score": 99.0,
+          "hudlLink": "https://www.hudl.com/profile/11269460",
           "pffLink": ""
         },
         {
@@ -1587,39 +1617,39 @@
           "score": 70.0,
           "hudlLink": "https://www.hudl.com/profile/8203660",
           "pffLink": ""
-        },
-        {
-          "player": "Jordan Oladokun",
-          "team": "Bowling Green",
-          "position": "CB",
-          "season": 2024,
-          "totals": {
-            "games": 13.0,
-            "total": 0.0,
-            "pbu": 0.0,
-            "int": 5.0
-          },
-          "score": 40.0,
-          "hudlLink": "https://www.hudl.com/profile/11269460",
-          "pffLink": ""
-        },
+        }
+      ],
+      "2025": [
         {
           "player": "Tank Pearson",
           "team": "Ohio",
           "position": "CB",
-          "season": 2024,
+          "season": 2025,
           "totals": {
-            "games": 13.0,
-            "total": 0.0,
-            "pbu": 0.0,
-            "int": 4.0
+            "games": 12.0,
+            "total": 53,
+            "pbu": 12.0,
+            "int": 2
           },
-          "score": 32.0,
+          "score": 117.0,
           "hudlLink": "",
           "pffLink": ""
-        }
-      ],
-      "2025": [
+        },
+        {
+          "player": "JoJo Johnson",
+          "team": "Bowling Green",
+          "position": "CB",
+          "season": 2025,
+          "totals": {
+            "games": 11.0,
+            "total": 22,
+            "pbu": 13.0,
+            "int": 1
+          },
+          "score": 82.0,
+          "hudlLink": "https://www.hudl.com/profile/9454727",
+          "pffLink": ""
+        },
         {
           "player": "Jarvarius Sims",
           "team": "Western Mich.",
@@ -1663,36 +1693,6 @@
           },
           "score": 55.0,
           "hudlLink": "https://www.hudl.com/profile/10964406",
-          "pffLink": ""
-        },
-        {
-          "player": "JoJo Johnson",
-          "team": "Bowling Green",
-          "position": "CB",
-          "season": 2025,
-          "totals": {
-            "games": 11.0,
-            "total": 0.0,
-            "pbu": 13.0,
-            "int": 0.0
-          },
-          "score": 52.0,
-          "hudlLink": "https://www.hudl.com/profile/9454727",
-          "pffLink": ""
-        },
-        {
-          "player": "Tank Pearson",
-          "team": "Ohio",
-          "position": "CB",
-          "season": 2025,
-          "totals": {
-            "games": 12.0,
-            "total": 0.0,
-            "pbu": 12.0,
-            "int": 0.0
-          },
-          "score": 48.0,
-          "hudlLink": "",
           "pffLink": ""
         }
       ]
