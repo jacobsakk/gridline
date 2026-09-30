@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-30T13:38:15.607737Z",
+  "generatedAt": "2026-09-30T13:44:28.227883Z",
   "seasons": [
     2023,
     2024,
@@ -25,7 +25,7 @@
           "score": 3705.0,
           "hudlLink": "https://www.hudl.com/profile/5432884",
           "pffLink": "",
-          "state": ""
+          "state": "MI"
         },
         {
           "player": "Kurtis Rourke",
@@ -44,7 +44,7 @@
           "score": 2666.0,
           "hudlLink": "https://www.hudl.com/profile/5350951",
           "pffLink": "",
-          "state": ""
+          "state": "Ontario, Canada"
         },
         {
           "player": "Jase Bauer",
@@ -63,7 +63,7 @@
           "score": 2526.0,
           "hudlLink": "https://www.hudl.com/profile/8901906",
           "pffLink": "",
-          "state": ""
+          "state": "IA"
         },
         {
           "player": "Cole Snyder",
@@ -82,7 +82,7 @@
           "score": 2396.0,
           "hudlLink": "https://www.hudl.com/profile/9846654/Cole-Snyder",
           "pffLink": "",
-          "state": ""
+          "state": "NY"
         },
         {
           "player": "Connor Bazelak",
@@ -122,7 +122,7 @@
           "score": 3809.0,
           "hudlLink": "https://www.hudl.com/profile/7815205/Parker-Navarros/about",
           "pffLink": "",
-          "state": ""
+          "state": "AZ"
         },
         {
           "player": "Tucker Gleason",
@@ -141,7 +141,7 @@
           "score": 3722.0,
           "hudlLink": "https://m.hudl.com/profile/7196933/Tucker-Gleason",
           "pffLink": "",
-          "state": ""
+          "state": "FL"
         },
         {
           "player": "Connor Bazelak",
@@ -179,7 +179,7 @@
           "score": 3304.0,
           "hudlLink": "https://www.hudl.com/profile/11412934",
           "pffLink": "",
-          "state": ""
+          "state": "CA"
         },
         {
           "player": "Brett Gabbert",
@@ -198,7 +198,7 @@
           "score": 3297.0,
           "hudlLink": "https://www.hudl.com/profile/5629221",
           "pffLink": "",
-          "state": ""
+          "state": "MO"
         }
       ],
       "2025": [
@@ -219,7 +219,7 @@
           "score": 3536.0,
           "hudlLink": "https://www.hudl.com/profile/7815205/Parker-Navarros/about",
           "pffLink": "",
-          "state": ""
+          "state": "AZ"
         },
         {
           "player": "Noah Kim",
@@ -257,7 +257,7 @@
           "score": 3089.0,
           "hudlLink": "https://m.hudl.com/profile/7196933/Tucker-Gleason",
           "pffLink": "",
-          "state": ""
+          "state": "FL"
         },
         {
           "player": "Broc Lowry",
@@ -276,7 +276,7 @@
           "score": 3086.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": ""
+          "state": "OH"
         },
         {
           "player": "Ben Finley",
@@ -315,7 +315,7 @@
           "score": 1550.0,
           "hudlLink": "https://www.hudl.com/profile/8007756/Peny-Boone",
           "pffLink": "",
-          "state": ""
+          "state": "MI"
         },
         {
           "player": "Kay'Ron Lynch-Adams",
@@ -347,7 +347,7 @@
           "score": 1205.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": ""
+          "state": "GA"
         },
         {
           "player": "Jalen Buckley",
@@ -363,7 +363,7 @@
           "score": 1103.0,
           "hudlLink": "https://www.hudl.com/profile/11214131/Jalen-Buckley",
           "pffLink": "",
-          "state": ""
+          "state": "IL"
         },
         {
           "player": "Marquez Cooper",
@@ -379,7 +379,7 @@
           "score": 1083.0,
           "hudlLink": "https://www.hudl.com/profile/8152806",
           "pffLink": "",
-          "state": ""
+          "state": "MD"
         }
       ],
       "2024": [
@@ -397,7 +397,7 @@
           "score": 1305.0,
           "hudlLink": "https://www.hudl.com/profile/9706872/Anthony-Tyus-III",
           "pffLink": "",
-          "state": ""
+          "state": "MI"
         },
         {
           "player": "Al-Jay Henderson",
@@ -413,7 +413,7 @@
           "score": 1168.0,
           "hudlLink": "https://www.hudl.com/profile/9822949",
           "pffLink": "",
-          "state": ""
+          "state": "NJ"
         },
         {
           "player": "Keyon Mozee",
@@ -429,7 +429,7 @@
           "score": 1138.0,
           "hudlLink": "https://www.hudl.com/profile/7893734/Keyon-Mozee",
           "pffLink": "",
-          "state": ""
+          "state": "MO"
         },
         {
           "player": "Jaden Nixon",
@@ -445,7 +445,7 @@
           "score": 1039.0,
           "hudlLink": "https://www.hudl.com/profile/10011114",
           "pffLink": "",
-          "state": ""
+          "state": "TX"
         },
         {
           "player": "Terion Stewart",
@@ -461,7 +461,7 @@
           "score": 958.0,
           "hudlLink": "https://www.hudl.com/profile/8033536",
           "pffLink": "",
-          "state": ""
+          "state": "OH"
         }
       ],
       "2025": [
@@ -479,7 +479,7 @@
           "score": 1542.0,
           "hudlLink": "https://www.hudl.com/profile/6174794/Sieh-Bangura",
           "pffLink": "",
-          "state": ""
+          "state": "MD"
         },
         {
           "player": "Chip Trayanum",
@@ -511,7 +511,7 @@
           "score": 1093.0,
           "hudlLink": "https://www.hudl.com/profile/11214131/Jalen-Buckley",
           "pffLink": "",
-          "state": ""
+          "state": "IL"
         },
         {
           "player": "Jordan Gant",
@@ -527,7 +527,7 @@
           "score": 1092.0,
           "hudlLink": "https://www.hudl.com/profile/11416944",
           "pffLink": "",
-          "state": ""
+          "state": "FL"
         },
         {
           "player": "Dontae McMillan",
@@ -563,7 +563,7 @@
           "score": 822.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": ""
+          "state": "CT"
         },
         {
           "player": "Jerjuan Newton",
@@ -579,7 +579,7 @@
           "score": 786.0,
           "hudlLink": "https://www.hudl.com/profile/7594187",
           "pffLink": "",
-          "state": ""
+          "state": "FL"
         },
         {
           "player": "Gage Larvadain",
@@ -595,7 +595,7 @@
           "score": 739.0,
           "hudlLink": "https://www.hudl.com/profile/9382708/Gage-Larvadain/about",
           "pffLink": "",
-          "state": ""
+          "state": "LA"
         },
         {
           "player": "Junior Vandeross III",
@@ -611,7 +611,7 @@
           "score": 704.0,
           "hudlLink": "https://www.hudl.com/profile/11292601",
           "pffLink": "",
-          "state": ""
+          "state": "FL"
         },
         {
           "player": "Kenneth Womack",
@@ -627,7 +627,7 @@
           "score": 701.0,
           "hudlLink": "https://www.hudl.com/profile/8356629",
           "pffLink": "",
-          "state": ""
+          "state": "MD"
         }
       ],
       "2024": [
@@ -645,7 +645,7 @@
           "score": 1325.0,
           "hudlLink": "https://www.hudl.com/profile/5390873",
           "pffLink": "",
-          "state": ""
+          "state": "AZ"
         },
         {
           "player": "Jerjuan Newton",
@@ -661,7 +661,7 @@
           "score": 1158.0,
           "hudlLink": "https://www.hudl.com/profile/7594187",
           "pffLink": "",
-          "state": ""
+          "state": "FL"
         },
         {
           "player": "Junior Vandeross III",
@@ -677,7 +677,7 @@
           "score": 1007.0,
           "hudlLink": "https://www.hudl.com/profile/11292601",
           "pffLink": "",
-          "state": ""
+          "state": "FL"
         },
         {
           "player": "Reggie Virgil",
@@ -693,7 +693,7 @@
           "score": 906.0,
           "hudlLink": "https://www.hudl.com/profile/10206377/Reginald-Virgil/highlights",
           "pffLink": "",
-          "state": ""
+          "state": "FL"
         },
         {
           "player": "Adrian Norton",
@@ -709,7 +709,7 @@
           "score": 901.0,
           "hudlLink": "https://www.hudl.com/profile/15134018",
           "pffLink": "",
-          "state": ""
+          "state": "OH"
         }
       ],
       "2025": [
@@ -727,7 +727,7 @@
           "score": 1118.0,
           "hudlLink": "https://www.hudl.com/profile/11292601",
           "pffLink": "",
-          "state": ""
+          "state": "FL"
         },
         {
           "player": "Chase Hendricks",
@@ -743,7 +743,7 @@
           "score": 1107.0,
           "hudlLink": "https://www.hudl.com/profile/13059623",
           "pffLink": "",
-          "state": ""
+          "state": "MO"
         },
         {
           "player": "Kam Perry",
@@ -759,7 +759,7 @@
           "score": 1036.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": ""
+          "state": "GA"
         },
         {
           "player": "Nik McMillan",
@@ -1061,7 +1061,7 @@
           "score": 141.0,
           "hudlLink": "https://www.hudl.com/profile/8281342",
           "pffLink": "",
-          "state": ""
+          "state": "IL"
         },
         {
           "player": "CJ Nunnally",
@@ -1079,7 +1079,7 @@
           "score": 138.0,
           "hudlLink": "https://www.hudl.com/profile/10872962",
           "pffLink": "",
-          "state": ""
+          "state": "GA"
         },
         {
           "player": "Caiden Woullard",
@@ -1133,7 +1133,7 @@
           "score": 99.0,
           "hudlLink": "https://www.hudl.com/profile/5587621",
           "pffLink": "",
-          "state": ""
+          "state": "MI"
         }
       ],
       "2024": [
@@ -1189,7 +1189,7 @@
           "score": 114.0,
           "hudlLink": "https://www.hudl.com/profile/10872962",
           "pffLink": "",
-          "state": ""
+          "state": "GA"
         },
         {
           "player": "Peyton Price",
@@ -1245,7 +1245,7 @@
           "score": 184.0,
           "hudlLink": "https://www.hudl.com/v/2G4MYE",
           "pffLink": "",
-          "state": ""
+          "state": "NY"
         },
         {
           "player": "Nathan Voorhis",
@@ -1281,7 +1281,7 @@
           "score": 144.0,
           "hudlLink": "https://www.hudl.com/profile/9702111",
           "pffLink": "",
-          "state": ""
+          "state": "MI"
         },
         {
           "player": "Rodney McGraw",
@@ -1317,7 +1317,7 @@
           "score": 55.0,
           "hudlLink": "https://www.hudl.com/profile/15240510/donovan-green",
           "pffLink": "",
-          "state": ""
+          "state": "LA"
         }
       ]
     },
@@ -1393,7 +1393,7 @@
           "score": 143.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": ""
+          "state": "OH"
         },
         {
           "player": "Joe Sparacio",
@@ -1431,7 +1431,7 @@
           "score": 284.0,
           "hudlLink": "https://www.hudl.com/profile/6316923/Shaun-Dolac/about",
           "pffLink": "",
-          "state": ""
+          "state": "NY"
         },
         {
           "player": "Red Murdock",
@@ -1449,7 +1449,7 @@
           "score": 189.0,
           "hudlLink": "https://www.hudl.com/video/3/9349397/606b230f420771195cea645e",
           "pffLink": "",
-          "state": ""
+          "state": "VA"
         },
         {
           "player": "Matt Salopek",
@@ -1467,7 +1467,7 @@
           "score": 146.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": ""
+          "state": "OH"
         },
         {
           "player": "Joseph Sipp Jr.",
@@ -1485,7 +1485,7 @@
           "score": 142.0,
           "hudlLink": "https://hudl.com/v/2FsWDU",
           "pffLink": "",
-          "state": ""
+          "state": "FL"
         },
         {
           "player": "Bryan McCoy",
@@ -1523,7 +1523,7 @@
           "score": 199.0,
           "hudlLink": "https://www.hudl.com/video/3/9349397/606b230f420771195cea645e",
           "pffLink": "",
-          "state": ""
+          "state": "VA"
         },
         {
           "player": "Adam Trick",
@@ -1559,7 +1559,7 @@
           "score": 154.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": ""
+          "state": "OH"
         },
         {
           "player": "Jordan Kwiatkowski",
@@ -1595,7 +1595,7 @@
           "score": 109.0,
           "hudlLink": "https://www.hudl.com/profile/13109292/Jackson-Kuwatch",
           "pffLink": "",
-          "state": ""
+          "state": "OH"
         }
       ]
     },
@@ -1615,7 +1615,7 @@
           "score": 121.0,
           "hudlLink": "https://www.hudl.com/video/3/7624493/5c40ce3c4797ed1060561168",
           "pffLink": "",
-          "state": ""
+          "state": "FL"
         },
         {
           "player": "Jalen Huskey",
@@ -1663,7 +1663,7 @@
           "score": 70.0,
           "hudlLink": "https://www.hudl.com/profile/12953144",
           "pffLink": "",
-          "state": ""
+          "state": "GA"
         }
       ],
       "2024": [
@@ -1697,7 +1697,7 @@
           "score": 107.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": ""
+          "state": "MS"
         },
         {
           "player": "Jordan Oladokun",
@@ -1729,7 +1729,7 @@
           "score": 77.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": ""
+          "state": "MD"
         },
         {
           "player": "Bilhal Kone",
@@ -1763,7 +1763,7 @@
           "score": 117.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": ""
+          "state": "MS"
         },
         {
           "player": "JoJo Johnson",
@@ -1779,7 +1779,7 @@
           "score": 82.0,
           "hudlLink": "https://www.hudl.com/profile/9454727",
           "pffLink": "",
-          "state": ""
+          "state": "IN"
         },
         {
           "player": "Jarvarius Sims",
@@ -1795,7 +1795,7 @@
           "score": 64.0,
           "hudlLink": "https://www.hudl.com/profile/11281944",
           "pffLink": "",
-          "state": ""
+          "state": "GA"
         },
         {
           "player": "MJ Cannon",
@@ -1811,7 +1811,7 @@
           "score": 57.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": ""
+          "state": "IL"
         },
         {
           "player": "Jalen McClendon",
@@ -1848,7 +1848,7 @@
           "score": 109.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": ""
+          "state": "NY"
         },
         {
           "player": "Bryce Sheppert",
@@ -1899,7 +1899,7 @@
           "score": 101.2,
           "hudlLink": "https://www.hudl.com/profile/5409851",
           "pffLink": "",
-          "state": ""
+          "state": "MI"
         },
         {
           "player": "Aaron Wofford",
@@ -1952,7 +1952,7 @@
           "score": 131.0,
           "hudlLink": "https://www.hudl.com/profile/8856518",
           "pffLink": "",
-          "state": ""
+          "state": "OH"
         },
         {
           "player": "Raion Strader",
@@ -1986,7 +1986,7 @@
           "score": 108.0,
           "hudlLink": "https://www.hudl.com/profile/5409851",
           "pffLink": "",
-          "state": ""
+          "state": "MI"
         },
         {
           "player": "Braden Awls",
@@ -2022,7 +2022,7 @@
           "score": 160.8,
           "hudlLink": "https://www.hudl.com/profile/9739430/eli-blakey",
           "pffLink": "",
-          "state": ""
+          "state": "KY"
         },
         {
           "player": "Bryce Llewellyn",
@@ -2039,7 +2039,7 @@
           "score": 121.5,
           "hudlLink": "https://www.hudl.com/profile/17498941/bryce-llewellyn",
           "pffLink": "",
-          "state": ""
+          "state": "IN"
         },
         {
           "player": "Kal-El Pascal",
@@ -2056,7 +2056,7 @@
           "score": 107.0,
           "hudlLink": "https://www.hudl.com/profile/15335920/KalEl-Pascal",
           "pffLink": "",
-          "state": ""
+          "state": "FL"
         },
         {
           "player": "Jalen Thomeson",
@@ -2073,7 +2073,7 @@
           "score": 102.5,
           "hudlLink": "",
           "pffLink": "",
-          "state": ""
+          "state": "IN"
         },
         {
           "player": "Silas Walters",
@@ -2090,7 +2090,7 @@
           "score": 89.0,
           "hudlLink": "https://www.hudl.com/profile/8856518",
           "pffLink": "",
-          "state": ""
+          "state": "OH"
         }
       ]
     }
