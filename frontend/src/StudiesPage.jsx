@@ -124,6 +124,56 @@ function ScoreExplainer({ row, group, onClose }) {
   );
 }
 
+// Home state (high school, not college) -- plain text, not a link, so simpler than LinkCell: click to
+// edit, blank shows a faint dash for a non-admin or an "Add" prompt for an admin.
+function StateCell({ row, admin, onSave }) {
+  const [editing, setEditing] = useState(false);
+  const [value, setValue] = useState(row.state || "");
+  if (editing) {
+    return (
+      <input
+        autoFocus
+        value={value}
+        onChange={(e) => setValue(e.target.value.toUpperCase().slice(0, 20))}
+        placeholder="e.g. OH"
+        style={{ ...control, padding: "4px 7px", fontSize: 12.5, width: 60 }}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            onSave(value.trim());
+            setEditing(false);
+          }
+          if (e.key === "Escape") {
+            setValue(row.state || "");
+            setEditing(false);
+          }
+        }}
+        onBlur={() => {
+          if (value.trim() !== (row.state || "")) onSave(value.trim());
+          setEditing(false);
+        }}
+      />
+    );
+  }
+  if (row.state) {
+    return (
+      <span
+        onClick={() => admin && setEditing(true)}
+        title={admin ? "Click to change" : undefined}
+        style={{ cursor: admin ? "pointer" : "default" }}
+      >
+        {row.state}
+      </span>
+    );
+  }
+  return admin ? (
+    <button onClick={() => setEditing(true)} style={{ background: "none", border: "none", color: "var(--text-faint)", cursor: "pointer", fontSize: 12.5, textDecoration: "underline", padding: 0 }}>
+      Add
+    </button>
+  ) : (
+    <span style={{ color: "var(--text-faint)" }}>—</span>
+  );
+}
+
 function StudyDetail({ studyId, admin, onBack }) {
   const study = useStudy(studyId);
   const [initial] = useState(initialSubRoute);
@@ -140,7 +190,7 @@ function StudyDetail({ studyId, admin, onBack }) {
     if (activeSeason != null) setSubRoute("studies", [studyId, group, activeSeason]);
   }, [studyId, group, activeSeason]);
   const sorted = useMemo(() => {
-    const get = (r) => (sort.key === "player" || sort.key === "team" ? String(r[sort.key]) : sort.key === "score" ? r.score : r.totals[sort.key] ?? 0);
+    const get = (r) => (sort.key === "player" || sort.key === "team" || sort.key === "state" ? String(r[sort.key] ?? "") : sort.key === "score" ? r.score : r.totals[sort.key] ?? 0);
     return [...rows].sort((a, b) => {
       const av = get(a);
       const bv = get(b);
@@ -153,6 +203,7 @@ function StudyDetail({ studyId, admin, onBack }) {
     () => [
       { key: "player", label: "Player", get: (r) => r.player },
       { key: "team", label: "Team", get: (r) => r.team },
+      { key: "state", label: "State", get: (r) => r.state || "" },
       ...activeGroup.stats.map((s) => ({ key: s.key, label: s.label, get: (r) => r.totals[s.key] ?? 0 })),
       { key: "score", label: "Score", get: (r) => r.score },
       { key: "hudlLink", label: "Hudl", get: (r) => r.hudlLink || "" },
@@ -244,6 +295,7 @@ function StudyDetail({ studyId, admin, onBack }) {
                 <tr key={r.player} style={{ background: i % 2 === 0 ? "var(--bg-panel)" : "var(--bg-page)" }}>
                   <td style={{ ...td, fontWeight: 700, color: "var(--text-primary)" }}>{r.player}</td>
                   <td style={td}>{r.team}</td>
+                  <td style={td}><StateCell row={r} admin={admin} onSave={(state) => study.saveField(group, r.player, { state })} /></td>
                   {activeGroup.stats.map((s) => (
                     <td key={s.key} style={td} className="tabular">{r.totals[s.key] ?? 0}</td>
                   ))}

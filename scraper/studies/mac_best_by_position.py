@@ -23,6 +23,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from ncaa_api import build_division_rows
 from studies._hudl_links import HUDL_LINKS, PFF_LINKS, TE_SUPPLEMENT
 from studies._stat_overrides import STAT_OVERRIDES
+from studies._home_states import HOME_STATES
 
 OUT_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "frontend", "src", "data", "studies", "mac-best-by-position.json")
 
@@ -114,6 +115,9 @@ def build():
                     # yet; an admin can paste one in directly from the Studies page.
                     "hudlLink": HUDL_LINKS.get(r["player"].upper(), ""),
                     "pffLink": PFF_LINKS.get(r["player"].upper(), ""),
+                    # Home state (high school, not college) -- see _home_states.py. Best-effort, same as
+                    # the Hudl links; blank means not found yet.
+                    "state": HOME_STATES.get(r["player"].upper(), ""),
                 })
             if group_key == "TE":
                 # The leaderboard pull above still runs (kept, in case a future season has more nationally-
@@ -121,7 +125,7 @@ def build():
                 ranked = [
                     {"player": e["player"], "team": e["team"], "position": "TE", "season": int(season), "totals": e["totals"],
                      "score": round(cfg["score"](e["totals"]), 1), "hudlLink": HUDL_LINKS.get(e["player"].upper(), ""),
-                     "pffLink": PFF_LINKS.get(e["player"].upper(), "")}
+                     "pffLink": PFF_LINKS.get(e["player"].upper(), ""), "state": HOME_STATES.get(e["player"].upper(), "")}
                     for e in TE_SUPPLEMENT.get(season, [])
                 ]
             ranked.sort(key=lambda x: -x["score"])
