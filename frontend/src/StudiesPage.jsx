@@ -22,34 +22,55 @@ function downloadCsv(rows, columns, filename) {
 }
 
 // Shared editable-link cell -- used for both the Hudl column (film) and the PFF column (grades/reports).
-// `field` is which key on the row this cell reads/writes ("hudlLink" or "pffLink").
+// `field` is which key on the row this cell reads/writes ("hudlLink" or "pffLink"). `onSave` returns the
+// Firestore write's promise -- awaited here so a rejected write (wrong permissions, offline, etc.) shows
+// up as a visible error instead of silently reverting to "Add link" with nothing saved.
 function LinkCell({ row, field, label, placeholder, admin, onSave }) {
   const [editing, setEditing] = useState(false);
   const [value, setValue] = useState(row[field] || "");
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+
+  async function commit(next) {
+    if (next === (row[field] || "")) {
+      setEditing(false);
+      return;
+    }
+    setSaving(true);
+    setError("");
+    try {
+      await onSave(next);
+      setEditing(false);
+    } catch (err) {
+      setError(err?.code === "permission-denied" ? "No permission to save -- admins only." : "Couldn't save -- try again.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
   if (editing) {
     return (
-      <div style={{ display: "flex", gap: 5 }}>
-        <input
-          autoFocus
-          value={value}
-          onChange={(e) => setValue(e.target.value)}
-          placeholder={placeholder}
-          style={{ ...control, padding: "4px 7px", fontSize: 12.5, width: 190 }}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              onSave(value.trim());
-              setEditing(false);
-            }
-            if (e.key === "Escape") {
-              setValue(row[field] || "");
-              setEditing(false);
-            }
-          }}
-          onBlur={() => {
-            if (value.trim() !== (row[field] || "")) onSave(value.trim());
-            setEditing(false);
-          }}
-        />
+      <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+        <div style={{ display: "flex", gap: 5 }}>
+          <input
+            autoFocus
+            value={value}
+            disabled={saving}
+            onChange={(e) => setValue(e.target.value)}
+            placeholder={placeholder}
+            style={{ ...control, padding: "4px 7px", fontSize: 12.5, width: 190, opacity: saving ? 0.6 : 1 }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") commit(value.trim());
+              if (e.key === "Escape") {
+                setValue(row[field] || "");
+                setError("");
+                setEditing(false);
+              }
+            }}
+            onBlur={() => commit(value.trim())}
+          />
+        </div>
+        {error && <span style={{ fontSize: 11, color: "var(--danger, #c0392b)" }}>{error}</span>}
       </div>
     );
   }
@@ -129,29 +150,48 @@ function ScoreExplainer({ row, group, onClose }) {
 function StateCell({ row, admin, onSave }) {
   const [editing, setEditing] = useState(false);
   const [value, setValue] = useState(row.state || "");
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+
+  async function commit(next) {
+    if (next === (row.state || "")) {
+      setEditing(false);
+      return;
+    }
+    setSaving(true);
+    setError("");
+    try {
+      await onSave(next);
+      setEditing(false);
+    } catch (err) {
+      setError(err?.code === "permission-denied" ? "Admins only" : "Failed");
+    } finally {
+      setSaving(false);
+    }
+  }
+
   if (editing) {
     return (
-      <input
-        autoFocus
-        value={value}
-        onChange={(e) => setValue(e.target.value.toUpperCase().slice(0, 20))}
-        placeholder="e.g. OH"
-        style={{ ...control, padding: "4px 7px", fontSize: 12.5, width: 60 }}
-        onKeyDown={(e) => {
-          if (e.key === "Enter") {
-            onSave(value.trim());
-            setEditing(false);
-          }
-          if (e.key === "Escape") {
-            setValue(row.state || "");
-            setEditing(false);
-          }
-        }}
-        onBlur={() => {
-          if (value.trim() !== (row.state || "")) onSave(value.trim());
-          setEditing(false);
-        }}
-      />
+      <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+        <input
+          autoFocus
+          value={value}
+          disabled={saving}
+          onChange={(e) => setValue(e.target.value.toUpperCase().slice(0, 20))}
+          placeholder="e.g. OH"
+          style={{ ...control, padding: "4px 7px", fontSize: 12.5, width: 60, opacity: saving ? 0.6 : 1 }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") commit(value.trim());
+            if (e.key === "Escape") {
+              setValue(row.state || "");
+              setError("");
+              setEditing(false);
+            }
+          }}
+          onBlur={() => commit(value.trim())}
+        />
+        {error && <span style={{ fontSize: 11, color: "var(--danger, #c0392b)", whiteSpace: "nowrap" }}>{error}</span>}
+      </div>
     );
   }
   if (row.state) {
