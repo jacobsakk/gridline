@@ -167,3 +167,6 @@ HUDL_LINKS.update({
     "MATT SALOPEK": "https://www.hudl.com/profile/6036828/Matt-Salopek",
     "PAUL LEWIS III": "https://www.hudl.com/video/3/6079625/5721d65764e96b63802202c3",
 })
+HUDL_LINKS.update({
+    "RODNEY MCGRAW": "https://www.hudl.com/profile/11173598/Rodney-McGraw/videos",
+})

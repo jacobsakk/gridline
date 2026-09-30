@@ -47,7 +47,7 @@ HOME_STATES = {
     "JOE SPARACIO": "FL",
     "KOBE STEWART": "AL",
     "BRADLEY WEAVER": "OH",
-    "RODNEY MCGRAW": "IL",
+    "RODNEY MCGRAW": "IN",  # born in Chicago, IL but high school was Elkhart Central, Elkhart, IN
     "CONNOR BAZELAK": "OH",
     "BEN FINLEY": "AZ",
     "HAROLD FANNIN JR.": "OH",
