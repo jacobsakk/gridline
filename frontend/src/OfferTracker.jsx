@@ -857,17 +857,20 @@ function BreakdownTables({ classYear, conference, tracker }) {
 
 // "2026-09-14T18:03:11.000Z" -> "2 days ago" / "3 weeks ago" / "4/11/26" once it's old enough that a
 // relative count stops being useful at a glance.
-function timeAgo(iso) {
+// Always the actual calendar date, never "today" or "2 weeks ago" -- a relative phrase reads as if
+// everything happened right around now, which isn't true for a sheet whose real last-update date is
+// months old. A bare "2026-04-11" (no time component -- the assignment sheet's hand-noted dates, not a
+// real upload's timestamp) is parsed directly rather than through Date(), which would apply the
+// browser's local timezone to a UTC-midnight value and could shift the date back a day.
+function formatUploadDate(iso) {
   if (!iso) return "";
-  const then = new Date(iso).getTime();
-  if (Number.isNaN(then)) return "";
-  const days = Math.floor((Date.now() - then) / 86400000);
-  if (days < 0) return "just now";
-  if (days === 0) return "today";
-  if (days === 1) return "yesterday";
-  if (days < 7) return `${days} days ago`;
-  if (days < 60) return `${Math.floor(days / 7)} week${Math.floor(days / 7) === 1 ? "" : "s"} ago`;
-  const d = new Date(then);
+  const dateOnly = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso);
+  if (dateOnly) {
+    const [, y, m, d] = dateOnly;
+    return `${Number(m)}/${Number(d)}/${y.slice(-2)}`;
+  }
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
   return `${d.getMonth() + 1}/${d.getDate()}/${String(d.getFullYear()).slice(-2)}`;
 }
 
@@ -875,13 +878,36 @@ function timeAgo(iso) {
 // tracker (teamUploads, stamped automatically by importWorkbook -- see offerData.js). Not tied to a
 // class year: the assignment is a staff roster fact, not recruiting data, so it's the same across 2027,
 // 2028, etc.
+// Click a coach's name to reassign the team to someone else (free text, not a fixed list -- a new staff
+// member who isn't in COACH_ORDER yet can be typed in directly). Written to teamAssignments, which from
+// then on overrides TEAM_ASSIGNMENTS' hand-maintained default for that team -- see coachFor in
+// offerData.js.
+function CoachCell({ coach, onCommit }) {
+  const [editing, setEditing] = useState(false);
+  if (editing) {
+    return <EditableCell value={coach} titleCase autoFocus width={130} onCommit={onCommit} onDone={() => setEditing(false)} />;
+  }
+  return (
+    <span
+      onClick={() => setEditing(true)}
+      title="Click to reassign"
+      style={{ cursor: "pointer", fontWeight: 700, color: coach ? "var(--text-primary)" : "var(--text-faint)", textDecorationLine: "underline", textDecorationStyle: "dotted", textDecorationColor: "var(--border)", textUnderlineOffset: 3 }}
+    >
+      {coach ? toTitleCase(coach) : "Unassigned"}
+    </span>
+  );
+}
+
 function AssignmentsTable({ conference, tracker }) {
   const theme = useContext(ThemeContext);
   const rows = useMemo(
     () =>
       TEAM_ASSIGNMENTS.filter((a) => (TEAM_CONFERENCE[a.team]?.conference || "MAC") === conference)
-        .map((a) => ({ ...a, meta: TEAM_CONFERENCE[a.team], lastUploadedAt: a.retired ? "" : tracker.lastUploadedFor(a.team) }))
-        .sort((x, y) => COACH_ORDER.indexOf(x.coach) - COACH_ORDER.indexOf(y.coach) || (x.meta?.label || x.team).localeCompare(y.meta?.label || y.team)),
+        .map((a) => ({ ...a, meta: TEAM_CONFERENCE[a.team], coach: tracker.coachFor(a.team), lastUploadedAt: a.retired ? "" : tracker.lastUploadedFor(a.team) }))
+        .sort((x, y) => {
+          const cx = COACH_ORDER.indexOf(x.coach), cy = COACH_ORDER.indexOf(y.coach);
+          return (cx === -1 ? 99 : cx) - (cy === -1 ? 99 : cy) || x.coach.localeCompare(y.coach) || (x.meta?.label || x.team).localeCompare(y.meta?.label || y.team);
+        }),
     [conference, tracker]
   );
 
@@ -891,7 +917,7 @@ function AssignmentsTable({ conference, tracker }) {
   return (
     <div>
       <p style={{ margin: "0 0 14px", fontSize: 12.5, color: "var(--text-faint)", maxWidth: 640, lineHeight: 1.5 }}>
-        Who's assigned to each {CONFERENCE_LABEL[conference]} board, and when their sheet was last uploaded here. Updates on its own the next time that team's sheet comes in through Upload.
+        Who's assigned to each {CONFERENCE_LABEL[conference]} board, and when their sheet was last uploaded here. Click a name to reassign. The date updates on its own the next time that team's sheet comes in through Upload.
       </p>
       <div style={{ border: "1px solid var(--border)", borderRadius: 6, overflow: "hidden" }}>
         <table style={{ width: "100%", borderCollapse: "collapse" }}>
@@ -911,14 +937,16 @@ function AssignmentsTable({ conference, tracker }) {
               </tr>
             )}
             {rows.map((r, i) => (
-              <tr key={`${r.coach}-${r.team}`} style={{ background: i % 2 === 0 ? "var(--bg-panel)" : "var(--bg-page)" }}>
-                <td style={{ ...td, fontWeight: 700, color: "var(--text-primary)" }}>{toTitleCase(r.coach)}</td>
+              <tr key={r.team} style={{ background: i % 2 === 0 ? "var(--bg-panel)" : "var(--bg-page)" }}>
+                <td style={td}>
+                  <CoachCell coach={r.coach} onCommit={(next) => tracker.setTeamCoach(r.team, next)} />
+                </td>
                 <td style={{ ...td, color: textAccentFor(r.meta, theme) || "var(--text-secondary)", fontWeight: 600 }}>{r.meta?.label || toTitleCase(r.team)}</td>
                 <td style={td} className="tabular">
                   {r.retired ? (
                     <span style={{ color: "var(--text-faint)", fontStyle: "italic" }}>No longer tracked — left the MAC</span>
                   ) : r.lastUploadedAt ? (
-                    <span title={new Date(r.lastUploadedAt).toLocaleString()}>{timeAgo(r.lastUploadedAt)}</span>
+                    <span title={new Date(r.lastUploadedAt).toLocaleString()}>{formatUploadDate(r.lastUploadedAt)}</span>
                   ) : (
                     <span style={{ color: "var(--text-faint)" }}>Never uploaded</span>
                   )}

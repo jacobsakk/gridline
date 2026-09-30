@@ -55,6 +55,11 @@ service cloud.firestore {
     match /teamUploads/{docId} {
       allow read, write: if invited();
     }
+    // Who's assigned to each team's board, overriding TEAM_ASSIGNMENTS' hand-maintained default when
+    // someone edits it from the Assignments tab. Same access as offers/teamUploads.
+    match /teamAssignments/{docId} {
+      allow read, write: if invited();
+    }
     // Stats loaded by hand for divisions the scrapers can't reach (NAIA, California JUCO).
     match /statsUploads/{docId} {
       allow read, write: if invited();

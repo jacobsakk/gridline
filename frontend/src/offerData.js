@@ -59,29 +59,64 @@ export const TEAM_CONFERENCE = {
 export const CONFERENCE_ORDER = ["MAC", "MVC", "IVY"];
 
 // Which staff member is responsible for which team's board -- from the coaching staff's own assignment
-// sheet (design-refs/2027 MAC_MVC_BSC OFFERS - ASSIGNMENTS.csv). This is a fixed roster assignment, not
-// data that comes from an upload, so it's hand-maintained here the same way TEAM_CONFERENCE is: update
-// this list when an assignment changes. "NIU" is kept even though the team itself is retired (see
-// RETIRED_SHEETS below) -- the assignment sheet still lists it, and the Assignments tab shows it as no
-// longer tracked rather than silently dropping it.
-export const COACH_ORDER = ["SAKK", "KYLE", "GRANGER", "JESSE", "LEYTON", "ASHTON", "CARTER", "IAN"];
+// sheet (design-refs/2027 MAC_MVC_BSC OFFERS - ASSIGNMENTS.pdf -- the .csv of the same name in that
+// folder is a stale export with an outdated staff roster; the PDF is the real one). This is a fixed
+// roster assignment, not data that comes from an upload, so it's hand-maintained here the same way
+// TEAM_CONFERENCE is: update this list when an assignment changes.
+export const COACH_ORDER = ["SAKK", "KYLE", "SHANE", "IAN", "LEYTON", "ASHTON", "CARTER"];
+// Each team's own "LAST UPDATE" note from that same PDF -- real historical dates (all a few months
+// before this was built), not "today". Used as the Assignments tab's starting point for a team that
+// hasn't gone through a tracked Upload yet; a real upload's teamUploads timestamp always wins once one
+// exists (see lastUploadedFor below). Assumed year 2026 for the dates the sheet gave without one (4/11,
+// 5/4) -- consistent with every other date on the same sheet.
+const KNOWN_LAST_UPLOAD = {
+  BGSU: "2026-04-11",
+  AKRON: "2026-05-25",
+  EMU: "2026-04-08",
+  "BALL STATE": "2026-09-14",
+  OHIO: "2026-05-04",
+  BUFFALO: "2026-05-25",
+  "MIAMI (OH)": "2026-05-01",
+  "KENT STATE": "2026-04-08",
+  UMASS: "2026-09-14",
+  WMU: "2026-04-28",
+  TOLEDO: "2026-04-28",
+  "YOUNGSTOWN STATE": "2026-06-02",
+  "SOUTH DAKOTA": "2026-06-11",
+  "NORTH DAKOTA": "2026-06-11",
+  "ILLINOIS STATE": "2026-09-15",
+  PENN: "2026-04-13",
+  HARVARD: "2026-05-01",
+  DARTMOUTH: "2026-05-24",
+  PRINCETON: "2026-04-13",
+  YALE: "2026-05-06",
+  BROWN: "2026-05-24",
+};
 export const TEAM_ASSIGNMENTS = [
   { coach: "SAKK", team: "CMU" },
-  { coach: "GRANGER", team: "BGSU" },
-  { coach: "GRANGER", team: "OHIO" },
-  { coach: "GRANGER", team: "NORTH DAKOTA STATE" },
-  { coach: "GRANGER", team: "COLUMBIA" },
-  { coach: "JESSE", team: "WMU" },
-  { coach: "JESSE", team: "TOLEDO" },
-  { coach: "JESSE", team: "SOUTH DAKOTA STATE" },
-  { coach: "JESSE", team: "YALE" },
+  { coach: "SHANE", team: "BGSU" },
+  { coach: "SHANE", team: "OHIO" },
+  { coach: "SHANE", team: "WMU" },
+  { coach: "SHANE", team: "NORTH DAKOTA STATE" },
+  { coach: "SHANE", team: "NORTHERN IOWA" },
+  { coach: "SHANE", team: "COLUMBIA" },
+  { coach: "IAN", team: "AKRON" },
+  { coach: "IAN", team: "BUFFALO" },
+  { coach: "IAN", team: "TOLEDO" },
+  { coach: "IAN", team: "YOUNGSTOWN STATE" },
+  { coach: "IAN", team: "SOUTHERN ILLINOIS" },
+  { coach: "IAN", team: "PENN" },
+  { coach: "IAN", team: "PRINCETON" },
   { coach: "LEYTON", team: "EMU" },
   { coach: "LEYTON", team: "MIAMI (OH)" },
   { coach: "LEYTON", team: "SOUTH DAKOTA" },
+  { coach: "LEYTON", team: "SOUTH DAKOTA STATE" },
   { coach: "LEYTON", team: "HARVARD" },
-  { coach: "ASHTON", team: "NIU", retired: true },
+  { coach: "LEYTON", team: "YALE" },
+  { coach: "ASHTON", team: "SAC STATE" },
   { coach: "ASHTON", team: "KENT STATE" },
   { coach: "ASHTON", team: "NORTH DAKOTA" },
+  { coach: "ASHTON", team: "MURRAY STATE" },
   { coach: "ASHTON", team: "CORNELL" },
   { coach: "CARTER", team: "BALL STATE" },
   { coach: "CARTER", team: "UMASS" },
@@ -89,11 +124,6 @@ export const TEAM_ASSIGNMENTS = [
   { coach: "CARTER", team: "ILLINOIS STATE" },
   { coach: "CARTER", team: "DARTMOUTH" },
   { coach: "CARTER", team: "BROWN" },
-  { coach: "IAN", team: "AKRON" },
-  { coach: "IAN", team: "BUFFALO" },
-  { coach: "IAN", team: "YOUNGSTOWN STATE" },
-  { coach: "IAN", team: "PENN" },
-  { coach: "IAN", team: "PRINCETON" },
 ];
 
 // Sheets that aren't a team's offer list -- the assignment index, the
@@ -691,6 +721,7 @@ export function useOfferTracker() {
   const [docs, setDocs] = useState([]);
   const [ready, setReady] = useState(false);
   const [teamUploads, setTeamUploads] = useState({}); // team -> ISO timestamp, from the last importWorkbook call
+  const [coachOverrides, setCoachOverrides] = useState({}); // team -> coach, overriding TEAM_ASSIGNMENTS' default
 
   useEffect(() => {
     const unsubscribe = onSnapshot(
@@ -699,6 +730,19 @@ export function useOfferTracker() {
         const map = {};
         snap.docs.forEach((d) => (map[d.id] = d.data().lastUploadedAt || ""));
         setTeamUploads(map);
+      },
+      () => {}
+    );
+    return unsubscribe;
+  }, []);
+
+  useEffect(() => {
+    const unsubscribe = onSnapshot(
+      collection(db, "teamAssignments"),
+      (snap) => {
+        const map = {};
+        snap.docs.forEach((d) => (map[d.id] = d.data().coach || ""));
+        setCoachOverrides(map);
       },
       () => {}
     );
@@ -1034,11 +1078,33 @@ export function useOfferTracker() {
   // already had offer rows before this feature existed (or one whose sheet was last touched by the
   // activity feed rather than a workbook), falls back to the most recent updatedAt among its current
   // rows -- an approximation, but better than showing "never" for a board that's clearly been worked on.
+  // Real upload (teamUploads) beats everything once one exists. Until then, takes whichever is more
+  // recent of: the team's own rows' last edit (an approximation -- any edit bumps it, not just a sheet
+  // upload) and the assignment sheet's hand-noted historical date (KNOWN_LAST_UPLOAD) -- covers both "a
+  // sheet came in before this feature existed" and "nobody's touched this team's rows since, but the
+  // sheet said 4/11".
   function lastUploadedFor(team) {
     if (teamUploads[team]) return teamUploads[team];
     const stamps = docs.filter((d) => d.team === team && d.updatedAt).map((d) => d.updatedAt);
-    return stamps.length ? stamps.sort().pop() : "";
+    const rowFallback = stamps.length ? stamps.sort().pop() : "";
+    const known = KNOWN_LAST_UPLOAD[team] || "";
+    if (!rowFallback) return known;
+    if (!known) return rowFallback;
+    return rowFallback > known ? rowFallback : known;
   }
 
-  return { ready, classYears, teamsForConference, rowsForClassYear, rowsForTeam, rowsForPlayer, rowsByPlayer, rowsByLast, profileNames, suggestFixes, wordReplacementPreview, replaceWord, mergeProfile, mergeProfiles, positionBreakdown, areaBreakdown, importWorkbook, importActivityFeed, updateOfferField, removeOffer, addOffer, lastUploadedFor };
+  // Who's actually assigned to a team's board -- TEAM_ASSIGNMENTS' hand-maintained default, unless
+  // someone's edited it from the Assignments tab (teamAssignments, keyed by team), in which case the
+  // edit wins. A team not in TEAM_ASSIGNMENTS at all (assigned fresh from the tab, not on the original
+  // sheet) has no default, so the override is all there is.
+  function coachFor(team) {
+    if (team in coachOverrides) return coachOverrides[team];
+    return TEAM_ASSIGNMENTS.find((a) => a.team === team)?.coach || "";
+  }
+
+  async function setTeamCoach(team, coach) {
+    await setDoc(doc(db, "teamAssignments", team), { team, coach: coach.trim(), updatedAt: new Date().toISOString() });
+  }
+
+  return { ready, classYears, teamsForConference, rowsForClassYear, rowsForTeam, rowsForPlayer, rowsByPlayer, rowsByLast, profileNames, suggestFixes, wordReplacementPreview, replaceWord, mergeProfile, mergeProfiles, positionBreakdown, areaBreakdown, importWorkbook, importActivityFeed, updateOfferField, removeOffer, addOffer, lastUploadedFor, coachFor, setTeamCoach };
 }
