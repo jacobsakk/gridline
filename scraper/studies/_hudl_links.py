@@ -37,6 +37,17 @@ TE_SUPPLEMENT = {
         {"player": "Brian Shane", "team": "Miami (OH)", "totals": {"games": 14, "rec": 13, "yards": 116, "td": 2}},
     ],
 }
+# Same leaderboard-coverage gap as TE above, but narrower: CB 2023's *entire* raw candidate pool (from
+# merging all five NCAA defensive leaderboards) is just 4 players -- nobody else tagged CB on a MAC team
+# cracked any of them that season. Unlike TE, the other two CB seasons (2024: 6 candidates, 2025: 5) don't
+# need this, so this only adds to 2023 rather than replacing the whole group the way TE_SUPPLEMENT does.
+# Sourced from the MAC's own 2023 All-MAC team announcement (getsomemaction.com) plus the player's team
+# reporting on his specific stat line that season.
+CB_SUPPLEMENT = {
+    "2023": [
+        {"player": "Chris McDonald", "team": "Toledo", "totals": {"games": 12, "total": 34, "pbu": 8, "int": 2}},
+    ],
+}
 HUDL_LINKS.update({
     "KURTIS ROURKE": "https://www.hudl.com/profile/5350951",
     "COLE SNYDER": "https://www.hudl.com/profile/9846654/Cole-Snyder",

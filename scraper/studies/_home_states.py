@@ -110,4 +110,5 @@ HOME_STATES = {
     "TERION STEWART": "OH",
     "JARVARIUS SIMS": "GA",
     "JOJO JOHNSON": "IN",
+    "CHRIS MCDONALD": "FL",
 }

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-30T18:36:55.819085Z",
+  "generatedAt": "2026-09-30T19:40:21.536358Z",
   "seasons": [
     2023,
     2024,
@@ -1646,6 +1646,22 @@
           },
           "score": 82.0,
           "hudlLink": "https://www.hudl.com/profile/11269460",
+          "pffLink": "",
+          "state": "FL"
+        },
+        {
+          "player": "Chris McDonald",
+          "team": "Toledo",
+          "position": "CB",
+          "season": 2023,
+          "totals": {
+            "games": 12,
+            "total": 34,
+            "pbu": 8,
+            "int": 2
+          },
+          "score": 82,
+          "hudlLink": "",
           "pffLink": "",
           "state": "FL"
         },

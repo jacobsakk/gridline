@@ -21,7 +21,7 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from ncaa_api import build_division_rows
-from studies._hudl_links import HUDL_LINKS, PFF_LINKS, TE_SUPPLEMENT
+from studies._hudl_links import HUDL_LINKS, PFF_LINKS, TE_SUPPLEMENT, CB_SUPPLEMENT
 from studies._stat_overrides import STAT_OVERRIDES
 from studies._home_states import HOME_STATES
 
@@ -128,6 +128,18 @@ def build():
                      "pffLink": PFF_LINKS.get(e["player"].upper(), ""), "state": HOME_STATES.get(e["player"].upper(), "")}
                     for e in TE_SUPPLEMENT.get(season, [])
                 ]
+            if group_key == "CB":
+                # Unlike TE, CB's leaderboard coverage is fine most seasons -- this only tops up a season
+                # whose raw candidate pool came in under TOP_N (see CB_SUPPLEMENT's comment). Additive, not
+                # a replacement: the real leaderboard candidates for this season stay in `ranked` too.
+                for e in CB_SUPPLEMENT.get(season, []):
+                    totals = {k: e["totals"].get(k, 0) for k in cfg["stats"]}
+                    ranked.append({
+                        "player": e["player"], "team": e["team"], "position": "CB", "season": int(season),
+                        "totals": totals, "score": round(cfg["score"](totals), 1),
+                        "hudlLink": HUDL_LINKS.get(e["player"].upper(), ""), "pffLink": PFF_LINKS.get(e["player"].upper(), ""),
+                        "state": HOME_STATES.get(e["player"].upper(), ""),
+                    })
             ranked.sort(key=lambda x: -x["score"])
             study[group_key][season] = ranked[:TOP_N]
             print(f"  {group_key} {season}: {len(rows)} leaderboard candidates, {len(ranked)} in the final list")
