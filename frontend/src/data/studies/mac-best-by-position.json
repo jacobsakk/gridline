@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-30T14:00:13.963759Z",
+  "generatedAt": "2026-09-30T14:55:46.240024Z",
   "seasons": [
     2023,
     2024,
@@ -1284,40 +1284,40 @@
           "state": "MI"
         },
         {
-          "player": "Rodney McGraw",
-          "team": "Western Mich.",
-          "position": "DL",
-          "season": 2025,
-          "totals": {
-            "games": 14.0,
-            "total": 42,
-            "tfl": 8.5,
-            "sacks": 7.0,
-            "pbu": 0.0,
-            "int": 0.0
-          },
-          "score": 101.0,
-          "hudlLink": "https://www.hudl.com/profile/11173598/Rodney-McGraw/videos",
-          "pffLink": "",
-          "state": "IN"
-        },
-        {
-          "player": "Donovan Green",
-          "team": "Eastern Mich.",
+          "player": "Martez Poynter",
+          "team": "Toledo",
           "position": "DL",
           "season": 2025,
           "totals": {
             "games": 12.0,
-            "total": 55.0,
-            "tfl": 0.0,
-            "sacks": 0.0,
+            "total": 43,
+            "tfl": 10.0,
+            "sacks": 6.5,
             "pbu": 0.0,
             "int": 0.0
           },
-          "score": 55.0,
-          "hudlLink": "https://www.hudl.com/profile/15240510/donovan-green",
+          "score": 102.0,
+          "hudlLink": "",
           "pffLink": "",
-          "state": "LA"
+          "state": ""
+        },
+        {
+          "player": "Marques White",
+          "team": "Massachusetts",
+          "position": "DL",
+          "season": 2025,
+          "totals": {
+            "games": 12.0,
+            "total": 50,
+            "tfl": 11.0,
+            "sacks": 5.0,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 102.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": ""
         }
       ]
     },
@@ -1349,31 +1349,13 @@
           "totals": {
             "games": 13.0,
             "total": 127.0,
-            "tfl": 0.0,
-            "sacks": 0.0,
+            "tfl": 12.5,
+            "sacks": 2.5,
             "pbu": 0.0,
             "int": 3.0
           },
-          "score": 151.0,
+          "score": 191.0,
           "hudlLink": "https://www.hudl.com/profile/4012020/Bryce-Houston",
-          "pffLink": "",
-          "state": "OH"
-        },
-        {
-          "player": "Chase Kline",
-          "team": "Eastern Mich.",
-          "position": "LB",
-          "season": 2023,
-          "totals": {
-            "games": 11.0,
-            "total": 143.0,
-            "tfl": 0.0,
-            "sacks": 0.0,
-            "pbu": 0.0,
-            "int": 0.0
-          },
-          "score": 143.0,
-          "hudlLink": "https://www.hudl.com/profile/4712759/Chase-Kline/about",
           "pffLink": "",
           "state": "OH"
         },
@@ -1385,13 +1367,31 @@
           "totals": {
             "games": 14.0,
             "total": 143.0,
-            "tfl": 0.0,
-            "sacks": 0.0,
+            "tfl": 8.5,
+            "sacks": 3.0,
             "pbu": 0.0,
             "int": 0.0
           },
-          "score": 143.0,
+          "score": 178.0,
           "hudlLink": "https://www.hudl.com/profile/6036828/Matt-Salopek",
+          "pffLink": "",
+          "state": "OH"
+        },
+        {
+          "player": "Chase Kline",
+          "team": "Eastern Mich.",
+          "position": "LB",
+          "season": 2023,
+          "totals": {
+            "games": 11.0,
+            "total": 143.0,
+            "tfl": 5.0,
+            "sacks": 2.0,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 165.0,
+          "hudlLink": "https://www.hudl.com/profile/4712759/Chase-Kline/about",
           "pffLink": "",
           "state": "OH"
         },
@@ -1403,12 +1403,12 @@
           "totals": {
             "games": 13.0,
             "total": 137.0,
-            "tfl": 0.0,
-            "sacks": 0.0,
+            "tfl": 6.5,
+            "sacks": 1.0,
             "pbu": 0.0,
             "int": 0.0
           },
-          "score": 137.0,
+          "score": 156.0,
           "hudlLink": "https://www.hudl.com:443/profile/6265342/joseph-sparacio",
           "pffLink": "",
           "state": "FL"
@@ -1459,12 +1459,12 @@
           "totals": {
             "games": 14.0,
             "total": 122.0,
-            "tfl": 0.0,
-            "sacks": 0.0,
+            "tfl": 8.0,
+            "sacks": 1.0,
             "pbu": 0.0,
             "int": 3.0
           },
-          "score": 146.0,
+          "score": 168.0,
           "hudlLink": "https://www.hudl.com/profile/6036828/Matt-Salopek",
           "pffLink": "",
           "state": "OH"
@@ -1495,12 +1495,12 @@
           "totals": {
             "games": 12.0,
             "total": 120.0,
-            "tfl": 0.0,
+            "tfl": 1.5,
             "sacks": 0.0,
             "pbu": 0.0,
             "int": 0.0
           },
-          "score": 120.0,
+          "score": 123.0,
           "hudlLink": "https://www.hudl.com/profile/11229287",
           "pffLink": "",
           "state": "IL"
@@ -1524,6 +1524,24 @@
           "hudlLink": "https://www.hudl.com/video/3/9349397/606b230f420771195cea645e",
           "pffLink": "",
           "state": "VA"
+        },
+        {
+          "player": "Jackson Kuwatch",
+          "team": "Miami (OH)",
+          "position": "LB",
+          "season": 2025,
+          "totals": {
+            "games": 14.0,
+            "total": 109.0,
+            "tfl": 10.0,
+            "sacks": 5.0,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 159.0,
+          "hudlLink": "https://www.hudl.com/profile/13109292/Jackson-Kuwatch",
+          "pffLink": "",
+          "state": "OH"
         },
         {
           "player": "Adam Trick",
@@ -1569,33 +1587,15 @@
           "totals": {
             "games": 13.0,
             "total": 117.0,
-            "tfl": 0.0,
+            "tfl": 14.0,
             "sacks": 0.0,
             "pbu": 0.0,
             "int": 0.0
           },
-          "score": 117.0,
+          "score": 145.0,
           "hudlLink": "https://www.hudl.com/profile/11394344/Jordan-Kwiatkowski/about",
           "pffLink": "",
           "state": "MI"
-        },
-        {
-          "player": "Jackson Kuwatch",
-          "team": "Miami (OH)",
-          "position": "LB",
-          "season": 2025,
-          "totals": {
-            "games": 14.0,
-            "total": 109.0,
-            "tfl": 0.0,
-            "sacks": 0.0,
-            "pbu": 0.0,
-            "int": 0.0
-          },
-          "score": 109.0,
-          "hudlLink": "https://www.hudl.com/profile/13109292/Jackson-Kuwatch",
-          "pffLink": "",
-          "state": "OH"
         }
       ]
     },

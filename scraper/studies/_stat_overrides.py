@@ -49,6 +49,39 @@ STAT_OVERRIDES = {
     # that survives a sanity check (one hit claimed 44, implausible for a single season) -- left at 0
     # rather than guess; still wrong, just not fixable from what's findable.
 
+    # Same gap again, but here "total" was already right (he cracked the Total Tackles board) -- he just
+    # didn't crack the much shorter/higher-threshold Sacks and TFL boards despite having modest real
+    # production in both. Flagged by the user directly: Donovan Green showed 0/0 for both, which reads as
+    # "not a pass rusher at all" when the real answer is "had some, just not enough to nationally rank."
+    ("DONOVAN GREEN", "2025"): {"tfl": 3.0, "sacks": 1.5},  # Eastern Mich.: 55 tackles, 3.0 TFL, 1.5 sacks
+
+    # Linebacker -- same gap hit a whole cluster of leading tacklers (109-143 tackles each) who cracked
+    # the Total Tackles board by a mile but landed at a flat 0/0 for TFL and sacks, which is essentially
+    # impossible at that tackle volume. Flagged by the user directly; verified against ESPN/team stats
+    # per player rather than assumed.
+    ("BRYCE HOUSTON", "2023"): {"tfl": 12.5, "sacks": 2.5},  # Ohio: 127 tackles, 12.5 TFL, 2.5 sacks
+    ("CHASE KLINE", "2023"): {"tfl": 5.0, "sacks": 2.0},     # Eastern Mich.: 143 tackles, 5.0 TFL, 2.0 sacks
+    ("MATT SALOPEK", "2023"): {"tfl": 8.5, "sacks": 3.0},    # Miami (OH): 143 tackles, 8.5 TFL, 3.0 sacks
+    ("JOE SPARACIO", "2023"): {"tfl": 6.5, "sacks": 1.0},    # Eastern Mich.: 131 tackles (leaderboard says 137), 6.5 TFL, 1.0 sacks
+    ("MATT SALOPEK", "2024"): {"tfl": 8.0, "sacks": 1.0},    # Miami (OH): 122 tackles, 8.0 TFL, 1.0 sack (int=3 already correct)
+    ("BRYAN MCCOY", "2024"): {"tfl": 1.5},                   # Akron: 120 tackles, 1.5 TFL (one source said 6.0/19 yds instead -- used the more specific, yardage-matched figure)
+    ("JORDAN KWIATKOWSKI", "2025"): {"tfl": 14.0},           # Central Mich.: 117 tackles, 14.0 TFL
+    ("JACKSON KUWATCH", "2025"): {"tfl": 10.0, "sacks": 5.0},  # Miami (OH): 109 tackles, 10.0 TFL, 5.0 sacks
+
+    # DL 2025, prompted by "is there anyone with better stats" after the Donovan Green fix -- checked
+    # every candidate that didn't crack the top 5, since they're all the same total=0/tfl=0-with-only-
+    # sacks-populated pattern. Several turned out to genuinely outrank Green once corrected.
+    ("MARTEZ POYNTER", "2025"): {"total": 43, "tfl": 10.0},   # Toledo: 43 tackles, 10.0 TFL, 6.5 sacks
+    ("JAMOND MATHIS", "2025"): {"total": 28, "tfl": 8.0},     # Kent St.: 28 tackles, 8.0 TFL, 6.0 sacks
+    ("JAY CRABLE", "2025"): {"total": 33, "tfl": 8.0},        # Ohio: 33 tackles, 8.0 TFL, 6.0 sacks
+    ("MALACHI DAVIS", "2025"): {"total": 36, "tfl": 9.5},     # Toledo: 36 tackles, 9.5 TFL, 5.5 sacks
+    ("MYLES BRADLEY", "2025"): {"total": 20, "tfl": 16.5},    # Bowling Green: 20 tackles, ~16.5 TFL (1.38/g x 12), 5 sacks
+    ("MARQUES WHITE", "2025"): {"total": 50, "tfl": 11.0},    # Massachusetts: 50 tackles, 11.0 TFL, 5 sacks
+    # Junior Poyser, Buffalo, 2025: real total (31) and sacks (5.5) confirmed, but no source gave a TFL
+    # number -- left incomplete (total fixed, tfl still 0) rather than guess; his real score is higher
+    # than what's shown but not fully computable from what's findable.
+    ("JUNIOR POYSER", "2025"): {"total": 31},
+
     # Safety -- interceptions (and a few PBU/TFL) undercounted the same way: a safety who didn't crack
     # the national INT leaderboard with 1-2 picks defaults to int=0, which reads as "no interceptions"
     # when the real number is just small.
