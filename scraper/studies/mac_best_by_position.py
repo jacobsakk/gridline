@@ -35,7 +35,10 @@ MAC_TEAMS = {
 # Which category+position combo defines each group, and how "most productive" is scored from that
 # category's raw stat fields for one season. All are real counting stats already in the pipeline's row shape.
 GROUPS = {
-    "QB": {"category": "passing", "position": "QB", "score": lambda s: s["yards"] + 25 * s["td"] - 15 * s["int"], "stats": ["games", "att", "yards", "td", "int"]},
+    # rushYards/rushTd are merged in separately from the rushing leaderboard (see build() -- a passing-
+    # category row has no rushing columns of its own), so a dual-threat QB's legs count toward the score
+    # too, not just his arm.
+    "QB": {"category": "passing", "position": "QB", "score": lambda s: s["yards"] + 25 * s["td"] - 15 * s["int"] + s["rushYards"] + 10 * s["rushTd"], "stats": ["games", "att", "yards", "td", "int", "rushYards", "rushTd"]},
     "RB": {"category": "rushing", "position": "RB", "score": lambda s: s["yards"] + 10 * s["td"], "stats": ["games", "att", "yards", "td"]},
     "WR": {"category": "receiving", "position": "WR", "score": lambda s: s["yards"] + 10 * s["td"], "stats": ["games", "rec", "yards", "td"]},
     "TE": {"category": "receiving", "position": "TE", "score": lambda s: s["yards"] + 10 * s["td"], "stats": ["games", "rec", "yards", "td"]},
@@ -76,11 +79,26 @@ def build():
         study[group_key] = {}
         for season in SEASONS:
             rows = [r for r in by_season[season] if r["category"] == cfg["category"] and r["position"] == cfg["position"]]
+            # A QB's rushing line lives on a separate "rushing"-category row (same player/team) -- the
+            # passing leaderboard has no rushing columns at all -- so look it up by (player, team) rather
+            # than expecting it on the passing row itself.
+            rushing_by_key = {}
+            if group_key == "QB":
+                for rr in by_season[season]:
+                    if rr["category"] == "rushing":
+                        rushing_by_key[(rr["player"], rr["team"])] = rr
             ranked = []
             for r in rows:
                 totals = {k: num(r, k) for k in cfg["stats"]}
                 if totals.get("games", 0) < MIN_GAMES:
                     continue
+                if group_key == "QB":
+                    rush = rushing_by_key.get((r["player"], r["team"]))
+                    # A pure pocket passer legitimately has ~0 rushing yards -- unlike the DL/CB tackle gap,
+                    # a QB missing from the rushing leaderboard entirely usually just means he doesn't run
+                    # the ball much, so 0 here is a real value, not a leaderboard-coverage artifact.
+                    totals["rushYards"] = num(rush, "yards") if rush else 0.0
+                    totals["rushTd"] = num(rush, "td") if rush else 0.0
                 # See _stat_overrides.py -- corrects a real gap in the leaderboard merge (a player who
                 # cracked one defensive leaderboard but not "Total Tackles" specifically defaults to 0
                 # there, which is never actually true for a rostered starter).

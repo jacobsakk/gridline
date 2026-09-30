@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-30T13:20:49.922003Z",
+  "generatedAt": "2026-09-30T13:33:42.108473Z",
   "seasons": [
     2023,
     2024,
@@ -18,9 +18,11 @@
             "att": 317.0,
             "yards": 2657.0,
             "td": 22.0,
-            "int": 9.0
+            "int": 9.0,
+            "rushYards": 563.0,
+            "rushTd": 7.0
           },
-          "score": 3072.0,
+          "score": 3705.0,
           "hudlLink": "https://www.hudl.com/profile/5432884",
           "pffLink": ""
         },
@@ -34,10 +36,30 @@
             "att": 307.0,
             "yards": 2207.0,
             "td": 11.0,
-            "int": 5.0
+            "int": 5.0,
+            "rushYards": 219,
+            "rushTd": 4
           },
-          "score": 2407.0,
+          "score": 2666.0,
           "hudlLink": "https://www.hudl.com/profile/5350951",
+          "pffLink": ""
+        },
+        {
+          "player": "Jase Bauer",
+          "team": "Central Mich.",
+          "position": "QB",
+          "season": 2023,
+          "totals": {
+            "games": 12.0,
+            "att": 287.0,
+            "yards": 1881.0,
+            "td": 12.0,
+            "int": 8.0,
+            "rushYards": 365,
+            "rushTd": 10
+          },
+          "score": 2526.0,
+          "hudlLink": "https://www.hudl.com/profile/8901906",
           "pffLink": ""
         },
         {
@@ -50,9 +72,11 @@
             "att": 372.0,
             "yards": 2108.0,
             "td": 13.0,
-            "int": 9.0
+            "int": 9.0,
+            "rushYards": 88,
+            "rushTd": 1
           },
-          "score": 2298.0,
+          "score": 2396.0,
           "hudlLink": "https://www.hudl.com/profile/9846654/Cole-Snyder",
           "pffLink": ""
         },
@@ -66,30 +90,52 @@
             "att": 278.0,
             "yards": 1935.0,
             "td": 12.0,
-            "int": 7.0
+            "int": 7.0,
+            "rushYards": -82,
+            "rushTd": 2
           },
-          "score": 2130.0,
+          "score": 2068.0,
           "hudlLink": "",
-          "pffLink": ""
-        },
-        {
-          "player": "Jase Bauer",
-          "team": "Central Mich.",
-          "position": "QB",
-          "season": 2023,
-          "totals": {
-            "games": 12.0,
-            "att": 287.0,
-            "yards": 1881.0,
-            "td": 12.0,
-            "int": 8.0
-          },
-          "score": 2061.0,
-          "hudlLink": "https://www.hudl.com/profile/8901906",
           "pffLink": ""
         }
       ],
       "2024": [
+        {
+          "player": "Parker Navarro",
+          "team": "Ohio",
+          "position": "QB",
+          "season": 2024,
+          "totals": {
+            "games": 13.0,
+            "att": 295.0,
+            "yards": 2423.0,
+            "td": 13.0,
+            "int": 11.0,
+            "rushYards": 1046.0,
+            "rushTd": 18.0
+          },
+          "score": 3809.0,
+          "hudlLink": "https://www.hudl.com/profile/7815205/Parker-Navarros/about",
+          "pffLink": ""
+        },
+        {
+          "player": "Tucker Gleason",
+          "team": "Toledo",
+          "position": "QB",
+          "season": 2024,
+          "totals": {
+            "games": 12.0,
+            "att": 385.0,
+            "yards": 2808.0,
+            "td": 24.0,
+            "int": 8.0,
+            "rushYards": 364,
+            "rushTd": 7
+          },
+          "score": 3722.0,
+          "hudlLink": "https://m.hudl.com/profile/7196933/Tucker-Gleason",
+          "pffLink": ""
+        },
         {
           "player": "Connor Bazelak",
           "team": "Bowling Green",
@@ -100,9 +146,11 @@
             "att": 402.0,
             "yards": 3044.0,
             "td": 18.0,
-            "int": 5.0
+            "int": 5.0,
+            "rushYards": -91,
+            "rushTd": 2
           },
-          "score": 3419.0,
+          "score": 3348.0,
           "hudlLink": "",
           "pffLink": ""
         },
@@ -116,26 +164,12 @@
             "att": 427.0,
             "yards": 2904.0,
             "td": 25.0,
-            "int": 10.0
+            "int": 10.0,
+            "rushYards": -85,
+            "rushTd": 1
           },
-          "score": 3379.0,
+          "score": 3304.0,
           "hudlLink": "https://www.hudl.com/profile/11412934",
-          "pffLink": ""
-        },
-        {
-          "player": "Tucker Gleason",
-          "team": "Toledo",
-          "position": "QB",
-          "season": 2024,
-          "totals": {
-            "games": 12.0,
-            "att": 385.0,
-            "yards": 2808.0,
-            "td": 24.0,
-            "int": 8.0
-          },
-          "score": 3288.0,
-          "hudlLink": "https://m.hudl.com/profile/7196933/Tucker-Gleason",
           "pffLink": ""
         },
         {
@@ -148,30 +182,34 @@
             "att": 379.0,
             "yards": 2921.0,
             "td": 21.0,
-            "int": 11.0
+            "int": 11.0,
+            "rushYards": 6,
+            "rushTd": 1
           },
-          "score": 3281.0,
+          "score": 3297.0,
           "hudlLink": "https://www.hudl.com/profile/5629221",
-          "pffLink": ""
-        },
-        {
-          "player": "Cole Snyder",
-          "team": "Eastern Mich.",
-          "position": "QB",
-          "season": 2024,
-          "totals": {
-            "games": 12.0,
-            "att": 402.0,
-            "yards": 2684.0,
-            "td": 15.0,
-            "int": 9.0
-          },
-          "score": 2924.0,
-          "hudlLink": "https://www.hudl.com/profile/9846654/Cole-Snyder",
           "pffLink": ""
         }
       ],
       "2025": [
+        {
+          "player": "Parker Navarro",
+          "team": "Ohio",
+          "position": "QB",
+          "season": 2025,
+          "totals": {
+            "games": 13.0,
+            "att": 303.0,
+            "yards": 2375.0,
+            "td": 14.0,
+            "int": 11.0,
+            "rushYards": 886.0,
+            "rushTd": 9.0
+          },
+          "score": 3536.0,
+          "hudlLink": "https://www.hudl.com/profile/7815205/Parker-Navarros/about",
+          "pffLink": ""
+        },
         {
           "player": "Noah Kim",
           "team": "Eastern Mich.",
@@ -182,9 +220,11 @@
             "att": 402.0,
             "yards": 2817.0,
             "td": 18.0,
-            "int": 11.0
+            "int": 11.0,
+            "rushYards": 186,
+            "rushTd": 6
           },
-          "score": 3102.0,
+          "score": 3348.0,
           "hudlLink": "https://www.hudl.com/profile/8588249",
           "pffLink": ""
         },
@@ -198,10 +238,30 @@
             "att": 320.0,
             "yards": 2515.0,
             "td": 21.0,
-            "int": 9.0
+            "int": 9.0,
+            "rushYards": 144,
+            "rushTd": 4
           },
-          "score": 2905.0,
+          "score": 3089.0,
           "hudlLink": "https://m.hudl.com/profile/7196933/Tucker-Gleason",
+          "pffLink": ""
+        },
+        {
+          "player": "Broc Lowry",
+          "team": "Western Mich.",
+          "position": "QB",
+          "season": 2025,
+          "totals": {
+            "games": 14.0,
+            "att": 262.0,
+            "yards": 1803.0,
+            "td": 9.0,
+            "int": 3.0,
+            "rushYards": 963.0,
+            "rushTd": 14.0
+          },
+          "score": 3086.0,
+          "hudlLink": "",
           "pffLink": ""
         },
         {
@@ -214,42 +274,12 @@
             "att": 362.0,
             "yards": 2475.0,
             "td": 19.0,
-            "int": 9.0
+            "int": 9.0,
+            "rushYards": 130,
+            "rushTd": 2
           },
-          "score": 2815.0,
+          "score": 2965.0,
           "hudlLink": "",
-          "pffLink": ""
-        },
-        {
-          "player": "Ta'Quan Roberson",
-          "team": "Buffalo",
-          "position": "QB",
-          "season": 2025,
-          "totals": {
-            "games": 11.0,
-            "att": 357.0,
-            "yards": 2520.0,
-            "td": 17.0,
-            "int": 12.0
-          },
-          "score": 2765.0,
-          "hudlLink": "",
-          "pffLink": ""
-        },
-        {
-          "player": "Parker Navarro",
-          "team": "Ohio",
-          "position": "QB",
-          "season": 2025,
-          "totals": {
-            "games": 13.0,
-            "att": 303.0,
-            "yards": 2375.0,
-            "td": 14.0,
-            "int": 11.0
-          },
-          "score": 2560.0,
-          "hudlLink": "https://www.hudl.com/profile/7815205/Parker-Navarros/about",
           "pffLink": ""
         }
       ]
@@ -997,12 +1027,12 @@
           "totals": {
             "games": 14.0,
             "total": 41,
-            "tfl": 0.0,
+            "tfl": 12,
             "sacks": 9.5,
             "pbu": 0.0,
             "int": 0.0
           },
-          "score": 98.0,
+          "score": 122.0,
           "hudlLink": "https://www.hudl.com/profile/9691288/Caiden-Woullard/about",
           "pffLink": ""
         },
@@ -1014,12 +1044,12 @@
           "totals": {
             "games": 14.0,
             "total": 38,
-            "tfl": 0.0,
+            "tfl": 10.5,
             "sacks": 9.0,
             "pbu": 0.0,
             "int": 0.0
           },
-          "score": 92.0,
+          "score": 113.0,
           "hudlLink": "https://www.hudl.com/profile/4137781",
           "pffLink": ""
         },
@@ -1031,34 +1061,17 @@
           "totals": {
             "games": 10.0,
             "total": 57.0,
-            "tfl": 0.0,
+            "tfl": 7.5,
             "sacks": 4.5,
             "pbu": 0.0,
             "int": 0.0
           },
-          "score": 84.0,
+          "score": 99.0,
           "hudlLink": "https://www.hudl.com/profile/5587621",
           "pffLink": ""
         }
       ],
       "2024": [
-        {
-          "player": "Kobe Stewart",
-          "team": "Buffalo",
-          "position": "DL",
-          "season": 2024,
-          "totals": {
-            "games": 13.0,
-            "total": 40,
-            "tfl": 0.0,
-            "sacks": 9.5,
-            "pbu": 0.0,
-            "int": 0.0
-          },
-          "score": 97.0,
-          "hudlLink": "",
-          "pffLink": ""
-        },
         {
           "player": "Bradley Weaver",
           "team": "Ohio",
@@ -1067,12 +1080,29 @@
           "totals": {
             "games": 13.0,
             "total": 44,
-            "tfl": 0.0,
+            "tfl": 15,
             "sacks": 8.5,
             "pbu": 0.0,
             "int": 0.0
           },
-          "score": 95.0,
+          "score": 125.0,
+          "hudlLink": "",
+          "pffLink": ""
+        },
+        {
+          "player": "Kobe Stewart",
+          "team": "Buffalo",
+          "position": "DL",
+          "season": 2024,
+          "totals": {
+            "games": 13.0,
+            "total": 40,
+            "tfl": 12,
+            "sacks": 9.5,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 121.0,
           "hudlLink": "",
           "pffLink": ""
         },
@@ -1084,13 +1114,30 @@
           "totals": {
             "games": 12.0,
             "total": 56.0,
-            "tfl": 0.0,
+            "tfl": 11,
             "sacks": 6.0,
             "pbu": 0.0,
             "int": 0.0
           },
-          "score": 92.0,
+          "score": 114.0,
           "hudlLink": "https://www.hudl.com/profile/10872962",
+          "pffLink": ""
+        },
+        {
+          "player": "Peyton Price",
+          "team": "Eastern Mich.",
+          "position": "DL",
+          "season": 2024,
+          "totals": {
+            "games": 12.0,
+            "total": 53.0,
+            "tfl": 10.0,
+            "sacks": 5.0,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 103.0,
+          "hudlLink": "https://www.hudl.com/profile/9298091",
           "pffLink": ""
         },
         {
@@ -1108,23 +1155,6 @@
           },
           "score": 91.0,
           "hudlLink": "https://www.hudl.com/profile/9891992",
-          "pffLink": ""
-        },
-        {
-          "player": "Peyton Price",
-          "team": "Eastern Mich.",
-          "position": "DL",
-          "season": 2024,
-          "totals": {
-            "games": 12.0,
-            "total": 53.0,
-            "tfl": 0.0,
-            "sacks": 5.0,
-            "pbu": 0.0,
-            "int": 0.0
-          },
-          "score": 83.0,
-          "hudlLink": "https://www.hudl.com/profile/9298091",
           "pffLink": ""
         }
       ],
@@ -1188,12 +1218,12 @@
           "totals": {
             "games": 14.0,
             "total": 42,
-            "tfl": 0.0,
+            "tfl": 8.5,
             "sacks": 7.0,
             "pbu": 0.0,
             "int": 0.0
           },
-          "score": 84.0,
+          "score": 101.0,
           "hudlLink": "",
           "pffLink": ""
         },
@@ -1226,12 +1256,12 @@
           "totals": {
             "games": 14.0,
             "total": 122.0,
-            "tfl": 0.0,
+            "tfl": 9.0,
             "sacks": 8.0,
             "pbu": 0.0,
-            "int": 0.0
+            "int": 1
           },
-          "score": 170.0,
+          "score": 196.0,
           "hudlLink": "https://www.hudl.com/profile/7673970",
           "pffLink": ""
         },
@@ -1364,12 +1394,12 @@
           "totals": {
             "games": 13.0,
             "total": 79.0,
-            "tfl": 0.0,
+            "tfl": 10.5,
             "sacks": 7.0,
             "pbu": 0.0,
             "int": 0.0
           },
-          "score": 121.0,
+          "score": 142.0,
           "hudlLink": "https://hudl.com/v/2FsWDU",
           "pffLink": ""
         },
@@ -1400,13 +1430,30 @@
           "totals": {
             "games": 12.0,
             "total": 142.0,
-            "tfl": 0.0,
+            "tfl": 13.5,
             "sacks": 5.0,
             "pbu": 0.0,
             "int": 0.0
           },
-          "score": 172.0,
+          "score": 199.0,
           "hudlLink": "https://www.hudl.com/video/3/9349397/606b230f420771195cea645e",
+          "pffLink": ""
+        },
+        {
+          "player": "Adam Trick",
+          "team": "Miami (OH)",
+          "position": "LB",
+          "season": 2025,
+          "totals": {
+            "games": 13.0,
+            "total": 59.0,
+            "tfl": 12.5,
+            "sacks": 8.5,
+            "pbu": 4,
+            "int": 1
+          },
+          "score": 159.0,
+          "hudlLink": "",
           "pffLink": ""
         },
         {
@@ -1441,23 +1488,6 @@
           },
           "score": 117.0,
           "hudlLink": "https://www.hudl.com/profile/11394344/Jordan-Kwiatkowski/about",
-          "pffLink": ""
-        },
-        {
-          "player": "Adam Trick",
-          "team": "Miami (OH)",
-          "position": "LB",
-          "season": 2025,
-          "totals": {
-            "games": 13.0,
-            "total": 59.0,
-            "tfl": 0.0,
-            "sacks": 8.5,
-            "pbu": 0.0,
-            "int": 0.0
-          },
-          "score": 110.0,
-          "hudlLink": "",
           "pffLink": ""
         },
         {
@@ -1724,27 +1754,11 @@
             "games": 12.0,
             "total": 79.0,
             "tfl": 0.0,
-            "pbu": 0.0,
-            "int": 0.0
+            "pbu": 7,
+            "int": 1
           },
-          "score": 79.0,
+          "score": 106.0,
           "hudlLink": "https://www.hudl.com/profile/5124830/Bryce-Sheppert/about",
-          "pffLink": ""
-        },
-        {
-          "player": "Tate Hallock",
-          "team": "Western Mich.",
-          "position": "SAF",
-          "season": 2023,
-          "totals": {
-            "games": 11.0,
-            "total": 75.0,
-            "tfl": 0.0,
-            "pbu": 0.0,
-            "int": 0.0
-          },
-          "score": 75.0,
-          "hudlLink": "https://www.hudl.com/profile/5409851",
           "pffLink": ""
         },
         {
@@ -1755,12 +1769,28 @@
           "totals": {
             "games": 12.0,
             "total": 75.0,
-            "tfl": 0.0,
-            "pbu": 0.0,
-            "int": 0.0
+            "tfl": 4,
+            "pbu": 6,
+            "int": 1
           },
-          "score": 75.0,
+          "score": 105.0,
           "hudlLink": "https://www.hudl.com/profile/11011761",
+          "pffLink": ""
+        },
+        {
+          "player": "Tate Hallock",
+          "team": "Western Mich.",
+          "position": "SAF",
+          "season": 2023,
+          "totals": {
+            "games": 11.0,
+            "total": 75.0,
+            "tfl": 1.5,
+            "pbu": 4,
+            "int": 2
+          },
+          "score": 101.2,
+          "hudlLink": "https://www.hudl.com/profile/5409851",
           "pffLink": ""
         },
         {
@@ -1772,15 +1802,63 @@
             "games": 12.0,
             "total": 71.0,
             "tfl": 0.0,
-            "pbu": 0.0,
-            "int": 0.0
+            "pbu": 5,
+            "int": 2
           },
-          "score": 71.0,
+          "score": 98.0,
           "hudlLink": "https://www.hudl.com/profile/19482468/aaron-wofford",
           "pffLink": ""
         }
       ],
       "2024": [
+        {
+          "player": "Maxen Hook",
+          "team": "Toledo",
+          "position": "SAF",
+          "season": 2024,
+          "totals": {
+            "games": 12.0,
+            "total": 107.0,
+            "tfl": 1,
+            "pbu": 4,
+            "int": 2
+          },
+          "score": 132.5,
+          "hudlLink": "https://www.hudl.com/profile/4193936/Maxen-Hook/about",
+          "pffLink": ""
+        },
+        {
+          "player": "Silas Walters",
+          "team": "Miami (OH)",
+          "position": "SAF",
+          "season": 2024,
+          "totals": {
+            "games": 14.0,
+            "total": 95.0,
+            "tfl": 0.0,
+            "pbu": 12,
+            "int": 0.0
+          },
+          "score": 131.0,
+          "hudlLink": "https://www.hudl.com/profile/8856518",
+          "pffLink": ""
+        },
+        {
+          "player": "Raion Strader",
+          "team": "Miami (OH)",
+          "position": "SAF",
+          "season": 2024,
+          "totals": {
+            "games": 12.0,
+            "total": 53.0,
+            "tfl": 0.0,
+            "pbu": 18.0,
+            "int": 2
+          },
+          "score": 119.0,
+          "hudlLink": "https://www.hudl.com/profile/15490539",
+          "pffLink": ""
+        },
         {
           "player": "Tate Hallock",
           "team": "Western Mich.",
@@ -1798,38 +1876,6 @@
           "pffLink": ""
         },
         {
-          "player": "Maxen Hook",
-          "team": "Toledo",
-          "position": "SAF",
-          "season": 2024,
-          "totals": {
-            "games": 12.0,
-            "total": 107.0,
-            "tfl": 0.0,
-            "pbu": 0.0,
-            "int": 0.0
-          },
-          "score": 107.0,
-          "hudlLink": "https://www.hudl.com/profile/4193936/Maxen-Hook/about",
-          "pffLink": ""
-        },
-        {
-          "player": "Raion Strader",
-          "team": "Miami (OH)",
-          "position": "SAF",
-          "season": 2024,
-          "totals": {
-            "games": 12.0,
-            "total": 53.0,
-            "tfl": 0.0,
-            "pbu": 18.0,
-            "int": 0.0
-          },
-          "score": 107.0,
-          "hudlLink": "https://www.hudl.com/profile/15490539",
-          "pffLink": ""
-        },
-        {
           "player": "Braden Awls",
           "team": "Toledo",
           "position": "SAF",
@@ -1844,22 +1890,6 @@
           "score": 96.0,
           "hudlLink": "https://www.hudl.com/profile/14213226/Braden-Awls",
           "pffLink": ""
-        },
-        {
-          "player": "Silas Walters",
-          "team": "Miami (OH)",
-          "position": "SAF",
-          "season": 2024,
-          "totals": {
-            "games": 14.0,
-            "total": 95.0,
-            "tfl": 0.0,
-            "pbu": 0.0,
-            "int": 0.0
-          },
-          "score": 95.0,
-          "hudlLink": "https://www.hudl.com/profile/8856518",
-          "pffLink": ""
         }
       ],
       "2025": [
@@ -1871,11 +1901,11 @@
           "totals": {
             "games": 14.0,
             "total": 118.0,
-            "tfl": 0.0,
-            "pbu": 0.0,
-            "int": 0.0
+            "tfl": 4.5,
+            "pbu": 8,
+            "int": 2
           },
-          "score": 118.0,
+          "score": 160.8,
           "hudlLink": "https://www.hudl.com/profile/9739430/eli-blakey",
           "pffLink": ""
         },
@@ -1887,12 +1917,44 @@
           "totals": {
             "games": 12.0,
             "total": 102.0,
-            "tfl": 0.0,
+            "tfl": 5.0,
             "pbu": 0.0,
-            "int": 0.0
+            "int": 2
           },
-          "score": 102.0,
+          "score": 121.5,
           "hudlLink": "https://www.hudl.com/profile/17498941/bryce-llewellyn",
+          "pffLink": ""
+        },
+        {
+          "player": "Kal-El Pascal",
+          "team": "Bowling Green",
+          "position": "SAF",
+          "season": 2025,
+          "totals": {
+            "games": 12.0,
+            "total": 80.0,
+            "tfl": 4,
+            "pbu": 5,
+            "int": 1
+          },
+          "score": 107.0,
+          "hudlLink": "https://www.hudl.com/profile/15335920/KalEl-Pascal",
+          "pffLink": ""
+        },
+        {
+          "player": "Jalen Thomeson",
+          "team": "Ohio",
+          "position": "SAF",
+          "season": 2025,
+          "totals": {
+            "games": 13.0,
+            "total": 86.0,
+            "tfl": 7,
+            "pbu": 0.0,
+            "int": 1
+          },
+          "score": 102.5,
+          "hudlLink": "",
           "pffLink": ""
         },
         {
@@ -1909,38 +1971,6 @@
           },
           "score": 89.0,
           "hudlLink": "https://www.hudl.com/profile/8856518",
-          "pffLink": ""
-        },
-        {
-          "player": "Jalen Thomeson",
-          "team": "Ohio",
-          "position": "SAF",
-          "season": 2025,
-          "totals": {
-            "games": 13.0,
-            "total": 86.0,
-            "tfl": 0.0,
-            "pbu": 0.0,
-            "int": 0.0
-          },
-          "score": 86.0,
-          "hudlLink": "",
-          "pffLink": ""
-        },
-        {
-          "player": "Kal-El Pascal",
-          "team": "Bowling Green",
-          "position": "SAF",
-          "season": 2025,
-          "totals": {
-            "games": 12.0,
-            "total": 80.0,
-            "tfl": 0.0,
-            "pbu": 0.0,
-            "int": 0.0
-          },
-          "score": 80.0,
-          "hudlLink": "https://www.hudl.com/profile/15335920/KalEl-Pascal",
           "pffLink": ""
         }
       ]
