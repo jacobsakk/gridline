@@ -19,7 +19,7 @@ export const OWNER_EMAIL = "sakk1j@cmich.edu";
 
 // Shared with the Settings page's own invite form, so a self-requested role and an admin-typed one mean
 // the same thing.
-export const ROLES = ["Head Coach", "Assistant Coach", "Director of Player Personnel", "Recruiting Coordinator", "Analyst"];
+export const ROLES = ["Coach", "Student", "Admin"];
 
 // Anyone can submit one of these, signed in or not -- it's the "ask for access" form on the sign-in
 // page. It doesn't grant anything by itself: an admin reviews it in Settings and either approves it
