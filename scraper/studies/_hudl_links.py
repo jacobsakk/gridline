@@ -212,3 +212,14 @@ HUDL_LINKS.update({
     "MASON WILLIAMS": "https://www.hudl.com/profile/12957817",
     "MJ CANNON": "https://www.hudl.com/profile/13071182",
 })
+HUDL_LINKS.update({
+    # 2026 TE/CB research (see TE_SUPPLEMENT/CB_SUPPLEMENT above). Jordan Williams, Elijah Alexander,
+    # Isaiah Reed and Cam Jones searched multiple times with no reliable match (common names, or a
+    # transfer history across too many schools to confirm) -- left blank, same as the earlier stalled list.
+    "ELI JACON-DUFFY": "https://www.hudl.com/profile/14831453",
+    "JEREMIAH SCOBY": "https://www.hudl.com/profile/16657982/jeremiah-scoby",
+    "DIONTE THORNTON": "https://www.hudl.com/profile/4436431/dionte-thornton",
+    "KOBI BLACKWELL": "https://www.hudl.com/profile/1476743/Kobi-Blackwell/about",
+    "KENDALL BANNISTER": "https://www.hudl.com/profile/15729844",
+    "CAIDEN NEWSOME": "https://www.hudl.com/profile/20427970/caiden-newsome",
+})
