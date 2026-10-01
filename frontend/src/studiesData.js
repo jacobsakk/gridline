@@ -69,14 +69,33 @@ export function useStudy(studyId) {
   // Deliberately keyed by group + player only, not season -- the same person's Hudl link is the same link
   // no matter which year's top 5 they show up in, so fixing it once fixes every season's row for them.
   const overrideKey = (group, player) => `${studyId}__${group}__${norm(player)}`;
+  // Stat corrections, unlike the above, genuinely differ by season for the same player -- so this key
+  // includes the season, and lives in its own doc (the trailing "__stats" keeps it from ever colliding
+  // with the season-less key above, even though both live in the same studyOverrides collection).
+  const statsOverrideKey = (group, season, player) => `${studyId}__${group}__${season}__${norm(player)}__stats`;
 
   const groups = useMemo(() => {
     if (!data) return {};
     const out = {};
     Object.entries(data.groups || {}).forEach(([group, bySeason]) => {
       out[group] = {};
+      const groupMeta = meta.groups.find((g) => g.key === group);
       Object.entries(bySeason).forEach(([season, players]) => {
-        out[group][season] = players.map((p) => ({ ...p, ...overrides[overrideKey(group, p.player)] }));
+        out[group][season] = players.map((p) => {
+          const merged = { ...p, ...overrides[overrideKey(group, p.player)] };
+          const statFix = overrides[statsOverrideKey(group, season, p.player)];
+          if (statFix?.totals) {
+            merged.totals = { ...merged.totals, ...statFix.totals };
+            // Re-derive the score from the corrected totals using the same linear formula
+            // scraper/studies/mac_best_by_position.py's GROUPS[key].score lambda encodes (see
+            // studiesData.js's scoreFormula comment) -- otherwise a corrected stat would leave a stale
+            // score (and ranking) sitting next to it.
+            if (groupMeta?.scoreFormula) {
+              merged.score = Math.round(groupMeta.scoreFormula.reduce((sum, t) => sum + (merged.totals[t.key] ?? 0) * t.coef, 0) * 10) / 10;
+            }
+          }
+          return merged;
+        });
       });
     });
     return out;
@@ -90,6 +109,14 @@ export function useStudy(studyId) {
     groups,
     async saveField(group, player, fields) {
       await setDoc(doc(db, "studyOverrides", overrideKey(group, player)), fields, { merge: true });
+    },
+    // Fixes one stat on one player's one-season row (a data error from whichever source fed that
+    // season -- see mac_best_by_position.py). Merges onto any other stat already fixed for this same
+    // player/season/group, rather than replacing the whole totals override outright.
+    async saveStat(group, season, player, statKey, value) {
+      const key = statsOverrideKey(group, season, player);
+      const existingTotals = overrides[key]?.totals || {};
+      await setDoc(doc(db, "studyOverrides", key), { totals: { ...existingTotals, [statKey]: value } }, { merge: true });
     },
   };
 }

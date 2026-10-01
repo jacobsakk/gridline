@@ -214,6 +214,67 @@ function StateCell({ row, admin, onSave }) {
   );
 }
 
+// One raw stat value (games, tackles, yards...), editable by admins for exactly the reason this study
+// keeps needing it: a source (the NCAA leaderboard for 2023-2025, ESPN's roster API for 2026) is
+// occasionally wrong for one player -- rather than waiting on a code fix, an admin corrects it here.
+// Same click-to-edit shape as StateCell, but numeric and always has *some* value to show (0, not a dash).
+function StatCell({ value, admin, onSave }) {
+  const [editing, setEditing] = useState(false);
+  const [text, setText] = useState(String(value));
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+
+  async function commit(next) {
+    const parsed = parseFloat(next);
+    const nextValue = Number.isFinite(parsed) ? parsed : 0;
+    if (nextValue === value) {
+      setEditing(false);
+      return;
+    }
+    setSaving(true);
+    setError("");
+    try {
+      await onSave(nextValue);
+      setEditing(false);
+    } catch (err) {
+      setError(err?.code === "permission-denied" ? "Admins only" : "Failed");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  if (editing) {
+    return (
+      <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+        <input
+          autoFocus
+          inputMode="decimal"
+          value={text}
+          disabled={saving}
+          onChange={(e) => setText(e.target.value)}
+          className="tabular"
+          style={{ ...control, padding: "4px 7px", fontSize: 12.5, width: 60, opacity: saving ? 0.6 : 1 }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") commit(text);
+            if (e.key === "Escape") {
+              setText(String(value));
+              setError("");
+              setEditing(false);
+            }
+          }}
+          onBlur={() => commit(text)}
+        />
+        {error && <span style={{ fontSize: 11, color: "var(--danger, #c0392b)", whiteSpace: "nowrap" }}>{error}</span>}
+      </div>
+    );
+  }
+  return (
+    <span onClick={() => admin && setEditing(true)} title={admin ? "Click to correct" : undefined} style={{ cursor: admin ? "pointer" : "default" }}>
+      {value}
+    </span>
+  );
+}
+
 function StudyDetail({ studyId, admin, onBack }) {
   const study = useStudy(studyId);
   const [initial] = useState(initialSubRoute);
@@ -337,7 +398,9 @@ function StudyDetail({ studyId, admin, onBack }) {
                   <td style={td}>{r.team}</td>
                   <td style={td}><StateCell row={r} admin={admin} onSave={(state) => study.saveField(group, r.player, { state })} /></td>
                   {activeGroup.stats.map((s) => (
-                    <td key={s.key} style={td} className="tabular">{r.totals[s.key] ?? 0}</td>
+                    <td key={s.key} style={td} className="tabular">
+                      <StatCell value={r.totals[s.key] ?? 0} admin={admin} onSave={(value) => study.saveStat(group, activeSeason, r.player, s.key, value)} />
+                    </td>
                   ))}
                   <td style={{ ...td, fontWeight: 700, color: "var(--accent)" }} className="tabular">
                     <button
