@@ -111,4 +111,16 @@ HOME_STATES = {
     "JARVARIUS SIMS": "GA",
     "JOJO JOHNSON": "IN",
     "CHRIS MCDONALD": "FL",
+    # 2026 TE/CB top-5 research, sourced directly from each player's ESPN bio page (BIRTHPLACE field) --
+    # see TE_SUPPLEMENT/CB_SUPPLEMENT's 2026 entries in _hudl_links.py.
+    "JEREMIAH SCOBY": "TX",
+    "JORDAN WILLIAMS": "CA",
+    "ELIJAH ALEXANDER": "CA",
+    "ELI JACON-DUFFY": "OH",
+    "ISAIAH REED": "FL",
+    "DIONTE THORNTON": "CA",
+    "KOBI BLACKWELL": "GA",
+    "CAIDEN NEWSOME": "MD",
+    "KENDALL BANNISTER": "VA",
+    "CAM JONES": "PA",
 }
