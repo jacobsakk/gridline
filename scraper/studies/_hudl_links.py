@@ -36,17 +36,9 @@ TE_SUPPLEMENT = {
         {"player": "DeCorion Temple", "team": "Central Mich.", "totals": {"games": 12, "rec": 15, "yards": 131, "td": 2}},
         {"player": "Brian Shane", "team": "Miami (OH)", "totals": {"games": 14, "rec": 13, "yards": 116, "td": 2}},
     ],
-    # 2026 is in progress -- pulled directly from ESPN's MAC receiving leaderboard (espn.com/college-
-    # football/stats/player, group 15) plus each player's own ESPN bio/game-log page for games played and
-    # hometown, rather than the NCAA API leaderboard this study otherwise uses -- the NCAA leaderboard
-    # doesn't carry a single MAC tight end at all this season (same chronic gap as 2023-2024).
-    "2026": [
-        {"player": "Jeremiah Scoby", "team": "Bowling Green", "totals": {"games": 4, "rec": 16, "yards": 148, "td": 0}},
-        {"player": "Joshua Long", "team": "Eastern Mich.", "totals": {"games": 5, "rec": 17, "yards": 131, "td": 0}},
-        {"player": "Jordan Williams", "team": "Sacramento St.", "totals": {"games": 5, "rec": 15, "yards": 122, "td": 0}},
-        {"player": "Elijah Alexander", "team": "Akron", "totals": {"games": 4, "rec": 9, "yards": 79, "td": 3}},
-        {"player": "Eli Jacon-Duffy", "team": "Bowling Green", "totals": {"games": 4, "rec": 10, "yards": 89, "td": 0}},
-    ],
+    # No 2026 entry on purpose -- 2026 now pulls straight from real-stats.json (full MAC rosters, not a
+    # national leaderboard), which already has every tight end with real production. See
+    # mac_best_by_position.py's module docstring and fetch_season_from_real_stats.
 }
 # Same leaderboard-coverage gap as TE above, but narrower: CB 2023's *entire* raw candidate pool (from
 # merging all five NCAA defensive leaderboards) is just 4 players -- nobody else tagged CB on a MAC team
@@ -58,21 +50,8 @@ CB_SUPPLEMENT = {
     "2023": [
         {"player": "Chris McDonald", "team": "Toledo", "totals": {"games": 12, "total": 34, "pbu": 8, "int": 2}},
     ],
-    # 2026 is in progress -- same ESPN sourcing as TE_SUPPLEMENT's 2026 entry above (MAC defensive
-    # leaderboard sorted by PD and by INT, group 15, plus each player's own bio/game-log page). The NCAA
-    # API leaderboard's 2026 CB pool only has 2 players and both show 0 total tackles / 0 PBU -- the same
-    # leaderboard-coverage gap already documented for LB/DL/SAF elsewhere in this study, not real zeros.
-    # Six listed (one more than TOP_N) because Kendall Bannister and Cam Jones are a genuine tie for 5th;
-    # the real NCAA-leaderboard rows for JC Clark/Isaiah Reed stay in (see build()) but score low enough
-    # on their uncorrected stats to fall out of the top 5 on their own.
-    "2026": [
-        {"player": "Isaiah Reed", "team": "Massachusetts", "totals": {"games": 4, "total": 10, "pbu": 2, "int": 1}},
-        {"player": "Dionte Thornton", "team": "Sacramento St.", "totals": {"games": 5, "total": 17, "pbu": 2, "int": 0}},
-        {"player": "Kobi Blackwell", "team": "Buffalo", "totals": {"games": 4, "total": 12, "pbu": 3, "int": 0}},
-        {"player": "Caiden Newsome", "team": "Akron", "totals": {"games": 4, "total": 11, "pbu": 3, "int": 0}},
-        {"player": "Kendall Bannister", "team": "Ohio", "totals": {"games": 4, "total": 14, "pbu": 2, "int": 0}},
-        {"player": "Cam Jones", "team": "Toledo", "totals": {"games": 4, "total": 14, "pbu": 2, "int": 0}},
-    ],
+    # No 2026 entry on purpose, same reason as TE_SUPPLEMENT above -- real-stats.json's MAC CB pool is a
+    # full roster (dozens of corners), not the 2 the NCAA leaderboard carried.
 }
 HUDL_LINKS.update({
     "KURTIS ROURKE": "https://www.hudl.com/profile/5350951",
