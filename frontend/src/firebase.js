@@ -8,7 +8,11 @@ import { getAuth } from "firebase/auth";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAokApn-a75wF0zY3eXncmvgikdAFG0qlE",
-  authDomain: "gridline-6afe6.firebaseapp.com",
+  // Custom domain (Firebase Hosting, verified via Cloudflare DNS) so sign-in emails and action links
+  // come from a domain this project controls instead of the generic *.firebaseapp.com one -- the
+  // default was getting flagged as spam. See auth.cmichrecruiting.com in Firebase Hosting's custom
+  // domains and Authentication > Settings > Authorized domains.
+  authDomain: "auth.cmichrecruiting.com",
   projectId: "gridline-6afe6",
   storageBucket: "gridline-6afe6.firebasestorage.app",
   messagingSenderId: "634127081395",
