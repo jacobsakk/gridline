@@ -17,6 +17,29 @@ import { auth, db } from "./firebase";
 // this is how the very first account gets bootstrapped. Mirrors firestore.rules.
 export const OWNER_EMAIL = "sakk1j@cmich.edu";
 
+// Shared with the Settings page's own invite form, so a self-requested role and an admin-typed one mean
+// the same thing.
+export const ROLES = ["Head Coach", "Assistant Coach", "Director of Player Personnel", "Recruiting Coordinator", "Analyst"];
+
+// Anyone can submit one of these, signed in or not -- it's the "ask for access" form on the sign-in
+// page. It doesn't grant anything by itself: an admin reviews it in Settings and either approves it
+// (which creates the real invite) or denies it (deletes the request). See firestore.rules for the write
+// rule that keeps this safe to leave open to the public -- it can only ever create a pending request for
+// the submitter's own email, never an actual account.
+export async function submitAccountRequest({ name, email, role, note }) {
+  const key = normalizeEmail(email);
+  if (!name.trim() || !/^\S+@\S+\.\S+$/.test(key)) throw Object.assign(new Error("Enter a name and a valid email address."), { code: "bad-request" });
+  await setDoc(doc(db, "accountRequests", key), {
+    name: name.trim(),
+    email: key,
+    role,
+    note: (note || "").trim(),
+    status: "pending",
+    createdAt: new Date().toISOString(),
+  });
+  return key;
+}
+
 const EMAIL_KEY = "gridline-signin-email";
 
 // Where the emailed link brings the coach back to: this site's own address.

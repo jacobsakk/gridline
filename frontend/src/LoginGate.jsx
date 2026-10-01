@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { Loader2, Mail } from "lucide-react";
-import { coachTitle, useAuth } from "./auth.js";
+import { Loader2, Mail, UserPlus } from "lucide-react";
+import { ROLES, coachTitle, submitAccountRequest, useAuth } from "./auth.js";
 import CardTransition from "./CardTransition.jsx";
 import actionCDark from "./assets/cmu-action-c-dark.png";
 
@@ -152,6 +152,80 @@ function SignInForm({ auth }) {
   );
 }
 
+// "Not invited yet? Ask for access" -- anyone can submit this, no account needed. It doesn't sign
+// anyone in; it just drops a pending request in Firestore for an admin to approve or deny from Settings.
+function RequestAccessForm({ onBack }) {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [role, setRole] = useState(ROLES[0]);
+  const [note, setNote] = useState("");
+  const [phase, setPhase] = useState("form"); // form | working | sent
+  const [error, setError] = useState("");
+
+  async function submit(e) {
+    e.preventDefault();
+    setError("");
+    setPhase("working");
+    try {
+      await submitAccountRequest({ name, email, role, note });
+      setPhase("sent");
+    } catch (err) {
+      setPhase("form");
+      setError(err.message || "Something went wrong. Try again.");
+    }
+  }
+
+  const label = { display: "block", fontSize: 12, letterSpacing: "0.08em", textTransform: "uppercase", color: "#A78389", marginBottom: 8 };
+
+  if (phase === "sent") {
+    return (
+      <div style={{ textAlign: "center" }}>
+        <UserPlus size={30} color="var(--gold)" style={{ marginBottom: 10 }} />
+        <h2 className="oswald" style={{ margin: "0 0 8px", fontSize: 20 }}>Request sent</h2>
+        <p style={{ margin: "0 0 16px", fontSize: 14, color: "#CDAEAC", lineHeight: 1.55 }}>
+          An admin will review it. Once approved, you'll get an email with a sign-in link.
+        </p>
+        <button type="button" onClick={onBack} style={linkButton}>Back to sign in</button>
+      </div>
+    );
+  }
+
+  const working = phase === "working";
+  return (
+    <form onSubmit={submit}>
+      <h2 className="oswald" style={{ margin: "0 0 8px", fontSize: 20 }}>Request access</h2>
+      <p style={{ margin: "0 0 16px", fontSize: 14, color: "#CDAEAC", lineHeight: 1.5 }}>Not invited yet? Ask for access below — an admin will review it.</p>
+      <label htmlFor="req-name" style={label}>Name</label>
+      <input id="req-name" autoFocus value={name} onChange={(e) => setName(e.target.value)} placeholder="Jane Smith" style={fieldStyle} />
+      <label htmlFor="req-email" style={{ ...label, marginTop: 14 }}>Email</label>
+      <input id="req-email" type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@school.edu" style={fieldStyle} />
+      <label htmlFor="req-role" style={{ ...label, marginTop: 14 }}>Role</label>
+      <select id="req-role" value={role} onChange={(e) => setRole(e.target.value)} style={{ ...fieldStyle, cursor: "pointer" }}>
+        {ROLES.map((r) => (
+          <option key={r} value={r}>{r}</option>
+        ))}
+      </select>
+      <label htmlFor="req-note" style={{ ...label, marginTop: 14 }}>Note (optional)</label>
+      <textarea
+        id="req-note"
+        value={note}
+        onChange={(e) => setNote(e.target.value)}
+        placeholder="Anything that helps — which team, who told you to sign up, etc."
+        rows={3}
+        style={{ ...fieldStyle, resize: "vertical", fontFamily: "inherit" }}
+      />
+      {error && <div role="alert" style={{ marginTop: 12, fontSize: 13.5, color: "#FF9E9E", lineHeight: 1.45 }}>{error}</div>}
+      <button type="submit" disabled={working || !name.trim() || !email.trim()} style={{ ...buttonStyle, marginTop: 16, opacity: working || !name.trim() || !email.trim() ? 0.6 : 1 }}>
+        {working ? <Loader2 size={16} className="spin" /> : <UserPlus size={16} />}
+        {working ? "Sending…" : "Send request"}
+      </button>
+      <div style={{ textAlign: "center", marginTop: 14 }}>
+        <button type="button" onClick={onBack} style={linkButton}>Back to sign in</button>
+      </div>
+    </form>
+  );
+}
+
 function CreatePassword({ auth }) {
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
@@ -224,6 +298,7 @@ export default function LoginGate({ children }) {
 
   const [showApp, setShowApp] = useState(false);
   const [welcome, setWelcome] = useState(false);
+  const [requesting, setRequesting] = useState(false);
 
   useEffect(() => {
     if (auth.status === "ready") {
@@ -253,12 +328,21 @@ export default function LoginGate({ children }) {
   } else {
     screen = (
       <Shell>
-        {auth.status === "denied" && (
-          <div role="alert" style={{ marginBottom: 16, fontSize: 13.5, color: "#FF9E9E", lineHeight: 1.45 }}>
-            That email isn't on the invite list. Ask Coach Sakk to add you.
-          </div>
+        {requesting ? (
+          <RequestAccessForm onBack={() => setRequesting(false)} />
+        ) : (
+          <>
+            {auth.status === "denied" && (
+              <div role="alert" style={{ marginBottom: 16, fontSize: 13.5, color: "#FF9E9E", lineHeight: 1.45 }}>
+                That email isn't on the invite list. Ask Coach Sakk to add you, or request access below.
+              </div>
+            )}
+            <SignInForm auth={auth} />
+            <div style={{ textAlign: "center", marginTop: 16, paddingTop: 16, borderTop: "1px solid #3A2A2E" }}>
+              <button type="button" onClick={() => setRequesting(true)} style={linkButton}>Don&rsquo;t have an account? Request access</button>
+            </div>
+          </>
         )}
-        <SignInForm auth={auth} />
       </Shell>
     );
   }

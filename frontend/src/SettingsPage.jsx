@@ -2,12 +2,28 @@ import { useState, useEffect, useMemo } from "react";
 import { BackButton, HomeButton } from "./HomeButton.jsx";
 import { collection, deleteDoc, doc, onSnapshot, orderBy, query, setDoc } from "firebase/firestore";
 import { db } from "./firebase";
-import { Mail, Send, Trash2 } from "lucide-react";
+import { Check, Mail, Send, Trash2 } from "lucide-react";
 import { useBack } from "./route.js";
-import { normalizeEmail, sendInviteEmail } from "./auth.js";
+import { ROLES, normalizeEmail, sendInviteEmail } from "./auth.js";
 import { ThemeSwitcher, useTheme } from "./theme.jsx";
 
-const ROLES = ["Head Coach", "Assistant Coach", "Director of Player Personnel", "Recruiting Coordinator", "Analyst"];
+// "Request access" submissions from the sign-in page -- pending until an admin approves (creates the
+// real invite below) or denies (just deletes the request) them.
+function useAccountRequests() {
+  const [requests, setRequests] = useState([]);
+
+  useEffect(() => {
+    const q = query(collection(db, "accountRequests"), orderBy("createdAt", "asc"));
+    const unsubscribe = onSnapshot(q, (snap) => setRequests(snap.docs.map((d) => ({ id: d.id, ...(d.data() || {}) }))), () => {});
+    return unsubscribe;
+  }, []);
+
+  async function denyRequest(id) {
+    await deleteDoc(doc(db, "accountRequests", id));
+  }
+
+  return { requests, denyRequest };
+}
 
 // The roster doubles as the invite list: a coach can sign in only if there is
 // an account here whose document id is their (lowercased) email -- the
@@ -65,13 +81,39 @@ export default function SettingsPage({ onBack: toDashboard, session }) {
   const back = useBack(toDashboard);
   const [theme, setTheme] = useTheme();
   const { accounts, inviteAccount, removeAccount } = useAccounts();
+  const { requests, denyRequest } = useAccountRequests();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [role, setRole] = useState(ROLES[0]);
   const [admin, setAdmin] = useState(false);
   const [notice, setNotice] = useState({ kind: "", text: "" });
   const [busy, setBusy] = useState(false);
+  const [requestAdmin, setRequestAdmin] = useState({}); // request id -> whether to grant admin on approval
+  const [busyRequest, setBusyRequest] = useState(""); // id of the request currently being approved/denied
   const isAdmin = !!session?.profile?.admin;
+
+  async function approveRequest(r) {
+    setBusyRequest(r.id);
+    setNotice({ kind: "", text: "" });
+    try {
+      await inviteAccount({ name: r.name, email: r.email, role: r.role, admin: !!requestAdmin[r.id], invitedBy: session?.profile?.email });
+      await denyRequest(r.id); // the request is spent either way now -- the real account above is the record of it
+      setNotice({ kind: "ok", text: `Approved. Invite sent to ${r.email}.` });
+    } catch (err) {
+      setNotice({ kind: "error", text: inviteError(err) });
+    }
+    setBusyRequest("");
+  }
+
+  async function deny(r) {
+    setBusyRequest(r.id);
+    try {
+      await denyRequest(r.id);
+    } catch {
+      setNotice({ kind: "error", text: "Couldn't remove that request. Try again." });
+    }
+    setBusyRequest("");
+  }
 
   async function handleAdd(e) {
     e.preventDefault();
@@ -163,6 +205,48 @@ export default function SettingsPage({ onBack: toDashboard, session }) {
               Only admins can invite coaches. Ask Coach Sakk if you need someone added.
             </div>
           ) : (
+          <>
+          {requests.length > 0 && (
+            <div style={{ background: "var(--bg-panel)", border: "1px solid var(--accent)", borderRadius: 8, padding: 20, marginBottom: 16 }}>
+              <h2 className="oswald" style={{ fontSize: 18, fontWeight: 700, margin: "0 0 6px", color: "var(--accent)" }}>
+                Pending Requests <span className="tabular" style={{ fontSize: 14, opacity: 0.8 }}>({requests.length})</span>
+              </h2>
+              <p style={{ margin: "0 0 14px", fontSize: 13, color: "var(--text-muted)", lineHeight: 1.5 }}>
+                Submitted from the sign-in page's "Request access" link. Approving sends them the same invite as filling out the form below yourself; denying just removes the request.
+              </p>
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                {requests.map((r) => (
+                  <div key={r.id} style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap", background: "var(--bg-page)", border: "1px solid var(--border)", borderRadius: 6, padding: "10px 12px" }}>
+                    <div style={{ minWidth: 160 }}>
+                      <div style={{ fontSize: 13.5, fontWeight: 700 }}>{r.name}</div>
+                      <div style={{ fontSize: 12.5, color: "var(--text-muted)" }}>{r.email}</div>
+                    </div>
+                    <div style={{ fontSize: 12.5, color: "var(--text-secondary)" }}>{r.role}</div>
+                    {r.note && <div style={{ fontSize: 12.5, color: "var(--text-faint)", fontStyle: "italic", flex: "1 1 200px" }}>&ldquo;{r.note}&rdquo;</div>}
+                    <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12.5, color: "var(--text-secondary)", cursor: "pointer", marginLeft: "auto" }}>
+                      <input type="checkbox" checked={!!requestAdmin[r.id]} onChange={(e) => setRequestAdmin((m) => ({ ...m, [r.id]: e.target.checked }))} /> Admin
+                    </label>
+                    <button
+                      onClick={() => approveRequest(r)}
+                      disabled={busyRequest === r.id}
+                      title="Approve — sends an invite"
+                      style={{ display: "flex", alignItems: "center", gap: 6, background: "var(--accent-bg)", border: "1px solid var(--accent)", color: "var(--accent)", borderRadius: 5, padding: "6px 11px", fontSize: 12.5, fontWeight: 700, cursor: "pointer", opacity: busyRequest === r.id ? 0.6 : 1 }}
+                    >
+                      <Check size={13} /> Approve
+                    </button>
+                    <button
+                      onClick={() => deny(r)}
+                      disabled={busyRequest === r.id}
+                      title="Deny — removes this request"
+                      style={{ background: "none", border: "none", color: "var(--danger)", cursor: "pointer", padding: 4, lineHeight: 0, opacity: busyRequest === r.id ? 0.6 : 1 }}
+                    >
+                      <Trash2 size={15} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
           <div style={{ background: "var(--bg-panel)", border: "1px solid var(--border)", borderRadius: 8, padding: 20 }}>
             <h2 className="oswald" style={{ fontSize: 18, fontWeight: 700, margin: "0 0 6px" }}>Accounts &amp; Invites</h2>
             <p style={{ margin: "0 0 14px", fontSize: 13, color: "var(--text-muted)", lineHeight: 1.5 }}>
@@ -267,6 +351,7 @@ export default function SettingsPage({ onBack: toDashboard, session }) {
               </div>
             )}
           </div>
+          </>
           )}
         </div>
       </div>

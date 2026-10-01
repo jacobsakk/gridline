@@ -38,6 +38,19 @@ service cloud.firestore {
         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['lastLoginAt', 'passwordSet'])
       );
     }
+    // "Request access" on the sign-in page -- open to the public (no signedIn() check) since the whole
+    // point is that someone without an account yet can ask for one. Deliberately narrow: a create can
+    // only plant a pending request under the submitter's OWN email (doc id must match the email field)
+    // with exactly these fields and status always "pending" -- nothing here can grant real access on its
+    // own. Only an admin can read the list, flip it to approved (which is really just them separately
+    // creating the real accounts/{email} doc), or delete a request (denying it, or clearing it out after
+    // approving).
+    match /accountRequests/{email} {
+      allow create: if request.resource.data.email == email &&
+        request.resource.data.status == 'pending' &&
+        request.resource.data.keys().hasOnly(['name', 'email', 'role', 'note', 'status', 'createdAt']);
+      allow read, delete: if isAdmin();
+    }
 
     match /watchlist/{docId} {
       allow read, write: if invited();
