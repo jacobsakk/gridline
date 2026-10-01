@@ -64,7 +64,11 @@ function useAccounts() {
     await deleteDoc(doc(db, "accounts", id));
   }
 
-  return { accounts, ready, inviteAccount, removeAccount };
+  async function updateAccountRole(id, role) {
+    await setDoc(doc(db, "accounts", id), { role }, { merge: true });
+  }
+
+  return { accounts, ready, inviteAccount, removeAccount, updateAccountRole };
 }
 
 function inviteError(err) {
@@ -80,7 +84,7 @@ function inviteError(err) {
 export default function SettingsPage({ onBack: toDashboard, session }) {
   const back = useBack(toDashboard);
   const [theme, setTheme] = useTheme();
-  const { accounts, inviteAccount, removeAccount } = useAccounts();
+  const { accounts, inviteAccount, removeAccount, updateAccountRole } = useAccounts();
   const { requests, denyRequest } = useAccountRequests();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -134,6 +138,15 @@ export default function SettingsPage({ onBack: toDashboard, session }) {
       setNotice({ kind: "error", text: inviteError(err) });
     }
     setBusy(false);
+  }
+
+  async function changeRole(a, role) {
+    if (role === a.role) return;
+    try {
+      await updateAccountRole(a.id, role);
+    } catch (err) {
+      setNotice({ kind: "error", text: err?.code === "permission-denied" ? "You don't have permission to manage accounts." : "Couldn't change that role. Try again." });
+    }
   }
 
   async function resend(a) {
@@ -313,7 +326,18 @@ export default function SettingsPage({ onBack: toDashboard, session }) {
                       <tr key={a.id} style={{ borderBottom: "1px solid var(--border-subtle)" }}>
                         <td style={{ padding: "9px 8px", fontSize: 13.5, fontWeight: 600 }}>{a.name}</td>
                         <td style={{ padding: "9px 8px", fontSize: 13, color: "var(--text-muted)" }}>{a.email || "—"}</td>
-                        <td style={{ padding: "9px 8px", fontSize: 13, color: "var(--text-secondary)" }}>{a.role || "—"}</td>
+                        <td style={{ padding: "9px 8px", fontSize: 13 }}>
+                          <select
+                            value={ROLES.includes(a.role) ? a.role : ""}
+                            onChange={(e) => changeRole(a, e.target.value)}
+                            style={{ ...inputStyle, padding: "4px 7px", fontSize: 13, color: "var(--text-secondary)", cursor: "pointer" }}
+                          >
+                            {!ROLES.includes(a.role) && <option value="">{a.role || "—"}</option>}
+                            {ROLES.map((r) => (
+                              <option key={r} value={r}>{r}</option>
+                            ))}
+                          </select>
+                        </td>
                         <td style={{ padding: "9px 8px", fontSize: 13, color: "var(--text-secondary)" }}>{a.admin ? "Admin" : "Coach"}</td>
                         <td className="tabular" style={{ padding: "9px 8px", fontSize: 12.5, color: "var(--text-muted)", whiteSpace: "nowrap" }}>
                           {a.createdAt ? new Date(a.createdAt).toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" }) : "—"}
