@@ -1,18 +1,21 @@
 """
 One-off data pull for the Studies dashboard's first study: the top 5 most productive MAC players at each
-position, for each of the 2023, 2024 and 2025 seasons -- kept as three separate rankings (not combined
+position, for each of the 2023, 2024, 2025 and 2026 seasons -- kept as separate rankings (not combined
 across years), so the study answers "who had the best year in the league at this position, in this
-specific season" rather than a multi-year aggregate. Not part of the regular weekly refresh -- run by hand
-whenever this study needs to be regenerated:
+specific season" rather than a multi-year aggregate. 2026 is the current, in-progress season: its totals
+are season-to-date, not final, and will look thin early on since MIN_GAMES still applies -- rerun this
+script periodically through the season to keep it current. Not part of the regular weekly refresh -- run
+by hand whenever this study needs to be regenerated:
 
     python3 studies/mac_best_by_position.py
 
-All three seasons come from the NCAA API's national leaderboards (ncaa_api.py, season override), which
-only carry a player once they crack roughly the national top 100-150 in that category that season -- a
+All seasons come from the NCAA API's national leaderboards (ncaa_api.py, season override), which only
+carry a player once they crack roughly the national top 100-150 in that category that season -- a
 genuinely elite conference performer is covered, but a solid-but-not-nationally-ranked one may be missing.
 
-MAC membership was stable across 2023-2025 (Massachusetts already in since 2022; Northern Illinois left
-for the Mountain West and Sacramento St. joined only for 2026, after this study's window).
+MAC membership was stable across 2023-2025 (Massachusetts already in since 2022). Northern Illinois left
+for the Mountain West and Sacramento St. joined for 2026 -- MAC_TEAMS is season-aware specifically for
+that swap (see mac_teams_for).
 """
 
 import json
@@ -27,11 +30,19 @@ from studies._home_states import HOME_STATES
 
 OUT_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "frontend", "src", "data", "studies", "mac-best-by-position.json")
 
-SEASONS = ["2023", "2024", "2025"]
-MAC_TEAMS = {
+SEASONS = ["2023", "2024", "2025", "2026"]
+# The 12 teams common to every season in this study, plus whichever of Northern Illinois (left for the
+# Mountain West after 2025) / Sacramento St. (joined for 2026) actually played in the MAC that season.
+_MAC_TEAMS_CORE = {
     "Akron", "Ball St.", "Bowling Green", "Buffalo", "Central Mich.", "Eastern Mich.", "Kent St.",
-    "Massachusetts", "Miami (OH)", "Northern Illinois", "Ohio", "Toledo", "Western Mich.",
+    "Massachusetts", "Miami (OH)", "Ohio", "Toledo", "Western Mich.",
 }
+
+
+def mac_teams_for(season):
+    # Exact strings as the NCAA API's own standings endpoint spells them (confirmed directly, not
+    # guessed) -- "Sacramento St.", not "Sac State".
+    return _MAC_TEAMS_CORE | {"Sacramento St." if season == "2026" else "Northern Illinois"}
 
 # Which category+position combo defines each group, and how "most productive" is scored from that
 # category's raw stat fields for one season. All are real counting stats already in the pipeline's row shape.
@@ -60,8 +71,10 @@ def num(row, key):
 
 
 def fetch_season(season):
+    mac_teams = mac_teams_for(season)
+
     def lookup(team):
-        return "MAC" if team in MAC_TEAMS else "Independent"
+        return "MAC" if team in mac_teams else "Independent"
 
     rows = build_division_rows("fbs", "FBS", lookup, season=season)
     return [r for r in rows if r["conference"] == "MAC"]
@@ -119,9 +132,12 @@ def build():
                     # the Hudl links; blank means not found yet.
                     "state": HOME_STATES.get(r["player"].upper(), ""),
                 })
-            if group_key == "TE":
+            if group_key == "TE" and season in TE_SUPPLEMENT:
                 # The leaderboard pull above still runs (kept, in case a future season has more nationally-
-                # ranked MAC tight ends) but the hand-researched list is what's actually used for TE.
+                # ranked MAC tight ends) but the hand-researched list is what's actually used for TE --
+                # for a season that has one. 2026 doesn't yet (it's still in progress; nobody's hand-
+                # researched its All-MAC-caliber TEs mid-season), so it falls through and keeps whatever
+                # the real leaderboard found instead of going to zero.
                 ranked = [
                     {"player": e["player"], "team": e["team"], "position": "TE", "season": int(season), "totals": e["totals"],
                      "score": round(cfg["score"](e["totals"]), 1), "hudlLink": HUDL_LINKS.get(e["player"].upper(), ""),

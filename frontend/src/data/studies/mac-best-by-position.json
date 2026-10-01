@@ -1,9 +1,10 @@
 {
-  "generatedAt": "2026-09-30T19:40:21.536358Z",
+  "generatedAt": "2026-10-01T14:44:19.500837Z",
   "seasons": [
     2023,
     2024,
-    2025
+    2025,
+    2026
   ],
   "groups": {
     "QB": {
@@ -297,6 +298,103 @@
           "pffLink": "",
           "state": "AZ"
         }
+      ],
+      "2026": [
+        {
+          "player": "John Alan Richter",
+          "team": "Toledo",
+          "position": "QB",
+          "season": 2026,
+          "totals": {
+            "games": 4.0,
+            "att": 118.0,
+            "yards": 1161.0,
+            "td": 12.0,
+            "int": 1.0,
+            "rushYards": 0.0,
+            "rushTd": 0.0
+          },
+          "score": 1446.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": ""
+        },
+        {
+          "player": "David McComb",
+          "team": "Miami (OH)",
+          "position": "QB",
+          "season": 2026,
+          "totals": {
+            "games": 4.0,
+            "att": 103.0,
+            "yards": 1121.0,
+            "td": 7.0,
+            "int": 1.0,
+            "rushYards": 0.0,
+            "rushTd": 0.0
+          },
+          "score": 1281.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": ""
+        },
+        {
+          "player": "Noah Kim",
+          "team": "Eastern Mich.",
+          "position": "QB",
+          "season": 2026,
+          "totals": {
+            "games": 5.0,
+            "att": 173.0,
+            "yards": 968.0,
+            "td": 6.0,
+            "int": 3.0,
+            "rushYards": 0.0,
+            "rushTd": 0.0
+          },
+          "score": 1073.0,
+          "hudlLink": "https://www.hudl.com/profile/8588249",
+          "pffLink": "",
+          "state": "VA"
+        },
+        {
+          "player": "Jackson Sharman",
+          "team": "Sacramento St.",
+          "position": "QB",
+          "season": 2026,
+          "totals": {
+            "games": 4.0,
+            "att": 142.0,
+            "yards": 856.0,
+            "td": 5.0,
+            "int": 5.0,
+            "rushYards": 0.0,
+            "rushTd": 0.0
+          },
+          "score": 906.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": ""
+        },
+        {
+          "player": "William Watson III",
+          "team": "Massachusetts",
+          "position": "QB",
+          "season": 2026,
+          "totals": {
+            "games": 4.0,
+            "att": 73.0,
+            "yards": 610.0,
+            "td": 6.0,
+            "int": 1.0,
+            "rushYards": 0.0,
+            "rushTd": 0.0
+          },
+          "score": 745.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": ""
+        }
       ]
     },
     "RB": {
@@ -544,6 +642,88 @@
           "hudlLink": "https://www.hudl.com/profile/9847731",
           "pffLink": "",
           "state": "WA"
+        }
+      ],
+      "2026": [
+        {
+          "player": "Connor Walendzak",
+          "team": "Toledo",
+          "position": "RB",
+          "season": 2026,
+          "totals": {
+            "games": 4.0,
+            "att": 41.0,
+            "yards": 233.0,
+            "td": 5.0
+          },
+          "score": 283.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": ""
+        },
+        {
+          "player": "Jalen Buckley",
+          "team": "Western Mich.",
+          "position": "RB",
+          "season": 2026,
+          "totals": {
+            "games": 4.0,
+            "att": 47.0,
+            "yards": 225.0,
+            "td": 4.0
+          },
+          "score": 265.0,
+          "hudlLink": "https://www.hudl.com/profile/11214131/Jalen-Buckley",
+          "pffLink": "",
+          "state": "IL"
+        },
+        {
+          "player": "Amareon Blue",
+          "team": "Eastern Mich.",
+          "position": "RB",
+          "season": 2026,
+          "totals": {
+            "games": 5.0,
+            "att": 49.0,
+            "yards": 243.0,
+            "td": 2.0
+          },
+          "score": 263.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": ""
+        },
+        {
+          "player": "TJ Horton",
+          "team": "Ball St.",
+          "position": "RB",
+          "season": 2026,
+          "totals": {
+            "games": 4.0,
+            "att": 28.0,
+            "yards": 211.0,
+            "td": 3.0
+          },
+          "score": 241.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": ""
+        },
+        {
+          "player": "Elijah Faulkner",
+          "team": "Massachusetts",
+          "position": "RB",
+          "season": 2026,
+          "totals": {
+            "games": 4.0,
+            "att": 47.0,
+            "yards": 227.0,
+            "td": 0.0
+          },
+          "score": 227.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": ""
         }
       ]
     },
@@ -793,6 +973,88 @@
           "pffLink": "",
           "state": "NY"
         }
+      ],
+      "2026": [
+        {
+          "player": "Matthew Coleman",
+          "team": "Sacramento St.",
+          "position": "WR",
+          "season": 2026,
+          "totals": {
+            "games": 5.0,
+            "rec": 26.0,
+            "yards": 369.0,
+            "td": 3.0
+          },
+          "score": 399.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": ""
+        },
+        {
+          "player": "Chance Morrow",
+          "team": "Buffalo",
+          "position": "WR",
+          "season": 2026,
+          "totals": {
+            "games": 4.0,
+            "rec": 25.0,
+            "yards": 307.0,
+            "td": 6.0
+          },
+          "score": 367.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": ""
+        },
+        {
+          "player": "Riley Neer",
+          "team": "Ohio",
+          "position": "WR",
+          "season": 2026,
+          "totals": {
+            "games": 4.0,
+            "rec": 21.0,
+            "yards": 316.0,
+            "td": 4.0
+          },
+          "score": 356.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": ""
+        },
+        {
+          "player": "Adjatay Dabbs",
+          "team": "Toledo",
+          "position": "WR",
+          "season": 2026,
+          "totals": {
+            "games": 4.0,
+            "rec": 19.0,
+            "yards": 285.0,
+            "td": 4.0
+          },
+          "score": 325.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": ""
+        },
+        {
+          "player": "Bryson Hammer",
+          "team": "Toledo",
+          "position": "WR",
+          "season": 2026,
+          "totals": {
+            "games": 4.0,
+            "rec": 15.0,
+            "yards": 286.0,
+            "td": 2.0
+          },
+          "score": 306.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": ""
+        }
       ]
     },
     "TE": {
@@ -1041,7 +1303,8 @@
           "pffLink": "",
           "state": "OH"
         }
-      ]
+      ],
+      "2026": []
     },
     "DL": {
       "2023": [
@@ -1315,6 +1578,98 @@
             "int": 0.0
           },
           "score": 102.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": ""
+        }
+      ],
+      "2026": [
+        {
+          "player": "Myles Bradley",
+          "team": "Bowling Green",
+          "position": "DL",
+          "season": 2026,
+          "totals": {
+            "games": 4.0,
+            "total": 0.0,
+            "tfl": 5.5,
+            "sacks": 5.5,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 44.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": ""
+        },
+        {
+          "player": "Andrew Zock",
+          "team": "Toledo",
+          "position": "DL",
+          "season": 2026,
+          "totals": {
+            "games": 4.0,
+            "total": 0.0,
+            "tfl": 0.0,
+            "sacks": 2.5,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 15.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": ""
+        },
+        {
+          "player": "Jaihien Roy",
+          "team": "Kent St.",
+          "position": "DL",
+          "season": 2026,
+          "totals": {
+            "games": 4.0,
+            "total": 0.0,
+            "tfl": 0.0,
+            "sacks": 2.0,
+            "pbu": 0.0,
+            "int": 1.0
+          },
+          "score": 12.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": ""
+        },
+        {
+          "player": "Isaac Ackerman",
+          "team": "Ohio",
+          "position": "DL",
+          "season": 2026,
+          "totals": {
+            "games": 4.0,
+            "total": 0.0,
+            "tfl": 0.0,
+            "sacks": 2.0,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 12.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": ""
+        },
+        {
+          "player": "William DePaepe",
+          "team": "Massachusetts",
+          "position": "DL",
+          "season": 2026,
+          "totals": {
+            "games": 4.0,
+            "total": 0.0,
+            "tfl": 0.0,
+            "sacks": 2.0,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 12.0,
           "hudlLink": "",
           "pffLink": "",
           "state": ""
@@ -1597,6 +1952,98 @@
           "pffLink": "",
           "state": "OH"
         }
+      ],
+      "2026": [
+        {
+          "player": "Isaac Zay",
+          "team": "Toledo",
+          "position": "LB",
+          "season": 2026,
+          "totals": {
+            "games": 4.0,
+            "total": 33.0,
+            "tfl": 0.0,
+            "sacks": 0.0,
+            "pbu": 3.0,
+            "int": 2.0
+          },
+          "score": 61.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": ""
+        },
+        {
+          "player": "Zach Mowchan",
+          "team": "Eastern Mich.",
+          "position": "LB",
+          "season": 2026,
+          "totals": {
+            "games": 5.0,
+            "total": 43.0,
+            "tfl": 0.0,
+            "sacks": 0.0,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 43.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": ""
+        },
+        {
+          "player": "Dorian Pringle",
+          "team": "Bowling Green",
+          "position": "LB",
+          "season": 2026,
+          "totals": {
+            "games": 4.0,
+            "total": 39.0,
+            "tfl": 0.0,
+            "sacks": 0.0,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 39.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": ""
+        },
+        {
+          "player": "Timmy Hinspeter",
+          "team": "Massachusetts",
+          "position": "LB",
+          "season": 2026,
+          "totals": {
+            "games": 4.0,
+            "total": 30.0,
+            "tfl": 0.0,
+            "sacks": 0.0,
+            "pbu": 0.0,
+            "int": 1.0
+          },
+          "score": 38.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": ""
+        },
+        {
+          "player": "Michael Molnar",
+          "team": "Ohio",
+          "position": "LB",
+          "season": 2026,
+          "totals": {
+            "games": 4.0,
+            "total": 37.0,
+            "tfl": 0.0,
+            "sacks": 0.0,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 37.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": ""
+        }
       ]
     },
     "CB": {
@@ -1844,6 +2291,40 @@
           "hudlLink": "https://www.hudl.com/profile/11281944",
           "pffLink": "",
           "state": "GA"
+        }
+      ],
+      "2026": [
+        {
+          "player": "JC Clark",
+          "team": "Massachusetts",
+          "position": "CB",
+          "season": 2026,
+          "totals": {
+            "games": 4.0,
+            "total": 0.0,
+            "pbu": 0.0,
+            "int": 1.0
+          },
+          "score": 8.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": ""
+        },
+        {
+          "player": "Isaiah Reed",
+          "team": "Massachusetts",
+          "position": "CB",
+          "season": 2026,
+          "totals": {
+            "games": 4.0,
+            "total": 0.0,
+            "pbu": 0.0,
+            "int": 1.0
+          },
+          "score": 8.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": ""
         }
       ]
     },
@@ -2107,6 +2588,93 @@
           "hudlLink": "",
           "pffLink": "",
           "state": "IN"
+        }
+      ],
+      "2026": [
+        {
+          "player": "Armorion Smith",
+          "team": "Toledo",
+          "position": "SAF",
+          "season": 2026,
+          "totals": {
+            "games": 4.0,
+            "total": 31.0,
+            "tfl": 0.0,
+            "pbu": 4.0,
+            "int": 0.0
+          },
+          "score": 43.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": ""
+        },
+        {
+          "player": "Kal-El Pascal",
+          "team": "Bowling Green",
+          "position": "SAF",
+          "season": 2026,
+          "totals": {
+            "games": 4.0,
+            "total": 35.0,
+            "tfl": 0.0,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 35.0,
+          "hudlLink": "https://www.hudl.com/profile/15335920/KalEl-Pascal",
+          "pffLink": "",
+          "state": "FL"
+        },
+        {
+          "player": "Jason Marshall",
+          "team": "Eastern Mich.",
+          "position": "SAF",
+          "season": 2026,
+          "totals": {
+            "games": 4.0,
+            "total": 29.0,
+            "tfl": 0.0,
+            "pbu": 0.0,
+            "int": 1.0
+          },
+          "score": 35.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": ""
+        },
+        {
+          "player": "Boogsie Silvera",
+          "team": "Sacramento St.",
+          "position": "SAF",
+          "season": 2026,
+          "totals": {
+            "games": 5.0,
+            "total": 33.0,
+            "tfl": 0.0,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 33.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": ""
+        },
+        {
+          "player": "Darrell Bryant Jr.",
+          "team": "Central Mich.",
+          "position": "SAF",
+          "season": 2026,
+          "totals": {
+            "games": 4.0,
+            "total": 25.0,
+            "tfl": 0.0,
+            "pbu": 0.0,
+            "int": 1.0
+          },
+          "score": 31.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": ""
         }
       ]
     }
