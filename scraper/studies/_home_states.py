@@ -123,4 +123,15 @@ HOME_STATES = {
     "CAIDEN NEWSOME": "MD",
     "KENDALL BANNISTER": "VA",
     "CAM JONES": "PA",
+    # Handful of 2026 names real-stats.json itself doesn't carry a homeState for (see
+    # mac_best_by_position.py's build() -- real-stats.json is the primary source for 2026 now, this is
+    # just the fallback for its own gaps), plus two 2025 DL names from STAT_OVERRIDES that never got a
+    # state. Sourced directly via web search of each player's own bio/hometown reporting.
+    "CONNOR WALENDZAK": "OH",
+    "MYLES BRADLEY": "OH",
+    "ANDREW ZOCK": "FL",
+    "ISAAC ZAY": "IN",
+    "BRENDAN LOFTUS": "IL",
+    "MARTEZ POYNTER": "MO",
+    "MARQUES WHITE": "AZ",
 }

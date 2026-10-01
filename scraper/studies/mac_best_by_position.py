@@ -152,9 +152,12 @@ def build():
                     # yet; an admin can paste one in directly from the Studies page.
                     "hudlLink": HUDL_LINKS.get(r["player"].upper(), ""),
                     "pffLink": PFF_LINKS.get(r["player"].upper(), ""),
-                    # Home state (high school, not college) -- see _home_states.py. Best-effort, same as
-                    # the Hudl links; blank means not found yet.
-                    "state": HOME_STATES.get(r["player"].upper(), ""),
+                    # Home state: HOME_STATES (hand-verified -- high school, not birthplace or college)
+                    # wins when it has an entry; otherwise fall back to real-stats.json's own homeState
+                    # for 2026 rows (it's ESPN's bio data, so birthplace rather than HS, but real and far
+                    # more complete than hand-curating every week's shifting top-5 pool one player at a
+                    # time). 2023-2025 rows have no "homeState" key at all, so this is a no-op for them.
+                    "state": HOME_STATES.get(r["player"].upper(), "") or r.get("homeState", ""),
                 })
             if group_key == "TE" and season in TE_SUPPLEMENT:
                 # The leaderboard pull above still runs (kept, in case a future season has more nationally-

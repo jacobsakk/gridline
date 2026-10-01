@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-01T16:22:58.884709Z",
+  "generatedAt": "2026-10-01T20:34:13.051444Z",
   "seasons": [
     2023,
     2024,
@@ -317,7 +317,7 @@
           "score": 1428.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": ""
+          "state": "GA"
         },
         {
           "player": "David McComb",
@@ -336,7 +336,7 @@
           "score": 1356.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": ""
+          "state": "OK"
         },
         {
           "player": "Noah Kim",
@@ -372,9 +372,9 @@
             "rushTd": 4.0
           },
           "score": 939.0,
-          "hudlLink": "",
+          "hudlLink": "https://www.hudl.com/profile/1161621",
           "pffLink": "",
-          "state": ""
+          "state": "MA"
         },
         {
           "player": "Jackson Sharman",
@@ -393,7 +393,7 @@
           "score": 880.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": ""
+          "state": "CA"
         }
       ]
     },
@@ -659,7 +659,7 @@
           "score": 283.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": ""
+          "state": "OH"
         },
         {
           "player": "Jalen Buckley",
@@ -691,7 +691,7 @@
           "score": 263.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": ""
+          "state": "NC"
         },
         {
           "player": "Messiah Burch",
@@ -707,7 +707,7 @@
           "score": 246.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": ""
+          "state": "NY"
         },
         {
           "player": "TJ Horton",
@@ -723,7 +723,7 @@
           "score": 242.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": ""
+          "state": "KY"
         }
       ]
     },
@@ -989,7 +989,7 @@
           "score": 399.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": ""
+          "state": "CA"
         },
         {
           "player": "Chance Morrow",
@@ -1005,7 +1005,7 @@
           "score": 367.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": ""
+          "state": "NC"
         },
         {
           "player": "Riley Neer",
@@ -1021,7 +1021,7 @@
           "score": 356.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": ""
+          "state": "OH"
         },
         {
           "player": "Adjatay Dabbs",
@@ -1037,7 +1037,7 @@
           "score": 325.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": ""
+          "state": "TN"
         },
         {
           "player": "Bryson Hammer",
@@ -1053,7 +1053,7 @@
           "score": 306.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": ""
+          "state": "OH"
         }
       ]
     },
@@ -1383,7 +1383,7 @@
           "score": 97.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": ""
+          "state": "IL"
         }
       ]
     },
@@ -1513,7 +1513,7 @@
             "int": 0.0
           },
           "score": 121.0,
-          "hudlLink": "",
+          "hudlLink": "https://www.hudl.com/profile/11007547",
           "pffLink": "",
           "state": "AL"
         },
@@ -1643,7 +1643,7 @@
           "score": 102.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": ""
+          "state": "MO"
         },
         {
           "player": "Marques White",
@@ -1659,9 +1659,9 @@
             "int": 0.0
           },
           "score": 102.0,
-          "hudlLink": "",
+          "hudlLink": "https://www.hudl.com/profile/7474318/Marques-White",
           "pffLink": "",
-          "state": ""
+          "state": "AZ"
         }
       ],
       "2026": [
@@ -1681,7 +1681,7 @@
           "score": 44.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": ""
+          "state": "OH"
         },
         {
           "player": "Andrew Zock",
@@ -1699,7 +1699,7 @@
           "score": 42.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": ""
+          "state": "FL"
         },
         {
           "player": "Quincy Byas",
@@ -1717,7 +1717,7 @@
           "score": 31.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": ""
+          "state": "MO"
         },
         {
           "player": "Ike Ackerman",
@@ -1735,7 +1735,7 @@
           "score": 29.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": ""
+          "state": "NE"
         },
         {
           "player": "Ronn Hardin",
@@ -1753,7 +1753,7 @@
           "score": 29.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": ""
+          "state": "OH"
         }
       ]
     },
@@ -2051,7 +2051,7 @@
           "score": 77.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": ""
+          "state": "IN"
         },
         {
           "player": "Zach Mowchan",
@@ -2069,7 +2069,7 @@
           "score": 53.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": ""
+          "state": "PA"
         },
         {
           "player": "SaVeon Brown",
@@ -2085,9 +2085,9 @@
             "int": 1.0
           },
           "score": 52.0,
-          "hudlLink": "",
+          "hudlLink": "https://www.hudl.com/profile/11179653/Saveon-Brown",
           "pffLink": "",
-          "state": ""
+          "state": "IL"
         },
         {
           "player": "Michael Molnar",
@@ -2105,7 +2105,7 @@
           "score": 43.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": ""
+          "state": "OH"
         },
         {
           "player": "Dorian Pringle",
@@ -2123,7 +2123,7 @@
           "score": 41.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": ""
+          "state": "OH"
         }
       ]
     },
@@ -2735,7 +2735,7 @@
           "score": 43.8,
           "hudlLink": "",
           "pffLink": "",
-          "state": ""
+          "state": "MI"
         },
         {
           "player": "Jason Marshall",
@@ -2752,7 +2752,7 @@
           "score": 39.5,
           "hudlLink": "",
           "pffLink": "",
-          "state": ""
+          "state": "MI"
         },
         {
           "player": "Kal-El Pascal",
@@ -2786,7 +2786,7 @@
           "score": 36.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": ""
+          "state": "FL"
         },
         {
           "player": "Justin Taylor",
@@ -2801,9 +2801,9 @@
             "int": 1.0
           },
           "score": 36.0,
-          "hudlLink": "",
+          "hudlLink": "https://www.hudl.com/profile/696595",
           "pffLink": "",
-          "state": ""
+          "state": "IL"
         }
       ]
     }

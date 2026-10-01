@@ -192,6 +192,13 @@ HUDL_LINKS.update({
     "MJ CANNON": "https://www.hudl.com/profile/13071182",
 })
 HUDL_LINKS.update({
+    "WILLIAM WATSON III": "https://www.hudl.com/profile/1161621",
+    "MARQUES WHITE": "https://www.hudl.com/profile/7474318/Marques-White",
+    "KOBE STEWART": "https://www.hudl.com/profile/11007547",
+    "SAVEON BROWN": "https://www.hudl.com/profile/11179653/Saveon-Brown",
+    "JUSTIN TAYLOR": "https://www.hudl.com/profile/696595",
+})
+HUDL_LINKS.update({
     # 2026 TE/CB research (see TE_SUPPLEMENT/CB_SUPPLEMENT above). Jordan Williams, Elijah Alexander,
     # Isaiah Reed and Cam Jones searched multiple times with no reliable match (common names, or a
     # transfer history across too many schools to confirm) -- left blank, same as the earlier stalled list.
