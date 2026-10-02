@@ -788,8 +788,12 @@ export function useOfferTracker() {
     return unsubscribe;
   }, []);
 
+  // Always offers a "JUCO" tab alongside whatever graduating classes (2027, 2028, ...) actually have
+  // offer rows -- unlike a class year, JUCO has no natural moment to first appear on its own, so it's
+  // listed up front rather than only showing up after the first JUCO sheet is uploaded. Default string
+  // sort puts it after every 4-digit year ("2027" < "JUCO" lexicographically), i.e. to the right of them.
   const classYears = useMemo(() => {
-    return [...new Set(docs.map((d) => d.classYear))].sort();
+    return [...new Set([...docs.map((d) => d.classYear), "JUCO"])].sort();
   }, [docs]);
 
   function teamsForConference(classYear, conference) {

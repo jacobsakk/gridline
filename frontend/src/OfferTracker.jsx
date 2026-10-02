@@ -219,7 +219,11 @@ function PipelineSelect({ value, onCommit, width }) {
 }
 
 function UploadModal({ classYears, onClose, onImport }) {
-  const [classYear, setClassYear] = useState(classYears[classYears.length - 1] || new Date().getFullYear().toString());
+  // Defaults to the most recent graduating class, not just the last entry in the list -- "JUCO" always
+  // sorts last (see offerData.js's classYears) but isn't what most uploads are for, so it's excluded
+  // from this default and left to be typed in deliberately.
+  const numericYears = classYears.filter((y) => /^\d{4}$/.test(y));
+  const [classYear, setClassYear] = useState(numericYears[numericYears.length - 1] || new Date().getFullYear().toString());
   const [file, setFile] = useState(null);
   const [state, setState] = useState("idle"); // idle | working | done | error
   const [summary, setSummary] = useState(null);
@@ -316,7 +320,7 @@ function UploadModal({ classYears, onClose, onImport }) {
                 <input
                   value={classYear}
                   onChange={(e) => setClassYear(e.target.value)}
-                  placeholder="e.g. 2027"
+                  placeholder="e.g. 2027, or JUCO"
                   style={{
                     width: "100%", background: "var(--bg-page)", border: "1px solid var(--border)", color: "var(--text-primary)",
                     borderRadius: 5, padding: "8px 10px", fontSize: 14, marginBottom: 16, fontFamily: "inherit",
@@ -442,7 +446,8 @@ function isCommittedTo(status, teamLabel) {
 function recruitSearchUrl(player, highSchool, state, position, classYear) {
   // "SAINT XAVIER HS (OH)" -> "SAINT XAVIER HS": the state is already in the query.
   const school = (highSchool || "").replace(/\s*\([^)]*\)\s*$/, "");
-  const q = [toTitleCase(player), school, state, position, classYear ? `class of ${classYear}` : "", "football recruit"].filter(Boolean).join(" ");
+  const yearTerm = classYear ? (/^\d{4}$/.test(classYear) ? `class of ${classYear}` : classYear) : "";
+  const q = [toTitleCase(player), school, state, position, yearTerm, "football recruit"].filter(Boolean).join(" ");
   return `https://www.google.com/search?q=${encodeURIComponent(q)}`;
 }
 
@@ -1119,7 +1124,9 @@ export default function OfferTracker({ onBack: toDashboard }) {
   const [uploadOpen, setUploadOpen] = useState(false);
   // Where you are (#/offers/2027/MAC/teams/CMU) is kept in the address so a refresh returns here.
   const [initial] = useState(initialSubRoute);
-  const [classYear, setClassYear] = useState(/^\d{4}$/.test(initial[0] || "") ? initial[0] : null);
+  // Not just a 4-digit check -- "JUCO" is a valid class year too (see offerData.js's classYears), so a
+  // refresh on that tab needs to restore it the same as any graduating class.
+  const [classYear, setClassYear] = useState(initial[0] || null);
   const [conference, setConference] = useState(CONFERENCE_ORDER.includes(initial[1]) ? initial[1] : "MAC");
   const [subView, setSubView] = useState(["trends", "assignments"].includes(initial[2]) ? initial[2] : "teams"); // "teams" | "trends" | "assignments"
   const [selectedTeam, setSelectedTeam] = useState(initial[3] && TEAM_CONFERENCE[initial[3]] ? initial[3] : null);
@@ -1334,7 +1341,7 @@ export default function OfferTracker({ onBack: toDashboard }) {
                   marginBottom: -1,
                 }}
               >
-                Class of {y}
+                {/^\d{4}$/.test(y) ? `Class of ${y}` : y}
               </button>
             ))}
           </div>
