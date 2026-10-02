@@ -4,9 +4,8 @@ import { useState, useMemo, useEffect, useRef, useCallback, Fragment } from "rea
 import { ChevronUp, ChevronDown, ChevronsUpDown, Crown, BadgeCheck, FlaskConical, Star, X, Plus, ExternalLink, Search, Download, Columns3, TrendingUp, GripVertical, CheckCircle2, AlertTriangle, Upload } from "lucide-react";
 import { collection, doc, addDoc, updateDoc, onSnapshot, query, orderBy } from "firebase/firestore";
 import { db } from "./firebase";
-import L from "leaflet";
-import "leaflet/dist/leaflet.css";
 import { REAL_STATS, loadRealStats } from "./statsData.js";
+import { LinkCell, StateCell } from "./EditableCells.jsx";
 import { ThemeSwitcher, useTheme } from "./theme.jsx";
 import { initialSubRoute, setSubRoute, useBack } from "./route.js";
 import StatsUploadModal from "./StatsUploadModal.jsx";
@@ -204,7 +203,7 @@ function weeksFor(division) {
 export function useWatchlist() {
   // Every doc ever added, including ones the owner has since "removed" --
   // those just get removed:true rather than actually deleted, so their
-  // notes/hometown/eligibility/filmLink survive and come back automatically
+  // notes/homeState/eligibility/filmLink survive and come back automatically
   // if the same player (by name+team) is ever added again.
   const [allDocs, setAllDocs] = useState([]);
   // Firestore's onSnapshot fires once immediately (from cache or server)
@@ -234,7 +233,7 @@ export function useWatchlist() {
 
   const players = useMemo(() => allDocs.filter((p) => !p.removed), [allDocs]);
 
-  async function addPlayer({ player, team, division, position, hometown }) {
+  async function addPlayer({ player, team, division, position, homeState }) {
     const trimmedPlayer = player.trim();
     if (!trimmedPlayer) return;
     const trimmedTeam = (team || "").trim();
@@ -248,7 +247,7 @@ export function useWatchlist() {
         removed: false,
         division: division || archived.division || "",
         position: position || archived.position || "",
-        hometown: archived.hometown || hometown || "",
+        homeState: archived.homeState || homeState || "",
       });
       return;
     }
@@ -261,7 +260,7 @@ export function useWatchlist() {
       questionnaire: false,
       pipelined: false,
       notes: "",
-      hometown: hometown || "",
+      homeState: homeState || "",
       height: "",
       weight: "",
       eligibility: "",
@@ -459,144 +458,6 @@ const notesInputStyle = {
   minHeight: 26,
 };
 
-const hometownDropdownStyle = {
-  position: "absolute",
-  zIndex: 30,
-  top: "calc(100% + 4px)",
-  left: 0,
-  width: 260,
-  background: "var(--bg-surface)",
-  border: "1px solid var(--border)",
-  borderRadius: 6,
-  overflow: "hidden",
-  boxShadow: "0 12px 32px rgba(0,0,0,0.5)",
-};
-const hometownSuggestionStyle = {
-  padding: "8px 10px",
-  fontSize: 12.5,
-  color: "var(--text-secondary)",
-  cursor: "pointer",
-  borderBottom: "1px solid var(--border-subtle)",
-};
-
-// Type-ahead hometown search against OpenStreetMap's free Nominatim API --
-// no API key or account needed anywhere. Debounced well past their 1
-// req/sec usage-policy limit, and aborts a stale in-flight request rather
-// than letting an old response overwrite a newer one.
-function HometownPicker({ value, onCommit }) {
-  const [text, setText] = useState(value || "");
-  const [suggestions, setSuggestions] = useState([]);
-  const [open, setOpen] = useState(false);
-  const [preview, setPreview] = useState(null); // {lat, lon}
-  const mapContainerRef = useRef(null);
-  const mapRef = useRef(null);
-  const markerRef = useRef(null);
-  const abortRef = useRef(null);
-  const debounceRef = useRef(null);
-
-  useEffect(() => setText(value || ""), [value]);
-
-  useEffect(() => {
-    if (!open) return undefined;
-    clearTimeout(debounceRef.current);
-    if (!text.trim()) {
-      setSuggestions([]);
-      return undefined;
-    }
-    debounceRef.current = setTimeout(() => {
-      if (abortRef.current) abortRef.current.abort();
-      const controller = new AbortController();
-      abortRef.current = controller;
-      const url = `https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&limit=5&q=${encodeURIComponent(text)}`;
-      fetch(url, { signal: controller.signal })
-        .then((r) => r.json())
-        .then((data) => setSuggestions(Array.isArray(data) ? data : []))
-        .catch(() => {});
-    }, 600);
-    return () => clearTimeout(debounceRef.current);
-  }, [text, open]);
-
-  // Preview the top result automatically so the map isn't blank until the
-  // user happens to hover one, then follow whichever they hover instead.
-  useEffect(() => {
-    if (suggestions.length) setPreview({ lat: parseFloat(suggestions[0].lat), lon: parseFloat(suggestions[0].lon) });
-  }, [suggestions]);
-
-  useEffect(() => {
-    if (!preview || !mapContainerRef.current) return;
-    if (!mapRef.current) {
-      mapRef.current = L.map(mapContainerRef.current, { zoomControl: false, attributionControl: false }).setView(
-        [preview.lat, preview.lon],
-        9
-      );
-      L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 12 }).addTo(mapRef.current);
-      markerRef.current = L.circleMarker([preview.lat, preview.lon], {
-        radius: 6,
-        color: "var(--accent)",
-        weight: 2,
-        fillColor: "var(--accent)",
-        fillOpacity: 1,
-      }).addTo(mapRef.current);
-    } else {
-      mapRef.current.setView([preview.lat, preview.lon], 9);
-      markerRef.current.setLatLng([preview.lat, preview.lon]);
-    }
-  }, [preview]);
-
-  useEffect(() => {
-    return () => {
-      if (mapRef.current) mapRef.current.remove();
-    };
-  }, []);
-
-  function placeLabel(s) {
-    const a = s.address || {};
-    const city = a.city || a.town || a.village || a.hamlet || a.county;
-    return city && a.state ? `${city}, ${a.state}` : s.display_name;
-  }
-
-  function commit(s) {
-    const val = placeLabel(s);
-    setText(val);
-    onCommit(val);
-    setOpen(false);
-    setSuggestions([]);
-  }
-
-  return (
-    <div style={{ position: "relative" }}>
-      <input
-        value={text}
-        onChange={(e) => setText(e.target.value)}
-        onFocus={() => setOpen(true)}
-        onBlur={() => {
-          // Let a suggestion's onClick land before the list unmounts.
-          setTimeout(() => setOpen(false), 150);
-          if (text !== (value || "")) onCommit(text);
-        }}
-        placeholder="Search a city…"
-        style={cellInputStyle}
-      />
-      {open && suggestions.length > 0 && (
-        <div style={hometownDropdownStyle}>
-          {suggestions.map((s) => (
-            <div
-              key={s.place_id}
-              onMouseDown={(e) => e.preventDefault()}
-              onMouseEnter={() => setPreview({ lat: parseFloat(s.lat), lon: parseFloat(s.lon) })}
-              onClick={() => commit(s)}
-              style={hometownSuggestionStyle}
-            >
-              {placeLabel(s)}
-            </div>
-          ))}
-          <div ref={mapContainerRef} style={{ height: 110 }} />
-        </div>
-      )}
-    </div>
-  );
-}
-
 async function confirmRemoveFromWatchlist(watchlist, id, name) {
   const ok = await confirmAction({
     title: `Remove ${name}?`,
@@ -627,8 +488,6 @@ function WatchListRow({
   const [notes, setNotes] = useState(p.notes || "");
   const [height, setHeight] = useState(p.height || "");
   const [weight, setWeight] = useState(p.weight || "");
-  const [xLink, setXLink] = useState(p.xLink || "");
-  const [filmLink, setFilmLink] = useState(p.filmLink || "");
   const notesRef = useRef(null);
 
   // Grows the textarea to fit its content (capped by CSS max-height, which
@@ -752,40 +611,14 @@ function WatchListRow({
           </button>
         </div>
       </td>
-      <td style={{ ...tdStyle, position: "relative" }}>
-        <HometownPicker value={p.hometown} onCommit={(val) => onUpdate("hometown", val)} />
+      <td style={tdStyle}>
+        <StateCell row={p} field="homeState" editable onSave={(state) => onUpdate("homeState", state)} />
       </td>
       <td style={tdStyle}>
-        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-          <input
-            value={xLink}
-            onChange={(e) => setXLink(e.target.value)}
-            onBlur={() => onUpdate("xLink", xLink)}
-            placeholder="X profile (URL)"
-            style={cellInputStyle}
-          />
-          {xLink && (
-            <a href={xLink} target="_blank" rel="noopener noreferrer" title="Open X profile" style={{ color: "var(--accent)", display: "flex", lineHeight: 0, flexShrink: 0 }}>
-              <ExternalLink size={14} />
-            </a>
-          )}
-        </div>
+        <LinkCell row={p} field="xLink" label="X" placeholder="Paste an X profile link…" editable onSave={(url) => onUpdate("xLink", url)} />
       </td>
       <td style={tdStyle}>
-        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-          <input
-            value={filmLink}
-            onChange={(e) => setFilmLink(e.target.value)}
-            onBlur={() => onUpdate("filmLink", filmLink)}
-            placeholder="Film link (URL)"
-            style={cellInputStyle}
-          />
-          {filmLink && (
-            <a href={filmLink} target="_blank" rel="noopener noreferrer" title="Open film link" style={{ color: "var(--accent)", display: "flex", lineHeight: 0, flexShrink: 0 }}>
-              <ExternalLink size={14} />
-            </a>
-          )}
-        </div>
+        <LinkCell row={p} field="filmLink" label="Film" placeholder="Paste a film link…" editable onSave={(url) => onUpdate("filmLink", url)} />
       </td>
       <td style={{ ...tdStyle, verticalAlign: "top" }}>
         <textarea
@@ -814,7 +647,7 @@ function WatchListRow({
   );
 }
 
-const WATCHLIST_COLUMNS = ["", "", "Player", "Team", "Division", "Pos", "Ht", "Wt", "Eligibility", "Questionnaire?", "Pipelined?", "Hometown", "X", "Film Link", "Notes", ""];
+const WATCHLIST_COLUMNS = ["", "", "Player", "Team", "Division", "Pos", "Ht", "Wt", "Eligibility", "Questionnaire?", "Pipelined?", "Home State", "X", "Film Link", "Notes", ""];
 // Which of the columns above can be clicked to sort the watch list --
 // keyed by the doc field each one reads. Only active on the "All"
 // position tab (see positionTab check in WatchListPanel) -- sorting by
@@ -828,10 +661,11 @@ const WATCHLIST_SORTABLE = {
   Eligibility: "eligibility",
   "Questionnaire?": "questionnaire",
   "Pipelined?": "pipelined",
+  "Home State": "homeState",
 };
 // Alphabetical (not numeric) comparison, defaulting to ascending on
 // first click rather than the numeric fields' descending.
-const WATCHLIST_STRING_SORT_KEYS = new Set(["team", "division", "position"]);
+const WATCHLIST_STRING_SORT_KEYS = new Set(["team", "division", "position", "homeState"]);
 
 function heightToInches(height) {
   const m = /^(\d)'(\d{1,2})/.exec(height || "");
@@ -840,9 +674,9 @@ function heightToInches(height) {
 
 // Full-screen overlay -- same spreadsheet grid language as the main stats
 // table (sticky header, gridlines) instead of a narrow sidebar, so editing
-// a dozen watched players' notes/hometown/eligibility doesn't feel cramped.
+// a dozen watched players' notes/homeState/eligibility doesn't feel cramped.
 function exportWatchListCsv(players) {
-  const headers = ["Player", "Team", "Division", "Position", "Height", "Weight", "Eligibility", "Questionnaire", "Pipelined", "Hometown", "X", "Film Link", "Notes"];
+  const headers = ["Player", "Team", "Division", "Position", "Height", "Weight", "Eligibility", "Questionnaire", "Pipelined", "Home State", "X", "Film Link", "Notes"];
   const escape = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`;
   const lines = [headers.map(escape).join(",")];
   for (const p of players) {
@@ -857,7 +691,7 @@ function exportWatchListCsv(players) {
         p.eligibility ? `${p.eligibility} year${p.eligibility === "1" ? "" : "s"}` : "",
         p.questionnaire === true ? "Yes" : p.questionnaire === false ? "No" : "",
         p.pipelined === true ? "Yes" : p.pipelined === false ? "No" : "",
-        p.hometown,
+        p.homeState,
         p.xLink,
         p.filmLink,
         p.notes,
@@ -1249,8 +1083,6 @@ export function PlayerDetailModal({ sel, onClose, watchlist, portalStatus }) {
   const [wlNotes, setWlNotes] = useState(watched?.notes || "");
   const [wlHeight, setWlHeight] = useState(watched?.height || "");
   const [wlWeight, setWlWeight] = useState(watched?.weight || "");
-  const [wlXLink, setWlXLink] = useState(watched?.xLink || "");
-  const [wlFilmLink, setWlFilmLink] = useState(watched?.filmLink || "");
   const wlNotesRef = useRef(null);
   const autoResizeWlNotes = () => {
     const el = wlNotesRef.current;
@@ -1319,7 +1151,7 @@ export function PlayerDetailModal({ sel, onClose, watchlist, portalStatus }) {
               )}
               <button
                 className="watch-toggle"
-                onClick={() => (watched ? confirmRemoveFromWatchlist(watchlist, watched.id, sel.player) : watchlist.addPlayer({ ...sel, hometown: first?.hometown || "" }))}
+                onClick={() => (watched ? confirmRemoveFromWatchlist(watchlist, watched.id, sel.player) : watchlist.addPlayer({ ...sel, homeState: first?.homeState || "" }))}
                 title={watched ? "Remove from watch list" : "Add to watch list"}
                 style={watchToggleButtonStyle}
               >
@@ -1434,41 +1266,15 @@ export function PlayerDetailModal({ sel, onClose, watchlist, portalStatus }) {
                 </div>
                 <div>
                   <label style={fieldLabelStyle}>X</label>
-                  <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                    <input
-                      value={wlXLink}
-                      onChange={(e) => setWlXLink(e.target.value)}
-                      onBlur={() => watchlist.updateField(watched.id, "xLink", wlXLink)}
-                      placeholder="X profile (URL)"
-                      style={fieldInputStyle}
-                    />
-                    {wlXLink && (
-                      <a href={wlXLink} target="_blank" rel="noopener noreferrer" title="Open X profile" style={{ color: "var(--accent)", display: "flex", lineHeight: 0, flexShrink: 0 }}>
-                        <ExternalLink size={15} />
-                      </a>
-                    )}
-                  </div>
+                  <LinkCell row={watched} field="xLink" label="X" placeholder="Paste an X profile link…" editable onSave={(url) => watchlist.updateField(watched.id, "xLink", url)} />
                 </div>
                 <div>
                   <label style={fieldLabelStyle}>Film Link</label>
-                  <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                    <input
-                      value={wlFilmLink}
-                      onChange={(e) => setWlFilmLink(e.target.value)}
-                      onBlur={() => watchlist.updateField(watched.id, "filmLink", wlFilmLink)}
-                      placeholder="Film link (URL)"
-                      style={fieldInputStyle}
-                    />
-                    {wlFilmLink && (
-                      <a href={wlFilmLink} target="_blank" rel="noopener noreferrer" title="Open film link" style={{ color: "var(--accent)", display: "flex", lineHeight: 0, flexShrink: 0 }}>
-                        <ExternalLink size={15} />
-                      </a>
-                    )}
-                  </div>
+                  <LinkCell row={watched} field="filmLink" label="Film" placeholder="Paste a film link…" editable onSave={(url) => watchlist.updateField(watched.id, "filmLink", url)} />
                 </div>
-                <div style={{ position: "relative" }}>
-                  <label style={fieldLabelStyle}>Hometown</label>
-                  <HometownPicker value={watched.hometown} onCommit={(val) => watchlist.updateField(watched.id, "hometown", val)} />
+                <div>
+                  <label style={fieldLabelStyle}>Home State</label>
+                  <StateCell row={watched} field="homeState" editable onSave={(state) => watchlist.updateField(watched.id, "homeState", state)} />
                 </div>
               </div>
               <label style={fieldLabelStyle}>Notes</label>
@@ -2166,7 +1972,7 @@ function GridlineMain({ onBack: toDashboard, initialSearch, onUploadStats }) {
                             e.stopPropagation();
                             const watched = watchlist.players.find((p) => p.player === r.player && p.team === r.team);
                             if (watched) confirmRemoveFromWatchlist(watchlist, watched.id, r.player);
-                            else watchlist.addPlayer({ player: r.player, team: r.team, division, position: r.position, hometown: r.hometown || "" });
+                            else watchlist.addPlayer({ player: r.player, team: r.team, division, position: r.position, homeState: r.homeState || "" });
                           }}
                           title={watchlist.isWatched(r.player, r.team) ? "Remove from watch list" : "Add to watch list"}
                           style={watchToggleButtonStyle}

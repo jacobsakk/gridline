@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
-import { ChevronRight, Download, ExternalLink, Link2, Loader2, X } from "lucide-react";
+import { ChevronRight, Download, Loader2, X } from "lucide-react";
 import { BackButton, HomeButton } from "./HomeButton.jsx";
 import { ThemeSwitcher, useTheme } from "./theme.jsx";
 import { useBack, initialSubRoute, setSubRoute } from "./route.js";
 import { STUDIES, useStudy } from "./studiesData.js";
+import { control, LinkCell, StateCell } from "./EditableCells.jsx";
 
-const control = { background: "var(--bg-surface)", border: "1px solid var(--border)", color: "var(--text-primary)", borderRadius: 6, padding: "8px 11px", fontSize: 13, fontFamily: "inherit" };
 const ghostBtn = { ...control, cursor: "pointer", fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 7 };
 
 function downloadCsv(rows, columns, filename) {
@@ -19,82 +19,6 @@ function downloadCsv(rows, columns, filename) {
   a.download = filename;
   a.click();
   URL.revokeObjectURL(url);
-}
-
-// Shared editable-link cell -- used for both the Hudl column (film) and the PFF column (grades/reports).
-// `field` is which key on the row this cell reads/writes ("hudlLink" or "pffLink"). `onSave` returns the
-// Firestore write's promise -- awaited here so a rejected write (wrong permissions, offline, etc.) shows
-// up as a visible error instead of silently reverting to "Add link" with nothing saved.
-function LinkCell({ row, field, label, placeholder, admin, onSave }) {
-  const [editing, setEditing] = useState(false);
-  const [value, setValue] = useState(row[field] || "");
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState("");
-
-  async function commit(next) {
-    if (next === (row[field] || "")) {
-      setEditing(false);
-      return;
-    }
-    setSaving(true);
-    setError("");
-    try {
-      await onSave(next);
-      setEditing(false);
-    } catch (err) {
-      setError(err?.code === "permission-denied" ? "No permission to save -- admins only." : "Couldn't save -- try again.");
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  if (editing) {
-    return (
-      <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
-        <div style={{ display: "flex", gap: 5 }}>
-          <input
-            autoFocus
-            value={value}
-            disabled={saving}
-            onChange={(e) => setValue(e.target.value)}
-            placeholder={placeholder}
-            style={{ ...control, padding: "4px 7px", fontSize: 12.5, width: 190, opacity: saving ? 0.6 : 1 }}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") commit(value.trim());
-              if (e.key === "Escape") {
-                setValue(row[field] || "");
-                setError("");
-                setEditing(false);
-              }
-            }}
-            onBlur={() => commit(value.trim())}
-          />
-        </div>
-        {error && <span style={{ fontSize: 11, color: "var(--danger, #c0392b)" }}>{error}</span>}
-      </div>
-    );
-  }
-  if (row[field]) {
-    return (
-      <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
-        <a href={row[field]} target="_blank" rel="noreferrer" style={{ color: "var(--accent)", display: "inline-flex", alignItems: "center", gap: 4 }}>
-          {label} <ExternalLink size={12} />
-        </a>
-        {admin && (
-          <button onClick={() => setEditing(true)} title={`Change this ${label} link`} aria-label={`Change ${label} link for ${row.player}`} style={{ background: "none", border: "none", color: "var(--text-faint)", cursor: "pointer", lineHeight: 0 }}>
-            <Link2 size={12} />
-          </button>
-        )}
-      </span>
-    );
-  }
-  return admin ? (
-    <button onClick={() => setEditing(true)} style={{ background: "none", border: "none", color: "var(--text-faint)", cursor: "pointer", fontSize: 12.5, textDecoration: "underline", padding: 0 }}>
-      Add link
-    </button>
-  ) : (
-    <span style={{ color: "var(--text-faint)" }}>—</span>
-  );
 }
 
 // Shows exactly how a row's score was computed -- the same formula as GROUPS' score lambdas in
@@ -142,75 +66,6 @@ function ScoreExplainer({ row, group, onClose }) {
         </p>
       </div>
     </div>
-  );
-}
-
-// Home state (high school, not college) -- plain text, not a link, so simpler than LinkCell: click to
-// edit, blank shows a faint dash for a non-admin or an "Add" prompt for an admin.
-function StateCell({ row, admin, onSave }) {
-  const [editing, setEditing] = useState(false);
-  const [value, setValue] = useState(row.state || "");
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState("");
-
-  async function commit(next) {
-    if (next === (row.state || "")) {
-      setEditing(false);
-      return;
-    }
-    setSaving(true);
-    setError("");
-    try {
-      await onSave(next);
-      setEditing(false);
-    } catch (err) {
-      setError(err?.code === "permission-denied" ? "Admins only" : "Failed");
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  if (editing) {
-    return (
-      <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
-        <input
-          autoFocus
-          value={value}
-          disabled={saving}
-          onChange={(e) => setValue(e.target.value.toUpperCase().slice(0, 20))}
-          placeholder="e.g. OH"
-          style={{ ...control, padding: "4px 7px", fontSize: 12.5, width: 60, opacity: saving ? 0.6 : 1 }}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") commit(value.trim());
-            if (e.key === "Escape") {
-              setValue(row.state || "");
-              setError("");
-              setEditing(false);
-            }
-          }}
-          onBlur={() => commit(value.trim())}
-        />
-        {error && <span style={{ fontSize: 11, color: "var(--danger, #c0392b)", whiteSpace: "nowrap" }}>{error}</span>}
-      </div>
-    );
-  }
-  if (row.state) {
-    return (
-      <span
-        onClick={() => admin && setEditing(true)}
-        title={admin ? "Click to change" : undefined}
-        style={{ cursor: admin ? "pointer" : "default" }}
-      >
-        {row.state}
-      </span>
-    );
-  }
-  return admin ? (
-    <button onClick={() => setEditing(true)} style={{ background: "none", border: "none", color: "var(--text-faint)", cursor: "pointer", fontSize: 12.5, textDecoration: "underline", padding: 0 }}>
-      Add
-    </button>
-  ) : (
-    <span style={{ color: "var(--text-faint)" }}>—</span>
   );
 }
 
@@ -396,7 +251,7 @@ function StudyDetail({ studyId, admin, onBack }) {
                 <tr key={r.player} style={{ background: i % 2 === 0 ? "var(--bg-panel)" : "var(--bg-page)" }}>
                   <td style={{ ...td, fontWeight: 700, color: "var(--text-primary)" }}>{r.player}</td>
                   <td style={td}>{r.team}</td>
-                  <td style={td}><StateCell row={r} admin={admin} onSave={(state) => study.saveField(group, r.player, { state })} /></td>
+                  <td style={td}><StateCell row={r} editable={admin} onSave={(state) => study.saveField(group, r.player, { state })} /></td>
                   {activeGroup.stats.map((s) => (
                     <td key={s.key} style={td} className="tabular">
                       <StatCell value={r.totals[s.key] ?? 0} admin={admin} onSave={(value) => study.saveStat(group, activeSeason, r.player, s.key, value)} />
@@ -412,8 +267,8 @@ function StudyDetail({ studyId, admin, onBack }) {
                       {r.score}
                     </button>
                   </td>
-                  <td style={td}><LinkCell row={r} field="hudlLink" label="Film" placeholder="Paste a Hudl link…" admin={admin} onSave={(url) => study.saveField(group, r.player, { hudlLink: url })} /></td>
-                  <td style={td}><LinkCell row={r} field="pffLink" label="PFF" placeholder="Paste a PFF link…" admin={admin} onSave={(url) => study.saveField(group, r.player, { pffLink: url })} /></td>
+                  <td style={td}><LinkCell row={r} field="hudlLink" label="Film" placeholder="Paste a Hudl link…" editable={admin} onSave={(url) => study.saveField(group, r.player, { hudlLink: url })} /></td>
+                  <td style={td}><LinkCell row={r} field="pffLink" label="PFF" placeholder="Paste a PFF link…" editable={admin} onSave={(url) => study.saveField(group, r.player, { pffLink: url })} /></td>
                 </tr>
               ))}
             </tbody>
