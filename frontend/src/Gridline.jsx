@@ -556,8 +556,18 @@ function WatchListRow({
       </td>
       <td style={{ ...tdStyle, color: "var(--text-muted)" }}>{canonicalSchool(p.team) || "—"}</td>
       <td style={{ ...tdStyle, color: "var(--text-muted)", fontSize: 12.5 }}>{p.division || "—"}</td>
-      <td style={{ ...tdStyle, color: "var(--accent)", fontWeight: 600 }} className="oswald">
-        {p.position || "—"}
+      <td style={tdStyle}>
+        <select
+          value={p.position || ""}
+          onChange={(e) => onUpdate("position", e.target.value)}
+          className="oswald"
+          style={{ ...cellInputStyle, cursor: "pointer", color: "var(--accent)", fontWeight: 600 }}
+        >
+          <option value="">—</option>
+          {WATCH_POSITIONS.map((pos) => (
+            <option key={pos} value={pos}>{pos}</option>
+          ))}
+        </select>
       </td>
       <td style={tdStyle}>
         <input
@@ -1207,6 +1217,19 @@ export function PlayerDetailModal({ sel, onClose, watchlist, portalStatus }) {
                 Your Watch List Info
               </div>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 12, marginBottom: 12 }}>
+                <div>
+                  <label style={fieldLabelStyle}>Position</label>
+                  <select
+                    value={watched.position || ""}
+                    onChange={(e) => watchlist.updateField(watched.id, "position", e.target.value)}
+                    style={{ ...fieldInputStyle, cursor: "pointer" }}
+                  >
+                    <option value="">—</option>
+                    {WATCH_POSITIONS.map((pos) => (
+                      <option key={pos} value={pos}>{pos}</option>
+                    ))}
+                  </select>
+                </div>
                 <div>
                   <label style={fieldLabelStyle}>Height</label>
                   <input
