@@ -1,8 +1,9 @@
 name: Weekly stats refresh
 
-# Runs every Sunday at 9am America/Detroit (13:00 UTC) -- after essentially
-# all NAIA/JUCO/D2/FCS games for the week are complete. Also runnable
-# manually from the Actions tab (workflow_dispatch) for testing.
+# Runs every Sunday at 6am America/Detroit (10:00 UTC) -- early Sunday morning,
+# same slot colleges-refresh.yml already uses daily, and still after
+# essentially all NAIA/JUCO/D2/FCS games for the week are complete. Also
+# runnable manually from the Actions tab (workflow_dispatch) for testing.
 #
 # What this does: re-runs the scraper for every division and commits the
 # refreshed frontend/src/data/real-stats.json + scraper/snapshots/ straight
@@ -18,7 +19,7 @@ name: Weekly stats refresh
 # see studies/mac_best_by_position.py's module docstring.
 on:
   schedule:
-    - cron: "0 13 * * 0"
+    - cron: "0 10 * * 0"
   workflow_dispatch: {}
 
 permissions:
