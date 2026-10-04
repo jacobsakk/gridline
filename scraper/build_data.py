@@ -159,16 +159,34 @@ def build_fbs_fcs(run_date):
 
 
 def build_ncaa_api_divisions(run_date):
-    fbs_rows, fcs_rows = build_fbs_fcs(run_date)
+    # FBS/FCS, D2 and D3 each get their own fallback to whatever's already saved for that division, rather
+    # than being lumped into one try/except the caller wraps this whole function in -- a single HTTP 500
+    # anywhere in here (confirmed directly: the NCAA API, mid D2 fetch) used to discard all four divisions
+    # together, even after FBS/FCS had already succeeded moments earlier via ESPN.
+    try:
+        with open(OUTPUT_PATH) as f:
+            existing = json.load(f)
+    except (OSError, ValueError):
+        existing = []
+
+    try:
+        fbs_rows, fcs_rows = build_fbs_fcs(run_date)
+    except Exception as err:  # noqa: BLE001
+        print(f"::warning::FBS/FCS refresh failed ({err}); keeping the last saved FBS/FCS rows")
+        fbs_rows = [r for r in existing if r["division"] == "FBS"]
+        fcs_rows = [r for r in existing if r["division"] == "FCS"]
 
     print("Fetching D2 stat leaders (passing/rushing/receiving/tackling/sacks)...")
-    d2_rows = build_division(
-        "d2", "D2", run_date,
-        lambda: build_division_rows("d2", "D2", d2_conference_for),
-    )
-
-    print("Cross-referencing D2 against each conference's own stats page...")
-    d2_rows += fetch_supplemental_rows("D2", d2_rows)
+    try:
+        d2_rows = build_division(
+            "d2", "D2", run_date,
+            lambda: build_division_rows("d2", "D2", d2_conference_for),
+        )
+        print("Cross-referencing D2 against each conference's own stats page...")
+        d2_rows += fetch_supplemental_rows("D2", d2_rows)
+    except Exception as err:  # noqa: BLE001
+        print(f"::warning::D2 refresh failed ({err}); keeping the last saved D2 rows")
+        d2_rows = [r for r in existing if r["division"] == "D2"]
 
     unmapped_d2_teams = sorted({r["team"] for r in d2_rows if r["conference"] == "Independent"})
     if unmapped_d2_teams:
@@ -178,10 +196,14 @@ def build_ncaa_api_divisions(run_date):
         )
 
     print("Fetching D3 stat leaders (passing/rushing/receiving/tackling/sacks)...")
-    d3_rows = build_division(
-        "d3", "D3", run_date,
-        lambda: build_division_rows("d3", "D3", d3_conference_for),
-    )
+    try:
+        d3_rows = build_division(
+            "d3", "D3", run_date,
+            lambda: build_division_rows("d3", "D3", d3_conference_for),
+        )
+    except Exception as err:  # noqa: BLE001
+        print(f"::warning::D3 refresh failed ({err}); keeping the last saved D3 rows")
+        d3_rows = [r for r in existing if r["division"] == "D3"]
     # No conference cross-referencing yet for D3 -- conference_sites.py
     # doesn't have D3 conference site domains mapped yet (that's the
     # planned follow-up, same as D3_KNOWN_CONFERENCES in ncaa_api.py).
