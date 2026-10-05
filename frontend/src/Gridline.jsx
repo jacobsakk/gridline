@@ -260,6 +260,7 @@ export function useWatchlist() {
       questionnaire: false,
       pipelined: false,
       notes: "",
+      evaluation: "",
       homeState: homeState || "",
       height: "",
       weight: "",
@@ -686,7 +687,7 @@ function heightToInches(height) {
 // table (sticky header, gridlines) instead of a narrow sidebar, so editing
 // a dozen watched players' notes/homeState/eligibility doesn't feel cramped.
 function exportWatchListCsv(players) {
-  const headers = ["Player", "Team", "Division", "Position", "Height", "Weight", "Eligibility", "Questionnaire", "Pipelined", "Home State", "X", "Film Link", "Notes"];
+  const headers = ["Player", "Team", "Division", "Position", "Height", "Weight", "Eligibility", "Questionnaire", "Pipelined", "Home State", "X", "Film Link", "Evaluation", "Notes"];
   const escape = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`;
   const lines = [headers.map(escape).join(",")];
   for (const p of players) {
@@ -704,6 +705,7 @@ function exportWatchListCsv(players) {
         p.homeState,
         p.xLink,
         p.filmLink,
+        p.evaluation,
         p.notes,
       ]
         .map(escape)
@@ -1091,16 +1093,28 @@ export function PlayerDetailModal({ sel, onClose, watchlist, portalStatus }) {
   // Local echo of the free-text fields, same as WatchListRow -- commit
   // on blur instead of round-tripping to the db on every keystroke.
   const [wlNotes, setWlNotes] = useState(watched?.notes || "");
+  // Separate from Notes on purpose -- a coach's actual evaluation of the player (write-up, grade,
+  // projection), not quick scratch notes. Only lives here in the detail modal, not in the watch list's
+  // spreadsheet view, so it doesn't crowd that table with another always-open column.
+  const [wlEvaluation, setWlEvaluation] = useState(watched?.evaluation || "");
   const [wlHeight, setWlHeight] = useState(watched?.height || "");
   const [wlWeight, setWlWeight] = useState(watched?.weight || "");
   const wlNotesRef = useRef(null);
+  const wlEvaluationRef = useRef(null);
   const autoResizeWlNotes = () => {
     const el = wlNotesRef.current;
     if (!el) return;
     el.style.height = "auto";
     el.style.height = `${el.scrollHeight}px`;
   };
+  const autoResizeWlEvaluation = () => {
+    const el = wlEvaluationRef.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${el.scrollHeight}px`;
+  };
   useEffect(autoResizeWlNotes, []);
+  useEffect(autoResizeWlEvaluation, []);
 
   const byCategory = useMemo(() => {
     const grouped = {};
@@ -1299,6 +1313,26 @@ export function PlayerDetailModal({ sel, onClose, watchlist, portalStatus }) {
                   <label style={fieldLabelStyle}>Home State</label>
                   <StateCell row={watched} field="homeState" editable onSave={(state) => watchlist.updateField(watched.id, "homeState", state)} />
                 </div>
+              </div>
+              <div style={{ borderTop: "1px solid var(--border-subtle)", paddingTop: 12, marginBottom: 14 }}>
+                <div
+                  className="oswald"
+                  style={{ fontSize: 11.5, fontWeight: 600, color: "var(--accent)", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.04em" }}
+                >
+                  Evaluation
+                </div>
+                <textarea
+                  ref={wlEvaluationRef}
+                  value={wlEvaluation}
+                  onChange={(e) => {
+                    setWlEvaluation(e.target.value);
+                    autoResizeWlEvaluation();
+                  }}
+                  onBlur={() => watchlist.updateField(watched.id, "evaluation", wlEvaluation)}
+                  placeholder="Write-up, grade, projection…"
+                  rows={2}
+                  style={{ ...notesInputStyle, padding: "6px 8px" }}
+                />
               </div>
               <label style={fieldLabelStyle}>Notes</label>
               <textarea
