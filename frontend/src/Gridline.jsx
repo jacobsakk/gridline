@@ -1698,7 +1698,7 @@ function GridlineMain({ onBack: toDashboard, initialSearch, onUploadStats }) {
                     borderRadius: 5, padding: "8px 12px", fontSize: 13, fontWeight: 600, cursor: "pointer",
                   }}
                 >
-                  <Upload size={14} /> Upload stats
+                  <Upload size={14} /> Add stats
                 </button>
               )}
               <button

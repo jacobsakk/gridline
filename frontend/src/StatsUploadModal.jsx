@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
-import { Loader2, Trash2, Upload, X } from "lucide-react";
-import { UPLOAD_CATEGORIES, UPLOAD_DIVISIONS, parseStatsFile, removeUpload, saveUpload } from "./statsUpload.js";
+import { Loader2, Trash2, Upload, UserPlus, X } from "lucide-react";
+import { UPLOAD_CATEGORIES, UPLOAD_DIVISIONS, buildManualRow, parseStatsFile, removeUpload, saveManualPlayer, saveUpload } from "./statsUpload.js";
 import { confirmAction } from "./ConfirmDialog.jsx";
 
 const field = { background: "var(--bg-surface)", border: "1px solid var(--border)", color: "var(--text-primary)", borderRadius: 6, padding: "8px 11px", fontSize: 13, fontFamily: "inherit", width: "100%" };
@@ -9,18 +9,35 @@ const primary = { background: "var(--accent-bg)", border: "1px solid var(--accen
 const label = (key) => UPLOAD_CATEGORIES.find((c) => c.key === key)?.label || key;
 const when = (iso) => (iso ? new Date(iso).toLocaleDateString([], { month: "short", day: "numeric" }) : "");
 
+// Which stat fields the "add one player" form shows, per category -- same fields buildManualRow reads.
+const CATEGORY_FIELDS = {
+  passing: [{ key: "comp", label: "Comp" }, { key: "att", label: "Att" }, { key: "yards", label: "Yards" }, { key: "td", label: "TD" }, { key: "int", label: "INT" }],
+  rushing: [{ key: "att", label: "Att" }, { key: "yards", label: "Yards" }, { key: "td", label: "TD" }],
+  receiving: [{ key: "rec", label: "Rec" }, { key: "yards", label: "Yards" }, { key: "td", label: "TD" }],
+  tackling: [{ key: "solo", label: "Solo tkl" }, { key: "ast", label: "Ast tkl" }, { key: "tfl", label: "TFL" }, { key: "sacks", label: "Sacks" }, { key: "pbu", label: "PBU" }, { key: "int", label: "INT" }],
+};
+const EMPTY_MANUAL = { player: "", team: "", position: "", games: "", conference: "", homeState: "", hometown: "", comp: "", att: "", yards: "", td: "", int: "", rec: "", solo: "", ast: "", tfl: "", sacks: "", pbu: "" };
+
 // Load stats the scrapers can't reach. Download the stats table from the site in your own browser (each
-// stat category is its own table), then upload it here; it replaces that division's numbers for that category.
+// stat category is its own table), then upload it here; it replaces that division's numbers for that
+// category. Or, for a single player with no table to download at all, add them by hand instead -- that
+// merges into whatever's already there rather than replacing it.
 export default function StatsUploadModal({ uploads, user, onChanged, onClose }) {
+  const [mode, setMode] = useState("file"); // "file" | "manual"
   const [division, setDivision] = useState("NAIA");
   const [category, setCategory] = useState("passing");
   const [team, setTeam] = useState("");
   const [file, setFile] = useState(null);
   const [parsed, setParsed] = useState(null);
+  const [manual, setManual] = useState(EMPTY_MANUAL);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState("");
   const [saved, setSaved] = useState("");
   const input = useRef(null);
+
+  function setManualField(key, value) {
+    setManual((m) => ({ ...m, [key]: value }));
+  }
 
   async function read(nextFile, next = {}) {
     const f = nextFile === undefined ? file : nextFile;
@@ -54,6 +71,23 @@ export default function StatsUploadModal({ uploads, user, onChanged, onClose }) 
     setBusy("");
   }
 
+  async function saveManual() {
+    setBusy("save");
+    setError("");
+    setSaved("");
+    try {
+      const row = buildManualRow(category, division, manual);
+      if (!row) throw new Error(`Enter a player name, team, and at least this category's main stat (${CATEGORY_FIELDS[category][0].label.toLowerCase()}).`);
+      await saveManualPlayer({ division, category, row, by: user });
+      setSaved(`${row.player} added to ${division} ${label(category).toLowerCase()}.`);
+      setManual(EMPTY_MANUAL);
+      await onChanged();
+    } catch (err) {
+      setError(err.message || "That didn't save. Try again.");
+    }
+    setBusy("");
+  }
+
   async function remove(u) {
     const ok = await confirmAction({ title: `Remove the ${u.division} ${label(u.category).toLowerCase()} upload?`, message: "The tracker goes back to the scraped numbers for that category, if there are any.", confirmLabel: "Remove" });
     if (!ok) return;
@@ -63,60 +97,119 @@ export default function StatsUploadModal({ uploads, user, onChanged, onClose }) 
     setBusy("");
   }
 
+  const tab = (active) => ({
+    flex: 1, textAlign: "center", padding: "8px 10px", fontSize: 13, fontWeight: 700, fontFamily: "inherit", cursor: "pointer",
+    background: active ? "var(--accent-bg)" : "var(--bg-surface)", border: `1px solid ${active ? "var(--accent)" : "var(--border)"}`,
+    color: active ? "var(--accent)" : "var(--text-muted)", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6,
+  });
+
   return (
     <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20, zIndex: 70 }}>
       <div onClick={(e) => e.stopPropagation()} style={{ background: "var(--bg-panel)", border: "1px solid var(--border)", borderRadius: 10, width: 600, maxWidth: "100%", maxHeight: "90vh", overflow: "auto", padding: 22 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-          <h2 className="oswald" style={{ margin: 0, fontSize: 19 }}>Upload stats</h2>
+          <h2 className="oswald" style={{ margin: 0, fontSize: 19 }}>Add stats</h2>
           <button onClick={onClose} aria-label="Close" style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer", lineHeight: 0 }}><X size={18} /></button>
         </div>
         <p style={{ margin: "0 0 14px", fontSize: 13, color: "var(--text-muted)", lineHeight: 1.5 }}>
-          For divisions the automatic refresh can't reach (NAIA, California JUCO). Download a stats table from the site in your own browser, as CSV or Excel, and upload it here. Each stat category (passing, rushing, receiving, defense) is its own file, and an upload replaces that division's numbers for that category.
+          For divisions the automatic refresh can't reach (NAIA, California JUCO). Upload a stats table you downloaded in your own browser -- it replaces that division's numbers for that category -- or add a single player by hand when there's no table to download at all; that merges in without touching anyone else already there.
         </p>
+
+        <div style={{ display: "flex", gap: 0, marginBottom: 14 }}>
+          <button onClick={() => setMode("file")} style={{ ...tab(mode === "file"), borderRadius: "6px 0 0 6px" }}><Upload size={14} /> Upload a file</button>
+          <button onClick={() => setMode("manual")} style={{ ...tab(mode === "manual"), borderRadius: "0 6px 6px 0", borderLeft: "none" }}><UserPlus size={14} /> Add one player</button>
+        </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 10 }}>
           <label style={{ fontSize: 12.5, color: "var(--text-muted)" }}>
             Division
-            <select id="up-division" value={division} onChange={(e) => { setDivision(e.target.value); read(undefined, { division: e.target.value }); }} style={{ ...field, marginTop: 5, cursor: "pointer" }}>
+            <select id="up-division" value={division} onChange={(e) => { setDivision(e.target.value); if (mode === "file") read(undefined, { division: e.target.value }); }} style={{ ...field, marginTop: 5, cursor: "pointer" }}>
               {UPLOAD_DIVISIONS.map((d) => <option key={d} value={d}>{d}</option>)}
             </select>
           </label>
           <label style={{ fontSize: 12.5, color: "var(--text-muted)" }}>
             Stat category
-            <select id="up-category" value={category} onChange={(e) => { setCategory(e.target.value); read(undefined, { category: e.target.value }); }} style={{ ...field, marginTop: 5, cursor: "pointer" }}>
+            <select id="up-category" value={category} onChange={(e) => { setCategory(e.target.value); if (mode === "file") read(undefined, { category: e.target.value }); }} style={{ ...field, marginTop: 5, cursor: "pointer" }}>
               {UPLOAD_CATEGORIES.map((c) => <option key={c.key} value={c.key}>{c.label}</option>)}
             </select>
           </label>
         </div>
-        <label style={{ display: "block", fontSize: 12.5, color: "var(--text-muted)", marginBottom: 10 }}>
-          Team name (only if the file has no Team / School column)
-          <input id="up-team" value={team} onChange={(e) => setTeam(e.target.value)} onBlur={() => file && read(undefined, { team })} placeholder="e.g. Benedictine (KS)" style={{ ...field, marginTop: 5 }} />
-        </label>
 
-        <input ref={input} type="file" accept=".csv,.xlsx,.xls" style={{ display: "none" }} onChange={(e) => read(e.target.files[0] || null)} />
-        <button onClick={() => input.current?.click()} style={{ ...field, cursor: "pointer", textAlign: "left", display: "flex", alignItems: "center", gap: 8 }}>
-          {busy === "read" ? <Loader2 size={15} className="spin" /> : <Upload size={15} />} {file ? file.name : "Choose a CSV or Excel file…"}
-        </button>
+        {mode === "file" ? (
+          <>
+            <label style={{ display: "block", fontSize: 12.5, color: "var(--text-muted)", marginBottom: 10 }}>
+              Team name (only if the file has no Team / School column)
+              <input id="up-team" value={team} onChange={(e) => setTeam(e.target.value)} onBlur={() => file && read(undefined, { team })} placeholder="e.g. Benedictine (KS)" style={{ ...field, marginTop: 5 }} />
+            </label>
+
+            <input ref={input} type="file" accept=".csv,.xlsx,.xls" style={{ display: "none" }} onChange={(e) => read(e.target.files[0] || null)} />
+            <button onClick={() => input.current?.click()} style={{ ...field, cursor: "pointer", textAlign: "left", display: "flex", alignItems: "center", gap: 8 }}>
+              {busy === "read" ? <Loader2 size={15} className="spin" /> : <Upload size={15} />} {file ? file.name : "Choose a CSV or Excel file…"}
+            </button>
+
+            {parsed && (
+              <div style={{ marginTop: 14, border: "1px solid var(--border)", borderRadius: 8, padding: 12 }}>
+                <div style={{ fontSize: 13.5, fontWeight: 700, color: "var(--text-primary)" }}>
+                  {parsed.rows.length.toLocaleString()} {label(category).toLowerCase()} rows from {new Set(parsed.rows.map((r) => r.team)).size} {new Set(parsed.rows.map((r) => r.team)).size === 1 ? "team" : "teams"}
+                </div>
+                <div style={{ fontSize: 12, color: "var(--text-faint)", margin: "4px 0 8px" }}>Columns matched: {parsed.columns.join(", ")}</div>
+                <div style={{ fontSize: 12.5, color: "var(--text-muted)", lineHeight: 1.6 }}>
+                  {parsed.rows.slice(0, 3).map((r) => (
+                    <div key={r.id}>{r.player} · {r.team} · {r.position}{r.yards !== undefined ? ` · ${r.yards} yds` : r.total !== undefined ? ` · ${r.total} tkl` : ""}</div>
+                  ))}
+                </div>
+                <div style={{ marginTop: 12 }}>
+                  <button onClick={save} disabled={busy === "save"} style={primary}>{busy === "save" ? <Loader2 size={15} className="spin" /> : <Upload size={15} />} {busy === "save" ? "Saving…" : `Replace ${division} ${label(category).toLowerCase()}`}</button>
+                </div>
+              </div>
+            )}
+          </>
+        ) : (
+          <div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 10 }}>
+              <label style={{ fontSize: 12.5, color: "var(--text-muted)" }}>
+                Player name
+                <input value={manual.player} onChange={(e) => setManualField("player", e.target.value)} placeholder="e.g. Jordan Smith" style={{ ...field, marginTop: 5 }} />
+              </label>
+              <label style={{ fontSize: 12.5, color: "var(--text-muted)" }}>
+                Team / school
+                <input value={manual.team} onChange={(e) => setManualField("team", e.target.value)} placeholder="e.g. Butler Community College" style={{ ...field, marginTop: 5 }} />
+              </label>
+              <label style={{ fontSize: 12.5, color: "var(--text-muted)" }}>
+                Position
+                <input value={manual.position} onChange={(e) => setManualField("position", e.target.value)} placeholder="e.g. WR" style={{ ...field, marginTop: 5 }} />
+              </label>
+              <label style={{ fontSize: 12.5, color: "var(--text-muted)" }}>
+                Games played
+                <input value={manual.games} onChange={(e) => setManualField("games", e.target.value)} placeholder="e.g. 6" style={{ ...field, marginTop: 5 }} />
+              </label>
+              <label style={{ fontSize: 12.5, color: "var(--text-muted)" }}>
+                Home state (optional)
+                <input value={manual.homeState} onChange={(e) => setManualField("homeState", e.target.value.toUpperCase().slice(0, 2))} placeholder="e.g. OH" style={{ ...field, marginTop: 5 }} />
+              </label>
+              <label style={{ fontSize: 12.5, color: "var(--text-muted)" }}>
+                Conference (optional)
+                <input value={manual.conference} onChange={(e) => setManualField("conference", e.target.value)} placeholder="e.g. CCCAA" style={{ ...field, marginTop: 5 }} />
+              </label>
+            </div>
+
+            <div style={{ fontSize: 11, letterSpacing: "0.06em", textTransform: "uppercase", color: "var(--text-faint)", margin: "4px 0 8px" }}>{label(category)} stats</div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(80px, 1fr))", gap: 10, marginBottom: 14 }}>
+              {CATEGORY_FIELDS[category].map((f) => (
+                <label key={f.key} style={{ fontSize: 12.5, color: "var(--text-muted)" }}>
+                  {f.label}
+                  <input value={manual[f.key]} onChange={(e) => setManualField(f.key, e.target.value)} inputMode="decimal" style={{ ...field, marginTop: 5 }} className="tabular" />
+                </label>
+              ))}
+            </div>
+
+            <button onClick={saveManual} disabled={busy === "save"} style={primary}>
+              {busy === "save" ? <Loader2 size={15} className="spin" /> : <UserPlus size={15} />} {busy === "save" ? "Adding…" : `Add to ${division} ${label(category).toLowerCase()}`}
+            </button>
+          </div>
+        )}
 
         {error && <div role="alert" style={{ marginTop: 12, fontSize: 13, color: "var(--danger-text)", lineHeight: 1.5 }}>{error}</div>}
         {saved && <div role="status" style={{ marginTop: 12, fontSize: 13, color: "var(--success)" }}>{saved} Reopen the tracker if you don't see it yet.</div>}
-
-        {parsed && (
-          <div style={{ marginTop: 14, border: "1px solid var(--border)", borderRadius: 8, padding: 12 }}>
-            <div style={{ fontSize: 13.5, fontWeight: 700, color: "var(--text-primary)" }}>
-              {parsed.rows.length.toLocaleString()} {label(category).toLowerCase()} rows from {new Set(parsed.rows.map((r) => r.team)).size} {new Set(parsed.rows.map((r) => r.team)).size === 1 ? "team" : "teams"}
-            </div>
-            <div style={{ fontSize: 12, color: "var(--text-faint)", margin: "4px 0 8px" }}>Columns matched: {parsed.columns.join(", ")}</div>
-            <div style={{ fontSize: 12.5, color: "var(--text-muted)", lineHeight: 1.6 }}>
-              {parsed.rows.slice(0, 3).map((r) => (
-                <div key={r.id}>{r.player} · {r.team} · {r.position}{r.yards !== undefined ? ` · ${r.yards} yds` : r.total !== undefined ? ` · ${r.total} tkl` : ""}</div>
-              ))}
-            </div>
-            <div style={{ marginTop: 12 }}>
-              <button onClick={save} disabled={busy === "save"} style={primary}>{busy === "save" ? <Loader2 size={15} className="spin" /> : <Upload size={15} />} {busy === "save" ? "Saving…" : `Replace ${division} ${label(category).toLowerCase()}`}</button>
-            </div>
-          </div>
-        )}
 
         {uploads.length > 0 && (
           <div style={{ marginTop: 18 }}>

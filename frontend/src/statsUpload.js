@@ -91,8 +91,7 @@ const num = (v) => {
 const int = (v) => Math.round(num(v));
 const one = (v) => num(v).toFixed(1);
 
-function buildRow(category, division, cells, col, teamOverride) {
-  const get = (field) => (col[field] === undefined ? "" : cells[col[field]]);
+function buildRowFromGet(category, division, get, teamOverride) {
   const player = String(get("player") || "").trim();
   const team = String(teamOverride || get("team") || "").trim();
   if (!player || !team) return null;
@@ -141,6 +140,18 @@ function buildRow(category, division, cells, col, teamOverride) {
     ...base, solo, ast, total: solo + ast, tfl: one(get("tfl")), pbu: int(get("pbu")), int: int(get("int")),
     soloSacks: sacks, astSacks: 0, sackYds: int(get("sackYds")), sacks: sacks.toFixed(1),
   };
+}
+
+function buildRow(category, division, cells, col, teamOverride) {
+  return buildRowFromGet(category, division, (field) => (col[field] === undefined ? "" : cells[col[field]]), teamOverride);
+}
+
+// Builds one row from a hand-typed form instead of a spreadsheet -- "add one player" when there's no
+// stats table to download at all (a single JUCO recruit found by word of mouth, say). Same field logic
+// and id scheme as a CSV-parsed row (buildRow above), so a hand-added player merges cleanly with a real
+// upload of the same person later instead of creating a duplicate -- see saveManualPlayer.
+export function buildManualRow(category, division, fields) {
+  return buildRowFromGet(category, division, (f) => fields[f] ?? "", fields.team);
 }
 
 // Reads a CSV or Excel export and returns rows in the tracker's shape, plus what it found (for the preview).
@@ -201,4 +212,15 @@ export async function loadUploads() {
     groups.set(key, g);
   });
   return [...groups.values()].filter((g) => g.seen === g.chunks); // a half-saved upload is ignored
+}
+
+// Adds (or updates) one hand-typed player without touching anyone else already uploaded for this
+// division+category -- saveUpload itself always fully replaces, which is right for "I downloaded the
+// whole stats table" but would silently wipe out every other hand-added player if used for just one more.
+export async function saveManualPlayer({ division, category, row, by }) {
+  const groups = await loadUploads();
+  const existing = groups.find((g) => g.division === division && g.category === category);
+  const rows = (existing?.rows || []).filter((r) => r.id !== row.id);
+  rows.push(row);
+  await saveUpload({ division, category, rows, fileName: existing?.fileName ? `${existing.fileName} + hand-added` : "(added by hand)", by });
 }
