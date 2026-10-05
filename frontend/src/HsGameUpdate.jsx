@@ -258,7 +258,7 @@ function AddPlayerModal({ onClose, onAdd, coaches, players }) {
             {POSITION_GROUPS.map((g) => <option key={g.key} value={g.key}>{g.label}</option>)}
           </select>
         </div>
-        <input id="hs-school" list="hs-school-list" placeholder="High school" value={f.highSchool} onChange={setSchool} style={field} />
+        <input id="hs-school" list="hs-school-list" placeholder="School (high school or JUCO)" value={f.highSchool} onChange={setSchool} style={field} />
         <datalist id="hs-school-list">{schools.map((n) => <option key={n} value={n} />)}</datalist>
         {borrowed && <div style={{ fontSize: 12.5, color: "var(--success)" }}>{borrowed}</div>}
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
@@ -350,7 +350,7 @@ function EditSchoolModal({ player, editSchool, onClose }) {
       <form onClick={(e) => e.stopPropagation()} onSubmit={submit} style={{ background: "var(--bg-panel)", border: "1px solid var(--border)", borderRadius: 10, width: 440, maxWidth: "100%", padding: 22, display: "grid", gap: 10 }}>
         <h2 className="oswald" style={{ margin: 0, fontSize: 19 }}>{player.name}'s school</h2>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 90px", gap: 10 }}>
-          <input placeholder="High school" value={f.highSchool} onChange={set("highSchool")} style={field} autoFocus />
+          <input placeholder="School (high school or JUCO)" value={f.highSchool} onChange={set("highSchool")} style={field} autoFocus />
           <input placeholder="State" value={f.state} onChange={set("state")} style={field} />
         </div>
         <label style={{ fontSize: 11.5, color: "var(--text-faint)", marginTop: 4 }}>MaxPreps / ScoreStream links (leave blank to have these searched for again)</label>
@@ -460,7 +460,7 @@ function MasterTab({ players, weeks, currentWeek, cmuByWeek, statusOf, statusWhy
             <SortHead k="pos">Pos</SortHead>
             <SortHead k="status">Status</SortHead>
             <SortHead k="year">Yr</SortHead>
-            <SortHead k="school">High School</SortHead>
+            <SortHead k="school">School</SortHead>
             <SortHead k="record">Record</SortHead>
             {weeks.map((w) => (
               <SortHead key={w} k={`week:${w}`} style={{ minWidth: 150, background: w === currentWeek ? "var(--accent-bg)" : thBase.background, color: w === currentWeek ? "var(--accent)" : thBase.color }}>
@@ -830,7 +830,7 @@ const SHEET_SORTS = [
   { key: "status", label: "Status" },
   { key: "name", label: "Name" },
   { key: "coach", label: "Area coach" },
-  { key: "school", label: "High school" },
+  { key: "school", label: "School" },
 ];
 
 // Position runs QB, RB, WR, TE, OL, DL, LB, DB; status runs committed, offered, ... none.
