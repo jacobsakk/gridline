@@ -184,7 +184,7 @@ function StudyDetail({ studyId, admin, onBack }) {
     await study.addManualRow(group, activeSeason);
   }
   async function removePlayer(r) {
-    const ok = await confirmAction({ title: `Remove ${r.player || "this player"}?`, message: "This takes them off the Offensive Line list for this season." });
+    const ok = await confirmAction({ title: `Remove ${r.player || "this player"}?`, message: `This takes them off ${activeGroup.label}'s list for ${activeSeason}.` });
     if (ok) study.removeManualRow(r.id);
   }
   const arrow = (key) => (sort.key === key ? (sort.dir === "desc" ? " ▼" : " ▲") : "");
@@ -199,7 +199,7 @@ function StudyDetail({ studyId, admin, onBack }) {
           <p style={{ margin: "4px 0 0", fontSize: 13, color: "var(--text-muted)", maxWidth: 720, lineHeight: 1.5 }}>{study.meta.description}</p>
         </div>
         <div style={{ display: "flex", gap: 8 }}>
-          {activeGroup.manual && admin && (
+          {admin && (
             <button onClick={addPlayer} style={ghostBtn}><Plus size={14} /> Add player</button>
           )}
           <button onClick={() => downloadCsv(sorted, columns, `${study.meta.id}-${group}-${activeSeason}.csv`)} style={ghostBtn}><Download size={14} /> Download</button>
@@ -260,34 +260,39 @@ function StudyDetail({ studyId, admin, onBack }) {
                     {c.label}{c.key !== "hudlLink" && c.key !== "pffLink" ? arrow(c.key) : ""}
                   </th>
                 ))}
-                {activeGroup.manual && admin && <th style={th}> </th>}
+                {admin && <th style={th}> </th>}
               </tr>
             </thead>
             <tbody>
               {sorted.length === 0 && (
                 <tr>
-                  <td colSpan={columns.length + (activeGroup.manual && admin ? 1 : 0)} style={{ ...td, textAlign: "center", color: "var(--text-faint)", padding: 32 }}>
+                  <td colSpan={columns.length + (admin ? 1 : 0)} style={{ ...td, textAlign: "center", color: "var(--text-faint)", padding: 32 }}>
                     {activeGroup.manual ? "No one added yet." : `Nobody qualified for this position in ${activeSeason}.`}
                   </td>
                 </tr>
               )}
-              {sorted.map((r, i) => (
+              {sorted.map((r, i) => {
+                // A hand-added row (any group, not just OL) carries its own id; a computed one never
+                // does -- that's what marks it editable-as-a-whole-row/removable here, not which group
+                // it's in. An OL row is always one of these since that group has no computed rows at all.
+                const isManualRow = !!r.id;
+                return (
                 <tr key={r.id || r.player} style={{ background: i % 2 === 0 ? "var(--bg-panel)" : "var(--bg-page)" }}>
                   <td style={{ ...td, fontWeight: 700, color: "var(--text-primary)" }}>
-                    {activeGroup.manual ? <TextCell row={r} field="player" placeholder="Player name" editable={admin} onSave={(v) => study.updateManualRow(r.id, { player: v })} /> : r.player}
+                    {isManualRow ? <TextCell row={r} field="player" placeholder="Player name" editable={admin} onSave={(v) => study.updateManualRow(r.id, { player: v })} /> : r.player}
                   </td>
                   <td style={td}>
-                    {activeGroup.manual ? <TextCell row={r} field="team" placeholder="Team" editable={admin} onSave={(v) => study.updateManualRow(r.id, { team: v })} /> : r.team}
+                    {isManualRow ? <TextCell row={r} field="team" placeholder="Team" editable={admin} onSave={(v) => study.updateManualRow(r.id, { team: v })} /> : r.team}
                   </td>
                   <td style={td}>
-                    <StateCell row={r} editable={admin} onSave={(state) => (activeGroup.manual ? study.updateManualRow(r.id, { state }) : study.saveField(group, r.player, { state }))} />
+                    <StateCell row={r} editable={admin} onSave={(state) => (isManualRow ? study.updateManualRow(r.id, { state }) : study.saveField(group, r.player, { state }))} />
                   </td>
                   {activeGroup.stats.map((s) => (
                     <td key={s.key} style={td} className="tabular">
                       <StatCell
                         value={r.totals[s.key] ?? 0}
                         admin={admin}
-                        onSave={(value) => (activeGroup.manual ? study.updateManualRow(r.id, { [s.key]: value }) : study.saveStat(group, activeSeason, r.player, s.key, value))}
+                        onSave={(value) => (isManualRow ? study.updateManualRow(r.id, { [s.key]: value }) : study.saveStat(group, activeSeason, r.player, s.key, value))}
                       />
                     </td>
                   ))}
@@ -304,20 +309,23 @@ function StudyDetail({ studyId, admin, onBack }) {
                     </td>
                   )}
                   <td style={td}>
-                    <LinkCell row={r} field="hudlLink" label="Film" placeholder="Paste a Hudl link…" editable={admin} onSave={(url) => (activeGroup.manual ? study.updateManualRow(r.id, { hudlLink: url }) : study.saveField(group, r.player, { hudlLink: url }))} />
+                    <LinkCell row={r} field="hudlLink" label="Film" placeholder="Paste a Hudl link…" editable={admin} onSave={(url) => (isManualRow ? study.updateManualRow(r.id, { hudlLink: url }) : study.saveField(group, r.player, { hudlLink: url }))} />
                   </td>
                   <td style={td}>
-                    <LinkCell row={r} field="pffLink" label="PFF" placeholder="Paste a PFF link…" editable={admin} onSave={(url) => (activeGroup.manual ? study.updateManualRow(r.id, { pffLink: url }) : study.saveField(group, r.player, { pffLink: url }))} />
+                    <LinkCell row={r} field="pffLink" label="PFF" placeholder="Paste a PFF link…" editable={admin} onSave={(url) => (isManualRow ? study.updateManualRow(r.id, { pffLink: url }) : study.saveField(group, r.player, { pffLink: url }))} />
                   </td>
-                  {activeGroup.manual && admin && (
+                  {admin && (
                     <td style={{ ...td, textAlign: "right" }}>
-                      <button onClick={() => removePlayer(r)} title={`Remove ${r.player || "this player"}`} aria-label={`Remove ${r.player || "this player"}`} style={{ background: "none", border: "none", color: "var(--text-faint)", cursor: "pointer", padding: 2, lineHeight: 0 }}>
-                        <Trash2 size={14} />
-                      </button>
+                      {isManualRow && (
+                        <button onClick={() => removePlayer(r)} title={`Remove ${r.player || "this player"}`} aria-label={`Remove ${r.player || "this player"}`} style={{ background: "none", border: "none", color: "var(--text-faint)", cursor: "pointer", padding: 2, lineHeight: 0 }}>
+                          <Trash2 size={14} />
+                        </button>
+                      )}
                     </td>
                   )}
                 </tr>
-              ))}
+                );
+              })}
             </tbody>
           </table>
         </div>
