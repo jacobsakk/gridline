@@ -571,6 +571,9 @@ function WatchListRow({
         </select>
       </td>
       <td style={tdStyle}>
+        <StateCell row={p} field="homeState" editable onSave={(state) => onUpdate("homeState", state)} />
+      </td>
+      <td style={tdStyle}>
         <input
           value={height}
           onChange={(e) => setHeight(e.target.value)}
@@ -601,29 +604,6 @@ function WatchListRow({
             </option>
           ))}
         </select>
-      </td>
-      <td style={tdStyle}>
-        <div style={{ display: "flex", gap: 6 }}>
-          <button style={pillStyle(p.questionnaire === true)} onClick={() => onUpdate("questionnaire", true)}>
-            Yes
-          </button>
-          <button style={pillStyle(p.questionnaire === false)} onClick={() => onUpdate("questionnaire", false)}>
-            No
-          </button>
-        </div>
-      </td>
-      <td style={tdStyle}>
-        <div style={{ display: "flex", gap: 6 }}>
-          <button style={pillStyle(p.pipelined === true)} onClick={() => onUpdate("pipelined", true)}>
-            Yes
-          </button>
-          <button style={pillStyle(p.pipelined === false)} onClick={() => onUpdate("pipelined", false)}>
-            No
-          </button>
-        </div>
-      </td>
-      <td style={tdStyle}>
-        <StateCell row={p} field="homeState" editable onSave={(state) => onUpdate("homeState", state)} />
       </td>
       <td style={tdStyle}>
         <LinkCell row={p} field="xLink" label="X" placeholder="Paste an X profile link…" editable onSave={(url) => onUpdate("xLink", url)} />
@@ -658,7 +638,7 @@ function WatchListRow({
   );
 }
 
-const WATCHLIST_COLUMNS = ["", "", "Player", "Team", "Division", "Pos", "Ht", "Wt", "Eligibility", "Questionnaire?", "Pipelined?", "Home State", "X", "Film Link", "Notes", ""];
+const WATCHLIST_COLUMNS = ["", "", "Player", "Team", "Division", "Pos", "Home State", "Ht", "Wt", "Eligibility", "X", "Film Link", "Notes", ""];
 // Which of the columns above can be clicked to sort the watch list --
 // keyed by the doc field each one reads. Only active on the "All"
 // position tab (see positionTab check in WatchListPanel) -- sorting by
@@ -670,8 +650,6 @@ const WATCHLIST_SORTABLE = {
   Ht: "height",
   Wt: "weight",
   Eligibility: "eligibility",
-  "Questionnaire?": "questionnaire",
-  "Pipelined?": "pipelined",
   "Home State": "homeState",
 };
 // Alphabetical (not numeric) comparison, defaulting to ascending on
