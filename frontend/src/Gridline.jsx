@@ -1537,14 +1537,27 @@ function GridlineMain({ onBack: toDashboard, initialSearch, onUploadStats }) {
     const q = search.trim().toLowerCase();
     if (q) filtered = filtered.filter((r) => r.player.toLowerCase().includes(q) || (r.team.toLowerCase().includes(q) || canonicalSchool(r.team).toLowerCase().includes(q)));
 
+    // Sorting always ranks by the season-total number for whatever column is clicked, even when a
+    // specific week is picked above -- the numbers shown stay that week's, but the order reflects where
+    // a player stands for the season (the Breakout panel below is the one place meant to rank by
+    // just-this-week performance, and it computes its own leaders independently of this, untouched).
+    // A no-op when week is already "total", which is the default.
+    const totalsByPlayer =
+      week === "total"
+        ? null
+        : new Map(DATA.filter((r) => r.division === division && r.category === category && r.week === "total").map((r) => [`${r.player}|${r.team}`, r]));
+    const sortRowFor = (r) => (totalsByPlayer && totalsByPlayer.get(`${r.player}|${r.team}`)) || r;
+
     filtered = [...filtered].sort((a, b) => {
+      const sa = sortRowFor(a);
+      const sb = sortRowFor(b);
       if (STRING_SORT_KEYS.has(sortKey)) {
-        const av = (a[sortKey] || "").toString();
-        const bv = (b[sortKey] || "").toString();
+        const av = (sa[sortKey] || "").toString();
+        const bv = (sb[sortKey] || "").toString();
         return sortDir === "desc" ? bv.localeCompare(av) : av.localeCompare(bv);
       }
-      const av = parseFloat(a[sortKey]) || 0;
-      const bv = parseFloat(b[sortKey]) || 0;
+      const av = parseFloat(sa[sortKey]) || 0;
+      const bv = parseFloat(sb[sortKey]) || 0;
       return sortDir === "desc" ? bv - av : av - bv;
     });
     return filtered;
