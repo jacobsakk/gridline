@@ -31,8 +31,8 @@ const CARDS = [
   },
   {
     key: "hs",
-    label: "HS Game Update",
-    description: "Commits and targets: weekly high school results, records, area coach and game summaries",
+    label: "Game Update",
+    description: "Commits and targets: weekly results, records, area coach and game summaries (high school and JUCO)",
     icon: Trophy,
   },
   {

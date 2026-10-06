@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { db } from "./firebase";
 
 // The Area Coach Map: a fixed color legend of coaches (their own small list, kept here rather than pulled
-// from the free-text "coach" field on HS Game Update players -- not every area coach types their own name
+// from the free-text "coach" field on Game Update players -- not every area coach types their own name
 // into every player, and this list needs a color and a stable order) plus one county -> coach assignment
 // per county, all in a single document so painting a whole state is one write instead of hundreds.
 //

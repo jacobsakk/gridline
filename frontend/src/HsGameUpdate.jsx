@@ -1020,7 +1020,7 @@ function FaceSheetTab(props) {
         {pages.map((page, i) => (
           <section key={i} className="hs-page" style={{ maxWidth: 940, marginInline: "auto", marginBottom: 30 }}>
             <div style={{ background: SHEET.maroon, color: "#fff", textAlign: "center", fontWeight: 800, letterSpacing: "0.03em", fontSize: "calc(var(--hs-font) * 1.25)", padding: "5px 8px", border: `1px solid ${SHEET.ink}` }} className="oswald">
-              {shown[0]?.classYear || ""} HIGH SCHOOL GAME TRACKER · WEEK OF {weekLabel(fromIso(week))}
+              {shown[0]?.classYear || ""} GAME UPDATE · WEEK OF {weekLabel(fromIso(week))}
             </div>
             <div style={{ display: "flex", border: `1px solid ${SHEET.ink}`, borderTop: "none", background: SHEET.ink, gap: 1 }}>
               <div style={{ ...valueCell, background: SHEET.grey, fontWeight: 800, flex: "0 0 22%", minHeight: "calc(var(--hs-row) * 0.85)" }}>KEY:</div>
@@ -1560,7 +1560,7 @@ export default function HsGameUpdate({ onBack: toDashboard }) {
           <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
             {back.fromTrail && <BackButton label={back.label} onClick={back.go} />}
             <HomeButton onHome={toDashboard} />
-            <h1 className="oswald app-title" style={{ fontSize: 22, fontWeight: 700, margin: 0, letterSpacing: "0.01em" }}>HS Game Update</h1>
+            <h1 className="oswald app-title" style={{ fontSize: 22, fontWeight: 700, margin: 0, letterSpacing: "0.01em" }}>Game Update</h1>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <button onClick={() => setUploadOpen(true)} style={{ display: "flex", alignItems: "center", gap: 7, background: "var(--accent-bg)", border: "1px solid var(--accent)", color: "var(--accent)", borderRadius: 5, padding: "8px 14px", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
