@@ -42,7 +42,7 @@ function playerSearchUrl(player, team, position) {
 const STRING_SORT_KEYS = new Set(["team", "conference", "homeState"]);
 
 // leaderKey = the stat used to rank "leader" for this category
-const CATEGORIES = {
+export const CATEGORIES = {
   passing: {
     label: "Passing",
     positions: ["QB"],

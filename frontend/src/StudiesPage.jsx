@@ -18,7 +18,7 @@ const CUSTOM_STUDIES = [
   {
     id: "transfer-out-tracker",
     title: "Transfer Out Tracker",
-    description: "A weekly performance log for former Chippewas now playing elsewhere -- no stat source covers this (every destination school is different), so it's entirely hand-entered.",
+    description: "Former Chippewas now playing elsewhere -- season stats pull live from the Pre-Portal Tracker's own data, same as everywhere else in the site; add a player by hand and a PFF link/snap count once graded.",
     detail: TransferOutTracker,
   },
 ];

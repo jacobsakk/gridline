@@ -1,17 +1,23 @@
 import { useRef, useState } from "react";
-import { Download, Plus, Trash2, Upload } from "lucide-react";
-import { control, TextCell } from "./EditableCells.jsx";
+import { Download, Loader2, Plus, Trash2, Upload } from "lucide-react";
+import { control, LinkCell, TextCell } from "./EditableCells.jsx";
 import { confirmAction } from "./ConfirmDialog.jsx";
 import { parseTransferSheet, useTransferOutTracker } from "./transferOutData.js";
+import { findTransferStats, formatStatLine } from "./transferStats.js";
+import { useRealStatsReady } from "./statsData.js";
 
 const ghostBtn = { ...control, cursor: "pointer", fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 7 };
 
-function downloadCsv(players, weekCount, filename) {
+function statsText(p) {
+  const matches = findTransferStats(p.name, p.college, p.position);
+  return matches.length ? matches.map(formatStatLine).join("; ") : "";
+}
+
+function downloadCsv(players, filename) {
   const escape = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`;
-  const weekCols = Array.from({ length: weekCount }, (_, i) => `Week ${i}`);
-  const lines = [["Name", "Position", "College", ...weekCols].map(escape).join(",")];
+  const lines = [["Name", "Position", "College", "Total Stats", "PFF Snaps", "PFF Link"].map(escape).join(",")];
   players.forEach((p) => {
-    lines.push([p.name, p.position, p.college, ...Array.from({ length: weekCount }, (_, i) => p.weeks?.[String(i)] || "")].map(escape).join(","));
+    lines.push([p.name, p.position, p.college, statsText(p) || "Not found this season", p.pffSnaps, p.pffLink].map(escape).join(","));
   });
   const blob = new Blob([lines.join("\n")], { type: "text/csv" });
   const url = URL.createObjectURL(blob);
@@ -22,75 +28,27 @@ function downloadCsv(players, weekCount, filename) {
   URL.revokeObjectURL(url);
 }
 
-// Free-text, multi-line version of the shared click-to-edit cells -- a week's entry ("45 SNAPS, 3 TOT,
-// 1 TFL") runs longer than the single-line inputs Name/College/Position use, so this wraps instead of
-// truncating and edits in a textarea instead of an <input>.
-function WeekCell({ value, placeholder, editable, onSave }) {
-  const [editing, setEditing] = useState(false);
-  const [text, setText] = useState(value || "");
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState("");
-
-  async function commit(next) {
-    const trimmed = next.trim();
-    if (trimmed === (value || "")) {
-      setEditing(false);
-      return;
-    }
-    setSaving(true);
-    setError("");
-    try {
-      await onSave(trimmed);
-      setEditing(false);
-    } catch (err) {
-      setError(err?.code === "permission-denied" ? "No permission to save." : "Couldn't save -- try again.");
-    } finally {
-      setSaving(false);
-    }
+// Read-only: this player's season-total stat line(s) looked up live against the Pre-Portal Tracker's
+// own data, by name (see transferStats.js) -- nothing here is ever saved, so it updates on its own every
+// time that data refreshes, with no "edit" affordance at all.
+function StatsCell({ p, statsReady }) {
+  if (!statsReady) return <Loader2 size={13} className="spin" style={{ color: "var(--text-faint)" }} />;
+  const matches = findTransferStats(p.name, p.college, p.position);
+  if (!matches.length) {
+    return <span style={{ color: "var(--text-faint)" }}>Not found this season</span>;
   }
-
-  if (editing) {
-    return (
-      <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
-        <textarea
-          autoFocus
-          value={text}
-          disabled={saving}
-          onChange={(e) => setText(e.target.value)}
-          placeholder={placeholder}
-          rows={3}
-          style={{ ...control, padding: "6px 8px", fontSize: 12.5, width: 190, resize: "vertical", opacity: saving ? 0.6 : 1, fontFamily: "inherit" }}
-          onKeyDown={(e) => {
-            if (e.key === "Escape") {
-              setText(value || "");
-              setError("");
-              setEditing(false);
-            }
-          }}
-          onBlur={() => commit(text)}
-        />
-        {error && <span style={{ fontSize: 11, color: "var(--danger, #c0392b)" }}>{error}</span>}
-      </div>
-    );
-  }
-  if (value) {
-    return (
-      <span onClick={() => editable && setEditing(true)} title={editable ? "Click to change" : undefined} style={{ cursor: editable ? "pointer" : "default", whiteSpace: "normal", display: "block", maxWidth: 190 }}>
-        {value}
-      </span>
-    );
-  }
-  return editable ? (
-    <button onClick={() => setEditing(true)} style={{ background: "none", border: "none", color: "var(--text-faint)", cursor: "pointer", fontSize: 12.5, textDecoration: "underline", padding: 0 }}>
-      Add
-    </button>
-  ) : (
-    <span style={{ color: "var(--text-faint)" }}>—</span>
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+      {matches.map((m) => (
+        <span key={m.category}>{formatStatLine(m)}</span>
+      ))}
+    </div>
   );
 }
 
-export default function TransferOutTracker({ admin, meta, onBack: closeStudy }) {
+export default function TransferOutTracker({ admin, meta }) {
   const tracker = useTransferOutTracker();
+  const statsReady = useRealStatsReady();
   const fileInput = useRef(null);
   const [importing, setImporting] = useState(false);
   const [importError, setImportError] = useState("");
@@ -98,7 +56,7 @@ export default function TransferOutTracker({ admin, meta, onBack: closeStudy }) 
   const td = { padding: "7px 10px", fontSize: 13.5, color: "var(--text-secondary)", borderTop: "1px solid var(--border-subtle)", verticalAlign: "top" };
 
   async function removePlayer(p) {
-    const ok = await confirmAction({ title: `Remove ${p.name || "this player"}?`, message: "This takes them off the Transfer Out Tracker entirely, including every week already logged for them." });
+    const ok = await confirmAction({ title: `Remove ${p.name || "this player"}?`, message: "This takes them off the Transfer Out Tracker entirely." });
     if (ok) tracker.removePlayer(p.id);
   }
 
@@ -108,19 +66,19 @@ export default function TransferOutTracker({ admin, meta, onBack: closeStudy }) 
     if (!file) return;
     setImportError("");
     try {
-      const parsed = await parseTransferSheet(file);
-      if (parsed.players.length === 0) {
+      const players = await parseTransferSheet(file);
+      if (players.length === 0) {
         setImportError("No player rows found in that sheet.");
         return;
       }
       const ok = await confirmAction({
-        title: `Import ${parsed.players.length} player${parsed.players.length === 1 ? "" : "s"}?`,
-        message: `This adds ${parsed.players.length} new row${parsed.players.length === 1 ? "" : "s"} to the tracker (it never matches against players already here, so don't re-import the same sheet twice).`,
+        title: `Import ${players.length} player${players.length === 1 ? "" : "s"}?`,
+        message: `This adds ${players.length} new row${players.length === 1 ? "" : "s"} to the tracker (it never matches against players already here, so don't re-import the same sheet twice).`,
         confirmLabel: "Import",
       });
       if (!ok) return;
       setImporting(true);
-      await tracker.importFromSheet(parsed);
+      await tracker.importFromSheet(players);
     } catch (err) {
       setImportError(err?.message || "Couldn't read that file.");
     } finally {
@@ -139,14 +97,13 @@ export default function TransferOutTracker({ admin, meta, onBack: closeStudy }) 
           {admin && (
             <>
               <button onClick={() => tracker.addPlayer()} style={ghostBtn}><Plus size={14} /> Add player</button>
-              <button onClick={() => tracker.addWeek()} style={ghostBtn}><Plus size={14} /> Add week</button>
               <button onClick={() => fileInput.current?.click()} disabled={importing} style={{ ...ghostBtn, opacity: importing ? 0.6 : 1 }}>
                 <Upload size={14} /> {importing ? "Importing…" : "Import from Excel"}
               </button>
               <input ref={fileInput} type="file" accept=".xlsx,.xls" onChange={handleFile} style={{ display: "none" }} />
             </>
           )}
-          <button onClick={() => downloadCsv(tracker.players, tracker.weekCount, "transfer-out-tracker.csv")} style={ghostBtn}><Download size={14} /> Download</button>
+          <button onClick={() => downloadCsv(tracker.players, "transfer-out-tracker.csv")} style={ghostBtn}><Download size={14} /> Download</button>
         </div>
       </div>
       {importError && <span style={{ fontSize: 12, color: "var(--danger, #c0392b)" }}>{importError}</span>}
@@ -158,26 +115,26 @@ export default function TransferOutTracker({ admin, meta, onBack: closeStudy }) 
           <table style={{ width: "100%", borderCollapse: "collapse" }}>
             <thead>
               <tr>
-                <th style={{ ...th, position: "sticky", left: 0, zIndex: 2 }}>Name</th>
+                <th style={th}>Name</th>
                 <th style={th}>Position</th>
                 <th style={th}>College</th>
-                {Array.from({ length: tracker.weekCount }, (_, i) => (
-                  <th key={i} style={th}>Week {i}</th>
-                ))}
+                <th style={th}>Total Stats</th>
+                <th style={th}>PFF Snaps</th>
+                <th style={th}>PFF Link</th>
                 {admin && <th style={th}> </th>}
               </tr>
             </thead>
             <tbody>
               {tracker.players.length === 0 && (
                 <tr>
-                  <td colSpan={3 + tracker.weekCount + (admin ? 1 : 0)} style={{ ...td, textAlign: "center", color: "var(--text-faint)", padding: 32 }}>
+                  <td colSpan={6 + (admin ? 1 : 0)} style={{ ...td, textAlign: "center", color: "var(--text-faint)", padding: 32 }}>
                     No one added yet.
                   </td>
                 </tr>
               )}
               {tracker.players.map((p, i) => (
                 <tr key={p.id} style={{ background: i % 2 === 0 ? "var(--bg-panel)" : "var(--bg-page)" }}>
-                  <td style={{ ...td, fontWeight: 700, color: "var(--text-primary)", position: "sticky", left: 0, background: i % 2 === 0 ? "var(--bg-panel)" : "var(--bg-page)" }}>
+                  <td style={{ ...td, fontWeight: 700, color: "var(--text-primary)" }}>
                     <TextCell row={p} field="name" placeholder="Player name" editable={admin} onSave={(v) => tracker.updatePlayer(p.id, { name: v })} />
                   </td>
                   <td style={td}>
@@ -186,11 +143,15 @@ export default function TransferOutTracker({ admin, meta, onBack: closeStudy }) 
                   <td style={td}>
                     <TextCell row={p} field="college" placeholder="College" editable={admin} onSave={(v) => tracker.updatePlayer(p.id, { college: v })} />
                   </td>
-                  {Array.from({ length: tracker.weekCount }, (_, w) => (
-                    <td key={w} style={td}>
-                      <WeekCell value={p.weeks?.[String(w)]} placeholder="e.g. 24 snaps, 3 tot tackles" editable={admin} onSave={(text) => tracker.setWeekText(p.id, w, text)} />
-                    </td>
-                  ))}
+                  <td style={{ ...td, minWidth: 220 }}>
+                    <StatsCell p={p} statsReady={statsReady} />
+                  </td>
+                  <td style={td}>
+                    <TextCell row={p} field="pffSnaps" placeholder="Snaps" editable={admin} onSave={(v) => tracker.updatePlayer(p.id, { pffSnaps: v })} />
+                  </td>
+                  <td style={td}>
+                    <LinkCell row={p} field="pffLink" label="PFF" placeholder="Paste a PFF link…" editable={admin} onSave={(url) => tracker.updatePlayer(p.id, { pffLink: url })} />
+                  </td>
                   {admin && (
                     <td style={{ ...td, textAlign: "right" }}>
                       <button onClick={() => removePlayer(p)} title={`Remove ${p.name || "this player"}`} aria-label={`Remove ${p.name || "this player"}`} style={{ background: "none", border: "none", color: "var(--text-faint)", cursor: "pointer", padding: 2, lineHeight: 0 }}>
