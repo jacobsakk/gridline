@@ -116,6 +116,7 @@ export default function TransferOutTracker({ admin, meta, onBack: closeStudy }) 
       const ok = await confirmAction({
         title: `Import ${parsed.players.length} player${parsed.players.length === 1 ? "" : "s"}?`,
         message: `This adds ${parsed.players.length} new row${parsed.players.length === 1 ? "" : "s"} to the tracker (it never matches against players already here, so don't re-import the same sheet twice).`,
+        confirmLabel: "Import",
       });
       if (!ok) return;
       setImporting(true);
