@@ -148,3 +148,69 @@ export function StateCell({ row, field = "state", editable, onSave }) {
     <span style={{ color: "var(--text-faint)" }}>—</span>
   );
 }
+
+// Free-text version of StateCell -- no uppercase/length constraint, for a hand-entered row with no
+// other source of truth at all (a manually-added Offensive Line player's name or team, say) rather than
+// a field that's merely correcting one value on an otherwise real, scraped row.
+export function TextCell({ row, field, placeholder, editable, onSave }) {
+  const [editing, setEditing] = useState(false);
+  const [value, setValue] = useState(row[field] || "");
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+
+  async function commit(next) {
+    if (next === (row[field] || "")) {
+      setEditing(false);
+      return;
+    }
+    setSaving(true);
+    setError("");
+    try {
+      await onSave(next);
+      setEditing(false);
+    } catch (err) {
+      setError(err?.code === "permission-denied" ? "No permission to save." : "Failed");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  if (editing) {
+    return (
+      <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+        <input
+          autoFocus
+          value={value}
+          disabled={saving}
+          onChange={(e) => setValue(e.target.value)}
+          placeholder={placeholder}
+          style={{ ...control, padding: "4px 7px", fontSize: 12.5, width: 150, opacity: saving ? 0.6 : 1 }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") commit(value.trim());
+            if (e.key === "Escape") {
+              setValue(row[field] || "");
+              setError("");
+              setEditing(false);
+            }
+          }}
+          onBlur={() => commit(value.trim())}
+        />
+        {error && <span style={{ fontSize: 11, color: "var(--danger, #c0392b)", whiteSpace: "nowrap" }}>{error}</span>}
+      </div>
+    );
+  }
+  if (row[field]) {
+    return (
+      <span onClick={() => editable && setEditing(true)} title={editable ? "Click to change" : undefined} style={{ cursor: editable ? "pointer" : "default" }}>
+        {row[field]}
+      </span>
+    );
+  }
+  return editable ? (
+    <button onClick={() => setEditing(true)} style={{ background: "none", border: "none", color: "var(--text-faint)", cursor: "pointer", fontSize: 12.5, textDecoration: "underline", padding: 0 }}>
+      Add
+    </button>
+  ) : (
+    <span style={{ color: "var(--text-faint)" }}>—</span>
+  );
+}

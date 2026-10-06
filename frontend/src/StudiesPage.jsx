@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
-import { ChevronRight, Download, Loader2, X } from "lucide-react";
+import { ChevronRight, Download, Loader2, Plus, Trash2, X } from "lucide-react";
 import { BackButton, HomeButton } from "./HomeButton.jsx";
 import { ThemeSwitcher, useTheme } from "./theme.jsx";
 import { useBack, initialSubRoute, setSubRoute } from "./route.js";
 import { STUDIES, useStudy } from "./studiesData.js";
-import { control, LinkCell, StateCell } from "./EditableCells.jsx";
+import { confirmAction } from "./ConfirmDialog.jsx";
+import { control, LinkCell, StateCell, TextCell } from "./EditableCells.jsx";
 
 const ghostBtn = { ...control, cursor: "pointer", fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 7 };
 
@@ -161,7 +162,9 @@ function StudyDetail({ studyId, admin, onBack }) {
       { key: "team", label: "Team", get: (r) => r.team },
       { key: "state", label: "State", get: (r) => r.state || "" },
       ...activeGroup.stats.map((s) => ({ key: s.key, label: s.label, get: (r) => r.totals[s.key] ?? 0 })),
-      { key: "score", label: "Score", get: (r) => r.score },
+      // No Score column for a manual group (OL) -- there's no formula that makes sense for it; sorting
+      // by PFF Grade (or anything else) directly via the column header already works without one.
+      ...(activeGroup.scoreFormula ? [{ key: "score", label: "Score", get: (r) => r.score }] : []),
       { key: "hudlLink", label: "Hudl", get: (r) => r.hudlLink || "" },
       { key: "pffLink", label: "PFF", get: (r) => r.pffLink || "" },
     ],
@@ -170,6 +173,19 @@ function StudyDetail({ studyId, admin, onBack }) {
 
   function sortBy(key) {
     setSort((s) => (s.key === key ? { key, dir: s.dir === "desc" ? "asc" : "desc" } : { key, dir: "asc" }));
+  }
+  function openGroup(g) {
+    setGroup(g.key);
+    // A manual group has no score to default-sort by -- its second stat is PFF Grade, a much more useful
+    // default than falling back to score (which would just be undefined for every row).
+    setSort(g.scoreFormula ? { key: "score", dir: "desc" } : { key: g.stats[g.stats.length - 1]?.key || "player", dir: "desc" });
+  }
+  async function addPlayer() {
+    await study.addManualRow(group, activeSeason);
+  }
+  async function removePlayer(r) {
+    const ok = await confirmAction({ title: `Remove ${r.player || "this player"}?`, message: "This takes them off the Offensive Line list for this season." });
+    if (ok) study.removeManualRow(r.id);
   }
   const arrow = (key) => (sort.key === key ? (sort.dir === "desc" ? " ▼" : " ▲") : "");
   const th = { textAlign: "left", padding: "9px 10px", fontSize: 11, color: "var(--text-faint)", textTransform: "uppercase", letterSpacing: "0.03em", cursor: "pointer", userSelect: "none", whiteSpace: "nowrap", position: "sticky", top: 0, background: "var(--bg-surface)", zIndex: 1 };
@@ -182,7 +198,12 @@ function StudyDetail({ studyId, admin, onBack }) {
           <h1 className="oswald" style={{ fontSize: 22, fontWeight: 700, margin: 0 }}>{study.meta.title}</h1>
           <p style={{ margin: "4px 0 0", fontSize: 13, color: "var(--text-muted)", maxWidth: 720, lineHeight: 1.5 }}>{study.meta.description}</p>
         </div>
-        <button onClick={() => downloadCsv(sorted, columns, `${study.meta.id}-${group}-${activeSeason}.csv`)} style={ghostBtn}><Download size={14} /> Download</button>
+        <div style={{ display: "flex", gap: 8 }}>
+          {activeGroup.manual && admin && (
+            <button onClick={addPlayer} style={ghostBtn}><Plus size={14} /> Add player</button>
+          )}
+          <button onClick={() => downloadCsv(sorted, columns, `${study.meta.id}-${group}-${activeSeason}.csv`)} style={ghostBtn}><Download size={14} /> Download</button>
+        </div>
       </div>
 
       <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
@@ -193,7 +214,7 @@ function StudyDetail({ studyId, admin, onBack }) {
             return (
               <button
                 key={g.key}
-                onClick={() => setGroup(g.key)}
+                onClick={() => openGroup(g)}
                 style={{
                   display: "flex", alignItems: "center", gap: 7, borderRadius: 999, padding: "7px 14px", fontSize: 13, fontWeight: 700, fontFamily: "inherit", cursor: "pointer",
                   background: isActive ? "var(--accent-bg)" : "var(--bg-surface)", border: `1px solid ${isActive ? "var(--accent)" : "var(--border)"}`,
@@ -239,36 +260,62 @@ function StudyDetail({ studyId, admin, onBack }) {
                     {c.label}{c.key !== "hudlLink" && c.key !== "pffLink" ? arrow(c.key) : ""}
                   </th>
                 ))}
+                {activeGroup.manual && admin && <th style={th}> </th>}
               </tr>
             </thead>
             <tbody>
               {sorted.length === 0 && (
                 <tr>
-                  <td colSpan={columns.length} style={{ ...td, textAlign: "center", color: "var(--text-faint)", padding: 32 }}>Nobody qualified for this position in {activeSeason}.</td>
+                  <td colSpan={columns.length + (activeGroup.manual && admin ? 1 : 0)} style={{ ...td, textAlign: "center", color: "var(--text-faint)", padding: 32 }}>
+                    {activeGroup.manual ? "No one added yet." : `Nobody qualified for this position in ${activeSeason}.`}
+                  </td>
                 </tr>
               )}
               {sorted.map((r, i) => (
-                <tr key={r.player} style={{ background: i % 2 === 0 ? "var(--bg-panel)" : "var(--bg-page)" }}>
-                  <td style={{ ...td, fontWeight: 700, color: "var(--text-primary)" }}>{r.player}</td>
-                  <td style={td}>{r.team}</td>
-                  <td style={td}><StateCell row={r} editable={admin} onSave={(state) => study.saveField(group, r.player, { state })} /></td>
+                <tr key={r.id || r.player} style={{ background: i % 2 === 0 ? "var(--bg-panel)" : "var(--bg-page)" }}>
+                  <td style={{ ...td, fontWeight: 700, color: "var(--text-primary)" }}>
+                    {activeGroup.manual ? <TextCell row={r} field="player" placeholder="Player name" editable={admin} onSave={(v) => study.updateManualRow(r.id, { player: v })} /> : r.player}
+                  </td>
+                  <td style={td}>
+                    {activeGroup.manual ? <TextCell row={r} field="team" placeholder="Team" editable={admin} onSave={(v) => study.updateManualRow(r.id, { team: v })} /> : r.team}
+                  </td>
+                  <td style={td}>
+                    <StateCell row={r} editable={admin} onSave={(state) => (activeGroup.manual ? study.updateManualRow(r.id, { state }) : study.saveField(group, r.player, { state }))} />
+                  </td>
                   {activeGroup.stats.map((s) => (
                     <td key={s.key} style={td} className="tabular">
-                      <StatCell value={r.totals[s.key] ?? 0} admin={admin} onSave={(value) => study.saveStat(group, activeSeason, r.player, s.key, value)} />
+                      <StatCell
+                        value={r.totals[s.key] ?? 0}
+                        admin={admin}
+                        onSave={(value) => (activeGroup.manual ? study.updateManualRow(r.id, { [s.key]: value }) : study.saveStat(group, activeSeason, r.player, s.key, value))}
+                      />
                     </td>
                   ))}
-                  <td style={{ ...td, fontWeight: 700, color: "var(--accent)" }} className="tabular">
-                    <button
-                      onClick={() => setExplainRow(r)}
-                      title="Why this score?"
-                      aria-label={`Why does ${r.player} have a score of ${r.score}?`}
-                      style={{ background: "none", border: "none", padding: 0, font: "inherit", fontWeight: 700, color: "var(--accent)", cursor: "pointer", textDecoration: "underline", textDecorationStyle: "dotted", textUnderlineOffset: 3 }}
-                    >
-                      {r.score}
-                    </button>
+                  {activeGroup.scoreFormula && (
+                    <td style={{ ...td, fontWeight: 700, color: "var(--accent)" }} className="tabular">
+                      <button
+                        onClick={() => setExplainRow(r)}
+                        title="Why this score?"
+                        aria-label={`Why does ${r.player} have a score of ${r.score}?`}
+                        style={{ background: "none", border: "none", padding: 0, font: "inherit", fontWeight: 700, color: "var(--accent)", cursor: "pointer", textDecoration: "underline", textDecorationStyle: "dotted", textUnderlineOffset: 3 }}
+                      >
+                        {r.score}
+                      </button>
+                    </td>
+                  )}
+                  <td style={td}>
+                    <LinkCell row={r} field="hudlLink" label="Film" placeholder="Paste a Hudl link…" editable={admin} onSave={(url) => (activeGroup.manual ? study.updateManualRow(r.id, { hudlLink: url }) : study.saveField(group, r.player, { hudlLink: url }))} />
                   </td>
-                  <td style={td}><LinkCell row={r} field="hudlLink" label="Film" placeholder="Paste a Hudl link…" editable={admin} onSave={(url) => study.saveField(group, r.player, { hudlLink: url })} /></td>
-                  <td style={td}><LinkCell row={r} field="pffLink" label="PFF" placeholder="Paste a PFF link…" editable={admin} onSave={(url) => study.saveField(group, r.player, { pffLink: url })} /></td>
+                  <td style={td}>
+                    <LinkCell row={r} field="pffLink" label="PFF" placeholder="Paste a PFF link…" editable={admin} onSave={(url) => (activeGroup.manual ? study.updateManualRow(r.id, { pffLink: url }) : study.saveField(group, r.player, { pffLink: url }))} />
+                  </td>
+                  {activeGroup.manual && admin && (
+                    <td style={{ ...td, textAlign: "right" }}>
+                      <button onClick={() => removePlayer(r)} title={`Remove ${r.player || "this player"}`} aria-label={`Remove ${r.player || "this player"}`} style={{ background: "none", border: "none", color: "var(--text-faint)", cursor: "pointer", padding: 2, lineHeight: 0 }}>
+                        <Trash2 size={14} />
+                      </button>
+                    </td>
+                  )}
                 </tr>
               ))}
             </tbody>

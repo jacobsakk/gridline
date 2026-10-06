@@ -1,4 +1,4 @@
-import { collection, doc, onSnapshot, setDoc } from "firebase/firestore";
+import { collection, deleteDoc, doc, onSnapshot, setDoc } from "firebase/firestore";
 import { useEffect, useMemo, useState } from "react";
 import { db } from "./firebase";
 
@@ -10,7 +10,7 @@ export const STUDIES = [
   {
     id: "mac-best-by-position",
     title: "MAC's Most Productive, 2023-2026",
-    description: "The top 5 at each position in the MAC, kept separately for each season -- who had the best year in the league at that position, that year -- with career film.",
+    description: "The top 10 at each position in the MAC, kept separately for each season -- who had the best year in the league at that position, that year -- with career film.",
     file: () => import("./data/studies/mac-best-by-position.json"),
     // scoreFormula mirrors GROUPS' score lambdas in scraper/studies/mac_best_by_position.py exactly --
     // each term is one stat's coefficient in that lambda. Keep the two in sync by hand if the formula
@@ -20,12 +20,18 @@ export const STUDIES = [
       { key: "RB", label: "Running Back", stats: [{ key: "games", label: "G" }, { key: "att", label: "Att" }, { key: "yards", label: "Rush Yds" }, { key: "td", label: "Rush TD" }], scoreFormula: [{ key: "yards", label: "rush yard", coef: 1 }, { key: "td", label: "rush TD", coef: 10 }] },
       { key: "WR", label: "Wide Receiver", stats: [{ key: "games", label: "G" }, { key: "rec", label: "Rec" }, { key: "yards", label: "Rec Yds" }, { key: "td", label: "Rec TD" }], scoreFormula: [{ key: "yards", label: "rec yard", coef: 1 }, { key: "td", label: "rec TD", coef: 10 }] },
       { key: "TE", label: "Tight End", stats: [{ key: "games", label: "G" }, { key: "rec", label: "Rec" }, { key: "yards", label: "Rec Yds" }, { key: "td", label: "Rec TD" }], scoreFormula: [{ key: "yards", label: "rec yard", coef: 1 }, { key: "td", label: "rec TD", coef: 10 }] },
+      // Unlike every other group, OL has no computed stat source at all -- NCAA/ESPN don't carry a stat
+      // line for offensive linemen the way they do skill/defensive positions, so this one is entirely
+      // hand-maintained (see useStudy's manualRows below): an admin adds, edits and removes its rows
+      // directly, there's no Python-generated data behind it, and it has no scoreFormula/Score column
+      // since there's no formula that makes sense for it either -- sort by PFF Grade instead.
+      { key: "OL", label: "Offensive Line", manual: true, stats: [{ key: "games", label: "G" }, { key: "pffGrade", label: "PFF Grade" }] },
       { key: "DL", label: "Defensive Line", stats: [{ key: "games", label: "G" }, { key: "total", label: "Tackles" }, { key: "tfl", label: "TFL" }, { key: "sacks", label: "Sacks" }, { key: "pbu", label: "PBU" }, { key: "int", label: "INT" }], scoreFormula: [{ key: "total", label: "tackle", coef: 1 }, { key: "tfl", label: "TFL", coef: 2 }, { key: "sacks", label: "sack", coef: 6 }] },
       { key: "LB", label: "Linebacker", stats: [{ key: "games", label: "G" }, { key: "total", label: "Tackles" }, { key: "tfl", label: "TFL" }, { key: "sacks", label: "Sacks" }, { key: "pbu", label: "PBU" }, { key: "int", label: "INT" }], scoreFormula: [{ key: "total", label: "tackle", coef: 1 }, { key: "tfl", label: "TFL", coef: 2 }, { key: "sacks", label: "sack", coef: 6 }, { key: "pbu", label: "PBU", coef: 4 }, { key: "int", label: "INT", coef: 8 }] },
       { key: "CB", label: "Cornerback", stats: [{ key: "games", label: "G" }, { key: "total", label: "Tackles" }, { key: "pbu", label: "PBU" }, { key: "int", label: "INT" }], scoreFormula: [{ key: "total", label: "tackle", coef: 1 }, { key: "int", label: "INT", coef: 8 }, { key: "pbu", label: "PBU", coef: 4 }] },
       { key: "SAF", label: "Safety", stats: [{ key: "games", label: "G" }, { key: "total", label: "Tackles" }, { key: "tfl", label: "TFL" }, { key: "pbu", label: "PBU" }, { key: "int", label: "INT" }], scoreFormula: [{ key: "total", label: "tackle", coef: 1 }, { key: "int", label: "INT", coef: 6 }, { key: "pbu", label: "PBU", coef: 3 }, { key: "tfl", label: "TFL", coef: 1.5 }] },
     ],
-    note: "Each season's top 5 is ranked separately -- the same player can show up in more than one year. 2026 is the current season in progress -- its numbers are season-to-date, not final, and will keep growing as the season goes on. Data comes from the NCAA's national leaderboards, which only carry a player who cracks roughly the national top 100-150 in a category that season, so a genuinely elite performer is covered but a solid-but-unranked one may be missing. Hudl links are best-effort, found by hand; a blank one just hasn't been found yet -- paste one in directly.",
+    note: "Each season's top 10 is ranked separately -- the same player can show up in more than one year. 2026 is the current season in progress -- its numbers are season-to-date, not final, and will keep growing as the season goes on. Data comes from the NCAA's national leaderboards, which only carry a player who cracks roughly the national top 100-150 in a category that season, so a genuinely elite performer is covered but a solid-but-unranked one may be missing. Offensive Line has no stat source at all, so that tab is entirely hand-entered -- add, edit and remove rows directly. Hudl links are best-effort, found by hand; a blank one just hasn't been found yet -- paste one in directly.",
   },
 ];
 
@@ -38,6 +44,7 @@ export function useStudy(studyId) {
   const meta = STUDIES.find((s) => s.id === studyId);
   const [data, setData] = useState(null);
   const [overrides, setOverrides] = useState({});
+  const [manualRows, setManualRows] = useState({});
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
@@ -62,6 +69,25 @@ export function useStudy(studyId) {
         setReady(true);
       },
       () => setReady(true)
+    );
+    return off;
+  }, [studyId]);
+
+  // A "manual" group (see OL above) has no bundled data at all -- its rows live entirely in their own
+  // Firestore collection, one doc per player, rather than being a correction layered on top of something
+  // scraped. Same studyId-prefixed-id filtering convention as studyOverrides, just a different collection
+  // so an admin can add/remove whole rows here without that meaning anything for the correction-only one.
+  useEffect(() => {
+    const off = onSnapshot(
+      collection(db, "studyManualRows"),
+      (snap) => {
+        const map = {};
+        snap.docs.forEach((d) => {
+          if (d.id.startsWith(`${studyId}__`)) map[d.id] = { id: d.id, ...d.data() };
+        });
+        setManualRows(map);
+      },
+      () => {}
     );
     return off;
   }, [studyId]);
@@ -97,9 +123,31 @@ export function useStudy(studyId) {
           return merged;
         });
       });
+      // Manual groups replace this loop's work entirely for their key -- there's nothing in data.groups
+      // for OL at all, so this is the only place its rows come from. Wrapped under the same {totals:
+      // {...}} shape a real row has (games/pffGrade live there, same as any other group's stats) purely
+      // so the page's existing generic column/sort/StatCell code -- all written against r.totals[key] --
+      // needs no manual-vs-real branching of its own; it just works.
+      meta.groups.filter((g) => g.manual).forEach((g) => {
+        out[g.key] = {};
+        (data.seasons || []).forEach((season) => {
+          out[g.key][String(season)] = Object.values(manualRows)
+            .filter((r) => r.group === g.key && String(r.season) === String(season))
+            .map((r) => ({
+              id: r.id,
+              player: r.player || "",
+              team: r.team || "",
+              state: r.state || "",
+              hudlLink: r.hudlLink || "",
+              pffLink: r.pffLink || "",
+              totals: { games: r.games ?? 0, pffGrade: r.pffGrade ?? 0 },
+            }))
+            .sort((a, b) => (b.totals.pffGrade ?? 0) - (a.totals.pffGrade ?? 0));
+        });
+      });
     });
     return out;
-  }, [data, overrides]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [data, overrides, manualRows]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return {
     meta,
@@ -117,6 +165,23 @@ export function useStudy(studyId) {
       const key = statsOverrideKey(group, season, player);
       const existingTotals = overrides[key]?.totals || {};
       await setDoc(doc(db, "studyOverrides", key), { totals: { ...existingTotals, [statKey]: value } }, { merge: true });
+    },
+    // Manual-group rows: a whole new player (blank, filled in afterward one cell at a time -- same
+    // click-to-edit cells as everywhere else), a field fixed on one that already exists, or one removed
+    // outright. id is studyId-prefixed so the subscription above picks it up; otherwise opaque.
+    async addManualRow(group, season) {
+      const id = `${studyId}__${group}__${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`;
+      await setDoc(doc(db, "studyManualRows", id), {
+        group, season: Number(season), player: "", team: "", state: "", games: 0, pffGrade: 0, hudlLink: "", pffLink: "",
+        createdAt: new Date().toISOString(),
+      });
+      return id;
+    },
+    async updateManualRow(id, fields) {
+      await setDoc(doc(db, "studyManualRows", id), fields, { merge: true });
+    },
+    async removeManualRow(id) {
+      await deleteDoc(doc(db, "studyManualRows", id));
     },
   };
 }

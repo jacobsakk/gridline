@@ -72,7 +72,7 @@ GROUPS = {
     "CB": {"category": "tackling", "position": "CB", "score": lambda s: s["total"] + 8 * s["int"] + 4 * s["pbu"], "stats": ["games", "total", "pbu", "int"]},
     "SAF": {"category": "tackling", "position": "SAF", "score": lambda s: s["total"] + 6 * s["int"] + 3 * s["pbu"] + 1.5 * s["tfl"], "stats": ["games", "total", "tfl", "pbu", "int"]},
 }
-TOP_N = 5
+TOP_N = 10
 MIN_GAMES = 4  # a game or two (missed the leaderboard cutoff most of the time) isn't "one of the best"
 
 

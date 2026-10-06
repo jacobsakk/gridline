@@ -123,6 +123,13 @@ service cloud.firestore {
       allow read: if invited();
       allow write: if isAdmin();
     }
+    // A manual group's actual rows (Offensive Line, which has no stat source to pull from at all --
+    // see studiesData.js), not a correction layered on top of one like studyOverrides above. Same
+    // access: every invited coach can view, only admins add, edit or remove a row.
+    match /studyManualRows/{docId} {
+      allow read: if invited();
+      allow write: if isAdmin();
+    }
 
     match /{document=**} {
       allow read, write: if false;

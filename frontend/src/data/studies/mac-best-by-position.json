@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-04T16:36:29.210198Z",
+  "generatedAt": "2026-10-06T20:56:21.069600Z",
   "seasons": [
     2023,
     2024,
@@ -103,6 +103,63 @@
           "hudlLink": "",
           "pffLink": "",
           "state": "OH"
+        },
+        {
+          "player": "Austin Smith",
+          "team": "Eastern Mich.",
+          "position": "QB",
+          "season": 2023,
+          "totals": {
+            "games": 12.0,
+            "att": 298.0,
+            "yards": 1775.0,
+            "td": 9.0,
+            "int": 7.0,
+            "rushYards": 0.0,
+            "rushTd": 0.0
+          },
+          "score": 1895.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": ""
+        },
+        {
+          "player": "Taisun Phommachanh",
+          "team": "Massachusetts",
+          "position": "QB",
+          "season": 2023,
+          "totals": {
+            "games": 9.0,
+            "att": 227.0,
+            "yards": 1507.0,
+            "td": 6.0,
+            "int": 6.0,
+            "rushYards": 0.0,
+            "rushTd": 0.0
+          },
+          "score": 1567.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": ""
+        },
+        {
+          "player": "Jeff Undercuffler",
+          "team": "Akron",
+          "position": "QB",
+          "season": 2023,
+          "totals": {
+            "games": 10.0,
+            "att": 224.0,
+            "yards": 1378.0,
+            "td": 4.0,
+            "int": 9.0,
+            "rushYards": 0.0,
+            "rushTd": 0.0
+          },
+          "score": 1343.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": ""
         }
       ],
       "2024": [
@@ -200,6 +257,101 @@
           "hudlLink": "https://www.hudl.com/profile/5629221",
           "pffLink": "",
           "state": "MO"
+        },
+        {
+          "player": "Cole Snyder",
+          "team": "Eastern Mich.",
+          "position": "QB",
+          "season": 2024,
+          "totals": {
+            "games": 12.0,
+            "att": 402.0,
+            "yards": 2684.0,
+            "td": 15.0,
+            "int": 9.0,
+            "rushYards": 0.0,
+            "rushTd": 0.0
+          },
+          "score": 2924.0,
+          "hudlLink": "https://www.hudl.com/profile/9846654/Cole-Snyder",
+          "pffLink": "",
+          "state": "NY"
+        },
+        {
+          "player": "Ben Finley",
+          "team": "Akron",
+          "position": "QB",
+          "season": 2024,
+          "totals": {
+            "games": 12.0,
+            "att": 387.0,
+            "yards": 2604.0,
+            "td": 16.0,
+            "int": 9.0,
+            "rushYards": 0.0,
+            "rushTd": 0.0
+          },
+          "score": 2869.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "AZ"
+        },
+        {
+          "player": "C.J. Ogbonna",
+          "team": "Buffalo",
+          "position": "QB",
+          "season": 2024,
+          "totals": {
+            "games": 13.0,
+            "att": 336.0,
+            "yards": 2381.0,
+            "td": 19.0,
+            "int": 5.0,
+            "rushYards": 0.0,
+            "rushTd": 0.0
+          },
+          "score": 2781.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": ""
+        },
+        {
+          "player": "Hayden Wolff",
+          "team": "Western Mich.",
+          "position": "QB",
+          "season": 2024,
+          "totals": {
+            "games": 13.0,
+            "att": 312.0,
+            "yards": 2410.0,
+            "td": 18.0,
+            "int": 8.0,
+            "rushYards": 0.0,
+            "rushTd": 0.0
+          },
+          "score": 2740.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": ""
+        },
+        {
+          "player": "Taisun Phommachanh",
+          "team": "Massachusetts",
+          "position": "QB",
+          "season": 2024,
+          "totals": {
+            "games": 9.0,
+            "att": 234.0,
+            "yards": 1590.0,
+            "td": 8.0,
+            "int": 6.0,
+            "rushYards": 0.0,
+            "rushTd": 0.0
+          },
+          "score": 1700.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": ""
         }
       ],
       "2025": [
@@ -297,6 +449,101 @@
           "hudlLink": "",
           "pffLink": "",
           "state": "AZ"
+        },
+        {
+          "player": "Ta'Quan Roberson",
+          "team": "Buffalo",
+          "position": "QB",
+          "season": 2025,
+          "totals": {
+            "games": 11.0,
+            "att": 357.0,
+            "yards": 2520.0,
+            "td": 17.0,
+            "int": 12.0,
+            "rushYards": 0.0,
+            "rushTd": 0.0
+          },
+          "score": 2765.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": ""
+        },
+        {
+          "player": "Dru DeShields",
+          "team": "Kent St.",
+          "position": "QB",
+          "season": 2025,
+          "totals": {
+            "games": 11.0,
+            "att": 240.0,
+            "yards": 2030.0,
+            "td": 18.0,
+            "int": 3.0,
+            "rushYards": 0.0,
+            "rushTd": 0.0
+          },
+          "score": 2435.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": ""
+        },
+        {
+          "player": "Kiael Kelly",
+          "team": "Ball St.",
+          "position": "QB",
+          "season": 2025,
+          "totals": {
+            "games": 12.0,
+            "att": 273.0,
+            "yards": 1583.0,
+            "td": 11.0,
+            "int": 8.0,
+            "rushYards": 600.0,
+            "rushTd": 5.0
+          },
+          "score": 2388.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": ""
+        },
+        {
+          "player": "Joe Labas",
+          "team": "Central Mich.",
+          "position": "QB",
+          "season": 2025,
+          "totals": {
+            "games": 13.0,
+            "att": 208.0,
+            "yards": 1854.0,
+            "td": 13.0,
+            "int": 6.0,
+            "rushYards": 0.0,
+            "rushTd": 0.0
+          },
+          "score": 2089.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": ""
+        },
+        {
+          "player": "AJ Hairston",
+          "team": "Massachusetts",
+          "position": "QB",
+          "season": 2025,
+          "totals": {
+            "games": 10.0,
+            "att": 216.0,
+            "yards": 957.0,
+            "td": 4.0,
+            "int": 4.0,
+            "rushYards": 0.0,
+            "rushTd": 0.0
+          },
+          "score": 997.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": ""
         }
       ],
       "2026": [
@@ -394,6 +641,101 @@
           "hudlLink": "https://www.hudl.com/profile/12907414/Broc-Lowry/about",
           "pffLink": "",
           "state": "OH"
+        },
+        {
+          "player": "Jay Kastantin",
+          "team": "Bowling Green",
+          "position": "QB",
+          "season": 2026,
+          "totals": {
+            "games": 5.0,
+            "att": 128.0,
+            "yards": 870.0,
+            "td": 4.0,
+            "int": 2.0,
+            "rushYards": 35.0,
+            "rushTd": 0.0
+          },
+          "score": 975.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "MA"
+        },
+        {
+          "player": "Dru DeShields",
+          "team": "Kent St.",
+          "position": "QB",
+          "season": 2026,
+          "totals": {
+            "games": 5.0,
+            "att": 120.0,
+            "yards": 757.0,
+            "td": 3.0,
+            "int": 5.0,
+            "rushYards": 183.0,
+            "rushTd": 3.0
+          },
+          "score": 970.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "OH"
+        },
+        {
+          "player": "Jackson Sharman",
+          "team": "Sacramento St.",
+          "position": "QB",
+          "season": 2026,
+          "totals": {
+            "games": 4.0,
+            "att": 142.0,
+            "yards": 856.0,
+            "td": 5.0,
+            "int": 5.0,
+            "rushYards": -26.0,
+            "rushTd": 0.0
+          },
+          "score": 880.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "CA"
+        },
+        {
+          "player": "Keldric Luster",
+          "team": "Ball St.",
+          "position": "QB",
+          "season": 2026,
+          "totals": {
+            "games": 4.0,
+            "att": 119.0,
+            "yards": 662.0,
+            "td": 5.0,
+            "int": 3.0,
+            "rushYards": 42.0,
+            "rushTd": 0.0
+          },
+          "score": 784.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "TX"
+        },
+        {
+          "player": "Angel Flores",
+          "team": "Central Mich.",
+          "position": "QB",
+          "season": 2026,
+          "totals": {
+            "games": 5.0,
+            "att": 47.0,
+            "yards": 201.0,
+            "td": 1.0,
+            "int": 2.0,
+            "rushYards": 474.0,
+            "rushTd": 4.0
+          },
+          "score": 710.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "AZ"
         }
       ]
     },
@@ -478,6 +820,86 @@
           "hudlLink": "https://www.hudl.com/profile/8152806",
           "pffLink": "",
           "state": "MD"
+        },
+        {
+          "player": "Sieh Bangura",
+          "team": "Ohio",
+          "position": "RB",
+          "season": 2023,
+          "totals": {
+            "games": 12.0,
+            "att": 178.0,
+            "yards": 811.0,
+            "td": 7.0
+          },
+          "score": 881.0,
+          "hudlLink": "https://www.hudl.com/profile/6174794/Sieh-Bangura",
+          "pffLink": "",
+          "state": "MD"
+        },
+        {
+          "player": "Terion Stewart",
+          "team": "Bowling Green",
+          "position": "RB",
+          "season": 2023,
+          "totals": {
+            "games": 9.0,
+            "att": 125.0,
+            "yards": 762.0,
+            "td": 8.0
+          },
+          "score": 842.0,
+          "hudlLink": "https://www.hudl.com/profile/8033536",
+          "pffLink": "",
+          "state": "OH"
+        },
+        {
+          "player": "Marion Lukes",
+          "team": "Central Mich.",
+          "position": "RB",
+          "season": 2023,
+          "totals": {
+            "games": 12.0,
+            "att": 144.0,
+            "yards": 737.0,
+            "td": 5.0
+          },
+          "score": 787.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": ""
+        },
+        {
+          "player": "Samson Evans",
+          "team": "Eastern Mich.",
+          "position": "RB",
+          "season": 2023,
+          "totals": {
+            "games": 12.0,
+            "att": 142.0,
+            "yards": 635.0,
+            "td": 12.0
+          },
+          "score": 755.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": ""
+        },
+        {
+          "player": "Lorenzo Lingard",
+          "team": "Akron",
+          "position": "RB",
+          "season": 2023,
+          "totals": {
+            "games": 12.0,
+            "att": 143.0,
+            "yards": 641.0,
+            "td": 4.0
+          },
+          "score": 681.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": ""
         }
       ],
       "2024": [
@@ -560,6 +982,86 @@
           "hudlLink": "https://www.hudl.com/profile/8033536",
           "pffLink": "",
           "state": "OH"
+        },
+        {
+          "player": "Delbert Mimms, III",
+          "team": "Eastern Mich.",
+          "position": "RB",
+          "season": 2024,
+          "totals": {
+            "games": 12.0,
+            "att": 184.0,
+            "yards": 805.0,
+            "td": 9.0
+          },
+          "score": 895.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": ""
+        },
+        {
+          "player": "Marion Lukes",
+          "team": "Central Mich.",
+          "position": "RB",
+          "season": 2024,
+          "totals": {
+            "games": 11.0,
+            "att": 161.0,
+            "yards": 788.0,
+            "td": 5.0
+          },
+          "score": 838.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": ""
+        },
+        {
+          "player": "Jalen Buckley",
+          "team": "Western Mich.",
+          "position": "RB",
+          "season": 2024,
+          "totals": {
+            "games": 10.0,
+            "att": 128.0,
+            "yards": 683.0,
+            "td": 9.0
+          },
+          "score": 773.0,
+          "hudlLink": "https://www.hudl.com/profile/11214131/Jalen-Buckley",
+          "pffLink": "",
+          "state": "IL"
+        },
+        {
+          "player": "Jordon Simmons",
+          "team": "Akron",
+          "position": "RB",
+          "season": 2024,
+          "totals": {
+            "games": 11.0,
+            "att": 110.0,
+            "yards": 664.0,
+            "td": 2.0
+          },
+          "score": 684.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": ""
+        },
+        {
+          "player": "Braedon Sloan",
+          "team": "Ball St.",
+          "position": "RB",
+          "season": 2024,
+          "totals": {
+            "games": 12.0,
+            "att": 150.0,
+            "yards": 597.0,
+            "td": 4.0
+          },
+          "score": 637.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": ""
         }
       ],
       "2025": [
@@ -642,6 +1144,86 @@
           "hudlLink": "https://www.hudl.com/profile/9847731",
           "pffLink": "",
           "state": "WA"
+        },
+        {
+          "player": "Al-Jay Henderson",
+          "team": "Buffalo",
+          "position": "RB",
+          "season": 2025,
+          "totals": {
+            "games": 12.0,
+            "att": 182.0,
+            "yards": 755.0,
+            "td": 6.0
+          },
+          "score": 815.0,
+          "hudlLink": "https://www.hudl.com/profile/9822949",
+          "pffLink": "",
+          "state": "NJ"
+        },
+        {
+          "player": "Jordan Brunson",
+          "team": "Miami (OH)",
+          "position": "RB",
+          "season": 2025,
+          "totals": {
+            "games": 14.0,
+            "att": 164.0,
+            "yards": 767.0,
+            "td": 4.0
+          },
+          "score": 807.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": ""
+        },
+        {
+          "player": "Gavin Garcia",
+          "team": "Kent St.",
+          "position": "RB",
+          "season": 2025,
+          "totals": {
+            "games": 12.0,
+            "att": 146.0,
+            "yards": 647.0,
+            "td": 3.0
+          },
+          "score": 677.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": ""
+        },
+        {
+          "player": "Duncan Brune",
+          "team": "Ohio",
+          "position": "RB",
+          "season": 2025,
+          "totals": {
+            "games": 13.0,
+            "att": 120.0,
+            "yards": 585.0,
+            "td": 8.0
+          },
+          "score": 665.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": ""
+        },
+        {
+          "player": "Qua Ashley",
+          "team": "Ball St.",
+          "position": "RB",
+          "season": 2025,
+          "totals": {
+            "games": 10.0,
+            "att": 118.0,
+            "yards": 547.0,
+            "td": 4.0
+          },
+          "score": 587.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": ""
         }
       ],
       "2026": [
@@ -724,6 +1306,86 @@
           "hudlLink": "",
           "pffLink": "",
           "state": "NC"
+        },
+        {
+          "player": "Jalen Buckley",
+          "team": "Western Mich.",
+          "position": "RB",
+          "season": 2026,
+          "totals": {
+            "games": 5.0,
+            "att": 62.0,
+            "yards": 287.0,
+            "td": 5.0
+          },
+          "score": 337.0,
+          "hudlLink": "https://www.hudl.com/profile/11214131/Jalen-Buckley",
+          "pffLink": "",
+          "state": "IL"
+        },
+        {
+          "player": "Jordan Gant",
+          "team": "Akron",
+          "position": "RB",
+          "season": 2026,
+          "totals": {
+            "games": 5.0,
+            "att": 62.0,
+            "yards": 293.0,
+            "td": 3.0
+          },
+          "score": 323.0,
+          "hudlLink": "https://www.hudl.com/profile/11416944",
+          "pffLink": "",
+          "state": "FL"
+        },
+        {
+          "player": "Curtis Kimmons IV",
+          "team": "Massachusetts",
+          "position": "RB",
+          "season": 2026,
+          "totals": {
+            "games": 5.0,
+            "att": 45.0,
+            "yards": 262.0,
+            "td": 3.0
+          },
+          "score": 292.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "FL"
+        },
+        {
+          "player": "Victor Rosa",
+          "team": "Ohio",
+          "position": "RB",
+          "season": 2026,
+          "totals": {
+            "games": 5.0,
+            "att": 56.0,
+            "yards": 219.0,
+            "td": 4.0
+          },
+          "score": 259.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "CT"
+        },
+        {
+          "player": "Elijah Faulkner",
+          "team": "Massachusetts",
+          "position": "RB",
+          "season": 2026,
+          "totals": {
+            "games": 5.0,
+            "att": 52.0,
+            "yards": 246.0,
+            "td": 0.0
+          },
+          "score": 246.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "PA"
         }
       ]
     },
@@ -808,6 +1470,86 @@
           "hudlLink": "https://www.hudl.com/profile/8356629",
           "pffLink": "",
           "state": "MD"
+        },
+        {
+          "player": "Sam Wiglusz",
+          "team": "Ohio",
+          "position": "WR",
+          "season": 2023,
+          "totals": {
+            "games": 12.0,
+            "rec": 56.0,
+            "yards": 660.0,
+            "td": 3.0
+          },
+          "score": 690.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": ""
+        },
+        {
+          "player": "Miles Cross",
+          "team": "Ohio",
+          "position": "WR",
+          "season": 2023,
+          "totals": {
+            "games": 11.0,
+            "rec": 47.0,
+            "yards": 617.0,
+            "td": 5.0
+          },
+          "score": 667.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": ""
+        },
+        {
+          "player": "Chrishon McCray",
+          "team": "Kent St.",
+          "position": "WR",
+          "season": 2023,
+          "totals": {
+            "games": 9.0,
+            "rec": 41.0,
+            "yards": 610.0,
+            "td": 4.0
+          },
+          "score": 650.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": ""
+        },
+        {
+          "player": "Jasaiah Gathings",
+          "team": "Akron",
+          "position": "WR",
+          "season": 2023,
+          "totals": {
+            "games": 12.0,
+            "rec": 55.0,
+            "yards": 575.0,
+            "td": 1.0
+          },
+          "score": 585.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": ""
+        },
+        {
+          "player": "Odieu Hiliare",
+          "team": "Bowling Green",
+          "position": "WR",
+          "season": 2023,
+          "totals": {
+            "games": 13.0,
+            "rec": 45.0,
+            "yards": 532.0,
+            "td": 4.0
+          },
+          "score": 572.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": ""
         }
       ],
       "2024": [
@@ -890,6 +1632,86 @@
           "hudlLink": "https://www.hudl.com/profile/15134018",
           "pffLink": "",
           "state": "OH"
+        },
+        {
+          "player": "Jakobie Keeney-James",
+          "team": "Massachusetts",
+          "position": "WR",
+          "season": 2024,
+          "totals": {
+            "games": 12.0,
+            "rec": 50.0,
+            "yards": 839.0,
+            "td": 6.0
+          },
+          "score": 899.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": ""
+        },
+        {
+          "player": "Javon Tracy",
+          "team": "Miami (OH)",
+          "position": "WR",
+          "season": 2024,
+          "totals": {
+            "games": 13.0,
+            "rec": 57.0,
+            "yards": 818.0,
+            "td": 7.0
+          },
+          "score": 888.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": ""
+        },
+        {
+          "player": "Chrishon McCray",
+          "team": "Kent St.",
+          "position": "WR",
+          "season": 2024,
+          "totals": {
+            "games": 11.0,
+            "rec": 40.0,
+            "yards": 705.0,
+            "td": 9.0
+          },
+          "score": 795.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": ""
+        },
+        {
+          "player": "Luke Floriea",
+          "team": "Kent St.",
+          "position": "WR",
+          "season": 2024,
+          "totals": {
+            "games": 12.0,
+            "rec": 44.0,
+            "yards": 699.0,
+            "td": 7.0
+          },
+          "score": 769.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": ""
+        },
+        {
+          "player": "Victor Snow",
+          "team": "Buffalo",
+          "position": "WR",
+          "season": 2024,
+          "totals": {
+            "games": 13.0,
+            "rec": 55.0,
+            "yards": 651.0,
+            "td": 6.0
+          },
+          "score": 711.0,
+          "hudlLink": "https://www.hudl.com/profile/11563026",
+          "pffLink": "",
+          "state": "NY"
         }
       ],
       "2025": [
@@ -972,6 +1794,70 @@
           "hudlLink": "https://www.hudl.com/profile/11563026",
           "pffLink": "",
           "state": "NY"
+        },
+        {
+          "player": "Marcel Williams",
+          "team": "Akron",
+          "position": "WR",
+          "season": 2025,
+          "totals": {
+            "games": 12.0,
+            "rec": 45.0,
+            "yards": 641.0,
+            "td": 2.0
+          },
+          "score": 661.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": ""
+        },
+        {
+          "player": "Cole Weaver",
+          "team": "Miami (OH)",
+          "position": "WR",
+          "season": 2025,
+          "totals": {
+            "games": 14.0,
+            "rec": 45.0,
+            "yards": 642.0,
+            "td": 1.0
+          },
+          "score": 652.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": ""
+        },
+        {
+          "player": "Langston Lewis",
+          "team": "Central Mich.",
+          "position": "WR",
+          "season": 2025,
+          "totals": {
+            "games": 13.0,
+            "rec": 43.0,
+            "yards": 596.0,
+            "td": 3.0
+          },
+          "score": 626.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": ""
+        },
+        {
+          "player": "Jacquon Gibson",
+          "team": "Massachusetts",
+          "position": "WR",
+          "season": 2025,
+          "totals": {
+            "games": 10.0,
+            "rec": 63.0,
+            "yards": 616.0,
+            "td": 0.0
+          },
+          "score": 616.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": ""
         }
       ],
       "2026": [
@@ -1054,6 +1940,86 @@
           "hudlLink": "",
           "pffLink": "",
           "state": "OH"
+        },
+        {
+          "player": "Damarion Witten",
+          "team": "Miami (OH)",
+          "position": "WR",
+          "season": 2026,
+          "totals": {
+            "games": 5.0,
+            "rec": 12.0,
+            "yards": 274.0,
+            "td": 2.0
+          },
+          "score": 294.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": ""
+        },
+        {
+          "player": "Lynel Billups-Williams",
+          "team": "Miami (OH)",
+          "position": "WR",
+          "season": 2026,
+          "totals": {
+            "games": 5.0,
+            "rec": 19.0,
+            "yards": 265.0,
+            "td": 2.0
+          },
+          "score": 285.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "IL"
+        },
+        {
+          "player": "Harold Mack",
+          "team": "Eastern Mich.",
+          "position": "WR",
+          "season": 2026,
+          "totals": {
+            "games": 5.0,
+            "rec": 23.0,
+            "yards": 264.0,
+            "td": 2.0
+          },
+          "score": 284.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "IN"
+        },
+        {
+          "player": "Aveion Chenault",
+          "team": "Western Mich.",
+          "position": "WR",
+          "season": 2026,
+          "totals": {
+            "games": 4.0,
+            "rec": 18.0,
+            "yards": 272.0,
+            "td": 1.0
+          },
+          "score": 282.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "KY"
+        },
+        {
+          "player": "Maleek Huggins",
+          "team": "Miami (OH)",
+          "position": "WR",
+          "season": 2026,
+          "totals": {
+            "games": 5.0,
+            "rec": 14.0,
+            "yards": 262.0,
+            "td": 1.0
+          },
+          "score": 272.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "FL"
         }
       ]
     },
@@ -1384,6 +2350,86 @@
           "hudlLink": "",
           "pffLink": "",
           "state": "CA"
+        },
+        {
+          "player": "Nate Levicki",
+          "team": "Western Mich.",
+          "position": "TE",
+          "season": 2026,
+          "totals": {
+            "games": 5.0,
+            "rec": 8.0,
+            "yards": 112.0,
+            "td": 0.0
+          },
+          "score": 112.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "MD"
+        },
+        {
+          "player": "Max Dowling",
+          "team": "Massachusetts",
+          "position": "TE",
+          "season": 2026,
+          "totals": {
+            "games": 5.0,
+            "rec": 11.0,
+            "yards": 80.0,
+            "td": 2.0
+          },
+          "score": 100.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "NY"
+        },
+        {
+          "player": "Brendan Loftus",
+          "team": "Miami (OH)",
+          "position": "TE",
+          "season": 2026,
+          "totals": {
+            "games": 5.0,
+            "rec": 5.0,
+            "yards": 87.0,
+            "td": 1.0
+          },
+          "score": 97.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "IL"
+        },
+        {
+          "player": "Clint Walker",
+          "team": "Buffalo",
+          "position": "TE",
+          "season": 2026,
+          "totals": {
+            "games": 5.0,
+            "rec": 11.0,
+            "yards": 82.0,
+            "td": 0.0
+          },
+          "score": 82.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": ""
+        },
+        {
+          "player": "Sam Lee",
+          "team": "Toledo",
+          "position": "TE",
+          "season": 2026,
+          "totals": {
+            "games": 5.0,
+            "rec": 8.0,
+            "yards": 78.0,
+            "td": 0.0
+          },
+          "score": 78.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "OH"
         }
       ]
     },
@@ -1478,6 +2524,96 @@
           "hudlLink": "https://www.hudl.com/profile/5587621",
           "pffLink": "",
           "state": "MI"
+        },
+        {
+          "player": "Brian Ugwu",
+          "team": "Miami (OH)",
+          "position": "DL",
+          "season": 2023,
+          "totals": {
+            "games": 14.0,
+            "total": 0.0,
+            "tfl": 0.0,
+            "sacks": 8.0,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 48.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": ""
+        },
+        {
+          "player": "Billy Wooden",
+          "team": "Massachusetts",
+          "position": "DL",
+          "season": 2023,
+          "totals": {
+            "games": 12.0,
+            "total": 0.0,
+            "tfl": 0.0,
+            "sacks": 6.5,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 39.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": ""
+        },
+        {
+          "player": "Bradley Weaver",
+          "team": "Ohio",
+          "position": "DL",
+          "season": 2023,
+          "totals": {
+            "games": 13.0,
+            "total": 0.0,
+            "tfl": 0.0,
+            "sacks": 6.0,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 36.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "OH"
+        },
+        {
+          "player": "Max Michel",
+          "team": "Buffalo",
+          "position": "DL",
+          "season": 2023,
+          "totals": {
+            "games": 11.0,
+            "total": 0.0,
+            "tfl": 0.0,
+            "sacks": 5.0,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 30.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": ""
+        },
+        {
+          "player": "Vonnie Watkins",
+          "team": "Ohio",
+          "position": "DL",
+          "season": 2023,
+          "totals": {
+            "games": 13.0,
+            "total": 0.0,
+            "tfl": 0.0,
+            "sacks": 5.0,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 30.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": ""
         }
       ],
       "2024": [
@@ -1570,6 +2706,96 @@
           "hudlLink": "https://www.hudl.com/profile/9891992",
           "pffLink": "",
           "state": "MI"
+        },
+        {
+          "player": "Brian Ugwu",
+          "team": "Miami (OH)",
+          "position": "DL",
+          "season": 2024,
+          "totals": {
+            "games": 14.0,
+            "total": 0.0,
+            "tfl": 0.0,
+            "sacks": 7.5,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 45.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": ""
+        },
+        {
+          "player": "Kameron Olds",
+          "team": "Kent St.",
+          "position": "DL",
+          "season": 2024,
+          "totals": {
+            "games": 12.0,
+            "total": 0.0,
+            "tfl": 0.0,
+            "sacks": 6.0,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 36.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": ""
+        },
+        {
+          "player": "Marcel Walker-Burgess",
+          "team": "Ohio",
+          "position": "DL",
+          "season": 2024,
+          "totals": {
+            "games": 14.0,
+            "total": 0.0,
+            "tfl": 0.0,
+            "sacks": 6.0,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 36.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": ""
+        },
+        {
+          "player": "Corey Walker",
+          "team": "Western Mich.",
+          "position": "DL",
+          "season": 2024,
+          "totals": {
+            "games": 11.0,
+            "total": 0.0,
+            "tfl": 0.0,
+            "sacks": 5.5,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 33.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": ""
+        },
+        {
+          "player": "Corey Suttle",
+          "team": "Miami (OH)",
+          "position": "DL",
+          "season": 2024,
+          "totals": {
+            "games": 12.0,
+            "total": 0.0,
+            "tfl": 0.0,
+            "sacks": 5.5,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 33.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": ""
         }
       ],
       "2025": [
@@ -1662,6 +2888,96 @@
           "hudlLink": "https://www.hudl.com/profile/7474318/Marques-White",
           "pffLink": "",
           "state": "AZ"
+        },
+        {
+          "player": "Rodney McGraw",
+          "team": "Western Mich.",
+          "position": "DL",
+          "season": 2025,
+          "totals": {
+            "games": 14.0,
+            "total": 42,
+            "tfl": 8.5,
+            "sacks": 7.0,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 101.0,
+          "hudlLink": "https://www.hudl.com/profile/11173598/Rodney-McGraw/videos",
+          "pffLink": "",
+          "state": "IN"
+        },
+        {
+          "player": "Malachi Davis",
+          "team": "Toledo",
+          "position": "DL",
+          "season": 2025,
+          "totals": {
+            "games": 12.0,
+            "total": 36,
+            "tfl": 9.5,
+            "sacks": 5.5,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 88.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": ""
+        },
+        {
+          "player": "Jay Crable",
+          "team": "Ohio",
+          "position": "DL",
+          "season": 2025,
+          "totals": {
+            "games": 13.0,
+            "total": 33,
+            "tfl": 8.0,
+            "sacks": 6.0,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 85.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": ""
+        },
+        {
+          "player": "Myles Bradley",
+          "team": "Bowling Green",
+          "position": "DL",
+          "season": 2025,
+          "totals": {
+            "games": 12.0,
+            "total": 20,
+            "tfl": 16.5,
+            "sacks": 5.0,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 83.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "OH"
+        },
+        {
+          "player": "Jamond Mathis",
+          "team": "Kent St.",
+          "position": "DL",
+          "season": 2025,
+          "totals": {
+            "games": 12.0,
+            "total": 28,
+            "tfl": 8.0,
+            "sacks": 6.0,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 80.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": ""
         }
       ],
       "2026": [
@@ -1754,6 +3070,96 @@
           "hudlLink": "",
           "pffLink": "",
           "state": "IA"
+        },
+        {
+          "player": "Logan Goodwin",
+          "team": "Buffalo",
+          "position": "DL",
+          "season": 2026,
+          "totals": {
+            "games": 5.0,
+            "total": 15.0,
+            "tfl": 3.0,
+            "sacks": 2.0,
+            "pbu": 1.0,
+            "int": 0.0
+          },
+          "score": 33.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "PA"
+        },
+        {
+          "player": "Quincy Byas",
+          "team": "Eastern Mich.",
+          "position": "DL",
+          "season": 2026,
+          "totals": {
+            "games": 6.0,
+            "total": 14.0,
+            "tfl": 3.0,
+            "sacks": 2.0,
+            "pbu": 1.0,
+            "int": 0.0
+          },
+          "score": 32.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "MO"
+        },
+        {
+          "player": "Ronn Hardin",
+          "team": "Eastern Mich.",
+          "position": "DL",
+          "season": 2026,
+          "totals": {
+            "games": 6.0,
+            "total": 16.0,
+            "tfl": 2.0,
+            "sacks": 2.0,
+            "pbu": 2.0,
+            "int": 0.0
+          },
+          "score": 32.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "OH"
+        },
+        {
+          "player": "Kade Kostus",
+          "team": "Bowling Green",
+          "position": "DL",
+          "season": 2026,
+          "totals": {
+            "games": 5.0,
+            "total": 12.0,
+            "tfl": 2.0,
+            "sacks": 2.0,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 28.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "MI"
+        },
+        {
+          "player": "Jaihien Roy",
+          "team": "Kent St.",
+          "position": "DL",
+          "season": 2026,
+          "totals": {
+            "games": 5.0,
+            "total": 10.0,
+            "tfl": 2.0,
+            "sacks": 2.0,
+            "pbu": 1.0,
+            "int": 1.0
+          },
+          "score": 26.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "MD"
         }
       ]
     },
@@ -1848,6 +3254,96 @@
           "hudlLink": "https://www.hudl.com:443/profile/6265342/joseph-sparacio",
           "pffLink": "",
           "state": "FL"
+        },
+        {
+          "player": "Dallas Gant",
+          "team": "Toledo",
+          "position": "LB",
+          "season": 2023,
+          "totals": {
+            "games": 14.0,
+            "total": 116.0,
+            "tfl": 0.0,
+            "sacks": 0.0,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 116.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": ""
+        },
+        {
+          "player": "Antavious Fish",
+          "team": "Akron",
+          "position": "LB",
+          "season": 2023,
+          "totals": {
+            "games": 12.0,
+            "total": 95.0,
+            "tfl": 0.0,
+            "sacks": 0.0,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 95.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": ""
+        },
+        {
+          "player": "Bryan McCoy",
+          "team": "Akron",
+          "position": "LB",
+          "season": 2023,
+          "totals": {
+            "games": 11.0,
+            "total": 94.0,
+            "tfl": 0.0,
+            "sacks": 0.0,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 94.0,
+          "hudlLink": "https://www.hudl.com/profile/11229287",
+          "pffLink": "",
+          "state": "IL"
+        },
+        {
+          "player": "Daniel Bolden",
+          "team": "Toledo",
+          "position": "LB",
+          "season": 2023,
+          "totals": {
+            "games": 14.0,
+            "total": 94.0,
+            "tfl": 0.0,
+            "sacks": 0.0,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 94.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": ""
+        },
+        {
+          "player": "Keye Thompson",
+          "team": "Ohio",
+          "position": "LB",
+          "season": 2023,
+          "totals": {
+            "games": 12.0,
+            "total": 93.0,
+            "tfl": 0.0,
+            "sacks": 0.0,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 93.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": ""
         }
       ],
       "2024": [
@@ -1940,6 +3436,96 @@
           "hudlLink": "https://www.hudl.com/profile/11229287",
           "pffLink": "",
           "state": "IL"
+        },
+        {
+          "player": "Dion Crawford",
+          "team": "Buffalo",
+          "position": "LB",
+          "season": 2024,
+          "totals": {
+            "games": 13.0,
+            "total": 59.0,
+            "tfl": 0.0,
+            "sacks": 8.5,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 110.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": ""
+        },
+        {
+          "player": "Donald Willis",
+          "team": "Western Mich.",
+          "position": "LB",
+          "season": 2024,
+          "totals": {
+            "games": 13.0,
+            "total": 109.0,
+            "tfl": 0.0,
+            "sacks": 0.0,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 109.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": ""
+        },
+        {
+          "player": "Charles Rosser",
+          "team": "Bowling Green",
+          "position": "LB",
+          "season": 2024,
+          "totals": {
+            "games": 13.0,
+            "total": 63.0,
+            "tfl": 0.0,
+            "sacks": 6.0,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 99.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": ""
+        },
+        {
+          "player": "James Djonkam",
+          "team": "Eastern Mich.",
+          "position": "LB",
+          "season": 2024,
+          "totals": {
+            "games": 10.0,
+            "total": 98.0,
+            "tfl": 0.0,
+            "sacks": 0.0,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 98.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": ""
+        },
+        {
+          "player": "Daniel Bolden",
+          "team": "Toledo",
+          "position": "LB",
+          "season": 2024,
+          "totals": {
+            "games": 13.0,
+            "total": 97.0,
+            "tfl": 0.0,
+            "sacks": 0.0,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 97.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": ""
         }
       ],
       "2025": [
@@ -2032,6 +3618,96 @@
           "hudlLink": "https://www.hudl.com/profile/11351013",
           "pffLink": "",
           "state": "OH"
+        },
+        {
+          "player": "Tyler Martin",
+          "team": "Massachusetts",
+          "position": "LB",
+          "season": 2025,
+          "totals": {
+            "games": 12.0,
+            "total": 103.0,
+            "tfl": 0.0,
+            "sacks": 0.0,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 103.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": ""
+        },
+        {
+          "player": "Mason Woods",
+          "team": "Kent St.",
+          "position": "LB",
+          "season": 2025,
+          "totals": {
+            "games": 12.0,
+            "total": 94.0,
+            "tfl": 0.0,
+            "sacks": 0.0,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 94.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": ""
+        },
+        {
+          "player": "K'Von Sherman",
+          "team": "Toledo",
+          "position": "LB",
+          "season": 2025,
+          "totals": {
+            "games": 13.0,
+            "total": 94.0,
+            "tfl": 0.0,
+            "sacks": 0.0,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 94.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": ""
+        },
+        {
+          "player": "CJ Young",
+          "team": "Kent St.",
+          "position": "LB",
+          "season": 2025,
+          "totals": {
+            "games": 11.0,
+            "total": 89.0,
+            "tfl": 0.0,
+            "sacks": 0.0,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 89.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": ""
+        },
+        {
+          "player": "James Camden",
+          "team": "Western Mich.",
+          "position": "LB",
+          "season": 2025,
+          "totals": {
+            "games": 14.0,
+            "total": 84.0,
+            "tfl": 0.0,
+            "sacks": 0.0,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 84.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": ""
         }
       ],
       "2026": [
@@ -2124,6 +3800,96 @@
           "hudlLink": "",
           "pffLink": "",
           "state": "IN"
+        },
+        {
+          "player": "Dorian Pringle",
+          "team": "Bowling Green",
+          "position": "LB",
+          "season": 2026,
+          "totals": {
+            "games": 5.0,
+            "total": 49.0,
+            "tfl": 1.0,
+            "sacks": 0.0,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 51.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "OH"
+        },
+        {
+          "player": "Rocco Nicholl",
+          "team": "Kent St.",
+          "position": "LB",
+          "season": 2026,
+          "totals": {
+            "games": 5.0,
+            "total": 24.0,
+            "tfl": 4.0,
+            "sacks": 3.0,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 50.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "PA"
+        },
+        {
+          "player": "Julian Fox",
+          "team": "Toledo",
+          "position": "LB",
+          "season": 2026,
+          "totals": {
+            "games": 5.0,
+            "total": 36.0,
+            "tfl": 1.0,
+            "sacks": 0.0,
+            "pbu": 1.0,
+            "int": 1.0
+          },
+          "score": 50.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "GA"
+        },
+        {
+          "player": "Jack Fries",
+          "team": "Ohio",
+          "position": "LB",
+          "season": 2026,
+          "totals": {
+            "games": 5.0,
+            "total": 35.0,
+            "tfl": 0.5,
+            "sacks": 0.5,
+            "pbu": 2.0,
+            "int": 0.0
+          },
+          "score": 47.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "OH"
+        },
+        {
+          "player": "Cashmire Lewis",
+          "team": "Bowling Green",
+          "position": "LB",
+          "season": 2026,
+          "totals": {
+            "games": 5.0,
+            "total": 22.0,
+            "tfl": 3.0,
+            "sacks": 3.0,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 46.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "CT"
         }
       ]
     },
@@ -2290,6 +4056,22 @@
           "hudlLink": "https://www.hudl.com/video/3/6079625/5721d65764e96b63802202c3",
           "pffLink": "",
           "state": "MD"
+        },
+        {
+          "player": "Todd Bumphis",
+          "team": "Bowling Green",
+          "position": "CB",
+          "season": 2024,
+          "totals": {
+            "games": 11.0,
+            "total": 0.0,
+            "pbu": 0.0,
+            "int": 2.0
+          },
+          "score": 16.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": ""
         }
       ],
       "2025": [
@@ -2454,6 +4236,86 @@
           "hudlLink": "https://www.hudl.com/profile/20427970/caiden-newsome",
           "pffLink": "",
           "state": "MD"
+        },
+        {
+          "player": "Jarvarius Sims",
+          "team": "Western Mich.",
+          "position": "CB",
+          "season": 2026,
+          "totals": {
+            "games": 5.0,
+            "total": 22.0,
+            "pbu": 1.0,
+            "int": 0.0
+          },
+          "score": 26.0,
+          "hudlLink": "https://www.hudl.com/profile/11281944",
+          "pffLink": "",
+          "state": "GA"
+        },
+        {
+          "player": "Dionte Thornton",
+          "team": "Sacramento St.",
+          "position": "CB",
+          "season": 2026,
+          "totals": {
+            "games": 5.0,
+            "total": 17.0,
+            "pbu": 2.0,
+            "int": 0.0
+          },
+          "score": 25.0,
+          "hudlLink": "https://www.hudl.com/profile/4436431/dionte-thornton",
+          "pffLink": "",
+          "state": "CA"
+        },
+        {
+          "player": "Cam Jones",
+          "team": "Toledo",
+          "position": "CB",
+          "season": 2026,
+          "totals": {
+            "games": 5.0,
+            "total": 17.0,
+            "pbu": 2.0,
+            "int": 0.0
+          },
+          "score": 25.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "PA"
+        },
+        {
+          "player": "Barry Dillon",
+          "team": "Ohio",
+          "position": "CB",
+          "season": 2026,
+          "totals": {
+            "games": 5.0,
+            "total": 15.0,
+            "pbu": 2.0,
+            "int": 0.0
+          },
+          "score": 23.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "MS"
+        },
+        {
+          "player": "Josira Andrews",
+          "team": "Bowling Green",
+          "position": "CB",
+          "season": 2026,
+          "totals": {
+            "games": 5.0,
+            "total": 12.0,
+            "pbu": 2.0,
+            "int": 0.0
+          },
+          "score": 20.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "NY"
         }
       ]
     },
@@ -2543,6 +4405,91 @@
           "hudlLink": "https://www.hudl.com/profile/19482468/aaron-wofford",
           "pffLink": "",
           "state": "IL"
+        },
+        {
+          "player": "Walter Reynolds",
+          "team": "Ohio",
+          "position": "SAF",
+          "season": 2023,
+          "totals": {
+            "games": 13.0,
+            "total": 71.0,
+            "tfl": 0.0,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 71.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": ""
+        },
+        {
+          "player": "Jacquez Warren",
+          "team": "Miami (OH)",
+          "position": "SAF",
+          "season": 2023,
+          "totals": {
+            "games": 14.0,
+            "total": 70.0,
+            "tfl": 0.0,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 70.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": ""
+        },
+        {
+          "player": "Emmanuel McNeil-Warren",
+          "team": "Toledo",
+          "position": "SAF",
+          "season": 2023,
+          "totals": {
+            "games": 14.0,
+            "total": 69.0,
+            "tfl": 0.0,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 69.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": ""
+        },
+        {
+          "player": "Trey Jones III",
+          "team": "Central Mich.",
+          "position": "SAF",
+          "season": 2023,
+          "totals": {
+            "games": 11.0,
+            "total": 66.0,
+            "tfl": 0.0,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 66.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": ""
+        },
+        {
+          "player": "Nate Bauer",
+          "team": "Toledo",
+          "position": "SAF",
+          "season": 2023,
+          "totals": {
+            "games": 12.0,
+            "total": 64.0,
+            "tfl": 0.0,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 64.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": ""
         }
       ],
       "2024": [
@@ -2628,6 +4575,91 @@
           },
           "score": 96.0,
           "hudlLink": "https://www.hudl.com/profile/14213226/Braden-Awls",
+          "pffLink": "",
+          "state": "OH"
+        },
+        {
+          "player": "Josh Baka",
+          "team": "Kent St.",
+          "position": "SAF",
+          "season": 2024,
+          "totals": {
+            "games": 12.0,
+            "total": 90.0,
+            "tfl": 0.0,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 90.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": ""
+        },
+        {
+          "player": "Eli Blakey",
+          "team": "Miami (OH)",
+          "position": "SAF",
+          "season": 2024,
+          "totals": {
+            "games": 12.0,
+            "total": 89.0,
+            "tfl": 0.0,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 89.0,
+          "hudlLink": "https://www.hudl.com/profile/9739430/eli-blakey",
+          "pffLink": "",
+          "state": "KY"
+        },
+        {
+          "player": "George Udo",
+          "team": "Ball St.",
+          "position": "SAF",
+          "season": 2024,
+          "totals": {
+            "games": 12.0,
+            "total": 78.0,
+            "tfl": 0.0,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 78.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": ""
+        },
+        {
+          "player": "Dustin Johnson",
+          "team": "Ohio",
+          "position": "SAF",
+          "season": 2024,
+          "totals": {
+            "games": 14.0,
+            "total": 77.0,
+            "tfl": 0.0,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 77.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": ""
+        },
+        {
+          "player": "Darrian Lewis",
+          "team": "Akron",
+          "position": "SAF",
+          "season": 2024,
+          "totals": {
+            "games": 12.0,
+            "total": 74.0,
+            "tfl": 0.0,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 74.0,
+          "hudlLink": "https://www.hudl.com/profile/11011761",
           "pffLink": "",
           "state": "OH"
         }
@@ -2717,6 +4749,91 @@
           "hudlLink": "",
           "pffLink": "",
           "state": "IN"
+        },
+        {
+          "player": "Adonis Williams Jr.",
+          "team": "Ohio",
+          "position": "SAF",
+          "season": 2025,
+          "totals": {
+            "games": 13.0,
+            "total": 80.0,
+            "tfl": 0.0,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 80.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": ""
+        },
+        {
+          "player": "Emmanuel McNeil-Warren",
+          "team": "Toledo",
+          "position": "SAF",
+          "season": 2025,
+          "totals": {
+            "games": 13.0,
+            "total": 77.0,
+            "tfl": 0.0,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 77.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": ""
+        },
+        {
+          "player": "Zeraun Daniel",
+          "team": "Massachusetts",
+          "position": "SAF",
+          "season": 2025,
+          "totals": {
+            "games": 9.0,
+            "total": 75.0,
+            "tfl": 0.0,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 75.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": ""
+        },
+        {
+          "player": "Miles Greer",
+          "team": "Buffalo",
+          "position": "SAF",
+          "season": 2025,
+          "totals": {
+            "games": 12.0,
+            "total": 74.0,
+            "tfl": 0.0,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 74.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": ""
+        },
+        {
+          "player": "Barry Manning",
+          "team": "Eastern Mich.",
+          "position": "SAF",
+          "season": 2025,
+          "totals": {
+            "games": 12.0,
+            "total": 73.0,
+            "tfl": 0.0,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 73.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": ""
         }
       ],
       "2026": [
@@ -2804,6 +4921,91 @@
           "hudlLink": "",
           "pffLink": "",
           "state": "MI"
+        },
+        {
+          "player": "Zeraun Daniel",
+          "team": "Massachusetts",
+          "position": "SAF",
+          "season": 2026,
+          "totals": {
+            "games": 5.0,
+            "total": 25.0,
+            "tfl": 1.0,
+            "pbu": 4.0,
+            "int": 0.0
+          },
+          "score": 38.5,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "NY"
+        },
+        {
+          "player": "Sterling Smith",
+          "team": "Ball St.",
+          "position": "SAF",
+          "season": 2026,
+          "totals": {
+            "games": 5.0,
+            "total": 34.0,
+            "tfl": 1.0,
+            "pbu": 1.0,
+            "int": 0.0
+          },
+          "score": 38.5,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "IN"
+        },
+        {
+          "player": "Bryce Llewellyn",
+          "team": "Eastern Mich.",
+          "position": "SAF",
+          "season": 2026,
+          "totals": {
+            "games": 6.0,
+            "total": 28.0,
+            "tfl": 2.0,
+            "pbu": 2.0,
+            "int": 0.0
+          },
+          "score": 37.0,
+          "hudlLink": "https://www.hudl.com/profile/17498941/bryce-llewellyn",
+          "pffLink": "",
+          "state": "IN"
+        },
+        {
+          "player": "Darrell Bryant Jr.",
+          "team": "Central Mich.",
+          "position": "SAF",
+          "season": 2026,
+          "totals": {
+            "games": 5.0,
+            "total": 28.0,
+            "tfl": 0.0,
+            "pbu": 1.0,
+            "int": 1.0
+          },
+          "score": 37.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "VA"
+        },
+        {
+          "player": "Boogsie Silvera",
+          "team": "Sacramento St.",
+          "position": "SAF",
+          "season": 2026,
+          "totals": {
+            "games": 5.0,
+            "total": 33.0,
+            "tfl": 0.0,
+            "pbu": 1.0,
+            "int": 0.0
+          },
+          "score": 36.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "FL"
         }
       ]
     }
