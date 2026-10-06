@@ -130,6 +130,31 @@ service cloud.firestore {
       allow read: if invited();
       allow write: if isAdmin();
     }
+    // Transfer Out Tracker: a hand-maintained weekly log (no scraper source exists for a transfer's
+    // per-week performance across every destination school), so every field on every row is typed in
+    // by an admin, the same as studyManualRows above -- just its own collection since it isn't keyed by
+    // studyId/group the way that one is.
+    match /transferOutPlayers/{docId} {
+      allow read: if invited();
+      allow write: if isAdmin();
+    }
+    // Single doc holding how many week columns the tracker currently shows (weekCount) -- bumped by an
+    // admin's "+ Add week" click as the season goes on.
+    match /transferOutMeta/{docId} {
+      allow read: if invited();
+      allow write: if isAdmin();
+    }
+    // "Request a study" on the Studies page -- any invited coach can ask (optionally with an example
+    // file, uploaded to Storage separately -- see storage.rules), only admins see and manage the queue.
+    // Mirrors accountRequests' shape/intent: the request itself grants nothing, it just lands somewhere
+    // visible instead of only in a chat with Claude.
+    match /studyRequests/{docId} {
+      allow create: if invited() &&
+        request.resource.data.keys().hasOnly(['title', 'description', 'fileUrl', 'fileName', 'by', 'status', 'createdAt']) &&
+        request.resource.data.status == 'pending' &&
+        request.resource.data.by == myEmail();
+      allow read, update, delete: if isAdmin();
+    }
 
     match /{document=**} {
       allow read, write: if false;

@@ -1,13 +1,134 @@
 import { useEffect, useMemo, useState } from "react";
-import { ChevronRight, Download, Loader2, Plus, Trash2, X } from "lucide-react";
+import { ChevronRight, Download, Loader2, Paperclip, Plus, Trash2, X } from "lucide-react";
 import { BackButton, HomeButton } from "./HomeButton.jsx";
 import { ThemeSwitcher, useTheme } from "./theme.jsx";
 import { useBack, initialSubRoute, setSubRoute } from "./route.js";
 import { STUDIES, useStudy } from "./studiesData.js";
 import { confirmAction } from "./ConfirmDialog.jsx";
 import { control, LinkCell, StateCell, TextCell } from "./EditableCells.jsx";
+import TransferOutTracker from "./TransferOutTracker.jsx";
+import { submitStudyRequest, useStudyRequests } from "./studyRequests.js";
 
 const ghostBtn = { ...control, cursor: "pointer", fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 7 };
+
+// Studies that don't fit the generic position-group/season/stat shape StudyDetail renders (MAC's
+// Most Productive) -- each one of these gets its own detail component instead, picked by id below.
+// Still listed as an ordinary card on the landing page, same as STUDIES.
+const CUSTOM_STUDIES = [
+  {
+    id: "transfer-out-tracker",
+    title: "Transfer Out Tracker",
+    description: "A weekly performance log for former Chippewas now playing elsewhere -- no stat source covers this (every destination school is different), so it's entirely hand-entered.",
+    detail: TransferOutTracker,
+  },
+];
+
+// A modal for "Request a study" on the landing page -- any coach can describe what they want (and
+// optionally attach an example file, a mocked-up sheet or a screenshot) instead of only asking in chat.
+// It lands in studyRequests for an admin to see and build, same spirit as "Request access" on sign-in.
+function RequestStudyModal({ by, onClose }) {
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [file, setFile] = useState(null);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+
+  async function submit() {
+    setSaving(true);
+    setError("");
+    try {
+      await submitStudyRequest({ title, description, file, by });
+      onClose(true);
+    } catch (err) {
+      setError(err?.message || "Couldn't send that -- try again.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div onClick={() => onClose(false)} style={{ position: "fixed", inset: 0, height: "auto", zIndex: 100, background: "rgba(0,0,0,0.6)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+      <div
+        role="dialog"
+        aria-modal="true"
+        onClick={(e) => e.stopPropagation()}
+        style={{ position: "relative", background: "var(--bg-panel)", border: "1px solid var(--border)", borderRadius: 10, width: 440, maxWidth: "100%", padding: "22px 24px", color: "var(--text-primary)", boxShadow: "0 18px 48px rgba(0,0,0,0.5)", display: "flex", flexDirection: "column", gap: 12 }}
+      >
+        <button onClick={() => onClose(false)} aria-label="Close" style={{ position: "absolute", top: 14, right: 14, background: "none", border: "none", color: "var(--text-faint)", cursor: "pointer", lineHeight: 0 }}>
+          <X size={16} />
+        </button>
+        <h2 className="oswald" style={{ fontSize: 17, fontWeight: 700, margin: 0 }}>Request a study</h2>
+        <p style={{ margin: 0, fontSize: 12.5, color: "var(--text-muted)", lineHeight: 1.5 }}>
+          Say what you want, point-blank -- the data you want pulled, how it should be grouped, whatever's in your head. Attach an example sheet or screenshot if that's easier than describing it.
+        </p>
+        <label style={{ fontSize: 11, color: "var(--text-faint)", textTransform: "uppercase", letterSpacing: "0.03em" }}>Title</label>
+        <input
+          autoFocus
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          placeholder="e.g. Transfer Out Tracker"
+          style={{ ...control, padding: "8px 11px", fontSize: 13.5 }}
+        />
+        <label style={{ fontSize: 11, color: "var(--text-faint)", textTransform: "uppercase", letterSpacing: "0.03em" }}>What do you want it to show?</label>
+        <textarea
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          rows={5}
+          placeholder="Describe the data, columns, grouping -- whatever you'd tell Claude directly."
+          style={{ ...control, padding: "8px 11px", fontSize: 13.5, resize: "vertical", fontFamily: "inherit" }}
+        />
+        <label style={{ ...ghostBtn, justifyContent: "center" }}>
+          <Paperclip size={14} /> {file ? file.name : "Attach an example file (optional)"}
+          <input type="file" onChange={(e) => setFile(e.target.files?.[0] || null)} style={{ display: "none" }} />
+        </label>
+        {error && <span style={{ fontSize: 12, color: "var(--danger, #c0392b)" }}>{error}</span>}
+        <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 4 }}>
+          <button onClick={() => onClose(false)} style={ghostBtn}>Cancel</button>
+          <button onClick={submit} disabled={saving || !title.trim()} style={{ ...ghostBtn, background: "var(--accent)", color: "var(--bg-page)", border: "none", opacity: saving || !title.trim() ? 0.6 : 1 }}>
+            {saving ? "Sending…" : "Send request"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Admin-only queue of pending "request a study" asks -- shown right on the landing page so they don't
+// need to go dig through Firestore or wait for someone to mention it in chat.
+function RequestQueue({ admin }) {
+  const { pending, markDone, remove } = useStudyRequests(admin);
+  if (!admin || pending.length === 0) return null;
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 18 }}>
+      <h2 className="oswald" style={{ fontSize: 13, fontWeight: 700, margin: 0, color: "var(--text-faint)", textTransform: "uppercase", letterSpacing: "0.03em" }}>
+        Requested studies ({pending.length})
+      </h2>
+      {pending.map((r) => (
+        <div key={r.id} style={{ display: "flex", gap: 12, alignItems: "flex-start", justifyContent: "space-between", background: "var(--bg-panel)", border: "1px solid var(--border)", borderRadius: 8, padding: "10px 14px" }}>
+          <div style={{ minWidth: 0 }}>
+            <div style={{ fontWeight: 700, fontSize: 13.5 }}>{r.title}</div>
+            {r.description && <div style={{ fontSize: 12.5, color: "var(--text-muted)", marginTop: 2, whiteSpace: "pre-wrap" }}>{r.description}</div>}
+            <div style={{ fontSize: 11.5, color: "var(--text-faint)", marginTop: 4 }}>
+              {r.by} · {new Date(r.createdAt).toLocaleDateString()}
+              {r.fileUrl && (
+                <>
+                  {" · "}
+                  <a href={r.fileUrl} target="_blank" rel="noreferrer" style={{ color: "var(--accent)" }}>{r.fileName || "attachment"}</a>
+                </>
+              )}
+            </div>
+          </div>
+          <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
+            <button onClick={() => markDone(r.id)} style={{ ...ghostBtn, padding: "5px 10px", fontSize: 12 }}>Mark done</button>
+            <button onClick={() => remove(r.id)} title="Dismiss" aria-label="Dismiss" style={{ background: "none", border: "none", color: "var(--text-faint)", cursor: "pointer", padding: 4, lineHeight: 0 }}>
+              <Trash2 size={14} />
+            </button>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
 
 function downloadCsv(rows, columns, filename) {
   const escape = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`;
@@ -336,12 +457,16 @@ function StudyDetail({ studyId, admin, onBack }) {
   );
 }
 
+const ALL_STUDIES = [...STUDIES, ...CUSTOM_STUDIES];
+
 export default function StudiesPage({ onBack: toDashboard, session }) {
   const [theme, setTheme] = useTheme();
   const back = useBack(toDashboard);
   const admin = !!session?.profile?.admin;
+  const myEmail = session?.profile?.email || "";
   const [initial] = useState(initialSubRoute);
-  const [openId, setOpenId] = useState(() => (STUDIES.some((s) => s.id === initial[0]) ? initial[0] : null));
+  const [openId, setOpenId] = useState(() => (ALL_STUDIES.some((s) => s.id === initial[0]) ? initial[0] : null));
+  const [requesting, setRequesting] = useState(false);
 
   function openStudy(id) {
     setOpenId(id);
@@ -351,6 +476,8 @@ export default function StudiesPage({ onBack: toDashboard, session }) {
     setOpenId(null);
     setSubRoute("studies", []);
   }
+
+  const openMeta = ALL_STUDIES.find((s) => s.id === openId);
 
   return (
     <div className="app-shell hs-shell" data-theme={theme} style={{ display: "flex", flexDirection: "column", overflow: "hidden", background: "var(--bg-page)", color: "var(--text-primary)", fontFamily: "'Century Gothic', 'Jost', 'Helvetica Neue', Arial, sans-serif" }}>
@@ -366,15 +493,21 @@ export default function StudiesPage({ onBack: toDashboard, session }) {
         </div>
       </div>
 
-      {openId ? (
+      {openMeta?.detail ? (
+        <openMeta.detail admin={admin} meta={openMeta} onBack={closeStudy} />
+      ) : openId ? (
         <StudyDetail studyId={openId} admin={admin} onBack={closeStudy} />
       ) : (
         <div style={{ flex: 1, minHeight: 0, overflow: "auto", padding: "24px var(--gutter) var(--gutter)" }}>
-          <p style={{ margin: "0 0 18px", fontSize: 13.5, color: "var(--text-muted)", maxWidth: 640, lineHeight: 1.6 }}>
-            Ask for a study on any data already in the site, and it shows up here as its own spreadsheet.
-          </p>
+          <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 14, flexWrap: "wrap", marginBottom: 18 }}>
+            <p style={{ margin: 0, fontSize: 13.5, color: "var(--text-muted)", maxWidth: 560, lineHeight: 1.6 }}>
+              Ask for a study on any data already in the site, and it shows up here as its own spreadsheet.
+            </p>
+            <button onClick={() => setRequesting(true)} style={ghostBtn}><Plus size={14} /> Request a study</button>
+          </div>
+          <RequestQueue admin={admin} />
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 14 }}>
-            {STUDIES.map((s) => (
+            {ALL_STUDIES.map((s) => (
               <button
                 key={s.id}
                 onClick={() => openStudy(s.id)}
@@ -390,6 +523,7 @@ export default function StudiesPage({ onBack: toDashboard, session }) {
           </div>
         </div>
       )}
+      {requesting && <RequestStudyModal by={myEmail} onClose={() => setRequesting(false)} />}
     </div>
   );
 }

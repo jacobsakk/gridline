@@ -1,0 +1,22 @@
+rules_version = '2';
+
+// Firebase Storage rules -- paste into Firebase Console > Build > Storage > Rules (a separate tab from
+// Firestore's rules). Storage rules can't read the "accounts" Firestore collection the way
+// firestore.rules does, so "invited" here just means signed in with a verified email -- good enough
+// since the sign-in flow itself already refuses anyone not on the invite list, so a valid signed-in
+// session already implies an invite.
+service firebase.storage {
+  match /b/{bucket}/o {
+    function signedIn() {
+      return request.auth != null && request.auth.token.email_verified == true;
+    }
+
+    // "Request a study" attachments (an example sheet, a screenshot) -- any signed-in coach can upload
+    // one alongside their own request; only signed-in coaches can read any of them back (there's nothing
+    // sensitive here, but no reason to make it public either). 10MB cap per file.
+    match /studyRequests/{requestId}/{fileName} {
+      allow read: if signedIn();
+      allow write: if signedIn() && request.resource.size < 10 * 1024 * 1024;
+    }
+  }
+}
