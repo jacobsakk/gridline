@@ -582,7 +582,7 @@ function EditableSummary({ value, onSave, placeholder = "No stats yet", rows = 2
   );
 }
 
-function WeeklyTab({ players, week, statusOf, autoStatusOf, updatePlayer, onGame, updateGame, onOpenPlayer, onProfile, hasProfile }) {
+function WeeklyTab({ players, week, statusOf, autoStatusOf, updatePlayer, onGame, onAddGame, updateGame, onOpenPlayer, onProfile, hasProfile }) {
   const groups = useMemo(() => {
     const map = new Map(POSITION_GROUPS.map((g) => [g.key, []]));
     map.set("OTHER", []);
@@ -656,7 +656,9 @@ function WeeklyTab({ players, week, statusOf, autoStatusOf, updatePlayer, onGame
                         <ResultChip game={game} big />
                       </>
                     ) : (
-                      <span style={{ color: "var(--text-faint)", fontSize: 13 }}>No game this week</span>
+                      <button className="hs-no-print" onClick={() => onAddGame(p, week)} title="For a school with no scraped schedule (California JUCO, say) -- add the game by hand" style={{ background: "none", border: "none", color: "var(--text-faint)", fontSize: 13, cursor: "pointer", padding: 0, display: "inline-flex", alignItems: "center", gap: 5 }}>
+                        <Plus size={13} /> Add game this week
+                      </button>
                     )}
                   </div>
                   <div>
@@ -1225,6 +1227,82 @@ function GameSourcesModal({ player, game, updateGame, onDelete, onClose }) {
   );
 }
 
+// Entering a game by hand for a school no scraper can reach yet -- California JUCO (CCCAA), mainly,
+// until that gets its own feed the way NJCAA's did. Unlike GameSourcesModal (which only edits the score
+// on a game the scraper already found), this creates the game itself: date, opponent and home/away are
+// all typed in, with the score optional since it might not be in yet. updateGame already appends a new
+// entry when nothing matches the date/opponent given, so this just calls it with a brand-new game.
+function AddGameModal({ player, week, updateGame, onClose }) {
+  const [opponent, setOpponent] = useState("");
+  const [date, setDate] = useState(week);
+  const [homeAway, setHomeAway] = useState("H");
+  const [hasScore, setHasScore] = useState(false);
+  const [result, setResult] = useState("W");
+  const [ours, setOurs] = useState("");
+  const [theirs, setTheirs] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const canSave = opponent.trim() && date && !busy;
+  async function save() {
+    setBusy(true);
+    setError("");
+    try {
+      const fields = hasScore && ours !== "" && theirs !== "" ? { result, ours: Number(ours), theirs: Number(theirs) } : {};
+      await updateGame(player, { date, opponent: opponent.trim(), homeAway }, fields);
+      onClose();
+    } catch {
+      setError("Couldn't save. Try again.");
+      setBusy(false);
+    }
+  }
+  const num = { ...controlStyle, width: 58, padding: "6px 8px", textAlign: "center" };
+  return (
+    <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20, zIndex: 80 }}>
+      <div onClick={(e) => e.stopPropagation()} style={{ background: "var(--bg-panel)", border: "1px solid var(--border)", borderRadius: 10, width: 420, maxWidth: "100%", padding: 22 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 10, marginBottom: 12 }}>
+          <div>
+            <h2 className="oswald" style={{ margin: 0, fontSize: 19 }}>Add a game</h2>
+            <div style={{ fontSize: 13, color: "var(--text-muted)", marginTop: 2 }}>{player.name} · {player.highSchool}</div>
+          </div>
+          <button onClick={onClose} aria-label="Close" style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer", lineHeight: 0 }}><X size={18} /></button>
+        </div>
+        <p style={{ margin: "0 0 14px", fontSize: 12.5, color: "var(--text-faint)", lineHeight: 1.5 }}>
+          For a school with no scraped schedule yet (California JUCO, say) -- enter the game by hand instead of waiting on a scraper that can't reach it.
+        </p>
+        <div style={{ display: "grid", gap: 10 }}>
+          <input value={opponent} onChange={(e) => setOpponent(e.target.value)} placeholder="Opponent *" style={controlStyle} autoFocus />
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 110px", gap: 10 }}>
+            <input type="date" aria-label="Date" value={date} onChange={(e) => setDate(e.target.value)} style={controlStyle} />
+            <select aria-label="Home or away" value={homeAway} onChange={(e) => setHomeAway(e.target.value)} style={{ ...controlStyle, cursor: "pointer" }}>
+              <option value="H">Home</option>
+              <option value="A">Away</option>
+            </select>
+          </div>
+          <label style={{ display: "flex", alignItems: "center", gap: 7, fontSize: 13, color: "var(--text-secondary)", cursor: "pointer" }}>
+            <input type="checkbox" checked={hasScore} onChange={(e) => setHasScore(e.target.checked)} /> Score is in
+          </label>
+          {hasScore && (
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <select aria-label="Result" value={result} onChange={(e) => setResult(e.target.value)} style={{ ...controlStyle, padding: "6px 8px" }}>
+                <option value="W">W</option><option value="L">L</option><option value="T">T</option>
+              </select>
+              <input aria-label="Our score" inputMode="numeric" placeholder="Us" value={ours} onChange={(e) => setOurs(e.target.value.replace(/\D/g, ""))} style={num} />
+              <span style={{ color: "var(--text-faint)" }}>-</span>
+              <input aria-label="Their score" inputMode="numeric" placeholder="Them" value={theirs} onChange={(e) => setTheirs(e.target.value.replace(/\D/g, ""))} style={num} />
+            </div>
+          )}
+        </div>
+        {error && <div role="alert" style={{ marginTop: 10, fontSize: 13, color: "var(--danger-text)" }}>{error}</div>}
+        <div style={{ marginTop: 16, textAlign: "right" }}>
+          <button onClick={save} disabled={!canSave} style={{ background: "var(--accent-bg)", border: "1px solid var(--accent)", color: "var(--accent)", borderRadius: 6, padding: "8px 16px", fontSize: 13, fontWeight: 700, cursor: canSave ? "pointer" : "default", opacity: canSave ? 1 : 0.5 }}>
+            {busy ? "Saving…" : "Add game"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // The status shown for a player: the Offer Tracker's unless changed here. Picking one sets it for this sheet.
 function StatusSelect({ player, status, updatePlayer, style }) {
   const s = STATUS_BY_KEY[status];
@@ -1328,6 +1406,7 @@ export default function HsGameUpdate({ onBack: toDashboard }) {
   const [undo, setUndo] = useState(null);
   const [reviewOpen, setReviewOpen] = useState(false);
   const [gameSource, setGameSource] = useState(null);
+  const [addGameFor, setAddGameFor] = useState(null); // { id, week } -- see AddGameModal
   const [cmuByWeek, setCmuByWeek] = useState({});
 
   // Status comes from the Offer Tracker unless someone set it by hand. `why` says which,
@@ -1585,7 +1664,7 @@ export default function HsGameUpdate({ onBack: toDashboard }) {
         ) : tab === "Master Tracker" ? (
           <MasterTab players={sortedForMaster} weeks={weeks} currentWeek={weekKey(new Date())} cmuByWeek={cmuByWeek} statusOf={statusOf} statusWhy={statusWhy} onOpenPlayer={openPlayer} onProfile={setProfile} hasProfile={hasProfile} selected={selected} setSelected={setSelected} sort={sort} setSort={setSort} coaches={coaches} updatePlayer={hs.updatePlayer} editSchool={hs.editSchool} autoStatusOf={autoStatusOf} onGame={(player, game) => setGameSource({ id: player.id, key: game.date || game.opponent })} onDeleteGame={deleteGame} />
         ) : tab === "Weekly Tracker" ? (
-          <WeeklyTab players={filtered} week={week} statusOf={statusOf} autoStatusOf={autoStatusOf} updatePlayer={hs.updatePlayer} onGame={(player, game) => setGameSource({ id: player.id, key: game.date || game.opponent })} updateGame={hs.updateGame} onOpenPlayer={openPlayer} onProfile={setProfile} hasProfile={hasProfile} />
+          <WeeklyTab players={filtered} week={week} statusOf={statusOf} autoStatusOf={autoStatusOf} updatePlayer={hs.updatePlayer} onGame={(player, game) => setGameSource({ id: player.id, key: game.date || game.opponent })} onAddGame={(player, wk) => setAddGameFor({ id: player.id, week: wk })} updateGame={hs.updateGame} onOpenPlayer={openPlayer} onProfile={setProfile} hasProfile={hasProfile} />
         ) : (
           <FaceSheetTab
             players={filtered}
@@ -1627,6 +1706,10 @@ export default function HsGameUpdate({ onBack: toDashboard }) {
         const player = players.find((p) => p.id === gameSource.id);
         const game = player?.games.find((g) => (g.date || g.opponent) === gameSource.key);
         return player && game ? <GameSourcesModal key={`${player.id}|${gameSource.key}`} player={player} game={game} updateGame={hs.updateGame} onDelete={deleteGame} onClose={() => setGameSource(null)} /> : null;
+      })()}
+      {addGameFor && (() => {
+        const player = players.find((p) => p.id === addGameFor.id);
+        return player ? <AddGameModal key={`${player.id}|${addGameFor.week}`} player={player} week={addGameFor.week} updateGame={hs.updateGame} onClose={() => setAddGameFor(null)} /> : null;
       })()}
       {reviewOpen && (
         <ReviewModal

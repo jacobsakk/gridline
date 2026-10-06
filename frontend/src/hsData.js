@@ -465,19 +465,28 @@ export function useHsTracker() {
     };
   }, []);
 
+  // Teams with no MaxPreps/ScoreStream-derived doc id at all -- every JUCO team written by
+  // scraper/njcaa.py, which has no such link to derive one from and stores its own school name on the
+  // doc instead (see build_schedule_docs there). Matched by name (same fuzzy sameSchool() already used
+  // everywhere else here) only when the usual id lookup below finds nothing, so it never second-guesses
+  // a real MaxPreps/ScoreStream match.
+  const namedTeams = useMemo(() => Object.values(teams).filter((t) => t?.school), [teams]);
+
   const players = useMemo(
     () =>
       docs
         .map((p) => {
           const stored = dedupeGames(p.games || []);
-          const games = cleanSchedule(overlayScraped(stored, teams[teamDocId(p.sources)])).filter((g) => !g.removed);
+          const byId = teams[teamDocId(p.sources)];
+          const team = byId || namedTeams.find((t) => sameSchool(t.school, p.highSchool));
+          const games = cleanSchedule(overlayScraped(stored, team)).filter((g) => !g.removed);
           const computed = computeRecord(games);
           const m = /(\d+)\s*W\s*-\s*(\d+)\s*L/i.exec(p.recordText || "");
           const record = m && Number(m[1]) + Number(m[2]) > computed.played ? { w: Number(m[1]), l: Number(m[2]), t: 0, text: p.recordText.trim(), played: Number(m[1]) + Number(m[2]) } : computed;
           return { ...p, games, storedGames: stored, record };
         })
         .sort((a, b) => (a.name || "").localeCompare(b.name || "")),
-    [docs, teams]
+    [docs, teams, namedTeams]
   );
 
   // Merges a parsed upload into what's already stored: roster fields come from

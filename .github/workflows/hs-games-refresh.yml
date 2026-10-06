@@ -6,6 +6,12 @@ name: HS game results refresh
 # live -- nothing is committed to the repo, so no recruit information ever
 # lands in it.
 #
+# Also refreshes the NJCAA (JUCO) football schedule/scores the same way, from
+# njcaa.org's own public API -- plain HTTPS, no browser, so it's a cheap second
+# step riding along on the same schedule. California's CCCAA schools aren't in
+# that feed yet; those are entered by hand from the Weekly Tracker until they
+# have their own source too.
+#
 # Timed so Saturday morning already has Friday night's scores (times are UTC;
 # GitHub can start a scheduled run up to ~20 minutes late):
 #   Sat 03:00  = Fri 11pm Detroit  -- East/Midwest games are final
@@ -62,3 +68,12 @@ jobs:
             exit 1
           fi
           python3 hs_games.py
+
+      # A separate step (not folded into the one above) so a hiccup on njcaa.org's API never blocks or
+      # fails the main HS scrape it rides along with.
+      - name: Scrape NJCAA (JUCO) schedule and store it
+        working-directory: scraper
+        continue-on-error: true
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: python3 juco_schedule.py

@@ -11,6 +11,7 @@ The query is the one njcaa.org's stats pages send, trimmed to the fields used
 here; the API accepts it without any key.
 """
 
+import datetime as dt
 import json
 import re
 import urllib.request
@@ -176,6 +177,73 @@ def build_njcaa_rows():
     for school, player in fetch_players():
         rows += to_rows(school, player, conference_for(school))
     return rows
+
+
+# --------------------------------------------------------------- schedule / scores
+
+# A second, unrelated query on the same public API: the whole season's game-by-game schedule and
+# scores, across every NJCAA sport. Found by probing the API directly (introspection is disabled, so
+# this was reverse-engineered from the field-name hints GraphQL's own validation errors give for a
+# wrong field -- e.g. asking for "homeTeam" gets back "did you mean homeTeamId, homeAway, or
+# homeTeamName?"). One call covers the entire season (327 football games as of Oct 2026), well under
+# the API's own cap of 500 per request, so there's no pagination to handle.
+SCHEDULE_QUERY = """
+query Schedule($tenantId: ID!, $sport: String!, $season: String!, $limit: Int!) {
+  schedule(tenantId: $tenantId, sport: $sport, season: $season, limit: $limit) {
+    count
+    games {
+      id date time homeTeamName awayTeamName homeScore awayScore status location
+    }
+  }
+}
+"""
+
+
+def fetch_schedule(sport="fball", limit=500):
+    """Every game (played or scheduled) for one sport this season, straight from the schedule feed --
+    not filtered to known NJCAA conference members, since CCCAA (California) and other non-NJCAA
+    programs show up on the same shared schedule when they play an NJCAA opponent."""
+    data = _post("Schedule", SCHEDULE_QUERY, {"tenantId": TENANT_ID, "sport": sport, "season": SEASON, "limit": limit})
+    sched = data["schedule"]
+    if sched["count"] > limit:
+        raise RuntimeError(f"schedule has grown past the {limit}-game page size ({sched['count']} games) -- raise the limit")
+    return sched["games"]
+
+
+def _team_perspective_games(games):
+    """Turns each game (one row, home vs. away) into two rows, one from each team's own point of view --
+    the shape the Weekly Tracker already expects per school (opponent/ours/theirs/homeAway), same as a
+    MaxPreps-scraped game. A game that hasn't been played yet has no score, so it's still included (with
+    no result) rather than dropped -- that matches how a MaxPreps-scraped future game looks too."""
+    by_team = {}
+    for g in games:
+        played = g["status"] == "Final" and g["homeScore"] is not None and g["awayScore"] is not None
+        for us, opp, home_away, our_score, their_score in (
+            (g["homeTeamName"], g["awayTeamName"], "H", g.get("homeScore"), g.get("awayScore")),
+            (g["awayTeamName"], g["homeTeamName"], "A", g.get("awayScore"), g.get("homeScore")),
+        ):
+            if not us or not opp:
+                continue
+            row = {"date": g["date"], "opponent": opp, "homeAway": home_away}
+            if played:
+                row.update(result="W" if our_score > their_score else "L" if our_score < their_score else "T", ours=our_score, theirs=their_score)
+            by_team.setdefault(us, []).append(row)
+    return by_team
+
+
+def build_schedule_docs(sport="fball"):
+    """{hsTeams doc id -> doc} for every team the schedule feed has games for -- written straight into
+    the same collection hs_games.py's MaxPreps/ScoreStream pipeline writes to, in a shape overlayScraped()
+    (frontend/src/hsData.js) already knows how to read. Doc id is njcaa-prefixed so it can never collide
+    with that pipeline's mp_/ss_-prefixed ids; the school's own name is stored on the doc (unlike the HS
+    docs, which don't need it -- their id is already derived from the matching player's own source URL)
+    so a player with no MaxPreps/ScoreStream link at all -- true for every JUCO player -- can still be
+    matched to their team by name. See the fallback lookup in useHsTracker()."""
+    now = dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds")
+    docs = {}
+    for school, games in _team_perspective_games(fetch_schedule(sport)).items():
+        docs[f"njcaa_{_slug(school)}"] = {"school": school, "games": games, "source": "njcaa", "updatedAt": now}
+    return docs
 
 
 if __name__ == "__main__":
