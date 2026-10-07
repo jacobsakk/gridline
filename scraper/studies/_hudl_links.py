@@ -262,3 +262,28 @@ HUDL_LINKS.update({
     "KENDALL BANNISTER": "https://www.hudl.com/profile/15729844",
     "CAIDEN NEWSOME": "https://www.hudl.com/profile/20427970/caiden-newsome",
 })
+HUDL_LINKS.update({
+    # QB/WR/TE/CB names added to top up 2023-2025's position groups to a full 10 (see
+    # mac_best_by_position.py's QB_SUPPLEMENT/WR_SUPPLEMENT/TE_SUPPLEMENT/CB_SUPPLEMENT). A few names
+    # researched alongside these -- Grayson Barnes, Will Kacmarek, Jacob Petersen, Terik Mulder, Max
+    # Reese, Donte Harrison -- turned up no confirmed Hudl profile (name collisions or sport mismatches
+    # on the only pages found), so they're left blank rather than guessed.
+    "HAYDEN WOLFF": "https://www.hudl.com/profile/6670820/hayden-wolff",
+    "NICK DEVEREAUX": "https://www.hudl.com/profile/11433793",
+    "GINO CAMPIOTTI": "https://www.hudl.com/profile/1900564/Gino-Campiotti",
+    "AUSTIN HENCE": "https://www.hudl.com/profile/3462300",
+    "JACOB NEWELL": "https://www.hudl.com/profile/11510459",
+    "GAVIN HARRIS": "https://www.hudl.com/profile/14029789",
+    "CONNER CRAVAACK": "https://www.hudl.com/profile/11792396",
+    "KOBY GROSS": "https://www.hudl.com/profile/7205571/Koby-Gross",
+    "YAHSYN MCKEE": "https://www.hudl.com/profile/6112865",
+    "KEMPTON SHINE": "https://www.hudl.com/profile/6688408",
+    "DONTE KENT": "https://www.hudl.com/profile/9753443",
+    "TYLER POTTS": "https://www.hudl.com/profile/7497583",
+    "BENNETT WALKER": "https://www.hudl.com/profile/13312806",
+    "JAVAUGHN BYRD": "https://www.hudl.com/profile/9687565",
+    "KALEN CARROLL": "https://www.hudl.com/profile/11249917/Kalen-Carroll/about",
+    "ELIJAH REED": "https://www.hudl.com/profile/12921009",
+    "WILLIZHUAN YATES": "https://www.hudl.com/profile/14888843/Will-Yates",
+    "JOSHUA SCOTT": "https://www.hudl.com/profile/22282832/joshua-scott",
+})
