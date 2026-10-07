@@ -245,11 +245,23 @@ function StatCell({ value, canEdit, onSave, gold }) {
       </div>
     );
   }
+  // A PFF grade has no "real zero" the way a tackle/yard count does -- 0 just means nobody's graded
+  // this player yet, so it reads as an "Add grade" prompt instead of a misleading 0, same as the
+  // Add/Add link prompts the other empty cells on this page already use.
+  if (gold && !value) {
+    return canEdit ? (
+      <button onClick={() => setEditing(true)} style={{ background: "none", border: "none", color: "var(--text-faint)", cursor: "pointer", fontSize: 12.5, textDecoration: "underline", padding: 0 }}>
+        Add grade
+      </button>
+    ) : (
+      <span style={{ color: "var(--text-faint)" }}>—</span>
+    );
+  }
   return (
     <span
       onClick={() => canEdit && setEditing(true)}
       title={canEdit ? "Click to correct" : undefined}
-      style={{ cursor: canEdit ? "pointer" : "default", color: gold && value ? "var(--gold)" : undefined, fontWeight: gold && value ? 700 : undefined }}
+      style={{ cursor: canEdit ? "pointer" : "default", color: gold ? "var(--gold)" : undefined, fontWeight: gold ? 700 : undefined }}
     >
       {value}
     </span>
