@@ -107,21 +107,27 @@ export function useStudy(studyId) {
       out[group] = {};
       const groupMeta = meta.groups.find((g) => g.key === group);
       Object.entries(bySeason).forEach(([season, players]) => {
-        out[group][season] = players.map((p) => {
-          const merged = { ...p, ...overrides[overrideKey(group, p.player)] };
-          const statFix = overrides[statsOverrideKey(group, season, p.player)];
-          if (statFix?.totals) {
-            merged.totals = { ...merged.totals, ...statFix.totals };
-            // Re-derive the score from the corrected totals using the same linear formula
-            // scraper/studies/mac_best_by_position.py's GROUPS[key].score lambda encodes (see
-            // studiesData.js's scoreFormula comment) -- otherwise a corrected stat would leave a stale
-            // score (and ranking) sitting next to it.
-            if (groupMeta?.scoreFormula) {
-              merged.score = Math.round(groupMeta.scoreFormula.reduce((sum, t) => sum + (merged.totals[t.key] ?? 0) * t.coef, 0) * 10) / 10;
+        out[group][season] = players
+          // A computed row has no doc of its own to delete (it comes straight from the bundled JSON) --
+          // "removing" one just means marking it excluded in the same per-season override doc a stat
+          // correction already lives in (see excludePlayer below). Unlike a stat fix, this doesn't pull
+          // in whoever's 11th -- the JSON only ever carries the already-sliced top 10.
+          .filter((p) => !overrides[statsOverrideKey(group, season, p.player)]?.excluded)
+          .map((p) => {
+            const merged = { ...p, ...overrides[overrideKey(group, p.player)] };
+            const statFix = overrides[statsOverrideKey(group, season, p.player)];
+            if (statFix?.totals) {
+              merged.totals = { ...merged.totals, ...statFix.totals };
+              // Re-derive the score from the corrected totals using the same linear formula
+              // scraper/studies/mac_best_by_position.py's GROUPS[key].score lambda encodes (see
+              // studiesData.js's scoreFormula comment) -- otherwise a corrected stat would leave a stale
+              // score (and ranking) sitting next to it.
+              if (groupMeta?.scoreFormula) {
+                merged.score = Math.round(groupMeta.scoreFormula.reduce((sum, t) => sum + (merged.totals[t.key] ?? 0) * t.coef, 0) * 10) / 10;
+              }
             }
-          }
-          return merged;
-        });
+            return merged;
+          });
       });
     });
     // Hand-added rows merge additively into EVERY group -- a player the leaderboard missed, added
@@ -195,6 +201,11 @@ export function useStudy(studyId) {
     },
     async removeManualRow(id) {
       await deleteDoc(doc(db, "studyManualRows", id));
+    },
+    // Removing a computed row (one with no manual doc of its own) -- hides it from this one position's
+    // one season rather than deleting anything, since there's nothing to delete; see the filter above.
+    async excludePlayer(group, season, player) {
+      await setDoc(doc(db, "studyOverrides", statsOverrideKey(group, season, player)), { excluded: true }, { merge: true });
     },
   };
 }

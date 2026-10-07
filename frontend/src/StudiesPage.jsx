@@ -323,8 +323,11 @@ function StudyDetail({ studyId, canEdit, onBack }) {
     await study.addManualRow(group, activeSeason);
   }
   async function removePlayer(r) {
+    const isManualRow = !!r.id;
     const ok = await confirmAction({ title: `Remove ${r.player || "this player"}?`, message: `This takes them off ${activeGroup.label}'s list for ${activeSeason}.` });
-    if (ok) study.removeManualRow(r.id);
+    if (!ok) return;
+    if (isManualRow) study.removeManualRow(r.id);
+    else study.excludePlayer(group, activeSeason, r.player);
   }
   const arrow = (key) => (sort.key === key ? (sort.dir === "desc" ? " ▼" : " ▲") : "");
   const th = { textAlign: "left", padding: "9px 10px", fontSize: 11, color: "var(--text-faint)", textTransform: "uppercase", letterSpacing: "0.03em", cursor: "pointer", userSelect: "none", whiteSpace: "nowrap", position: "sticky", top: 0, background: "var(--bg-surface)", zIndex: 1 };
@@ -456,11 +459,9 @@ function StudyDetail({ studyId, canEdit, onBack }) {
                   </td>
                   {canEdit && (
                     <td style={{ ...td, textAlign: "right" }}>
-                      {isManualRow && (
-                        <button onClick={() => removePlayer(r)} title={`Remove ${r.player || "this player"}`} aria-label={`Remove ${r.player || "this player"}`} style={{ background: "none", border: "none", color: "var(--text-faint)", cursor: "pointer", padding: 2, lineHeight: 0 }}>
-                          <Trash2 size={14} />
-                        </button>
-                      )}
+                      <button onClick={() => removePlayer(r)} title={`Remove ${r.player || "this player"}`} aria-label={`Remove ${r.player || "this player"}`} style={{ background: "none", border: "none", color: "var(--text-faint)", cursor: "pointer", padding: 2, lineHeight: 0 }}>
+                        <Trash2 size={14} />
+                      </button>
                     </td>
                   )}
                 </tr>
