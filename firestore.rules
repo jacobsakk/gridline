@@ -118,31 +118,27 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
     // Studies: a hand-edited field (a Hudl link a study's own data pull couldn't find) layered on top of
-    // the study's bundled JSON. Every invited coach can view; only admins add or fix a link.
+    // the study's bundled JSON. Every invited coach can view AND edit -- studies are a shared workspace,
+    // not an admin-only one.
     match /studyOverrides/{docId} {
-      allow read: if invited();
-      allow write: if isAdmin();
+      allow read, write: if invited();
     }
     // A manual group's actual rows (Offensive Line, which has no stat source to pull from at all --
     // see studiesData.js), not a correction layered on top of one like studyOverrides above. Same
-    // access: every invited coach can view, only admins add, edit or remove a row.
+    // access as studyOverrides: every invited coach can view and edit.
     match /studyManualRows/{docId} {
-      allow read: if invited();
-      allow write: if isAdmin();
+      allow read, write: if invited();
     }
     // Transfer Out Tracker: a hand-maintained weekly log (no scraper source exists for a transfer's
     // per-week performance across every destination school), so every field on every row is typed in
-    // by an admin, the same as studyManualRows above -- just its own collection since it isn't keyed by
-    // studyId/group the way that one is.
+    // by hand -- same access as studyManualRows above, any invited coach can edit.
     match /transferOutPlayers/{docId} {
-      allow read: if invited();
-      allow write: if isAdmin();
+      allow read, write: if invited();
     }
-    // Single doc holding how many week columns the tracker currently shows (weekCount) -- bumped by an
-    // admin's "+ Add week" click as the season goes on.
+    // Single doc holding how many week columns the tracker currently shows (weekCount) -- bumped by any
+    // invited coach's "+ Add week" click as the season goes on.
     match /transferOutMeta/{docId} {
-      allow read: if invited();
-      allow write: if isAdmin();
+      allow read, write: if invited();
     }
     // "Request a study" on the Studies page -- any invited coach can ask (optionally with an example
     // file, uploaded to Storage separately -- see storage.rules), only admins see and manage the queue.

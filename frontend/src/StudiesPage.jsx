@@ -191,11 +191,11 @@ function ScoreExplainer({ row, group, onClose }) {
   );
 }
 
-// One raw stat value (games, tackles, yards...), editable by admins for exactly the reason this study
-// keeps needing it: a source (the NCAA leaderboard for 2023-2025, ESPN's roster API for 2026) is
-// occasionally wrong for one player -- rather than waiting on a code fix, an admin corrects it here.
+// One raw stat value (games, tackles, yards...), editable by any invited coach for exactly the reason
+// this study keeps needing it: a source (the NCAA leaderboard for 2023-2025, ESPN's roster API for
+// 2026) is occasionally wrong for one player -- rather than waiting on a code fix, it's corrected here.
 // Same click-to-edit shape as StateCell, but numeric and always has *some* value to show (0, not a dash).
-function StatCell({ value, admin, onSave }) {
+function StatCell({ value, canEdit, onSave }) {
   const [editing, setEditing] = useState(false);
   const [text, setText] = useState(String(value));
   const [saving, setSaving] = useState(false);
@@ -214,7 +214,7 @@ function StatCell({ value, admin, onSave }) {
       await onSave(nextValue);
       setEditing(false);
     } catch (err) {
-      setError(err?.code === "permission-denied" ? "Admins only" : "Failed");
+      setError(err?.code === "permission-denied" ? "No permission to save." : "Failed");
     } finally {
       setSaving(false);
     }
@@ -246,13 +246,13 @@ function StatCell({ value, admin, onSave }) {
     );
   }
   return (
-    <span onClick={() => admin && setEditing(true)} title={admin ? "Click to correct" : undefined} style={{ cursor: admin ? "pointer" : "default" }}>
+    <span onClick={() => canEdit && setEditing(true)} title={canEdit ? "Click to correct" : undefined} style={{ cursor: canEdit ? "pointer" : "default" }}>
       {value}
     </span>
   );
 }
 
-function StudyDetail({ studyId, admin, onBack }) {
+function StudyDetail({ studyId, canEdit, onBack }) {
   const study = useStudy(studyId);
   const [initial] = useState(initialSubRoute);
   const [group, setGroup] = useState(() => study.meta.groups.some((g) => g.key === initial[1]) ? initial[1] : study.meta.groups[0].key);
@@ -320,7 +320,7 @@ function StudyDetail({ studyId, admin, onBack }) {
           <p style={{ margin: "4px 0 0", fontSize: 13, color: "var(--text-muted)", maxWidth: 720, lineHeight: 1.5 }}>{study.meta.description}</p>
         </div>
         <div style={{ display: "flex", gap: 8 }}>
-          {admin && (
+          {canEdit && (
             <button onClick={addPlayer} style={ghostBtn}><Plus size={14} /> Add player</button>
           )}
           <button onClick={() => downloadCsv(sorted, columns, `${study.meta.id}-${group}-${activeSeason}.csv`)} style={ghostBtn}><Download size={14} /> Download</button>
@@ -381,13 +381,13 @@ function StudyDetail({ studyId, admin, onBack }) {
                     {c.label}{c.key !== "hudlLink" && c.key !== "pffLink" ? arrow(c.key) : ""}
                   </th>
                 ))}
-                {admin && <th style={th}> </th>}
+                {canEdit && <th style={th}> </th>}
               </tr>
             </thead>
             <tbody>
               {sorted.length === 0 && (
                 <tr>
-                  <td colSpan={columns.length + (admin ? 1 : 0)} style={{ ...td, textAlign: "center", color: "var(--text-faint)", padding: 32 }}>
+                  <td colSpan={columns.length + (canEdit ? 1 : 0)} style={{ ...td, textAlign: "center", color: "var(--text-faint)", padding: 32 }}>
                     {activeGroup.manual ? "No one added yet." : `Nobody qualified for this position in ${activeSeason}.`}
                   </td>
                 </tr>
@@ -400,19 +400,19 @@ function StudyDetail({ studyId, admin, onBack }) {
                 return (
                 <tr key={r.id || r.player} style={{ background: i % 2 === 0 ? "var(--bg-panel)" : "var(--bg-page)" }}>
                   <td style={{ ...td, fontWeight: 700, color: "var(--text-primary)" }}>
-                    {isManualRow ? <TextCell row={r} field="player" placeholder="Player name" editable={admin} onSave={(v) => study.updateManualRow(r.id, { player: v })} /> : r.player}
+                    {isManualRow ? <TextCell row={r} field="player" placeholder="Player name" editable={canEdit} onSave={(v) => study.updateManualRow(r.id, { player: v })} /> : r.player}
                   </td>
                   <td style={td}>
-                    {isManualRow ? <TextCell row={r} field="team" placeholder="Team" editable={admin} onSave={(v) => study.updateManualRow(r.id, { team: v })} /> : r.team}
+                    {isManualRow ? <TextCell row={r} field="team" placeholder="Team" editable={canEdit} onSave={(v) => study.updateManualRow(r.id, { team: v })} /> : r.team}
                   </td>
                   <td style={td}>
-                    <StateCell row={r} editable={admin} onSave={(state) => (isManualRow ? study.updateManualRow(r.id, { state }) : study.saveField(group, r.player, { state }))} />
+                    <StateCell row={r} editable={canEdit} onSave={(state) => (isManualRow ? study.updateManualRow(r.id, { state }) : study.saveField(group, r.player, { state }))} />
                   </td>
                   {activeGroup.stats.map((s) => (
                     <td key={s.key} style={td} className="tabular">
                       <StatCell
                         value={r.totals[s.key] ?? 0}
-                        admin={admin}
+                        canEdit={canEdit}
                         onSave={(value) => (isManualRow ? study.updateManualRow(r.id, { [s.key]: value }) : study.saveStat(group, activeSeason, r.player, s.key, value))}
                       />
                     </td>
@@ -430,12 +430,12 @@ function StudyDetail({ studyId, admin, onBack }) {
                     </td>
                   )}
                   <td style={td}>
-                    <LinkCell row={r} field="hudlLink" label="Film" placeholder="Paste a Hudl link…" editable={admin} onSave={(url) => (isManualRow ? study.updateManualRow(r.id, { hudlLink: url }) : study.saveField(group, r.player, { hudlLink: url }))} />
+                    <LinkCell row={r} field="hudlLink" label="Film" placeholder="Paste a Hudl link…" editable={canEdit} onSave={(url) => (isManualRow ? study.updateManualRow(r.id, { hudlLink: url }) : study.saveField(group, r.player, { hudlLink: url }))} />
                   </td>
                   <td style={td}>
-                    <LinkCell row={r} field="pffLink" label="PFF" placeholder="Paste a PFF link…" editable={admin} onSave={(url) => (isManualRow ? study.updateManualRow(r.id, { pffLink: url }) : study.saveField(group, r.player, { pffLink: url }))} />
+                    <LinkCell row={r} field="pffLink" label="PFF" placeholder="Paste a PFF link…" editable={canEdit} onSave={(url) => (isManualRow ? study.updateManualRow(r.id, { pffLink: url }) : study.saveField(group, r.player, { pffLink: url }))} />
                   </td>
-                  {admin && (
+                  {canEdit && (
                     <td style={{ ...td, textAlign: "right" }}>
                       {isManualRow && (
                         <button onClick={() => removePlayer(r)} title={`Remove ${r.player || "this player"}`} aria-label={`Remove ${r.player || "this player"}`} style={{ background: "none", border: "none", color: "var(--text-faint)", cursor: "pointer", padding: 2, lineHeight: 0 }}>
@@ -462,7 +462,10 @@ const ALL_STUDIES = [...STUDIES, ...CUSTOM_STUDIES];
 export default function StudiesPage({ onBack: toDashboard, session }) {
   const [theme, setTheme] = useTheme();
   const back = useBack(toDashboard);
-  const admin = !!session?.profile?.admin;
+  const admin = !!session?.profile?.admin; // still used for the "request a study" queue, below
+  // Studies are a shared workspace, not an admin-only one -- anyone who reaches this page is already
+  // an invited coach (see LoginGate in App.jsx), so every coach can add/fix a row.
+  const canEdit = true;
   const myEmail = session?.profile?.email || "";
   const [initial] = useState(initialSubRoute);
   const [openId, setOpenId] = useState(() => (ALL_STUDIES.some((s) => s.id === initial[0]) ? initial[0] : null));
@@ -494,9 +497,9 @@ export default function StudiesPage({ onBack: toDashboard, session }) {
       </div>
 
       {openMeta?.detail ? (
-        <openMeta.detail admin={admin} meta={openMeta} onBack={closeStudy} />
+        <openMeta.detail canEdit={canEdit} meta={openMeta} onBack={closeStudy} />
       ) : openId ? (
-        <StudyDetail studyId={openId} admin={admin} onBack={closeStudy} />
+        <StudyDetail studyId={openId} canEdit={canEdit} onBack={closeStudy} />
       ) : (
         <div style={{ flex: 1, minHeight: 0, overflow: "auto", padding: "24px var(--gutter) var(--gutter)" }}>
           <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 14, flexWrap: "wrap", marginBottom: 18 }}>

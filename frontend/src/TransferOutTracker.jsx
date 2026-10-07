@@ -140,7 +140,7 @@ function StatsCell({ matches, statsReady }) {
   );
 }
 
-export default function TransferOutTracker({ admin, meta }) {
+export default function TransferOutTracker({ canEdit, meta }) {
   const tracker = useTransferOutTracker();
   const statsReady = useRealStatsReady();
   const fileInput = useRef(null);
@@ -196,7 +196,7 @@ export default function TransferOutTracker({ admin, meta }) {
           <p style={{ margin: "4px 0 0", fontSize: 13, color: "var(--text-muted)", maxWidth: 720, lineHeight: 1.5 }}>{meta.description}</p>
         </div>
         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-          {admin && (
+          {canEdit && (
             <>
               <button onClick={() => tracker.addPlayer()} style={ghostBtn}><Plus size={14} /> Add player</button>
               <button onClick={() => fileInput.current?.click()} disabled={importing} style={{ ...ghostBtn, opacity: importing ? 0.6 : 1 }}>
@@ -223,13 +223,13 @@ export default function TransferOutTracker({ admin, meta }) {
                 <th style={th}>Total Stats</th>
                 <th style={th}>PFF Snaps</th>
                 <th style={th}>PFF Link</th>
-                {admin && <th style={th}> </th>}
+                {canEdit && <th style={th}> </th>}
               </tr>
             </thead>
             <tbody>
               {tracker.players.length === 0 && (
                 <tr>
-                  <td colSpan={6 + (admin ? 1 : 0)} style={{ ...td, textAlign: "center", color: "var(--text-faint)", padding: 32 }}>
+                  <td colSpan={6 + (canEdit ? 1 : 0)} style={{ ...td, textAlign: "center", color: "var(--text-faint)", padding: 32 }}>
                     No one added yet.
                   </td>
                 </tr>
@@ -239,24 +239,24 @@ export default function TransferOutTracker({ admin, meta }) {
                 return (
                 <tr key={p.id} style={{ background: i % 2 === 0 ? "var(--bg-panel)" : "var(--bg-page)" }}>
                   <td style={{ ...td, fontWeight: 700, color: "var(--text-primary)" }}>
-                    <NameCell p={p} matches={matches} editable={admin} onSave={(v) => tracker.updatePlayer(p.id, { name: v })} />
+                    <NameCell p={p} matches={matches} editable={canEdit} onSave={(v) => tracker.updatePlayer(p.id, { name: v })} />
                   </td>
                   <td style={td}>
-                    <TextCell row={p} field="position" placeholder="Pos" editable={admin} onSave={(v) => tracker.updatePlayer(p.id, { position: v })} />
+                    <TextCell row={p} field="position" placeholder="Pos" editable={canEdit} onSave={(v) => tracker.updatePlayer(p.id, { position: v })} />
                   </td>
                   <td style={td}>
-                    <TextCell row={p} field="college" placeholder="College" editable={admin} onSave={(v) => tracker.updatePlayer(p.id, { college: v })} />
+                    <TextCell row={p} field="college" placeholder="College" editable={canEdit} onSave={(v) => tracker.updatePlayer(p.id, { college: v })} />
                   </td>
                   <td style={{ ...td, minWidth: 220 }}>
                     <StatsCell matches={matches} statsReady={statsReady} />
                   </td>
                   <td style={td}>
-                    <TextCell row={p} field="pffSnaps" placeholder="Snaps" editable={admin} onSave={(v) => tracker.updatePlayer(p.id, { pffSnaps: v })} />
+                    <TextCell row={p} field="pffSnaps" placeholder="Snaps" editable={canEdit} onSave={(v) => tracker.updatePlayer(p.id, { pffSnaps: v })} />
                   </td>
                   <td style={td}>
-                    <LinkCell row={p} field="pffLink" label="PFF" placeholder="Paste a PFF link…" editable={admin} onSave={(url) => tracker.updatePlayer(p.id, { pffLink: url })} />
+                    <LinkCell row={p} field="pffLink" label="PFF" placeholder="Paste a PFF link…" editable={canEdit} onSave={(url) => tracker.updatePlayer(p.id, { pffLink: url })} />
                   </td>
-                  {admin && (
+                  {canEdit && (
                     <td style={{ ...td, textAlign: "right" }}>
                       <button onClick={() => removePlayer(p)} title={`Remove ${p.name || "this player"}`} aria-label={`Remove ${p.name || "this player"}`} style={{ background: "none", border: "none", color: "var(--text-faint)", cursor: "pointer", padding: 2, lineHeight: 0 }}>
                         <Trash2 size={14} />
