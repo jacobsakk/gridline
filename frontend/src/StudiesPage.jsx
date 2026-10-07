@@ -195,11 +195,11 @@ function ScoreExplainer({ row, group, onClose }) {
 // this study keeps needing it: a source (the NCAA leaderboard for 2023-2025, ESPN's roster API for
 // 2026) is occasionally wrong for one player -- rather than waiting on a code fix, it's corrected here.
 // Same click-to-edit shape as StateCell, but numeric and always has *some* value to show (0, not a dash).
-function StatCell({ value, canEdit, onSave, gold }) {
+function StatCell({ value, canEdit, onSave, accent }) {
   const [editing, setEditing] = useState(false);
   // An ungraded PFF cell's 0 is a placeholder, not a real value (see the "Add grade" prompt below) --
   // starting the input blank instead of on "0" means typing the actual grade straight away.
-  const [text, setText] = useState(gold && !value ? "" : String(value));
+  const [text, setText] = useState(accent && !value ? "" : String(value));
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
@@ -250,7 +250,7 @@ function StatCell({ value, canEdit, onSave, gold }) {
   // A PFF grade has no "real zero" the way a tackle/yard count does -- 0 just means nobody's graded
   // this player yet, so it reads as an "Add grade" prompt instead of a misleading 0, same as the
   // Add/Add link prompts the other empty cells on this page already use.
-  if (gold && !value) {
+  if (accent && !value) {
     return canEdit ? (
       <button onClick={() => setEditing(true)} style={{ background: "none", border: "none", color: "var(--text-faint)", cursor: "pointer", fontSize: 12.5, textDecoration: "underline", padding: 0 }}>
         Add grade
@@ -263,7 +263,7 @@ function StatCell({ value, canEdit, onSave, gold }) {
     <span
       onClick={() => canEdit && setEditing(true)}
       title={canEdit ? "Click to correct" : undefined}
-      style={{ cursor: canEdit ? "pointer" : "default", color: gold ? "var(--gold)" : undefined, fontWeight: gold ? 700 : undefined }}
+      style={{ cursor: canEdit ? "pointer" : "default", color: accent ? "var(--accent)" : undefined, fontWeight: accent ? 700 : undefined }}
     >
       {value}
     </span>
@@ -431,7 +431,7 @@ function StudyDetail({ studyId, canEdit, onBack }) {
                       <StatCell
                         value={r.totals[s.key] ?? 0}
                         canEdit={canEdit}
-                        gold={s.key === "pffGrade"}
+                        accent={s.key === "pffGrade"}
                         onSave={(value) => (isManualRow ? study.updateManualRow(r.id, { [s.key]: value }) : study.saveStat(group, activeSeason, r.player, s.key, value))}
                       />
                     </td>
