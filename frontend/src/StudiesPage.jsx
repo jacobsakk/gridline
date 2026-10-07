@@ -197,7 +197,9 @@ function ScoreExplainer({ row, group, onClose }) {
 // Same click-to-edit shape as StateCell, but numeric and always has *some* value to show (0, not a dash).
 function StatCell({ value, canEdit, onSave, gold }) {
   const [editing, setEditing] = useState(false);
-  const [text, setText] = useState(String(value));
+  // An ungraded PFF cell's 0 is a placeholder, not a real value (see the "Add grade" prompt below) --
+  // starting the input blank instead of on "0" means typing the actual grade straight away.
+  const [text, setText] = useState(gold && !value ? "" : String(value));
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
