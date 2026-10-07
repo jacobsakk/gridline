@@ -67,7 +67,18 @@ function weekCellText(player, week) {
     .join("; ");
 }
 
-function downloadWeeklyCsv(players, weeks, statusOf, filename) {
+function saveCsv(lines, filename) {
+  const blob = new Blob([lines.join("\n")], { type: "text/csv" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// Master Tracker's own export: every week as its own column, same rows/order the grid is showing.
+function downloadMasterCsv(players, weeks, statusOf, filename) {
   const escape = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`;
   const header = ["Name", "Coach", "Pos", "Status", "Yr", "School", "Record", ...weeks.map((w) => weekLabel(fromIso(w)))];
   const lines = [header.map(escape).join(",")];
@@ -84,13 +95,41 @@ function downloadWeeklyCsv(players, weeks, statusOf, filename) {
     ];
     lines.push(row.map(escape).join(","));
   });
-  const blob = new Blob([lines.join("\n")], { type: "text/csv" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  a.click();
-  URL.revokeObjectURL(url);
+  saveCsv(lines, filename);
+}
+
+// Weekly Tracker's own export: one row per player for just this one week, in the exact position-group /
+// status order the Weekly Tracker screen lists them in (see groupForWeeklyTab), with the same This
+// week / Stats / Next week columns that view shows -- not every week, just the one currently selected.
+function downloadWeekCsv(players, week, statusOf, filename) {
+  const escape = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`;
+  const header = ["Group", "Name", "Coach", "Pos", "Status", "Yr", "School", "Record", "This Week", "Result", "Stats", "Next Week"];
+  const lines = [header.map(escape).join(",")];
+  groupForWeeklyTab(players, statusOf).forEach(([key, list]) => {
+    const groupLabel = key === "OTHER" ? "OTHER POSITIONS" : key;
+    list.forEach((p) => {
+      const { game, next } = pickWeekGames(p, week);
+      const thisWeek = game ? `${game.homeAway === "A" ? "@" : "vs"} ${game.opponent} (${mmdd(game.date)})` : "";
+      const result = game?.result ? `${game.result} ${game.ours}-${game.theirs}` : game && game.date < toIso(new Date()) ? "no score reported" : "";
+      const nextWeek = next ? `${next.homeAway === "A" ? "@" : "vs"} ${next.opponent} (${mmdd(next.date)})` : "";
+      const row = [
+        groupLabel,
+        p.name,
+        p.coach || "",
+        p.position || "",
+        STATUS_BY_KEY[statusOf(p)]?.label || "",
+        p.classYear || "",
+        p.highSchool || "",
+        p.record.played ? p.record.text : "",
+        thisWeek,
+        result,
+        game?.summary || "",
+        nextWeek,
+      ];
+      lines.push(row.map(escape).join(","));
+    });
+  });
+  saveCsv(lines, filename);
 }
 
 function ResultChip({ game, big }) {
@@ -624,17 +663,20 @@ function EditableSummary({ value, onSave, placeholder = "No stats yet", rows = 2
   );
 }
 
+// Same grouping the Weekly Tracker displays in: by position group, then within a group by status
+// (committed, offered, offer status, partial, committed elsewhere, no status), then alphabetical.
+// Shared with the weekly CSV export so a download matches the screen exactly.
+function groupForWeeklyTab(players, statusOf) {
+  const map = new Map(POSITION_GROUPS.map((g) => [g.key, []]));
+  map.set("OTHER", []);
+  players.forEach((p) => map.get(groupOf(p.position)).push(p));
+  const rank = new Map(players.map((p) => [p.id, STATUS_ORDER[statusOf(p)] || 99]));
+  map.forEach((list) => list.sort((a, b) => rank.get(a.id) - rank.get(b.id) || (a.name || "").localeCompare(b.name || "")));
+  return [...map.entries()].filter(([, list]) => list.length);
+}
+
 function WeeklyTab({ players, week, statusOf, autoStatusOf, updatePlayer, onGame, onAddGame, updateGame, onOpenPlayer, onProfile, hasProfile }) {
-  const groups = useMemo(() => {
-    const map = new Map(POSITION_GROUPS.map((g) => [g.key, []]));
-    map.set("OTHER", []);
-    players.forEach((p) => map.get(groupOf(p.position)).push(p));
-    // Within a position, the order of the key: committed, offered, offer status, partial,
-    // committed elsewhere, then anyone with no status; alphabetical inside each.
-    const rank = new Map(players.map((p) => [p.id, STATUS_ORDER[statusOf(p)] || 99]));
-    map.forEach((list) => list.sort((a, b) => rank.get(a.id) - rank.get(b.id) || (a.name || "").localeCompare(b.name || "")));
-    return [...map.entries()].filter(([, list]) => list.length);
-  }, [players, statusOf]); // eslint-disable-line react-hooks/exhaustive-deps
+  const groups = useMemo(() => groupForWeeklyTab(players, statusOf), [players, statusOf]);
   const head = { fontSize: 10.5, letterSpacing: "0.1em", color: "var(--text-faint)", textTransform: "uppercase" };
 
   return (
@@ -1652,7 +1694,11 @@ export default function HsGameUpdate({ onBack: toDashboard }) {
               </button>
             )}
             <button onClick={() => setAddOpen(true)} style={{ ...controlStyle, display: "flex", alignItems: "center", gap: 6, cursor: "pointer", fontWeight: 700 }}><Plus size={14} /> Add player</button>
-            <button onClick={() => downloadWeeklyCsv(sortedForMaster, weeks, statusOf, "game-update-week-by-week.csv")} title="Every player, every week -- same rows as Master Tracker's current filters" style={{ ...controlStyle, display: "flex", alignItems: "center", gap: 6, cursor: "pointer", fontWeight: 700 }}><Download size={14} /> Download</button>
+            {tab === "Weekly Tracker" ? (
+              <button onClick={() => downloadWeekCsv(filtered, week, statusOf, `game-update-week-of-${week}.csv`)} title="Just this week, same players/order as the Weekly Tracker" style={{ ...controlStyle, display: "flex", alignItems: "center", gap: 6, cursor: "pointer", fontWeight: 700 }}><Download size={14} /> Download</button>
+            ) : tab === "Master Tracker" ? (
+              <button onClick={() => downloadMasterCsv(sortedForMaster, weeks, statusOf, "game-update-master-tracker.csv")} title="Every player, every week -- same rows as Master Tracker's current filters" style={{ ...controlStyle, display: "flex", alignItems: "center", gap: 6, cursor: "pointer", fontWeight: 700 }}><Download size={14} /> Download</button>
+            ) : null}
             <button onClick={() => window.print()} style={{ ...controlStyle, display: "flex", alignItems: "center", gap: 6, cursor: "pointer", fontWeight: 700 }}><Printer size={14} /> Print</button>
           </span>
         </div>
