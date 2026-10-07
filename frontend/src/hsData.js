@@ -274,7 +274,11 @@ export function teamDocId(sources) {
   return ss ? `ss_${ss[1]}` : "";
 }
 
-const NOISE = new Set(["high", "school", "hs", "the", "of", "academy", "prep", "preparatory"]);
+// A JUCO's name is typed in freehand (there's no scraped source to autofill it from -- see
+// teamDocId's comment on namedTeams below), so "Hutchinson CC", "Hutchinson Community College" and
+// "Hutchinson Junior College" all have to resolve to the same team. Stripping these generic suffixes
+// the same way "high school" already is leaves just the place name to match on.
+const NOISE = new Set(["high", "school", "hs", "the", "of", "academy", "prep", "preparatory", "community", "college", "cc", "jc", "junior"]);
 const ALIASES = { st: "saint", mt: "mount", ft: "fort" };
 function nameTokens(name) {
   const all = new Set(
