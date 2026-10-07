@@ -21,6 +21,12 @@ TE_SUPPLEMENT = {
         {"player": "Tanner Koziol", "team": "Ball St.", "totals": {"games": 12, "rec": 34, "yards": 295, "td": 3}},
         {"player": "TJ Banks", "team": "Akron", "totals": {"games": 12, "rec": 21, "yards": 175, "td": 0}},
         {"player": "Mitchel Collier", "team": "Central Mich.", "totals": {"games": 12, "rec": 10, "yards": 88, "td": 3}},
+        # Added to reach 10 -- ESPN's and each team's own 2023 season stats page, cross-checked.
+        {"player": "Grayson Barnes", "team": "Northern Illinois", "totals": {"games": 13, "rec": 23, "yards": 422, "td": 5}},
+        {"player": "Blake Bosma", "team": "Western Mich.", "totals": {"games": 12, "rec": 20, "yards": 327, "td": 2}},
+        {"player": "Gino Campiotti", "team": "Massachusetts", "totals": {"games": 12, "rec": 21, "yards": 289, "td": 4}},
+        {"player": "Austin Hence", "team": "Western Mich.", "totals": {"games": 12, "rec": 24, "yards": 259, "td": 3}},
+        {"player": "Will Kacmarek", "team": "Ohio", "totals": {"games": 13, "rec": 22, "yards": 243, "td": 2}},
     ],
     "2024": [
         {"player": "Harold Fannin Jr.", "team": "Bowling Green", "totals": {"games": 13, "rec": 117, "yards": 1555, "td": 10}},
@@ -28,6 +34,14 @@ TE_SUPPLEMENT = {
         {"player": "Anthony Torres", "team": "Toledo", "totals": {"games": 13, "rec": 31, "yards": 404, "td": 9}},
         {"player": "Blake Bosma", "team": "Western Mich.", "totals": {"games": 12, "rec": 37, "yards": 403, "td": 6}},
         {"player": "Jacob Orlando", "team": "Buffalo", "totals": {"games": 12, "rec": 11, "yards": 101, "td": 2}},
+        # Added to reach 10 -- ESPN team stats pages for each school's 2024 season, cross-checked against
+        # the school's own athletics site where available. Games played is an estimate for Jacob Newell
+        # and Mason Williams (sources gave a range, not an exact figure) -- their rec/yards/TDs are solid.
+        {"player": "Grayson Barnes", "team": "Northern Illinois", "totals": {"games": 13, "rec": 31, "yards": 338, "td": 4}},
+        {"player": "Jacob Newell", "team": "Akron", "totals": {"games": 10, "rec": 35, "yards": 254, "td": 2}},
+        {"player": "Max Reese", "team": "Eastern Mich.", "totals": {"games": 12, "rec": 27, "yards": 232, "td": 2}},
+        {"player": "Mason Williams", "team": "Ohio", "totals": {"games": 13, "rec": 19, "yards": 211, "td": 2}},
+        {"player": "Gavin Harris", "team": "Central Mich.", "totals": {"games": 10, "rec": 11, "yards": 173, "td": 1}},
     ],
     "2025": [
         {"player": "Jyrin Johnson", "team": "Bowling Green", "totals": {"games": 12, "rec": 37, "yards": 466, "td": 2}},
@@ -35,23 +49,62 @@ TE_SUPPLEMENT = {
         {"player": "Mason Williams", "team": "Ohio", "totals": {"games": 13, "rec": 26, "yards": 276, "td": 3}},
         {"player": "DeCorion Temple", "team": "Central Mich.", "totals": {"games": 12, "rec": 15, "yards": 131, "td": 2}},
         {"player": "Brian Shane", "team": "Miami (OH)", "totals": {"games": 14, "rec": 13, "yards": 116, "td": 2}},
+        # Added to reach 10 -- school athletics sites / ESPN for 2025. Koby Gross's exact games count
+        # wasn't confirmed by any source found; 12 is the typical MAC regular-season length, used as a
+        # placeholder -- his rec/yards/TD are solid.
+        {"player": "Jacob Petersen", "team": "Toledo", "totals": {"games": 13, "rec": 25, "yards": 335, "td": 3}},
+        {"player": "Blake Bosma", "team": "Western Mich.", "totals": {"games": 14, "rec": 26, "yards": 245, "td": 1}},
+        {"player": "Terik Mulder", "team": "Kent St.", "totals": {"games": 10, "rec": 19, "yards": 198, "td": 4}},
+        {"player": "Conner Cravaack", "team": "Akron", "totals": {"games": 12, "rec": 18, "yards": 147, "td": 2}},
+        {"player": "Koby Gross", "team": "Ball St.", "totals": {"games": 12, "rec": 10, "yards": 141, "td": 1}},
     ],
     # No 2026 entry on purpose -- 2026 now pulls straight from real-stats.json (full MAC rosters, not a
     # national leaderboard), which already has every tight end with real production. See
     # mac_best_by_position.py's module docstring and fetch_season_from_real_stats.
 }
-# Same leaderboard-coverage gap as TE above, but narrower: CB 2023's *entire* raw candidate pool (from
-# merging all five NCAA defensive leaderboards) is just 4 players -- nobody else tagged CB on a MAC team
-# cracked any of them that season. Unlike TE, the other two CB seasons (2024: 6 candidates, 2025: 5) don't
-# need this, so this only adds to 2023 rather than replacing the whole group the way TE_SUPPLEMENT does.
-# Sourced from the MAC's own 2023 All-MAC team announcement (getsomemaction.com) plus the player's team
-# reporting on his specific stat line that season.
+# Same leaderboard-coverage gap as TE above. 2023's raw candidate pool (merging all five NCAA defensive
+# leaderboards) was just 4 players; 2024 and 2025 each came in under 10 too (6 and 5). Sourced from each
+# school's athletics site / ESPN team defensive stats pages and All-MAC team announcements, cross-checked
+# per player. Games played is an estimate (typical MAC regular-season length) for entries where no source
+# gave an exact figure -- tackles/PBU/INT are the real, sourced numbers and the only ones the ranking uses.
 CB_SUPPLEMENT = {
     "2023": [
         {"player": "Chris McDonald", "team": "Toledo", "totals": {"games": 12, "total": 34, "pbu": 8, "int": 2}},
+        {"player": "Tyler Potts", "team": "Ball St.", "totals": {"games": 10, "total": 27, "pbu": 6, "int": 2}},
+        {"player": "Yahsyn McKee", "team": "Miami (OH)", "totals": {"games": 14, "total": 58, "pbu": 11, "int": 4}},
+        {"player": "Donte Kent", "team": "Central Mich.", "totals": {"games": 11, "total": 58, "pbu": 7, "int": 0}},
+        {"player": "Kempton Shine", "team": "Eastern Mich.", "totals": {"games": 13, "total": 56, "pbu": 9, "int": 0}},
+        {"player": "Bennett Walker", "team": "Eastern Mich.", "totals": {"games": 10, "total": 23, "pbu": 4, "int": 3}},
+    ],
+    "2024": [
+        {"player": "Raion Strader", "team": "Miami (OH)", "totals": {"games": 12, "total": 53, "pbu": 18, "int": 2}},
+        {"player": "Donte Kent", "team": "Central Mich.", "totals": {"games": 12, "total": 53, "pbu": 9, "int": 0}},
+        {"player": "JaVaughn Byrd", "team": "Northern Illinois", "totals": {"games": 12, "total": 39, "pbu": 3, "int": 0}},
+        {"player": "Darrian Lewis", "team": "Akron", "totals": {"games": 12, "total": 74, "pbu": 6, "int": 1}},
+    ],
+    "2025": [
+        {"player": "Kalen Carroll", "team": "Central Mich.", "totals": {"games": 12, "total": 47, "pbu": 7, "int": 1}},
+        {"player": "Elijah Reed", "team": "Akron", "totals": {"games": 12, "total": 47, "pbu": 4, "int": 2}},
+        {"player": "Willizhuan Yates", "team": "Ball St.", "totals": {"games": 10, "total": 34, "pbu": 6, "int": 1}},
+        {"player": "Donte Harrison", "team": "Northern Illinois", "totals": {"games": 10, "total": 30, "pbu": 6, "int": 1}},
+        {"player": "Joshua Scott", "team": "Eastern Mich.", "totals": {"games": 11, "total": 29, "pbu": 4, "int": 1}},
     ],
     # No 2026 entry on purpose, same reason as TE_SUPPLEMENT above -- real-stats.json's MAC CB pool is a
-    # full roster (dozens of corners), not the 2 the NCAA leaderboard carried.
+    # full roster (dozens of corners), not the handful the NCAA leaderboard carried.
+}
+# QB and WR only come up short in one season each (see mac_best_by_position.py's print output) -- these
+# fill exactly those gaps, same sourcing standard as TE_SUPPLEMENT/CB_SUPPLEMENT above (ESPN/school
+# athletics site season stats, cross-checked).
+QB_SUPPLEMENT = {
+    "2023": [
+        {"player": "Brett Gabbert", "team": "Miami (OH)", "totals": {"games": 8, "att": 187, "yards": 1634, "td": 14, "int": 5, "rushYards": 140, "rushTd": 2}},
+        {"player": "Hayden Wolff", "team": "Western Mich.", "totals": {"games": 8, "att": 226, "yards": 1505, "td": 8, "int": 5, "rushYards": 17, "rushTd": 2}},
+    ],
+}
+WR_SUPPLEMENT = {
+    "2025": [
+        {"player": "Nick Devereaux", "team": "Eastern Mich.", "totals": {"games": 10, "rec": 34, "yards": 510, "td": 7}},
+    ],
 }
 HUDL_LINKS.update({
     "KURTIS ROURKE": "https://www.hudl.com/profile/5350951",

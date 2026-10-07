@@ -33,7 +33,7 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from ncaa_api import build_division_rows
-from studies._hudl_links import HUDL_LINKS, PFF_LINKS, TE_SUPPLEMENT, CB_SUPPLEMENT
+from studies._hudl_links import HUDL_LINKS, PFF_LINKS, TE_SUPPLEMENT, CB_SUPPLEMENT, QB_SUPPLEMENT, WR_SUPPLEMENT
 from studies._stat_overrides import STAT_OVERRIDES
 from studies._home_states import HOME_STATES
 
@@ -179,6 +179,17 @@ def build():
                     totals = {k: e["totals"].get(k, 0) for k in cfg["stats"]}
                     ranked.append({
                         "player": e["player"], "team": e["team"], "position": "CB", "season": int(season),
+                        "totals": totals, "score": round(cfg["score"](totals), 1),
+                        "hudlLink": HUDL_LINKS.get(e["player"].upper(), ""), "pffLink": PFF_LINKS.get(e["player"].upper(), ""),
+                        "state": HOME_STATES.get(e["player"].upper(), ""),
+                    })
+            if group_key in ("QB", "WR"):
+                # Same additive top-up as CB above, for the one season each of these came in under TOP_N.
+                supplement = QB_SUPPLEMENT if group_key == "QB" else WR_SUPPLEMENT
+                for e in supplement.get(season, []):
+                    totals = {k: e["totals"].get(k, 0) for k in cfg["stats"]}
+                    ranked.append({
+                        "player": e["player"], "team": e["team"], "position": group_key, "season": int(season),
                         "totals": totals, "score": round(cfg["score"](totals), 1),
                         "hudlLink": HUDL_LINKS.get(e["player"].upper(), ""), "pffLink": PFF_LINKS.get(e["player"].upper(), ""),
                         "state": HOME_STATES.get(e["player"].upper(), ""),
