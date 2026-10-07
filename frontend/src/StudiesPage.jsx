@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { ChevronRight, Download, Loader2, Paperclip, Plus, Trash2, X } from "lucide-react";
+import { ChevronRight, ClipboardPaste, Download, Loader2, Paperclip, Plus, Trash2, X } from "lucide-react";
 import { BackButton, HomeButton } from "./HomeButton.jsx";
 import { ThemeSwitcher, useTheme } from "./theme.jsx";
 import { useBack, initialSubRoute, setSubRoute } from "./route.js";
@@ -270,6 +270,76 @@ function StatCell({ value, canEdit, onSave, accent }) {
   );
 }
 
+// Bulk-loads a manual group's rows from a table copy-pasted straight out of PFF's site (select the
+// rows, Ctrl/Cmd+C, paste here -- a browser table copy comes through tab-separated, same as any
+// spreadsheet). Meant to be reused every week PFF's grades refresh, not just once: see study.pasteTable.
+function PasteTableModal({ onClose, onSubmit }) {
+  const [text, setText] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+  const [result, setResult] = useState(null);
+
+  async function submit() {
+    setSaving(true);
+    setError("");
+    try {
+      const r = await onSubmit(text);
+      setResult(r);
+    } catch (err) {
+      setError(err?.message || "Couldn't read that table -- try again.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div onClick={onClose} style={{ position: "fixed", inset: 0, height: "auto", zIndex: 100, background: "rgba(0,0,0,0.6)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+      <div
+        role="dialog"
+        aria-modal="true"
+        onClick={(e) => e.stopPropagation()}
+        style={{ position: "relative", background: "var(--bg-panel)", border: "1px solid var(--border)", borderRadius: 10, width: 560, maxWidth: "100%", padding: "22px 24px", color: "var(--text-primary)", boxShadow: "0 18px 48px rgba(0,0,0,0.5)", display: "flex", flexDirection: "column", gap: 12 }}
+      >
+        <button onClick={onClose} aria-label="Close" style={{ position: "absolute", top: 14, right: 14, background: "none", border: "none", color: "var(--text-faint)", cursor: "pointer", lineHeight: 0 }}>
+          <X size={16} />
+        </button>
+        <h2 className="oswald" style={{ fontSize: 17, fontWeight: 700, margin: 0 }}>Paste a table</h2>
+        {result ? (
+          <>
+            <p style={{ margin: 0, fontSize: 13.5, color: "var(--success)" }}>
+              {result.created} added, {result.updated} updated ({result.total} row{result.total === 1 ? "" : "s"} read).
+            </p>
+            <div style={{ display: "flex", justifyContent: "flex-end" }}>
+              <button onClick={onClose} style={{ ...ghostBtn, background: "var(--accent)", color: "var(--bg-page)", border: "none" }}>Done</button>
+            </div>
+          </>
+        ) : (
+          <>
+            <p style={{ margin: 0, fontSize: 12.5, color: "var(--text-muted)", lineHeight: 1.5 }}>
+              Select a table on PFF's site (including the header row), copy it, and paste it below. Matched by Name and Team -- a player already on this list has their snaps/grade updated in place; a new name gets added. Nothing already here is ever removed by this.
+            </p>
+            <textarea
+              autoFocus
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              rows={10}
+              placeholder="Paste the copied table here…"
+              style={{ ...control, padding: "8px 11px", fontSize: 12.5, fontFamily: "monospace", resize: "vertical" }}
+            />
+            {error && <span style={{ fontSize: 12, color: "var(--danger, #c0392b)" }}>{error}</span>}
+            <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
+              <button onClick={onClose} style={ghostBtn}>Cancel</button>
+              <button onClick={submit} disabled={saving || !text.trim()} style={{ ...ghostBtn, background: "var(--accent)", color: "var(--bg-page)", border: "none", opacity: saving || !text.trim() ? 0.6 : 1 }}>
+                {saving ? "Reading…" : "Import"}
+              </button>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function StudyDetail({ studyId, canEdit, onBack }) {
   const study = useStudy(studyId);
   const [initial] = useState(initialSubRoute);
@@ -277,6 +347,7 @@ function StudyDetail({ studyId, canEdit, onBack }) {
   const [season, setSeason] = useState(() => (/^\d{4}$/.test(initial[2]) ? Number(initial[2]) : null));
   const [sort, setSort] = useState({ key: "score", dir: "desc" });
   const [explainRow, setExplainRow] = useState(null);
+  const [pasting, setPasting] = useState(false);
 
   const activeGroup = study.meta.groups.find((g) => g.key === group);
   const seasons = study.seasons;
@@ -343,6 +414,9 @@ function StudyDetail({ studyId, canEdit, onBack }) {
         <div style={{ display: "flex", gap: 8 }}>
           {canEdit && (
             <button onClick={addPlayer} style={ghostBtn}><Plus size={14} /> Add player</button>
+          )}
+          {canEdit && activeGroup.manual && (
+            <button onClick={() => setPasting(true)} style={ghostBtn}><ClipboardPaste size={14} /> Paste table</button>
           )}
           <button onClick={() => downloadCsv(sorted, columns, `${study.meta.id}-${group}-${activeSeason}.csv`)} style={ghostBtn}><Download size={14} /> Download</button>
         </div>
@@ -473,6 +547,7 @@ function StudyDetail({ studyId, canEdit, onBack }) {
       )}
       {study.meta.note && <p style={{ margin: 0, fontSize: 12, color: "var(--text-faint)", lineHeight: 1.5 }}>{study.meta.note}</p>}
       {explainRow && <ScoreExplainer row={explainRow} group={activeGroup} onClose={() => setExplainRow(null)} />}
+      {pasting && <PasteTableModal onClose={() => setPasting(false)} onSubmit={(text) => study.pasteTable(group, activeSeason, text)} />}
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import { collection, deleteDoc, doc, onSnapshot, setDoc } from "firebase/firestore";
+import { collection, deleteDoc, doc, onSnapshot, setDoc, writeBatch } from "firebase/firestore";
 import { useEffect, useMemo, useState } from "react";
 import { db } from "./firebase";
 
@@ -36,6 +36,61 @@ export const STUDIES = [
 ];
 
 const norm = (t) => String(t ?? "").toUpperCase().trim();
+
+// How PFF spells a MAC team vs. how this study already does (mac_best_by_position.py's own team
+// labels) -- only needed for pasted PFF tables, since every other source already uses these labels.
+const PFF_TEAM_ALIASES = {
+  TOLEDO: "Toledo", BUFFALO: "Buffalo", OHIO: "Ohio", AKRON: "Akron", MASSACHUSETTS: "Massachusetts", UMASS: "Massachusetts",
+  "MIAMI OH": "Miami (OH)", "N ILLINOIS": "Northern Illinois", "NORTHERN ILLINOIS": "Northern Illinois",
+  "W MICHIGAN": "Western Mich.", "WESTERN MICHIGAN": "Western Mich.", "E MICHIGAN": "Eastern Mich.", "EASTERN MICHIGAN": "Eastern Mich.",
+  "BOWL GREEN": "Bowling Green", "BOWLING GREEN": "Bowling Green", "KENT ST": "Kent St.", "KENT STATE": "Kent St.",
+  "BALL ST": "Ball St.", "BALL STATE": "Ball St.", "CENT MICHIGAN": "Central Mich.", "CENTRAL MICHIGAN": "Central Mich.", CMU: "Central Mich.",
+  "SAC ST": "Sac State", "SAC STATE": "Sac State",
+};
+function normalizePffTeam(raw) {
+  return PFF_TEAM_ALIASES[norm(raw).replace(/\s+/g, " ")] || String(raw || "").trim();
+}
+
+// Reads a table copy-pasted straight out of PFF's site -- selecting a table in a browser and pasting
+// into a plain textarea comes through tab-separated, same as any spreadsheet copy. Matched by header
+// name, not column position, so PFF's extra columns this study doesn't track (Rank, #, Pos, Run, Pass,
+// RBLK, PBLK) are simply ignored rather than needing to line up exactly.
+export function parsePffTable(text) {
+  const lines = String(text || "").split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+  const splitLine = (line) => (line.includes("\t") ? line.split("\t") : line.split(/ {2,}/)).map((c) => c.trim());
+  const headerIndex = lines.findIndex((l) => {
+    const cells = splitLine(l).map((c) => c.toUpperCase());
+    return cells.includes("NAME") && cells.includes("TEAM");
+  });
+  if (headerIndex < 0) {
+    throw Object.assign(new Error("Couldn't find a NAME/TEAM header row -- copy the table's header row along with the data."), { code: "bad-request" });
+  }
+  const header = splitLine(lines[headerIndex]).map((c) => c.toUpperCase());
+  const col = (...names) => {
+    for (const n of names) {
+      const i = header.indexOf(n);
+      if (i >= 0) return i;
+    }
+    return -1;
+  };
+  const nameCol = col("NAME");
+  const teamCol = col("TEAM");
+  const snapsCol = col("OFF", "DEF", "SNAPS");
+  const gradeCol = col("OFF GRD", "OFF GRADE", "DEF GRD", "DEF GRADE", "GRADE");
+  if (nameCol < 0 || teamCol < 0) {
+    throw Object.assign(new Error("Couldn't find NAME and TEAM columns in that header row."), { code: "bad-request" });
+  }
+  return lines
+    .slice(headerIndex + 1)
+    .map(splitLine)
+    .filter((cells) => cells[nameCol])
+    .map((cells) => ({
+      player: cells[nameCol] || "",
+      team: normalizePffTeam(cells[teamCol]),
+      snaps: snapsCol >= 0 ? Number(cells[snapsCol]) || 0 : 0,
+      pffGrade: gradeCol >= 0 ? Number(cells[gradeCol]) || 0 : 0,
+    }));
+}
 
 // Loads one study's bundled data, merged with any admin-edited fields (a Hudl link, say) stored in
 // Firestore under studyOverrides -- keyed by studyId, so those edits survive the JSON being regenerated,
@@ -206,6 +261,38 @@ export function useStudy(studyId) {
     // one season rather than deleting anything, since there's nothing to delete; see the filter above.
     async excludePlayer(group, season, player) {
       await setDoc(doc(db, "studyOverrides", statsOverrideKey(group, season, player)), { excluded: true }, { merge: true });
+    },
+    // Bulk-loads a pasted PFF table (see parsePffTable) into a manual group's rows for one season --
+    // meant to be re-run every time PFF's grades refresh, not just once: a player already on the list
+    // (matched by name) gets their team/snaps/grade UPDATED in place rather than duplicated, and a name
+    // not seen before becomes a new row. Nothing already on the list is ever removed by this.
+    async pasteTable(group, season, text) {
+      const rows = parsePffTable(text);
+      const seasonKey = String(season);
+      const existingByName = new Map();
+      Object.values(manualRows).forEach((r) => {
+        if (r.group === group && String(r.season) === seasonKey) existingByName.set(norm(r.player), r);
+      });
+      const batch = writeBatch(db);
+      let created = 0;
+      let updated = 0;
+      rows.forEach((row) => {
+        if (!row.player) return;
+        const existing = existingByName.get(norm(row.player));
+        if (existing) {
+          batch.set(doc(db, "studyManualRows", existing.id), { team: row.team, snaps: row.snaps, pffGrade: row.pffGrade }, { merge: true });
+          updated += 1;
+        } else {
+          const id = `${studyId}__${group}__${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}${Math.random().toString(36).slice(2, 5)}`;
+          batch.set(doc(db, "studyManualRows", id), {
+            group, season: Number(season), player: row.player, team: row.team, state: "", hudlLink: "", pffLink: "",
+            games: 0, snaps: row.snaps, pffGrade: row.pffGrade, createdAt: new Date().toISOString(),
+          });
+          created += 1;
+        }
+      });
+      await batch.commit();
+      return { created, updated, total: rows.length };
     },
   };
 }
