@@ -195,7 +195,7 @@ function ScoreExplainer({ row, group, onClose }) {
 // this study keeps needing it: a source (the NCAA leaderboard for 2023-2025, ESPN's roster API for
 // 2026) is occasionally wrong for one player -- rather than waiting on a code fix, it's corrected here.
 // Same click-to-edit shape as StateCell, but numeric and always has *some* value to show (0, not a dash).
-function StatCell({ value, canEdit, onSave }) {
+function StatCell({ value, canEdit, onSave, gold }) {
   const [editing, setEditing] = useState(false);
   const [text, setText] = useState(String(value));
   const [saving, setSaving] = useState(false);
@@ -246,7 +246,11 @@ function StatCell({ value, canEdit, onSave }) {
     );
   }
   return (
-    <span onClick={() => canEdit && setEditing(true)} title={canEdit ? "Click to correct" : undefined} style={{ cursor: canEdit ? "pointer" : "default" }}>
+    <span
+      onClick={() => canEdit && setEditing(true)}
+      title={canEdit ? "Click to correct" : undefined}
+      style={{ cursor: canEdit ? "pointer" : "default", color: gold && value ? "var(--gold)" : undefined, fontWeight: gold && value ? 700 : undefined }}
+    >
       {value}
     </span>
   );
@@ -413,6 +417,7 @@ function StudyDetail({ studyId, canEdit, onBack }) {
                       <StatCell
                         value={r.totals[s.key] ?? 0}
                         canEdit={canEdit}
+                        gold={s.key === "pffGrade"}
                         onSave={(value) => (isManualRow ? study.updateManualRow(r.id, { [s.key]: value }) : study.saveStat(group, activeSeason, r.player, s.key, value))}
                       />
                     </td>
