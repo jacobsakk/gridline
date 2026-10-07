@@ -218,7 +218,7 @@ function PipelineSelect({ value, onCommit, width }) {
   );
 }
 
-function UploadModal({ classYears, onClose, onImport }) {
+function UploadModal({ classYears, defaultJuco, onClose, onImport }) {
   // Defaults to the most recent graduating class, not just the last entry in the list -- "JUCO" always
   // sorts last (see offerData.js's classYears) but isn't what most uploads are for, so it's excluded
   // from this default and left to be typed in deliberately.
@@ -228,6 +228,10 @@ function UploadModal({ classYears, onClose, onImport }) {
   const [state, setState] = useState("idle"); // idle | working | done | error
   const [summary, setSummary] = useState(null);
   const [error, setError] = useState(null);
+  // A JUCO feed is the same CSV shape as any activity feed (Name/Grad Year/Recruiting College), just
+  // routed to the one "JUCO" tab instead of each row's own Grad Year -- see importActivityFeed's
+  // forceClassYear. Pre-checked when the modal was opened from the JUCO tab, but always changeable.
+  const [jucoFeed, setJucoFeed] = useState(!!defaultJuco);
 
   const isFeed = !!file && /\.csv$/i.test(file.name);
 
@@ -237,7 +241,7 @@ function UploadModal({ classYears, onClose, onImport }) {
     setState("working");
     setError(null);
     try {
-      const result = await onImport(file, classYear.trim(), isFeed);
+      const result = await onImport(file, classYear.trim(), isFeed, isFeed && jucoFeed);
       setSummary(result);
       setState("done");
     } catch (err) {
@@ -328,9 +332,17 @@ function UploadModal({ classYears, onClose, onImport }) {
                 />
               </>
             )}
+            {isFeed && (
+              <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "var(--text-secondary)", marginBottom: 16, cursor: "pointer" }}>
+                <input type="checkbox" checked={jucoFeed} onChange={(e) => setJucoFeed(e.target.checked)} />
+                This is a JUCO board (every row lands on the JUCO tab, not its own Grad Year's tab)
+              </label>
+            )}
             <p style={{ fontSize: 12, color: "var(--text-faint)", marginTop: 0 }}>
               {isFeed
-                ? "Activity feed: every class year in the file is handled together (it has a Grad Year column). Nothing is replaced -- new offers are added, blanks are filled in, and commitments update that recruit on every sheet. Pipeline and notes are left alone."
+                ? jucoFeed
+                  ? "JUCO board: every row lands on the JUCO tab regardless of its own Grad Year (that's kept as a separate field). Nothing is replaced -- new offers are added, blanks filled in, and commitments update that recruit everywhere."
+                  : "Activity feed: every class year in the file is handled together (it has a Grad Year column). Nothing is replaced -- new offers are added, blanks are filled in, and commitments update that recruit on every sheet. Pipeline and notes are left alone."
                 : "Workbook: each recognized team tab replaces that team's rows for this class year, so a player dropped from the export won't linger. Assignments, Questionnaire and breakdown tabs are skipped."}
             </p>
             {error && <p style={{ fontSize: 13, color: "var(--danger)" }}>{error}</p>}
@@ -1118,6 +1130,80 @@ function parseOfferDate(value) {
   return Number.isNaN(t) ? null : t;
 }
 
+// The JUCO tab's own layout: unlike every other tab (one team's board at a time), this is a single
+// continuous feed across every recruiting college at once, newest interest first -- a JUCO transfer's
+// own grad year varies player to player, so it's its own column rather than the tab itself. Filterable
+// down to one recruiting college, but shows all of them by default.
+function JucoFeedTable({ rows, theme, teamFilter, setTeamFilter, teamOptions, onOpenProfile, onEdit, onRemove }) {
+  const sorted = useMemo(() => [...rows].sort((a, b) => (parseOfferDate(b.dateOffered) || 0) - (parseOfferDate(a.dateOffered) || 0)), [rows]);
+  const th = { textAlign: "left", padding: "9px 10px", fontSize: 11, color: "var(--text-faint)", textTransform: "uppercase", letterSpacing: "0.03em", whiteSpace: "nowrap", position: "sticky", top: 0, background: "var(--bg-surface)", zIndex: 1 };
+  const td = { padding: "8px 10px", fontSize: 13, color: "var(--text-secondary)", borderTop: "1px solid var(--border-subtle)", verticalAlign: "top" };
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 10, flex: 1, minHeight: 0 }}>
+      <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap", flexShrink: 0 }}>
+        <select value={teamFilter} onChange={(e) => setTeamFilter(e.target.value)} style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", color: "var(--text-primary)", borderRadius: 5, padding: "7px 10px", fontSize: 13, fontFamily: "inherit", cursor: "pointer" }}>
+          <option value="">All Recruiting Colleges</option>
+          {teamOptions.map((t) => (
+            <option key={t.team} value={t.team}>{t.label}</option>
+          ))}
+        </select>
+        <span style={{ fontSize: 12.5, color: "var(--text-faint)" }}>{sorted.length} row{sorted.length === 1 ? "" : "s"}</span>
+      </div>
+      <div style={{ flex: 1, minHeight: 0, overflow: "auto", border: "1px solid var(--border)", borderRadius: 6 }}>
+        <table style={{ width: "100%", borderCollapse: "collapse" }}>
+          <thead>
+            <tr>
+              <th style={th}>Athlete</th>
+              <th style={th}>Current School</th>
+              <th style={th}>Grad Year</th>
+              <th style={th}>Recruiting College</th>
+              <th style={th}>Date</th>
+              <th style={th}> </th>
+            </tr>
+          </thead>
+          <tbody>
+            {sorted.length === 0 && (
+              <tr>
+                <td colSpan={6} style={{ ...td, textAlign: "center", color: "var(--text-faint)", padding: 32 }}>No JUCO rows yet.</td>
+              </tr>
+            )}
+            {sorted.map((r) => {
+              const college = collegeForLabel(r.teamLabel);
+              const measurables = [r.position, r.height, r.weight].filter(Boolean).join(" | ");
+              return (
+                <tr key={r.id}>
+                  <td style={td}>
+                    <div className="player-name" onClick={() => onOpenProfile(r.player)} style={{ fontWeight: 700, color: "var(--text-primary)", cursor: "pointer" }}>{toTitleCase(r.player)}</div>
+                    {measurables && <div style={{ fontSize: 11.5, color: "var(--text-faint)" }}>{measurables}</div>}
+                  </td>
+                  <td style={td}>
+                    <div>{toTitleCase(r.highSchool)}</div>
+                    {r.hometown && <div style={{ fontSize: 11.5, color: "var(--text-faint)" }}>{toTitleCase(r.hometown)}</div>}
+                  </td>
+                  <td style={td} className="tabular">{r.gradYear || "—"}</td>
+                  <td style={td}>
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+                      {college && (
+                        <img src={logoFor(college, theme)} alt="" style={{ width: 22, height: 22, objectFit: "contain", flexShrink: 0 }} onError={(e) => { e.currentTarget.style.display = "none"; }} />
+                      )}
+                      {r.teamLabel}
+                    </span>
+                  </td>
+                  <td style={td} className="tabular">{r.dateOffered}</td>
+                  <td style={{ ...td, textAlign: "right" }}>
+                    <RemoveOfferButton row={r} onRemove={onRemove} />
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
 export default function OfferTracker({ onBack: toDashboard }) {
   const back = useBack(toDashboard);
   const [theme, setTheme] = useTheme();
@@ -1135,6 +1221,7 @@ export default function OfferTracker({ onBack: toDashboard }) {
   const [search, setSearch] = useState("");
   const [stateFilter, setStateFilter] = useState("");
   const [positionFilter, setPositionFilter] = useState("");
+  const [jucoTeamFilter, setJucoTeamFilter] = useState("");
   const [commitsOnly, setCommitsOnly] = useState(false);
   const [profilePlayer, setProfilePlayer] = useState(null);
   const [adding, setAdding] = useState(false);
@@ -1208,6 +1295,16 @@ export default function OfferTracker({ onBack: toDashboard }) {
     () => (activeTeamMeta && !searching ? allTeamRows.filter((r) => isCommittedTo(r.status, activeTeamMeta.label)).length : 0),
     [allTeamRows, activeTeamMeta, searching]
   );
+
+  // JUCO's own flat feed -- every recruiting college at once (see JucoFeedTable), not one team's board
+  // at a time, so this pulls straight from rowsForClassYear regardless of searching/activeTeam.
+  const isJuco = activeClassYear === "JUCO";
+  const jucoAllRows = useMemo(() => (isJuco ? tracker.rowsForClassYear("JUCO") : []), [isJuco, tracker]);
+  const jucoTeamOptions = useMemo(() => {
+    const present = new Set(jucoAllRows.map((r) => r.team));
+    return [...present].map((team) => ({ team, label: TEAM_CONFERENCE[team]?.label || team })).sort((a, b) => a.label.localeCompare(b.label));
+  }, [jucoAllRows]);
+  const jucoRows = useMemo(() => (jucoTeamFilter ? jucoAllRows.filter((r) => r.team === jucoTeamFilter) : jucoAllRows), [jucoAllRows, jucoTeamFilter]);
 
   const teamRows = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -1349,7 +1446,7 @@ export default function OfferTracker({ onBack: toDashboard }) {
           <div style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column", padding: "16px var(--gutter) 0" }}>
             <div style={{ display: "flex", gap: 8, marginBottom: 16, flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", flexShrink: 0 }}>
               <div style={{ display: "flex", gap: 6 }}>
-                {CONFERENCE_ORDER.map((c) => (
+                {!isJuco && CONFERENCE_ORDER.map((c) => (
                   <button
                     key={c}
                     onClick={() => {
@@ -1387,7 +1484,17 @@ export default function OfferTracker({ onBack: toDashboard }) {
               </div>
             </div>
 
-            {subView === "teams" ? (
+            {isJuco && subView === "teams" ? (
+              <JucoFeedTable
+                rows={jucoRows}
+                theme={theme}
+                teamFilter={jucoTeamFilter}
+                setTeamFilter={setJucoTeamFilter}
+                teamOptions={jucoTeamOptions}
+                onOpenProfile={(player) => setProfilePlayer(player)}
+                onRemove={(row) => tracker.removeOffer(row)}
+              />
+            ) : subView === "teams" ? (
               <>
                 <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 12, flexShrink: 0 }}>
                   {teams.map(({ team, label, color }) => {
@@ -1580,10 +1687,11 @@ export default function OfferTracker({ onBack: toDashboard }) {
       {uploadOpen && (
         <UploadModal
           classYears={tracker.classYears}
+          defaultJuco={activeClassYear === "JUCO"}
           onClose={() => setUploadOpen(false)}
-          onImport={async (file, cy, isFeed) => {
+          onImport={async (file, cy, isFeed, forceJuco) => {
             if (isFeed) {
-              const result = await tracker.importActivityFeed(file);
+              const result = await tracker.importActivityFeed(file, { forceClassYear: forceJuco ? "JUCO" : null });
               if (result.years.length) setClassYear(result.years[0]);
               return result;
             }

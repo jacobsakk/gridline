@@ -534,7 +534,12 @@ function feedDateToText(iso) {
 // dates, and are only filled in where blank; new offers become new rows;
 // and a commitment (or a de-commit) applies to that recruit on every
 // sheet, since it's a fact about the player.
-export async function importActivityFeed(file, { dryRun = false } = {}) {
+// `forceClassYear`: JUCO transfers come from the same feed export, but their actual Grad Year varies
+// player to player while all of them belong on the single "JUCO" tab (not a graduating-class tab) -- so
+// this routes every row to classYear "JUCO" while keeping each player's real Grad Year in a separate
+// `gradYear` field instead of overloading classYear with it. Pass "JUCO" when the upload is a JUCO
+// board; omit it for a normal graduating-class feed, where Grad Year IS the classYear as before.
+export async function importActivityFeed(file, { dryRun = false, forceClassYear = null } = {}) {
   const text = await file.text();
   const workbook = XLSX.read(text, { type: "string", raw: true });
   const feedRows = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { defval: "", raw: true }).map((r) => {
@@ -557,7 +562,7 @@ export async function importActivityFeed(file, { dryRun = false } = {}) {
       return;
     }
     if (!r["Name"] || !r["Grad Year"]) return;
-    events.push({ ...r, team, classYear: r["Grad Year"], day: r["Date"].slice(0, 10) });
+    events.push({ ...r, team, classYear: forceClassYear || r["Grad Year"], gradYear: forceClassYear ? r["Grad Year"] : "", day: r["Date"].slice(0, 10) });
   });
   summary.skippedColleges = [...skipped];
 
@@ -631,6 +636,12 @@ export async function importActivityFeed(file, { dryRun = false } = {}) {
     const cleanSchool = e["Current School"].replace(/\s*\([A-Za-z]{2}\)\s*$/, "").trim();
     const position = normalizePosition(e["Position"]);
     const dateText = feedDateToText(e.offerDay || e.day);
+    // Best-effort, optional columns -- not every feed export has these, and the exact header spelling
+    // for a JUCO-specific export hasn't been confirmed against a real file yet (see importActivityFeed's
+    // JSDoc-style comment above). Blank if the column isn't present; never guessed.
+    const height = e["Height"] || e["Ht"] || "";
+    const weight = e["Weight"] || e["Wt"] || "";
+    const hometown = e["Hometown"] || e["Home Town"] || "";
     const found = existingByTeamPlayer.get(k);
     if (found && found.removed) return;
     if (found) {
@@ -639,6 +650,10 @@ export async function importActivityFeed(file, { dryRun = false } = {}) {
       if (!found.state && e["School State"]) fill.state = e["School State"].toUpperCase();
       if (!found.position && position) fill.position = position;
       if (!found.dateOffered && dateText) fill.dateOffered = dateText;
+      if (!found.gradYear && e.gradYear) fill.gradYear = e.gradYear;
+      if (!found.height && height) fill.height = height;
+      if (!found.weight && weight) fill.weight = weight;
+      if (!found.hometown && hometown) fill.hometown = hometown;
       // The feed spells the name correctly; the boards often don't.
       if (found.player !== e["Name"].toUpperCase()) fill.player = e["Name"].toUpperCase();
       if (Object.keys(fill).length) {
@@ -654,6 +669,10 @@ export async function importActivityFeed(file, { dryRun = false } = {}) {
         state: (e["School State"] || "").toUpperCase(),
         position,
         dateOffered: dateText,
+        gradYear: e.gradYear || "",
+        height,
+        weight,
+        hometown,
         status: "",
         pipelineStatus: "",
         notes: "",
