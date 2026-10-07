@@ -1154,7 +1154,7 @@ function JucoFeedTable({ rows, theme, teamFilter, setTeamFilter, teamOptions, on
         <table style={{ width: "100%", borderCollapse: "collapse" }}>
           <thead>
             <tr>
-              <th style={th}>Athlete</th>
+              <th style={th}>Player</th>
               <th style={th}>Current School</th>
               <th style={th}>Grad Year</th>
               <th style={th}>Recruiting College</th>
