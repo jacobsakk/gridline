@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { BackButton, HomeButton } from "./HomeButton.jsx";
-import { AlertTriangle, ArrowDown, Camera, GripVertical, ArrowUp, ChevronLeft, ChevronRight, Eye, EyeOff, FileText, Loader2, Pencil, Plus, Printer, Search, Trash2, Upload, X } from "lucide-react";
+import { AlertTriangle, ArrowDown, Camera, Download, GripVertical, ArrowUp, ChevronLeft, ChevronRight, Eye, EyeOff, FileText, Loader2, Pencil, Plus, Printer, Search, Trash2, Upload, X } from "lucide-react";
 import { ThemeSwitcher, useTheme } from "./theme.jsx";
 import { confirmAction } from "./ConfirmDialog.jsx";
 import { firstNameKey, lastNameKey, normalizePlayerKey, normalizePosition, useOfferTracker } from "./offerData.js";
@@ -50,6 +50,48 @@ const mmdd = (iso) => {
   const d = fromIso(iso);
   return d ? d.toLocaleDateString([], { weekday: "short", month: "short", day: "numeric" }) : "";
 };
+
+// One week's cell as plain text, same information the Master Tracker grid shows for it (opponent,
+// score once there is one, the hand-typed stat summary if any) -- more than one game in a week is rare
+// but joined rather than dropped.
+function weekCellText(player, week) {
+  const inWeek = player.games.filter((g) => g.date && weekKey(fromIso(g.date)) === week);
+  if (!inWeek.length) return "";
+  return inWeek
+    .map((g) => {
+      const vs = `${g.homeAway === "A" ? "@" : "vs"} ${g.opponent}`;
+      const score = g.result ? ` — ${g.result} ${g.ours}-${g.theirs}` : g.date < toIso(new Date()) ? " — no score reported" : "";
+      const summary = g.summary ? ` — ${g.summary}` : "";
+      return `${vs}${score}${summary}`;
+    })
+    .join("; ");
+}
+
+function downloadWeeklyCsv(players, weeks, statusOf, filename) {
+  const escape = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`;
+  const header = ["Name", "Coach", "Pos", "Status", "Yr", "School", "Record", ...weeks.map((w) => weekLabel(fromIso(w)))];
+  const lines = [header.map(escape).join(",")];
+  players.forEach((p) => {
+    const row = [
+      p.name,
+      p.coach || "",
+      p.position || "",
+      STATUS_BY_KEY[statusOf(p)]?.label || "",
+      p.classYear || "",
+      p.highSchool || "",
+      p.record.played ? p.record.text : "",
+      ...weeks.map((w) => weekCellText(p, w)),
+    ];
+    lines.push(row.map(escape).join(","));
+  });
+  const blob = new Blob([lines.join("\n")], { type: "text/csv" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
 
 function ResultChip({ game, big }) {
   if (!game?.result) return null;
@@ -1610,6 +1652,7 @@ export default function HsGameUpdate({ onBack: toDashboard }) {
               </button>
             )}
             <button onClick={() => setAddOpen(true)} style={{ ...controlStyle, display: "flex", alignItems: "center", gap: 6, cursor: "pointer", fontWeight: 700 }}><Plus size={14} /> Add player</button>
+            <button onClick={() => downloadWeeklyCsv(sortedForMaster, weeks, statusOf, "game-update-week-by-week.csv")} title="Every player, every week -- same rows as Master Tracker's current filters" style={{ ...controlStyle, display: "flex", alignItems: "center", gap: 6, cursor: "pointer", fontWeight: 700 }}><Download size={14} /> Download</button>
             <button onClick={() => window.print()} style={{ ...controlStyle, display: "flex", alignItems: "center", gap: 6, cursor: "pointer", fontWeight: 700 }}><Printer size={14} /> Print</button>
           </span>
         </div>
