@@ -275,10 +275,13 @@ export function useStudy(studyId) {
     // be re-run every time PFF's grades refresh, not just once. A pasted name is correlated against
     // whoever's already shown for this group/season first: a real (computed) row gets its grade written
     // through the same per-season override doc saveStat already uses (a correction, not a new row,
-    // exactly like fixing any other stat by hand); a hand-added row gets its own doc updated in place;
-    // a name that matches neither becomes a brand new hand-added row. Nothing already on the list is
-    // ever removed by this.
+    // exactly like fixing any other stat by hand); a hand-added row gets its own doc updated in place.
+    // A name that matches neither only becomes a brand new row for a manual group (OL, which has no
+    // leaderboard at all so pasting IS how a row gets added) -- every other group just skips an
+    // unmatched name, since pasting a grade there is meant to correct who's already on the list, not
+    // grow it. Nothing already on the list is ever removed by this.
     async pasteTable(group, season, text) {
+      const groupMeta = meta.groups.find((g) => g.key === group);
       const rows = parsePffTable(text);
       const seasonKey = String(season);
       const existingManualByName = new Map();
@@ -292,6 +295,7 @@ export function useStudy(studyId) {
       const batch = writeBatch(db);
       let created = 0;
       let updated = 0;
+      let skipped = 0;
       rows.forEach((row) => {
         if (!row.player) return;
         const key = norm(row.player);
@@ -318,17 +322,19 @@ export function useStudy(studyId) {
             batch.set(doc(db, "studyOverrides", overrideKey(group, computed.player)), fieldFix, { merge: true });
           }
           updated += 1;
-        } else {
+        } else if (groupMeta?.manual) {
           const id = `${studyId}__${group}__${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}${Math.random().toString(36).slice(2, 5)}`;
           batch.set(doc(db, "studyManualRows", id), {
             group, season: Number(season), player: row.player, team: row.team, state: row.state || "", hudlLink: row.hudlLink || "", pffLink: "",
             games: row.games ?? 0, snaps: row.snaps, pffGrade: row.pffGrade, createdAt: new Date().toISOString(),
           });
           created += 1;
+        } else {
+          skipped += 1;
         }
       });
       await batch.commit();
-      return { created, updated, total: rows.length };
+      return { created, updated, skipped, total: rows.length };
     },
   };
 }

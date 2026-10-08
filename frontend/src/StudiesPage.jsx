@@ -273,7 +273,7 @@ function StatCell({ value, canEdit, onSave, accent }) {
 // Bulk-loads a manual group's rows from a table copy-pasted straight out of PFF's site (select the
 // rows, Ctrl/Cmd+C, paste here -- a browser table copy comes through tab-separated, same as any
 // spreadsheet). Meant to be reused every week PFF's grades refresh, not just once: see study.pasteTable.
-function PasteTableModal({ onClose, onSubmit }) {
+function PasteTableModal({ allowNewRows, onClose, onSubmit }) {
   const [text, setText] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -307,7 +307,7 @@ function PasteTableModal({ onClose, onSubmit }) {
         {result ? (
           <>
             <p style={{ margin: 0, fontSize: 13.5, color: "var(--success)" }}>
-              {result.created} added, {result.updated} updated ({result.total} row{result.total === 1 ? "" : "s"} read).
+              {result.updated} updated{result.created ? `, ${result.created} added` : ""}{result.skipped ? `, ${result.skipped} skipped (not already on this list)` : ""} ({result.total} row{result.total === 1 ? "" : "s"} read).
             </p>
             <div style={{ display: "flex", justifyContent: "flex-end" }}>
               <button onClick={onClose} style={{ ...ghostBtn, background: "var(--accent)", color: "var(--bg-page)", border: "none" }}>Done</button>
@@ -316,7 +316,11 @@ function PasteTableModal({ onClose, onSubmit }) {
         ) : (
           <>
             <p style={{ margin: 0, fontSize: 12.5, color: "var(--text-muted)", lineHeight: 1.5 }}>
-              Select a table on PFF's site (including the header row), copy it, and paste it below. Matched by Name -- a player already shown here (whether on the real leaderboard or hand-added) gets their PFF grade corrected in place; a name that matches neither becomes a new hand-added row. Add your own State, Hudl and G (games) columns too (any order, anywhere in the row) and those fill in as well, without overwriting one already set. Nothing already here is ever removed by this.
+              Select a table on PFF's site (including the header row), copy it, and paste it below. Matched by Name -- a player already shown here (whether on the real leaderboard or hand-added) gets their PFF grade corrected in place.{" "}
+              {allowNewRows
+                ? "A name that matches no one gets added as a new row (this group has no other way to add one)."
+                : "A name that matches no one already on this list is skipped, not added."}{" "}
+              Add your own State, Hudl and G (games) columns too (any order, anywhere in the row) and those fill in as well, without overwriting one already set. Nothing already here is ever removed by this.
             </p>
             <textarea
               autoFocus
@@ -547,7 +551,7 @@ function StudyDetail({ studyId, canEdit, onBack }) {
       )}
       {study.meta.note && <p style={{ margin: 0, fontSize: 12, color: "var(--text-faint)", lineHeight: 1.5 }}>{study.meta.note}</p>}
       {explainRow && <ScoreExplainer row={explainRow} group={activeGroup} onClose={() => setExplainRow(null)} />}
-      {pasting && <PasteTableModal onClose={() => setPasting(false)} onSubmit={(text) => study.pasteTable(group, activeSeason, text)} />}
+      {pasting && <PasteTableModal allowNewRows={!!activeGroup.manual} onClose={() => setPasting(false)} onSubmit={(text) => study.pasteTable(group, activeSeason, text)} />}
     </div>
   );
 }
