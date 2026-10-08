@@ -82,6 +82,7 @@ export function parsePffTable(text) {
   const gradeCol = col("OFF GRD", "OFF GRADE", "DEF GRD", "DEF GRADE", "GRADE");
   const stateCol = col("STATE", "HOME STATE");
   const hudlCol = col("HUDL", "HUDL LINK");
+  const gamesCol = col("G", "GP", "GAMES", "GAMES PLAYED");
   if (nameCol < 0 || teamCol < 0) {
     throw Object.assign(new Error("Couldn't find NAME and TEAM columns in that header row."), { code: "bad-request" });
   }
@@ -96,6 +97,7 @@ export function parsePffTable(text) {
       pffGrade: gradeCol >= 0 ? Number(cells[gradeCol]) || 0 : 0,
       state: stateCol >= 0 ? (cells[stateCol] || "").toUpperCase() : "",
       hudlLink: hudlCol >= 0 ? cells[hudlCol] || "" : "",
+      games: gamesCol >= 0 ? Number(cells[gamesCol]) || 0 : null,
     }));
 }
 
@@ -288,17 +290,19 @@ export function useStudy(studyId) {
         const existing = existingByName.get(norm(row.player));
         if (existing) {
           const fields = { team: row.team, snaps: row.snaps, pffGrade: row.pffGrade };
-          // State/Hudl only fill in if this row doesn't already have one -- never overwrite a value
-          // someone already corrected by hand just because this particular paste happened to omit it.
+          // State/Hudl/Games only fill in if this row doesn't already have one -- never overwrite a
+          // value someone already corrected by hand just because this particular paste happened to
+          // omit it (games is null, not 0, when the pasted table had no G/GP column at all).
           if (!existing.state && row.state) fields.state = row.state;
           if (!existing.hudlLink && row.hudlLink) fields.hudlLink = row.hudlLink;
+          if (!existing.games && row.games != null) fields.games = row.games;
           batch.set(doc(db, "studyManualRows", existing.id), fields, { merge: true });
           updated += 1;
         } else {
           const id = `${studyId}__${group}__${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}${Math.random().toString(36).slice(2, 5)}`;
           batch.set(doc(db, "studyManualRows", id), {
             group, season: Number(season), player: row.player, team: row.team, state: row.state || "", hudlLink: row.hudlLink || "", pffLink: "",
-            games: 0, snaps: row.snaps, pffGrade: row.pffGrade, createdAt: new Date().toISOString(),
+            games: row.games ?? 0, snaps: row.snaps, pffGrade: row.pffGrade, createdAt: new Date().toISOString(),
           });
           created += 1;
         }
