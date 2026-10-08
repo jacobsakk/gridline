@@ -316,7 +316,7 @@ function PasteTableModal({ onClose, onSubmit }) {
         ) : (
           <>
             <p style={{ margin: 0, fontSize: 12.5, color: "var(--text-muted)", lineHeight: 1.5 }}>
-              Select a table on PFF's site (including the header row), copy it, and paste it below. Matched by Name and Team -- a player already on this list has their snaps/grade updated in place; a new name gets added. Add your own State, Hudl and G (games) columns too (any order, anywhere in the row) and those fill in as well, without overwriting one already set. Nothing already here is ever removed by this.
+              Select a table on PFF's site (including the header row), copy it, and paste it below. Matched by Name -- a player already shown here (whether on the real leaderboard or hand-added) gets their PFF grade corrected in place; a name that matches neither becomes a new hand-added row. Add your own State, Hudl and G (games) columns too (any order, anywhere in the row) and those fill in as well, without overwriting one already set. Nothing already here is ever removed by this.
             </p>
             <textarea
               autoFocus
@@ -415,7 +415,7 @@ function StudyDetail({ studyId, canEdit, onBack }) {
           {canEdit && (
             <button onClick={addPlayer} style={ghostBtn}><Plus size={14} /> Add player</button>
           )}
-          {canEdit && activeGroup.manual && (
+          {canEdit && (
             <button onClick={() => setPasting(true)} style={ghostBtn}><ClipboardPaste size={14} /> Paste table</button>
           )}
           <button onClick={() => downloadCsv(sorted, columns, `${study.meta.id}-${group}-${activeSeason}.csv`)} style={ghostBtn}><Download size={14} /> Download</button>

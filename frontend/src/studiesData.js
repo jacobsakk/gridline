@@ -271,32 +271,52 @@ export function useStudy(studyId) {
     async excludePlayer(group, season, player) {
       await setDoc(doc(db, "studyOverrides", statsOverrideKey(group, season, player)), { excluded: true }, { merge: true });
     },
-    // Bulk-loads a pasted PFF table (see parsePffTable) into a manual group's rows for one season --
-    // meant to be re-run every time PFF's grades refresh, not just once: a player already on the list
-    // (matched by name) gets their team/snaps/grade UPDATED in place rather than duplicated, and a name
-    // not seen before becomes a new row. Nothing already on the list is ever removed by this.
+    // Bulk-loads a pasted PFF table (see parsePffTable) into ANY group's rows for one season -- meant to
+    // be re-run every time PFF's grades refresh, not just once. A pasted name is correlated against
+    // whoever's already shown for this group/season first: a real (computed) row gets its grade written
+    // through the same per-season override doc saveStat already uses (a correction, not a new row,
+    // exactly like fixing any other stat by hand); a hand-added row gets its own doc updated in place;
+    // a name that matches neither becomes a brand new hand-added row. Nothing already on the list is
+    // ever removed by this.
     async pasteTable(group, season, text) {
       const rows = parsePffTable(text);
       const seasonKey = String(season);
-      const existingByName = new Map();
+      const existingManualByName = new Map();
       Object.values(manualRows).forEach((r) => {
-        if (r.group === group && String(r.season) === seasonKey) existingByName.set(norm(r.player), r);
+        if (r.group === group && String(r.season) === seasonKey) existingManualByName.set(norm(r.player), r);
+      });
+      const computedByName = new Map();
+      (groups[group]?.[seasonKey] || []).forEach((r) => {
+        if (!r.id) computedByName.set(norm(r.player), r);
       });
       const batch = writeBatch(db);
       let created = 0;
       let updated = 0;
       rows.forEach((row) => {
         if (!row.player) return;
-        const existing = existingByName.get(norm(row.player));
-        if (existing) {
+        const key = norm(row.player);
+        const manual = existingManualByName.get(key);
+        const computed = !manual ? computedByName.get(key) : null;
+        if (manual) {
           const fields = { team: row.team, snaps: row.snaps, pffGrade: row.pffGrade };
           // State/Hudl/Games only fill in if this row doesn't already have one -- never overwrite a
           // value someone already corrected by hand just because this particular paste happened to
           // omit it (games is null, not 0, when the pasted table had no G/GP column at all).
-          if (!existing.state && row.state) fields.state = row.state;
-          if (!existing.hudlLink && row.hudlLink) fields.hudlLink = row.hudlLink;
-          if (!existing.games && row.games != null) fields.games = row.games;
-          batch.set(doc(db, "studyManualRows", existing.id), fields, { merge: true });
+          if (!manual.state && row.state) fields.state = row.state;
+          if (!manual.hudlLink && row.hudlLink) fields.hudlLink = row.hudlLink;
+          if (!manual.games && row.games != null) fields.games = row.games;
+          batch.set(doc(db, "studyManualRows", manual.id), fields, { merge: true });
+          updated += 1;
+        } else if (computed) {
+          const statsKey = statsOverrideKey(group, season, computed.player);
+          const existingTotals = overrides[statsKey]?.totals || {};
+          batch.set(doc(db, "studyOverrides", statsKey), { totals: { ...existingTotals, pffGrade: row.pffGrade } }, { merge: true });
+          const fieldFix = {};
+          if (!computed.state && row.state) fieldFix.state = row.state;
+          if (!computed.hudlLink && row.hudlLink) fieldFix.hudlLink = row.hudlLink;
+          if (Object.keys(fieldFix).length) {
+            batch.set(doc(db, "studyOverrides", overrideKey(group, computed.player)), fieldFix, { merge: true });
+          }
           updated += 1;
         } else {
           const id = `${studyId}__${group}__${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}${Math.random().toString(36).slice(2, 5)}`;
