@@ -54,7 +54,10 @@ function normalizePffTeam(raw) {
 // Reads a table copy-pasted straight out of PFF's site -- selecting a table in a browser and pasting
 // into a plain textarea comes through tab-separated, same as any spreadsheet copy. Matched by header
 // name, not column position, so PFF's extra columns this study doesn't track (Rank, #, Pos, Run, Pass,
-// RBLK, PBLK) are simply ignored rather than needing to line up exactly.
+// RBLK, PBLK) are simply ignored rather than needing to line up exactly. STATE and HUDL are optional --
+// PFF's own table never has them, but a hand-assembled paste (this study's own CSV download, say, or a
+// table built from research) can carry them too, so they're picked up when present instead of requiring
+// a second pass through every row's cells to add them by hand.
 export function parsePffTable(text) {
   const lines = String(text || "").split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
   const splitLine = (line) => (line.includes("\t") ? line.split("\t") : line.split(/ {2,}/)).map((c) => c.trim());
@@ -77,6 +80,8 @@ export function parsePffTable(text) {
   const teamCol = col("TEAM");
   const snapsCol = col("OFF", "DEF", "SNAPS");
   const gradeCol = col("OFF GRD", "OFF GRADE", "DEF GRD", "DEF GRADE", "GRADE");
+  const stateCol = col("STATE", "HOME STATE");
+  const hudlCol = col("HUDL", "HUDL LINK");
   if (nameCol < 0 || teamCol < 0) {
     throw Object.assign(new Error("Couldn't find NAME and TEAM columns in that header row."), { code: "bad-request" });
   }
@@ -89,6 +94,8 @@ export function parsePffTable(text) {
       team: normalizePffTeam(cells[teamCol]),
       snaps: snapsCol >= 0 ? Number(cells[snapsCol]) || 0 : 0,
       pffGrade: gradeCol >= 0 ? Number(cells[gradeCol]) || 0 : 0,
+      state: stateCol >= 0 ? (cells[stateCol] || "").toUpperCase() : "",
+      hudlLink: hudlCol >= 0 ? cells[hudlCol] || "" : "",
     }));
 }
 
@@ -280,12 +287,17 @@ export function useStudy(studyId) {
         if (!row.player) return;
         const existing = existingByName.get(norm(row.player));
         if (existing) {
-          batch.set(doc(db, "studyManualRows", existing.id), { team: row.team, snaps: row.snaps, pffGrade: row.pffGrade }, { merge: true });
+          const fields = { team: row.team, snaps: row.snaps, pffGrade: row.pffGrade };
+          // State/Hudl only fill in if this row doesn't already have one -- never overwrite a value
+          // someone already corrected by hand just because this particular paste happened to omit it.
+          if (!existing.state && row.state) fields.state = row.state;
+          if (!existing.hudlLink && row.hudlLink) fields.hudlLink = row.hudlLink;
+          batch.set(doc(db, "studyManualRows", existing.id), fields, { merge: true });
           updated += 1;
         } else {
           const id = `${studyId}__${group}__${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}${Math.random().toString(36).slice(2, 5)}`;
           batch.set(doc(db, "studyManualRows", id), {
-            group, season: Number(season), player: row.player, team: row.team, state: "", hudlLink: "", pffLink: "",
+            group, season: Number(season), player: row.player, team: row.team, state: row.state || "", hudlLink: row.hudlLink || "", pffLink: "",
             games: 0, snaps: row.snaps, pffGrade: row.pffGrade, createdAt: new Date().toISOString(),
           });
           created += 1;
