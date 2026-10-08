@@ -44,7 +44,7 @@ const PFF_TEAM_ALIASES = {
   "MIAMI OH": "Miami (OH)", "N ILLINOIS": "Northern Illinois", "NORTHERN ILLINOIS": "Northern Illinois",
   "W MICHIGAN": "Western Mich.", "WESTERN MICHIGAN": "Western Mich.", "E MICHIGAN": "Eastern Mich.", "EASTERN MICHIGAN": "Eastern Mich.",
   "BOWL GREEN": "Bowling Green", "BOWLING GREEN": "Bowling Green", "KENT ST": "Kent St.", "KENT STATE": "Kent St.",
-  "BALL ST": "Ball St.", "BALL STATE": "Ball St.", "CENT MICHIGAN": "Central Mich.", "CENTRAL MICHIGAN": "Central Mich.", CMU: "Central Mich.",
+  "BALL ST": "Ball St.", "BALL STATE": "Ball St.", "CENT MICHIGAN": "Central Mich.", "C MICHIGAN": "Central Mich.", "CENTRAL MICHIGAN": "Central Mich.", CMU: "Central Mich.",
   "SAC ST": "Sac State", "SAC STATE": "Sac State",
 };
 function normalizePffTeam(raw) {
