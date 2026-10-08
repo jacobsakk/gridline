@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-07T19:42:30.035580Z",
+  "generatedAt": "2026-10-08T03:15:03.586607Z",
   "seasons": [
     2023,
     2024,
@@ -26,7 +26,8 @@
           "score": 3705.0,
           "hudlLink": "https://www.hudl.com/profile/5432884",
           "pffLink": "",
-          "state": "MI"
+          "state": "MI",
+          "allMac": 1
         },
         {
           "player": "Kurtis Rourke",
@@ -45,7 +46,8 @@
           "score": 2666.0,
           "hudlLink": "https://www.hudl.com/profile/5350951",
           "pffLink": "",
-          "state": "Ontario, Canada"
+          "state": "Ontario, Canada",
+          "allMac": 2
         },
         {
           "player": "Jase Bauer",
@@ -64,7 +66,8 @@
           "score": 2526.0,
           "hudlLink": "https://www.hudl.com/profile/8901906",
           "pffLink": "",
-          "state": "IA"
+          "state": "IA",
+          "allMac": null
         },
         {
           "player": "Cole Snyder",
@@ -83,7 +86,8 @@
           "score": 2396.0,
           "hudlLink": "https://www.hudl.com/profile/9846654/Cole-Snyder",
           "pffLink": "",
-          "state": "NY"
+          "state": "NY",
+          "allMac": null
         },
         {
           "player": "Brett Gabbert",
@@ -102,7 +106,8 @@
           "score": 2069,
           "hudlLink": "https://www.hudl.com/profile/5629221",
           "pffLink": "",
-          "state": "MO"
+          "state": "MO",
+          "allMac": 3
         },
         {
           "player": "Connor Bazelak",
@@ -121,7 +126,8 @@
           "score": 2068.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": "OH"
+          "state": "OH",
+          "allMac": null
         },
         {
           "player": "Austin Smith",
@@ -140,7 +146,8 @@
           "score": 1895.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": ""
+          "state": "",
+          "allMac": null
         },
         {
           "player": "Hayden Wolff",
@@ -159,7 +166,8 @@
           "score": 1667,
           "hudlLink": "https://www.hudl.com/profile/6670820/hayden-wolff",
           "pffLink": "",
-          "state": "FL"
+          "state": "FL",
+          "allMac": null
         },
         {
           "player": "Taisun Phommachanh",
@@ -178,7 +186,8 @@
           "score": 1567.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": ""
+          "state": "",
+          "allMac": null
         },
         {
           "player": "Jeff Undercuffler",
@@ -197,7 +206,8 @@
           "score": 1343.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": ""
+          "state": "",
+          "allMac": null
         }
       ],
       "2024": [
@@ -218,7 +228,8 @@
           "score": 3809.0,
           "hudlLink": "https://www.hudl.com/profile/7815205/Parker-Navarros/about",
           "pffLink": "",
-          "state": "AZ"
+          "state": "AZ",
+          "allMac": 2
         },
         {
           "player": "Tucker Gleason",
@@ -237,7 +248,8 @@
           "score": 3722.0,
           "hudlLink": "https://m.hudl.com/profile/7196933/Tucker-Gleason",
           "pffLink": "",
-          "state": "FL"
+          "state": "FL",
+          "allMac": null
         },
         {
           "player": "Connor Bazelak",
@@ -256,7 +268,8 @@
           "score": 3348.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": "OH"
+          "state": "OH",
+          "allMac": 3
         },
         {
           "player": "Kadin Semonza",
@@ -275,7 +288,8 @@
           "score": 3304.0,
           "hudlLink": "https://www.hudl.com/profile/11412934",
           "pffLink": "",
-          "state": "CA"
+          "state": "CA",
+          "allMac": null
         },
         {
           "player": "Brett Gabbert",
@@ -294,7 +308,8 @@
           "score": 3297.0,
           "hudlLink": "https://www.hudl.com/profile/5629221",
           "pffLink": "",
-          "state": "MO"
+          "state": "MO",
+          "allMac": 1
         },
         {
           "player": "Cole Snyder",
@@ -313,7 +328,8 @@
           "score": 2924.0,
           "hudlLink": "https://www.hudl.com/profile/9846654/Cole-Snyder",
           "pffLink": "",
-          "state": "NY"
+          "state": "NY",
+          "allMac": null
         },
         {
           "player": "Ben Finley",
@@ -332,7 +348,8 @@
           "score": 2869.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": "AZ"
+          "state": "AZ",
+          "allMac": null
         },
         {
           "player": "C.J. Ogbonna",
@@ -351,7 +368,8 @@
           "score": 2781.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": ""
+          "state": "",
+          "allMac": null
         },
         {
           "player": "Hayden Wolff",
@@ -370,7 +388,8 @@
           "score": 2740.0,
           "hudlLink": "https://www.hudl.com/profile/6670820/hayden-wolff",
           "pffLink": "",
-          "state": "FL"
+          "state": "FL",
+          "allMac": null
         },
         {
           "player": "Taisun Phommachanh",
@@ -389,7 +408,8 @@
           "score": 1700.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": ""
+          "state": "",
+          "allMac": null
         }
       ],
       "2025": [
@@ -410,7 +430,8 @@
           "score": 3536.0,
           "hudlLink": "https://www.hudl.com/profile/7815205/Parker-Navarros/about",
           "pffLink": "",
-          "state": "AZ"
+          "state": "AZ",
+          "allMac": 2
         },
         {
           "player": "Noah Kim",
@@ -429,7 +450,8 @@
           "score": 3348.0,
           "hudlLink": "https://www.hudl.com/profile/8588249",
           "pffLink": "",
-          "state": "VA"
+          "state": "VA",
+          "allMac": null
         },
         {
           "player": "Tucker Gleason",
@@ -448,7 +470,8 @@
           "score": 3089.0,
           "hudlLink": "https://m.hudl.com/profile/7196933/Tucker-Gleason",
           "pffLink": "",
-          "state": "FL"
+          "state": "FL",
+          "allMac": 3
         },
         {
           "player": "Broc Lowry",
@@ -467,7 +490,8 @@
           "score": 3086.0,
           "hudlLink": "https://www.hudl.com/profile/12907414/Broc-Lowry/about",
           "pffLink": "",
-          "state": "OH"
+          "state": "OH",
+          "allMac": 1
         },
         {
           "player": "Ben Finley",
@@ -486,7 +510,8 @@
           "score": 2965.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": "AZ"
+          "state": "AZ",
+          "allMac": null
         },
         {
           "player": "Ta'Quan Roberson",
@@ -505,7 +530,8 @@
           "score": 2765.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": ""
+          "state": "",
+          "allMac": null
         },
         {
           "player": "Dru DeShields",
@@ -524,7 +550,8 @@
           "score": 2435.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": ""
+          "state": "",
+          "allMac": null
         },
         {
           "player": "Kiael Kelly",
@@ -543,7 +570,8 @@
           "score": 2388.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": ""
+          "state": "",
+          "allMac": null
         },
         {
           "player": "Joe Labas",
@@ -562,7 +590,8 @@
           "score": 2089.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": ""
+          "state": "",
+          "allMac": null
         },
         {
           "player": "AJ Hairston",
@@ -581,7 +610,8 @@
           "score": 997.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": ""
+          "state": "",
+          "allMac": null
         }
       ],
       "2026": [
@@ -602,7 +632,8 @@
           "score": 1666.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": "GA"
+          "state": "GA",
+          "allMac": null
         },
         {
           "player": "Noah Kim",
@@ -621,7 +652,8 @@
           "score": 1358.0,
           "hudlLink": "https://www.hudl.com/profile/8588249",
           "pffLink": "",
-          "state": "VA"
+          "state": "VA",
+          "allMac": null
         },
         {
           "player": "David McComb",
@@ -640,7 +672,8 @@
           "score": 1356.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": "OK"
+          "state": "OK",
+          "allMac": null
         },
         {
           "player": "William Watson III",
@@ -659,7 +692,8 @@
           "score": 1172.0,
           "hudlLink": "https://www.hudl.com/profile/1161621",
           "pffLink": "",
-          "state": "MA"
+          "state": "MA",
+          "allMac": null
         },
         {
           "player": "Broc Lowry",
@@ -678,7 +712,8 @@
           "score": 1014.0,
           "hudlLink": "https://www.hudl.com/profile/12907414/Broc-Lowry/about",
           "pffLink": "",
-          "state": "OH"
+          "state": "OH",
+          "allMac": null
         },
         {
           "player": "Jay Kastantin",
@@ -697,7 +732,8 @@
           "score": 975.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": "MA"
+          "state": "MA",
+          "allMac": null
         },
         {
           "player": "Dru DeShields",
@@ -716,7 +752,8 @@
           "score": 970.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": "OH"
+          "state": "OH",
+          "allMac": null
         },
         {
           "player": "Jackson Sharman",
@@ -735,7 +772,8 @@
           "score": 880.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": "CA"
+          "state": "CA",
+          "allMac": null
         },
         {
           "player": "Keldric Luster",
@@ -754,7 +792,8 @@
           "score": 784.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": "TX"
+          "state": "TX",
+          "allMac": null
         },
         {
           "player": "Angel Flores",
@@ -773,7 +812,8 @@
           "score": 710.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": "AZ"
+          "state": "AZ",
+          "allMac": null
         }
       ]
     },
@@ -793,7 +833,25 @@
           "score": 1550.0,
           "hudlLink": "https://www.hudl.com/profile/8007756/Peny-Boone",
           "pffLink": "",
-          "state": "MI"
+          "state": "MI",
+          "allMac": 1
+        },
+        {
+          "player": "Antario Brown",
+          "team": "Northern Illinois",
+          "position": "RB",
+          "season": 2023,
+          "totals": {
+            "games": 12,
+            "att": 212,
+            "yards": 1296,
+            "td": 10
+          },
+          "score": 1396,
+          "hudlLink": "https://www.hudl.com/profile/11662722/Antario-Brown",
+          "pffLink": "",
+          "state": "GA",
+          "allMac": 1
         },
         {
           "player": "Kay'Ron Lynch-Adams",
@@ -809,7 +867,8 @@
           "score": 1277.0,
           "hudlLink": "https://www.hudl.com/profile/8748432",
           "pffLink": "",
-          "state": "OH"
+          "state": "OH",
+          "allMac": null
         },
         {
           "player": "Rashad Amos",
@@ -825,7 +884,8 @@
           "score": 1205.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": "GA"
+          "state": "GA",
+          "allMac": 3
         },
         {
           "player": "Jalen Buckley",
@@ -841,7 +901,8 @@
           "score": 1103.0,
           "hudlLink": "https://www.hudl.com/profile/11214131/Jalen-Buckley",
           "pffLink": "",
-          "state": "IL"
+          "state": "IL",
+          "allMac": 3
         },
         {
           "player": "Marquez Cooper",
@@ -857,7 +918,8 @@
           "score": 1083.0,
           "hudlLink": "https://www.hudl.com/profile/8152806",
           "pffLink": "",
-          "state": "MD"
+          "state": "MD",
+          "allMac": 2
         },
         {
           "player": "Sieh Bangura",
@@ -873,7 +935,8 @@
           "score": 881.0,
           "hudlLink": "https://www.hudl.com/profile/6174794/Sieh-Bangura",
           "pffLink": "",
-          "state": "MD"
+          "state": "MD",
+          "allMac": null
         },
         {
           "player": "Terion Stewart",
@@ -889,7 +952,8 @@
           "score": 842.0,
           "hudlLink": "https://www.hudl.com/profile/8033536",
           "pffLink": "",
-          "state": "OH"
+          "state": "OH",
+          "allMac": 2
         },
         {
           "player": "Marion Lukes",
@@ -905,7 +969,8 @@
           "score": 787.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": ""
+          "state": "",
+          "allMac": null
         },
         {
           "player": "Samson Evans",
@@ -921,23 +986,8 @@
           "score": 755.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": ""
-        },
-        {
-          "player": "Lorenzo Lingard",
-          "team": "Akron",
-          "position": "RB",
-          "season": 2023,
-          "totals": {
-            "games": 12.0,
-            "att": 143.0,
-            "yards": 641.0,
-            "td": 4.0
-          },
-          "score": 681.0,
-          "hudlLink": "",
-          "pffLink": "",
-          "state": ""
+          "state": "",
+          "allMac": null
         }
       ],
       "2024": [
@@ -955,7 +1005,8 @@
           "score": 1305.0,
           "hudlLink": "https://www.hudl.com/profile/9706872/Anthony-Tyus-III",
           "pffLink": "",
-          "state": "MI"
+          "state": "MI",
+          "allMac": 2
         },
         {
           "player": "Al-Jay Henderson",
@@ -971,7 +1022,8 @@
           "score": 1168.0,
           "hudlLink": "https://www.hudl.com/profile/9822949",
           "pffLink": "",
-          "state": "NJ"
+          "state": "NJ",
+          "allMac": 3
         },
         {
           "player": "Keyon Mozee",
@@ -987,7 +1039,8 @@
           "score": 1138.0,
           "hudlLink": "https://www.hudl.com/profile/7893734/Keyon-Mozee",
           "pffLink": "",
-          "state": "MO"
+          "state": "MO",
+          "allMac": 2
         },
         {
           "player": "Jaden Nixon",
@@ -1003,7 +1056,8 @@
           "score": 1039.0,
           "hudlLink": "https://www.hudl.com/profile/10011114",
           "pffLink": "",
-          "state": "TX"
+          "state": "TX",
+          "allMac": 1
         },
         {
           "player": "Terion Stewart",
@@ -1019,7 +1073,8 @@
           "score": 958.0,
           "hudlLink": "https://www.hudl.com/profile/8033536",
           "pffLink": "",
-          "state": "OH"
+          "state": "OH",
+          "allMac": 1
         },
         {
           "player": "Delbert Mimms, III",
@@ -1035,7 +1090,8 @@
           "score": 895.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": ""
+          "state": "",
+          "allMac": null
         },
         {
           "player": "Marion Lukes",
@@ -1051,7 +1107,8 @@
           "score": 838.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": ""
+          "state": "",
+          "allMac": 3
         },
         {
           "player": "Jalen Buckley",
@@ -1067,7 +1124,8 @@
           "score": 773.0,
           "hudlLink": "https://www.hudl.com/profile/11214131/Jalen-Buckley",
           "pffLink": "",
-          "state": "IL"
+          "state": "IL",
+          "allMac": null
         },
         {
           "player": "Jordon Simmons",
@@ -1083,7 +1141,8 @@
           "score": 684.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": ""
+          "state": "",
+          "allMac": null
         },
         {
           "player": "Braedon Sloan",
@@ -1099,7 +1158,8 @@
           "score": 637.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": ""
+          "state": "",
+          "allMac": null
         }
       ],
       "2025": [
@@ -1117,7 +1177,8 @@
           "score": 1542.0,
           "hudlLink": "https://www.hudl.com/profile/6174794/Sieh-Bangura",
           "pffLink": "",
-          "state": "MD"
+          "state": "MD",
+          "allMac": 1
         },
         {
           "player": "Chip Trayanum",
@@ -1133,7 +1194,8 @@
           "score": 1135.0,
           "hudlLink": "https://www.hudl.com/profile/7855094",
           "pffLink": "",
-          "state": "OH"
+          "state": "OH",
+          "allMac": 1
         },
         {
           "player": "Jalen Buckley",
@@ -1149,7 +1211,8 @@
           "score": 1093.0,
           "hudlLink": "https://www.hudl.com/profile/11214131/Jalen-Buckley",
           "pffLink": "",
-          "state": "IL"
+          "state": "IL",
+          "allMac": 3
         },
         {
           "player": "Jordan Gant",
@@ -1165,7 +1228,8 @@
           "score": 1092.0,
           "hudlLink": "https://www.hudl.com/profile/11416944",
           "pffLink": "",
-          "state": "FL"
+          "state": "FL",
+          "allMac": 2
         },
         {
           "player": "Dontae McMillan",
@@ -1181,7 +1245,25 @@
           "score": 1054.0,
           "hudlLink": "https://www.hudl.com/profile/9847731",
           "pffLink": "",
-          "state": "WA"
+          "state": "WA",
+          "allMac": 2
+        },
+        {
+          "player": "Chavon Wright",
+          "team": "Northern Illinois",
+          "position": "RB",
+          "season": 2025,
+          "totals": {
+            "games": 12,
+            "att": 196,
+            "yards": 875,
+            "td": 5
+          },
+          "score": 925,
+          "hudlLink": "https://www.hudl.com/profile/8576954",
+          "pffLink": "",
+          "state": "FL",
+          "allMac": 3
         },
         {
           "player": "Al-Jay Henderson",
@@ -1197,7 +1279,8 @@
           "score": 815.0,
           "hudlLink": "https://www.hudl.com/profile/9822949",
           "pffLink": "",
-          "state": "NJ"
+          "state": "NJ",
+          "allMac": null
         },
         {
           "player": "Jordan Brunson",
@@ -1213,7 +1296,8 @@
           "score": 807.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": ""
+          "state": "",
+          "allMac": null
         },
         {
           "player": "Gavin Garcia",
@@ -1229,7 +1313,8 @@
           "score": 677.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": ""
+          "state": "",
+          "allMac": null
         },
         {
           "player": "Duncan Brune",
@@ -1245,23 +1330,8 @@
           "score": 665.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": ""
-        },
-        {
-          "player": "Qua Ashley",
-          "team": "Ball St.",
-          "position": "RB",
-          "season": 2025,
-          "totals": {
-            "games": 10.0,
-            "att": 118.0,
-            "yards": 547.0,
-            "td": 4.0
-          },
-          "score": 587.0,
-          "hudlLink": "",
-          "pffLink": "",
-          "state": ""
+          "state": "",
+          "allMac": null
         }
       ],
       "2026": [
@@ -1279,7 +1349,8 @@
           "score": 396.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": "OH"
+          "state": "OH",
+          "allMac": null
         },
         {
           "player": "CJ Miller",
@@ -1295,7 +1366,8 @@
           "score": 386.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": "AL"
+          "state": "AL",
+          "allMac": null
         },
         {
           "player": "Messiah Burch",
@@ -1311,7 +1383,8 @@
           "score": 362.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": "NY"
+          "state": "NY",
+          "allMac": null
         },
         {
           "player": "TJ Horton",
@@ -1327,7 +1400,8 @@
           "score": 341.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": "KY"
+          "state": "KY",
+          "allMac": null
         },
         {
           "player": "Amareon Blue",
@@ -1343,7 +1417,8 @@
           "score": 339.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": "NC"
+          "state": "NC",
+          "allMac": null
         },
         {
           "player": "Jalen Buckley",
@@ -1359,7 +1434,8 @@
           "score": 337.0,
           "hudlLink": "https://www.hudl.com/profile/11214131/Jalen-Buckley",
           "pffLink": "",
-          "state": "IL"
+          "state": "IL",
+          "allMac": null
         },
         {
           "player": "Jordan Gant",
@@ -1375,7 +1451,8 @@
           "score": 323.0,
           "hudlLink": "https://www.hudl.com/profile/11416944",
           "pffLink": "",
-          "state": "FL"
+          "state": "FL",
+          "allMac": null
         },
         {
           "player": "Curtis Kimmons IV",
@@ -1391,7 +1468,8 @@
           "score": 292.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": "FL"
+          "state": "FL",
+          "allMac": null
         },
         {
           "player": "Victor Rosa",
@@ -1407,7 +1485,8 @@
           "score": 259.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": "CT"
+          "state": "CT",
+          "allMac": null
         },
         {
           "player": "Elijah Faulkner",
@@ -1423,7 +1502,8 @@
           "score": 246.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": "PA"
+          "state": "PA",
+          "allMac": null
         }
       ]
     },
@@ -1443,7 +1523,8 @@
           "score": 822.0,
           "hudlLink": "https://www.hudl.com/profile/8230503",
           "pffLink": "",
-          "state": "CT"
+          "state": "CT",
+          "allMac": null
         },
         {
           "player": "Jerjuan Newton",
@@ -1459,7 +1540,8 @@
           "score": 786.0,
           "hudlLink": "https://www.hudl.com/profile/7594187",
           "pffLink": "",
-          "state": "FL"
+          "state": "FL",
+          "allMac": 1
         },
         {
           "player": "Gage Larvadain",
@@ -1475,7 +1557,8 @@
           "score": 739.0,
           "hudlLink": "https://www.hudl.com/profile/9382708/Gage-Larvadain/about",
           "pffLink": "",
-          "state": "LA"
+          "state": "LA",
+          "allMac": null
         },
         {
           "player": "Junior Vandeross III",
@@ -1491,7 +1574,8 @@
           "score": 704.0,
           "hudlLink": "https://www.hudl.com/profile/11292601",
           "pffLink": "",
-          "state": "FL"
+          "state": "FL",
+          "allMac": null
         },
         {
           "player": "Kenneth Womack",
@@ -1507,7 +1591,8 @@
           "score": 701.0,
           "hudlLink": "https://www.hudl.com/profile/8356629",
           "pffLink": "",
-          "state": "MD"
+          "state": "MD",
+          "allMac": 1
         },
         {
           "player": "Sam Wiglusz",
@@ -1523,7 +1608,8 @@
           "score": 690.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": ""
+          "state": "",
+          "allMac": 1
         },
         {
           "player": "Miles Cross",
@@ -1539,7 +1625,8 @@
           "score": 667.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": ""
+          "state": "",
+          "allMac": null
         },
         {
           "player": "Chrishon McCray",
@@ -1555,7 +1642,8 @@
           "score": 650.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": ""
+          "state": "",
+          "allMac": 1
         },
         {
           "player": "Jasaiah Gathings",
@@ -1571,7 +1659,8 @@
           "score": 585.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": ""
+          "state": "",
+          "allMac": 2
         },
         {
           "player": "Odieu Hiliare",
@@ -1587,7 +1676,8 @@
           "score": 572.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": ""
+          "state": "",
+          "allMac": 3
         }
       ],
       "2024": [
@@ -1605,7 +1695,8 @@
           "score": 1325.0,
           "hudlLink": "https://www.hudl.com/profile/5390873",
           "pffLink": "",
-          "state": "AZ"
+          "state": "AZ",
+          "allMac": 1
         },
         {
           "player": "Jerjuan Newton",
@@ -1621,7 +1712,8 @@
           "score": 1158.0,
           "hudlLink": "https://www.hudl.com/profile/7594187",
           "pffLink": "",
-          "state": "FL"
+          "state": "FL",
+          "allMac": 1
         },
         {
           "player": "Junior Vandeross III",
@@ -1637,7 +1729,8 @@
           "score": 1007.0,
           "hudlLink": "https://www.hudl.com/profile/11292601",
           "pffLink": "",
-          "state": "FL"
+          "state": "FL",
+          "allMac": 1
         },
         {
           "player": "Reggie Virgil",
@@ -1653,7 +1746,8 @@
           "score": 906.0,
           "hudlLink": "https://www.hudl.com/profile/10206377/Reginald-Virgil/highlights",
           "pffLink": "",
-          "state": "FL"
+          "state": "FL",
+          "allMac": 2
         },
         {
           "player": "Adrian Norton",
@@ -1669,7 +1763,8 @@
           "score": 901.0,
           "hudlLink": "https://www.hudl.com/profile/15134018",
           "pffLink": "",
-          "state": "OH"
+          "state": "OH",
+          "allMac": 2
         },
         {
           "player": "Jakobie Keeney-James",
@@ -1685,7 +1780,8 @@
           "score": 899.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": ""
+          "state": "",
+          "allMac": null
         },
         {
           "player": "Javon Tracy",
@@ -1701,7 +1797,8 @@
           "score": 888.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": ""
+          "state": "",
+          "allMac": 1
         },
         {
           "player": "Chrishon McCray",
@@ -1717,7 +1814,8 @@
           "score": 795.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": ""
+          "state": "",
+          "allMac": 2
         },
         {
           "player": "Luke Floriea",
@@ -1731,9 +1829,10 @@
             "td": 7.0
           },
           "score": 769.0,
-          "hudlLink": "",
+          "hudlLink": "https://www.hudl.com/profile/4040392/Luke-Floriea/about",
           "pffLink": "",
-          "state": ""
+          "state": "OH",
+          "allMac": 3
         },
         {
           "player": "Victor Snow",
@@ -1749,7 +1848,8 @@
           "score": 711.0,
           "hudlLink": "https://www.hudl.com/profile/11563026",
           "pffLink": "",
-          "state": "NY"
+          "state": "NY",
+          "allMac": 3
         }
       ],
       "2025": [
@@ -1767,7 +1867,8 @@
           "score": 1118.0,
           "hudlLink": "https://www.hudl.com/profile/11292601",
           "pffLink": "",
-          "state": "FL"
+          "state": "FL",
+          "allMac": 1
         },
         {
           "player": "Chase Hendricks",
@@ -1783,7 +1884,8 @@
           "score": 1107.0,
           "hudlLink": "https://www.hudl.com/profile/13059623",
           "pffLink": "",
-          "state": "MO"
+          "state": "MO",
+          "allMac": 2
         },
         {
           "player": "Kam Perry",
@@ -1799,7 +1901,8 @@
           "score": 1036.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": "GA"
+          "state": "GA",
+          "allMac": 1
         },
         {
           "player": "Nik McMillan",
@@ -1815,7 +1918,8 @@
           "score": 1011.0,
           "hudlLink": "https://www.hudl.com/profile/10811486",
           "pffLink": "",
-          "state": "NY"
+          "state": "NY",
+          "allMac": 1
         },
         {
           "player": "Victor Snow",
@@ -1831,7 +1935,8 @@
           "score": 895.0,
           "hudlLink": "https://www.hudl.com/profile/11563026",
           "pffLink": "",
-          "state": "NY"
+          "state": "NY",
+          "allMac": 1
         },
         {
           "player": "Marcel Williams",
@@ -1847,7 +1952,8 @@
           "score": 661.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": ""
+          "state": "",
+          "allMac": 2
         },
         {
           "player": "Cole Weaver",
@@ -1863,7 +1969,8 @@
           "score": 652.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": ""
+          "state": "",
+          "allMac": null
         },
         {
           "player": "Langston Lewis",
@@ -1879,7 +1986,8 @@
           "score": 626.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": ""
+          "state": "",
+          "allMac": 3
         },
         {
           "player": "Jacquon Gibson",
@@ -1895,23 +2003,25 @@
           "score": 616.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": ""
+          "state": "",
+          "allMac": 3
         },
         {
-          "player": "Nick Devereaux",
-          "team": "Eastern Mich.",
+          "player": "Israel Polk",
+          "team": "Akron",
           "position": "WR",
           "season": 2025,
           "totals": {
-            "games": 10,
-            "rec": 34,
-            "yards": 510,
-            "td": 7
+            "games": 12,
+            "rec": 33,
+            "yards": 525,
+            "td": 8
           },
-          "score": 580,
-          "hudlLink": "https://www.hudl.com/profile/11433793",
+          "score": 605,
+          "hudlLink": "https://www.hudl.com/profile/14998491/israel-polk",
           "pffLink": "",
-          "state": "MI"
+          "state": "CA",
+          "allMac": 2
         }
       ],
       "2026": [
@@ -1929,7 +2039,8 @@
           "score": 457.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": "NC"
+          "state": "NC",
+          "allMac": null
         },
         {
           "player": "Adjatay Dabbs",
@@ -1945,7 +2056,8 @@
           "score": 407.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": "TN"
+          "state": "TN",
+          "allMac": null
         },
         {
           "player": "Matt Coleman",
@@ -1961,7 +2073,8 @@
           "score": 399.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": "CA"
+          "state": "CA",
+          "allMac": null
         },
         {
           "player": "Riley Neer",
@@ -1977,7 +2090,8 @@
           "score": 377.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": "OH"
+          "state": "OH",
+          "allMac": null
         },
         {
           "player": "Bryson Hammer",
@@ -1993,7 +2107,8 @@
           "score": 318.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": "OH"
+          "state": "OH",
+          "allMac": null
         },
         {
           "player": "Damarion Witten",
@@ -2009,7 +2124,8 @@
           "score": 294.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": ""
+          "state": "",
+          "allMac": null
         },
         {
           "player": "Lynel Billups-Williams",
@@ -2025,7 +2141,8 @@
           "score": 285.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": "IL"
+          "state": "IL",
+          "allMac": null
         },
         {
           "player": "Harold Mack",
@@ -2041,7 +2158,8 @@
           "score": 284.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": "IN"
+          "state": "IN",
+          "allMac": null
         },
         {
           "player": "Aveion Chenault",
@@ -2057,7 +2175,8 @@
           "score": 282.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": "KY"
+          "state": "KY",
+          "allMac": null
         },
         {
           "player": "Maleek Huggins",
@@ -2073,7 +2192,8 @@
           "score": 272.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": "FL"
+          "state": "FL",
+          "allMac": null
         }
       ]
     },
@@ -2093,7 +2213,8 @@
           "score": 683,
           "hudlLink": "https://www.hudl.com/profile/11087814",
           "pffLink": "",
-          "state": "OH"
+          "state": "OH",
+          "allMac": 1
         },
         {
           "player": "Anthony Torres",
@@ -2109,7 +2230,8 @@
           "score": 494,
           "hudlLink": "http://www.hudl.com/profile/5006033",
           "pffLink": "",
-          "state": "IN"
+          "state": "IN",
+          "allMac": 2
         },
         {
           "player": "Grayson Barnes",
@@ -2125,7 +2247,8 @@
           "score": 472,
           "hudlLink": "",
           "pffLink": "",
-          "state": "CA"
+          "state": "CA",
+          "allMac": null
         },
         {
           "player": "Blake Bosma",
@@ -2141,7 +2264,8 @@
           "score": 347,
           "hudlLink": "https://www.hudl.com/profile/15667208",
           "pffLink": "",
-          "state": "MI"
+          "state": "MI",
+          "allMac": null
         },
         {
           "player": "Gino Campiotti",
@@ -2157,7 +2281,8 @@
           "score": 329,
           "hudlLink": "https://www.hudl.com/profile/1900564/Gino-Campiotti",
           "pffLink": "",
-          "state": "CA"
+          "state": "CA",
+          "allMac": null
         },
         {
           "player": "Tanner Koziol",
@@ -2173,7 +2298,8 @@
           "score": 325,
           "hudlLink": "https://www.hudl.com/profile/12822689/tanner-koziol",
           "pffLink": "",
-          "state": "IL"
+          "state": "IL",
+          "allMac": 3
         },
         {
           "player": "Austin Hence",
@@ -2189,7 +2315,8 @@
           "score": 289,
           "hudlLink": "https://www.hudl.com/profile/3462300",
           "pffLink": "",
-          "state": "OH"
+          "state": "OH",
+          "allMac": null
         },
         {
           "player": "Will Kacmarek",
@@ -2205,7 +2332,8 @@
           "score": 263,
           "hudlLink": "",
           "pffLink": "",
-          "state": "MO"
+          "state": "MO",
+          "allMac": null
         },
         {
           "player": "TJ Banks",
@@ -2221,7 +2349,8 @@
           "score": 175,
           "hudlLink": "http://www.hudl.com/athlete/4121354/tj-banks",
           "pffLink": "",
-          "state": "PA"
+          "state": "PA",
+          "allMac": null
         },
         {
           "player": "Mitchel Collier",
@@ -2237,7 +2366,8 @@
           "score": 118,
           "hudlLink": "https://www.hudl.com/profile/7626285",
           "pffLink": "",
-          "state": "IN"
+          "state": "IN",
+          "allMac": null
         }
       ],
       "2024": [
@@ -2255,7 +2385,8 @@
           "score": 1655,
           "hudlLink": "https://www.hudl.com/profile/11087814",
           "pffLink": "",
-          "state": "OH"
+          "state": "OH",
+          "allMac": 1
         },
         {
           "player": "Tanner Koziol",
@@ -2271,7 +2402,8 @@
           "score": 919,
           "hudlLink": "https://www.hudl.com/profile/12822689/tanner-koziol",
           "pffLink": "",
-          "state": "IL"
+          "state": "IL",
+          "allMac": 2
         },
         {
           "player": "Anthony Torres",
@@ -2287,7 +2419,8 @@
           "score": 494,
           "hudlLink": "http://www.hudl.com/profile/5006033",
           "pffLink": "",
-          "state": "IN"
+          "state": "IN",
+          "allMac": null
         },
         {
           "player": "Blake Bosma",
@@ -2303,7 +2436,8 @@
           "score": 463,
           "hudlLink": "https://www.hudl.com/profile/15667208",
           "pffLink": "",
-          "state": "MI"
+          "state": "MI",
+          "allMac": 3
         },
         {
           "player": "Grayson Barnes",
@@ -2319,7 +2453,8 @@
           "score": 378,
           "hudlLink": "",
           "pffLink": "",
-          "state": "CA"
+          "state": "CA",
+          "allMac": null
         },
         {
           "player": "Jacob Newell",
@@ -2335,7 +2470,8 @@
           "score": 274,
           "hudlLink": "https://www.hudl.com/profile/11510459",
           "pffLink": "",
-          "state": "OR"
+          "state": "OR",
+          "allMac": null
         },
         {
           "player": "Max Reese",
@@ -2351,7 +2487,8 @@
           "score": 252,
           "hudlLink": "",
           "pffLink": "",
-          "state": "IL"
+          "state": "IL",
+          "allMac": null
         },
         {
           "player": "Mason Williams",
@@ -2367,7 +2504,8 @@
           "score": 231,
           "hudlLink": "https://www.hudl.com/profile/12957817",
           "pffLink": "",
-          "state": "OH"
+          "state": "OH",
+          "allMac": null
         },
         {
           "player": "Gavin Harris",
@@ -2383,7 +2521,8 @@
           "score": 183,
           "hudlLink": "https://www.hudl.com/profile/14029789",
           "pffLink": "",
-          "state": "TX"
+          "state": "TX",
+          "allMac": null
         },
         {
           "player": "Jacob Orlando",
@@ -2399,7 +2538,8 @@
           "score": 121,
           "hudlLink": "https://www.hudl.com/profile/5636709",
           "pffLink": "",
-          "state": "NY"
+          "state": "NY",
+          "allMac": null
         }
       ],
       "2025": [
@@ -2417,7 +2557,8 @@
           "score": 486,
           "hudlLink": "https://www.hudl.com/profile/8257929/Jyrin-Johnson/highlights",
           "pffLink": "",
-          "state": "LA"
+          "state": "LA",
+          "allMac": 1
         },
         {
           "player": "Joshua Long",
@@ -2433,7 +2574,8 @@
           "score": 387,
           "hudlLink": "https://www.hudl.com/profile/10307977",
           "pffLink": "",
-          "state": "CA"
+          "state": "CA",
+          "allMac": 2
         },
         {
           "player": "Jacob Petersen",
@@ -2449,7 +2591,8 @@
           "score": 365,
           "hudlLink": "",
           "pffLink": "",
-          "state": "IL"
+          "state": "IL",
+          "allMac": null
         },
         {
           "player": "Mason Williams",
@@ -2465,7 +2608,8 @@
           "score": 306,
           "hudlLink": "https://www.hudl.com/profile/12957817",
           "pffLink": "",
-          "state": "OH"
+          "state": "OH",
+          "allMac": 3
         },
         {
           "player": "Blake Bosma",
@@ -2481,7 +2625,8 @@
           "score": 255,
           "hudlLink": "https://www.hudl.com/profile/15667208",
           "pffLink": "",
-          "state": "MI"
+          "state": "MI",
+          "allMac": null
         },
         {
           "player": "Terik Mulder",
@@ -2497,7 +2642,8 @@
           "score": 238,
           "hudlLink": "",
           "pffLink": "",
-          "state": "KY"
+          "state": "KY",
+          "allMac": null
         },
         {
           "player": "Conner Cravaack",
@@ -2513,7 +2659,8 @@
           "score": 167,
           "hudlLink": "https://www.hudl.com/profile/11792396",
           "pffLink": "",
-          "state": "OH"
+          "state": "OH",
+          "allMac": null
         },
         {
           "player": "DeCorion Temple",
@@ -2529,7 +2676,8 @@
           "score": 151,
           "hudlLink": "https://www.hudl.com/profile/13103203",
           "pffLink": "",
-          "state": "MI"
+          "state": "MI",
+          "allMac": null
         },
         {
           "player": "Koby Gross",
@@ -2545,7 +2693,8 @@
           "score": 151,
           "hudlLink": "https://www.hudl.com/profile/7205571/Koby-Gross",
           "pffLink": "",
-          "state": "CA"
+          "state": "CA",
+          "allMac": null
         },
         {
           "player": "Brian Shane",
@@ -2561,7 +2710,8 @@
           "score": 136,
           "hudlLink": "https://www.hudl.com/profile/10529446",
           "pffLink": "",
-          "state": "OH"
+          "state": "OH",
+          "allMac": null
         }
       ],
       "2026": [
@@ -2579,7 +2729,8 @@
           "score": 182.0,
           "hudlLink": "https://www.hudl.com/profile/16657982/jeremiah-scoby",
           "pffLink": "",
-          "state": "TX"
+          "state": "TX",
+          "allMac": null
         },
         {
           "player": "Joshua Long",
@@ -2595,7 +2746,8 @@
           "score": 178.0,
           "hudlLink": "https://www.hudl.com/profile/10307977",
           "pffLink": "",
-          "state": "CA"
+          "state": "CA",
+          "allMac": null
         },
         {
           "player": "Eli Jacon-Duffy",
@@ -2611,7 +2763,8 @@
           "score": 138.0,
           "hudlLink": "https://www.hudl.com/profile/14831453",
           "pffLink": "",
-          "state": "OH"
+          "state": "OH",
+          "allMac": null
         },
         {
           "player": "Jordan Williams",
@@ -2627,7 +2780,8 @@
           "score": 122.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": "CA"
+          "state": "CA",
+          "allMac": null
         },
         {
           "player": "Elijah Alexander",
@@ -2643,7 +2797,8 @@
           "score": 117.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": "CA"
+          "state": "CA",
+          "allMac": null
         },
         {
           "player": "Nate Levicki",
@@ -2659,7 +2814,8 @@
           "score": 112.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": "MD"
+          "state": "MD",
+          "allMac": null
         },
         {
           "player": "Max Dowling",
@@ -2675,7 +2831,8 @@
           "score": 100.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": "NY"
+          "state": "NY",
+          "allMac": null
         },
         {
           "player": "Brendan Loftus",
@@ -2691,7 +2848,8 @@
           "score": 97.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": "IL"
+          "state": "IL",
+          "allMac": null
         },
         {
           "player": "Clint Walker",
@@ -2707,7 +2865,8 @@
           "score": 82.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": ""
+          "state": "",
+          "allMac": null
         },
         {
           "player": "Sam Lee",
@@ -2723,7 +2882,8 @@
           "score": 78.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": "OH"
+          "state": "OH",
+          "allMac": null
         }
       ]
     },
@@ -2745,7 +2905,8 @@
           "score": 141.0,
           "hudlLink": "https://www.hudl.com/profile/8281342",
           "pffLink": "",
-          "state": "IL"
+          "state": "IL",
+          "allMac": 1
         },
         {
           "player": "CJ Nunnally",
@@ -2763,7 +2924,8 @@
           "score": 138.0,
           "hudlLink": "https://www.hudl.com/profile/10872962",
           "pffLink": "",
-          "state": "GA"
+          "state": "GA",
+          "allMac": 1
         },
         {
           "player": "Caiden Woullard",
@@ -2781,7 +2943,8 @@
           "score": 122.0,
           "hudlLink": "https://www.hudl.com/profile/9691288/Caiden-Woullard/about",
           "pffLink": "",
-          "state": "OH"
+          "state": "OH",
+          "allMac": 1
         },
         {
           "player": "Judge Culpepper",
@@ -2799,7 +2962,8 @@
           "score": 113.0,
           "hudlLink": "https://www.hudl.com/profile/4137781",
           "pffLink": "",
-          "state": "FL"
+          "state": "FL",
+          "allMac": 1
         },
         {
           "player": "Marshawn Kneeland",
@@ -2817,97 +2981,103 @@
           "score": 99.0,
           "hudlLink": "https://www.hudl.com/profile/5587621",
           "pffLink": "",
-          "state": "MI"
+          "state": "MI",
+          "allMac": 2
         },
         {
-          "player": "Brian Ugwu",
-          "team": "Miami (OH)",
+          "player": "James Ester",
+          "team": "Northern Illinois",
           "position": "DL",
           "season": 2023,
           "totals": {
-            "games": 14.0,
-            "total": 0.0,
-            "tfl": 0.0,
-            "sacks": 8.0,
-            "pbu": 0.0,
-            "int": 0.0
+            "games": 13,
+            "total": 49,
+            "tfl": 6.5,
+            "sacks": 4.0,
+            "pbu": 0,
+            "int": 0
           },
-          "score": 48.0,
-          "hudlLink": "",
+          "score": 86.0,
+          "hudlLink": "https://www.hudl.com/profile/6025881",
           "pffLink": "",
-          "state": ""
+          "state": "MI",
+          "allMac": 2
         },
         {
-          "player": "Billy Wooden",
-          "team": "Massachusetts",
+          "player": "Jacques Bristol",
+          "team": "Central Mich.",
           "position": "DL",
           "season": 2023,
           "totals": {
-            "games": 12.0,
-            "total": 0.0,
-            "tfl": 0.0,
-            "sacks": 6.5,
-            "pbu": 0.0,
-            "int": 0.0
+            "games": 12,
+            "total": 44,
+            "tfl": 8.0,
+            "sacks": 4.0,
+            "pbu": 2,
+            "int": 0
           },
-          "score": 39.0,
-          "hudlLink": "",
+          "score": 84.0,
+          "hudlLink": "https://www.hudl.com/profile/8456395",
           "pffLink": "",
-          "state": ""
+          "state": "FL",
+          "allMac": 2
         },
         {
-          "player": "Bradley Weaver",
+          "player": "Rayyan Buell",
           "team": "Ohio",
           "position": "DL",
           "season": 2023,
           "totals": {
-            "games": 13.0,
-            "total": 0.0,
-            "tfl": 0.0,
-            "sacks": 6.0,
-            "pbu": 0.0,
-            "int": 0.0
+            "games": 13,
+            "total": 30,
+            "tfl": 12.5,
+            "sacks": 4.5,
+            "pbu": 0,
+            "int": 0
           },
-          "score": 36.0,
+          "score": 82.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": "OH"
+          "state": "",
+          "allMac": 3
         },
         {
-          "player": "Max Michel",
-          "team": "Buffalo",
+          "player": "Darius Alexander",
+          "team": "Toledo",
           "position": "DL",
           "season": 2023,
           "totals": {
-            "games": 11.0,
-            "total": 0.0,
-            "tfl": 0.0,
-            "sacks": 5.0,
-            "pbu": 0.0,
-            "int": 0.0
+            "games": 14,
+            "total": 36,
+            "tfl": 5.5,
+            "sacks": 4.0,
+            "pbu": 0,
+            "int": 0
           },
-          "score": 30.0,
-          "hudlLink": "",
+          "score": 71.0,
+          "hudlLink": "https://www.hudl.com/profile/12268505",
           "pffLink": "",
-          "state": ""
+          "state": "IN",
+          "allMac": 3
         },
         {
-          "player": "Vonnie Watkins",
-          "team": "Ohio",
+          "player": "CJ West",
+          "team": "Kent St.",
           "position": "DL",
           "season": 2023,
           "totals": {
-            "games": 13.0,
-            "total": 0.0,
-            "tfl": 0.0,
-            "sacks": 5.0,
-            "pbu": 0.0,
-            "int": 0.0
+            "games": 12,
+            "total": 40,
+            "tfl": 7.0,
+            "sacks": 2.0,
+            "pbu": 0,
+            "int": 0
           },
-          "score": 30.0,
-          "hudlLink": "",
+          "score": 66.0,
+          "hudlLink": "https://www.hudl.com/profile/7992145",
           "pffLink": "",
-          "state": ""
+          "state": "IL",
+          "allMac": 3
         }
       ],
       "2024": [
@@ -2927,7 +3097,8 @@
           "score": 125.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": "OH"
+          "state": "OH",
+          "allMac": 1
         },
         {
           "player": "Kobe Stewart",
@@ -2945,7 +3116,8 @@
           "score": 121.0,
           "hudlLink": "https://www.hudl.com/profile/11007547",
           "pffLink": "",
-          "state": "AL"
+          "state": "AL",
+          "allMac": 2
         },
         {
           "player": "CJ Nunnally",
@@ -2963,7 +3135,27 @@
           "score": 114.0,
           "hudlLink": "https://www.hudl.com/profile/10872962",
           "pffLink": "",
-          "state": "GA"
+          "state": "GA",
+          "allMac": 1
+        },
+        {
+          "player": "Devonte O'Malley",
+          "team": "Northern Illinois",
+          "position": "DL",
+          "season": 2024,
+          "totals": {
+            "games": 13,
+            "total": 39,
+            "tfl": 11.5,
+            "sacks": 8.0,
+            "pbu": 0,
+            "int": 0
+          },
+          "score": 110.0,
+          "hudlLink": "https://www.hudl.com/profile/10424969",
+          "pffLink": "",
+          "state": "IL",
+          "allMac": 1
         },
         {
           "player": "Peyton Price",
@@ -2981,7 +3173,27 @@
           "score": 103.0,
           "hudlLink": "https://www.hudl.com/profile/9298091",
           "pffLink": "",
-          "state": "IN"
+          "state": "IN",
+          "allMac": null
+        },
+        {
+          "player": "Skyler Gill-Howard",
+          "team": "Northern Illinois",
+          "position": "DL",
+          "season": 2024,
+          "totals": {
+            "games": 12,
+            "total": 51,
+            "tfl": 8.0,
+            "sacks": 5.0,
+            "pbu": 0,
+            "int": 0
+          },
+          "score": 97.0,
+          "hudlLink": "https://www.hudl.com/profile/11404635",
+          "pffLink": "",
+          "state": "WI",
+          "allMac": 3
         },
         {
           "player": "Riley Tolsma",
@@ -2999,97 +3211,65 @@
           "score": 91.0,
           "hudlLink": "https://www.hudl.com/profile/9891992",
           "pffLink": "",
-          "state": "MI"
+          "state": "MI",
+          "allMac": null
         },
         {
-          "player": "Brian Ugwu",
-          "team": "Miami (OH)",
+          "player": "Anthony Hawkins",
+          "team": "Bowling Green",
           "position": "DL",
           "season": 2024,
           "totals": {
-            "games": 14.0,
-            "total": 0.0,
-            "tfl": 0.0,
-            "sacks": 7.5,
-            "pbu": 0.0,
-            "int": 0.0
+            "games": 13,
+            "total": 46,
+            "tfl": 7.5,
+            "sacks": 5.0,
+            "pbu": 3,
+            "int": 0
           },
-          "score": 45.0,
-          "hudlLink": "",
+          "score": 91.0,
+          "hudlLink": "https://a.hudl.com/profile/8302419/anthony-hawkins",
           "pffLink": "",
-          "state": ""
+          "state": "OH",
+          "allMac": 3
         },
         {
-          "player": "Kameron Olds",
-          "team": "Kent St.",
+          "player": "Brandon Berger",
+          "team": "Ball St.",
           "position": "DL",
           "season": 2024,
           "totals": {
-            "games": 12.0,
-            "total": 0.0,
-            "tfl": 0.0,
-            "sacks": 6.0,
-            "pbu": 0.0,
-            "int": 0.0
+            "games": 12,
+            "total": 37,
+            "tfl": 9.5,
+            "sacks": 5.0,
+            "pbu": 4,
+            "int": 1
           },
-          "score": 36.0,
+          "score": 86.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": ""
+          "state": "",
+          "allMac": 3
         },
         {
-          "player": "Marcel Walker-Burgess",
-          "team": "Ohio",
+          "player": "Roy Williams",
+          "team": "Northern Illinois",
           "position": "DL",
           "season": 2024,
           "totals": {
-            "games": 14.0,
-            "total": 0.0,
-            "tfl": 0.0,
-            "sacks": 6.0,
-            "pbu": 0.0,
-            "int": 0.0
+            "games": 13,
+            "total": 38,
+            "tfl": 4.0,
+            "sacks": 6.5,
+            "pbu": 2,
+            "int": 0
           },
-          "score": 36.0,
-          "hudlLink": "",
+          "score": 85.0,
+          "hudlLink": "https://www.hudl.com/profile/13680985",
           "pffLink": "",
-          "state": ""
-        },
-        {
-          "player": "Corey Walker",
-          "team": "Western Mich.",
-          "position": "DL",
-          "season": 2024,
-          "totals": {
-            "games": 11.0,
-            "total": 0.0,
-            "tfl": 0.0,
-            "sacks": 5.5,
-            "pbu": 0.0,
-            "int": 0.0
-          },
-          "score": 33.0,
-          "hudlLink": "",
-          "pffLink": "",
-          "state": ""
-        },
-        {
-          "player": "Corey Suttle",
-          "team": "Miami (OH)",
-          "position": "DL",
-          "season": 2024,
-          "totals": {
-            "games": 12.0,
-            "total": 0.0,
-            "tfl": 0.0,
-            "sacks": 5.5,
-            "pbu": 0.0,
-            "int": 0.0
-          },
-          "score": 33.0,
-          "hudlLink": "",
-          "pffLink": "",
-          "state": ""
+          "state": "IL",
+          "allMac": 2
         }
       ],
       "2025": [
@@ -3109,7 +3289,8 @@
           "score": 184.0,
           "hudlLink": "https://www.hudl.com/v/2G4MYE",
           "pffLink": "",
-          "state": "NY"
+          "state": "NY",
+          "allMac": 1
         },
         {
           "player": "Nathan Voorhis",
@@ -3127,7 +3308,8 @@
           "score": 157.0,
           "hudlLink": "https://www.hudl.com/profile/11220839/Nathan-Voorhis",
           "pffLink": "",
-          "state": "PA"
+          "state": "PA",
+          "allMac": 1
         },
         {
           "player": "Michael Heldman",
@@ -3145,7 +3327,8 @@
           "score": 144.0,
           "hudlLink": "https://www.hudl.com/profile/9702111",
           "pffLink": "",
-          "state": "MI"
+          "state": "MI",
+          "allMac": 1
         },
         {
           "player": "Martez Poynter",
@@ -3163,7 +3346,8 @@
           "score": 102.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": "MO"
+          "state": "MO",
+          "allMac": 2
         },
         {
           "player": "Marques White",
@@ -3181,7 +3365,8 @@
           "score": 102.0,
           "hudlLink": "https://www.hudl.com/profile/7474318/Marques-White",
           "pffLink": "",
-          "state": "AZ"
+          "state": "AZ",
+          "allMac": 2
         },
         {
           "player": "Rodney McGraw",
@@ -3199,7 +3384,27 @@
           "score": 101.0,
           "hudlLink": "https://www.hudl.com/profile/11173598/Rodney-McGraw/videos",
           "pffLink": "",
-          "state": "IN"
+          "state": "IN",
+          "allMac": null
+        },
+        {
+          "player": "Julien Laventure",
+          "team": "Akron",
+          "position": "DL",
+          "season": 2025,
+          "totals": {
+            "games": 12,
+            "total": 45,
+            "tfl": 10.5,
+            "sacks": 4.0,
+            "pbu": 0,
+            "int": 0
+          },
+          "score": 90.0,
+          "hudlLink": "https://www.hudl.com/profile/17959240/julien-laventure",
+          "pffLink": "",
+          "state": "PA",
+          "allMac": 2
         },
         {
           "player": "Malachi Davis",
@@ -3217,7 +3422,8 @@
           "score": 88.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": ""
+          "state": "",
+          "allMac": 3
         },
         {
           "player": "Jay Crable",
@@ -3235,43 +3441,27 @@
           "score": 85.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": ""
+          "state": "",
+          "allMac": 2
         },
         {
-          "player": "Myles Bradley",
-          "team": "Bowling Green",
+          "player": "Bruno Dall",
+          "team": "Akron",
           "position": "DL",
           "season": 2025,
           "totals": {
-            "games": 12.0,
-            "total": 20,
-            "tfl": 16.5,
-            "sacks": 5.0,
-            "pbu": 0.0,
-            "int": 0.0
+            "games": 12,
+            "total": 44,
+            "tfl": 8.5,
+            "sacks": 4.0,
+            "pbu": 6,
+            "int": 1
           },
-          "score": 83.0,
-          "hudlLink": "",
+          "score": 85.0,
+          "hudlLink": "https://www.hudl.com/profile/15667109",
           "pffLink": "",
-          "state": "OH"
-        },
-        {
-          "player": "Jamond Mathis",
-          "team": "Kent St.",
-          "position": "DL",
-          "season": 2025,
-          "totals": {
-            "games": 12.0,
-            "total": 28,
-            "tfl": 8.0,
-            "sacks": 6.0,
-            "pbu": 0.0,
-            "int": 0.0
-          },
-          "score": 80.0,
-          "hudlLink": "",
-          "pffLink": "",
-          "state": ""
+          "state": "",
+          "allMac": 3
         }
       ],
       "2026": [
@@ -3291,7 +3481,8 @@
           "score": 65.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": "OH"
+          "state": "OH",
+          "allMac": null
         },
         {
           "player": "Andrew Zock",
@@ -3309,7 +3500,8 @@
           "score": 53.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": "FL"
+          "state": "FL",
+          "allMac": null
         },
         {
           "player": "Eriq George",
@@ -3327,7 +3519,8 @@
           "score": 48.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": "TN"
+          "state": "TN",
+          "allMac": null
         },
         {
           "player": "Ike Ackerman",
@@ -3345,7 +3538,8 @@
           "score": 46.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": "NE"
+          "state": "NE",
+          "allMac": null
         },
         {
           "player": "Jaxon Cherry",
@@ -3363,7 +3557,8 @@
           "score": 40.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": "IA"
+          "state": "IA",
+          "allMac": null
         },
         {
           "player": "Logan Goodwin",
@@ -3381,7 +3576,8 @@
           "score": 33.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": "PA"
+          "state": "PA",
+          "allMac": null
         },
         {
           "player": "Quincy Byas",
@@ -3399,7 +3595,8 @@
           "score": 32.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": "MO"
+          "state": "MO",
+          "allMac": null
         },
         {
           "player": "Ronn Hardin",
@@ -3417,7 +3614,8 @@
           "score": 32.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": "OH"
+          "state": "OH",
+          "allMac": null
         },
         {
           "player": "Kade Kostus",
@@ -3435,7 +3633,8 @@
           "score": 28.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": "MI"
+          "state": "MI",
+          "allMac": null
         },
         {
           "player": "Jaihien Roy",
@@ -3453,7 +3652,8 @@
           "score": 26.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": "MD"
+          "state": "MD",
+          "allMac": null
         }
       ]
     },
@@ -3475,7 +3675,8 @@
           "score": 216.0,
           "hudlLink": "https://www.hudl.com/profile/7673970",
           "pffLink": "",
-          "state": "IN"
+          "state": "IN",
+          "allMac": 2
         },
         {
           "player": "Matt Salopek",
@@ -3493,7 +3694,8 @@
           "score": 198.0,
           "hudlLink": "https://www.hudl.com/profile/6036828/Matt-Salopek",
           "pffLink": "",
-          "state": "OH"
+          "state": "OH",
+          "allMac": 1
         },
         {
           "player": "Bryce Houston",
@@ -3511,7 +3713,8 @@
           "score": 195.0,
           "hudlLink": "https://www.hudl.com/profile/4012020/Bryce-Houston",
           "pffLink": "",
-          "state": "OH"
+          "state": "OH",
+          "allMac": 1
         },
         {
           "player": "Chase Kline",
@@ -3529,7 +3732,8 @@
           "score": 177.0,
           "hudlLink": "https://www.hudl.com/profile/4712759/Chase-Kline/about",
           "pffLink": "",
-          "state": "OH"
+          "state": "OH",
+          "allMac": 3
         },
         {
           "player": "Joe Sparacio",
@@ -3547,7 +3751,46 @@
           "score": 176.0,
           "hudlLink": "https://www.hudl.com:443/profile/6265342/joseph-sparacio",
           "pffLink": "",
-          "state": "FL"
+          "state": "FL",
+          "allMac": 2
+        },
+        {
+          "player": "Darren Anders",
+          "team": "Bowling Green",
+          "position": "LB",
+          "season": 2023,
+          "totals": {
+            "games": 13,
+            "total": 82,
+            "tfl": 10.5,
+            "sacks": 4.5,
+            "pbu": 2,
+            "int": 0
+          },
+          "score": 138.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "",
+          "allMac": 2
+        },
+        {
+          "player": "Cole Pearce",
+          "team": "Ball St.",
+          "position": "LB",
+          "season": 2023,
+          "totals": {
+            "games": 12,
+            "total": 78,
+            "tfl": 10.0,
+            "sacks": 3.0,
+            "pbu": 2,
+            "int": 1
+          },
+          "score": 132.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "",
+          "allMac": 2
         },
         {
           "player": "Dallas Gant",
@@ -3565,79 +3808,46 @@
           "score": 116.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": ""
+          "state": "",
+          "allMac": 1
         },
         {
-          "player": "Antavious Fish",
-          "team": "Akron",
+          "player": "Cashius Howell",
+          "team": "Bowling Green",
           "position": "LB",
           "season": 2023,
           "totals": {
-            "games": 12.0,
-            "total": 95.0,
-            "tfl": 0.0,
-            "sacks": 0.0,
-            "pbu": 0.0,
-            "int": 0.0
+            "games": 13,
+            "total": 28,
+            "tfl": 10.5,
+            "sacks": 9.5,
+            "pbu": 1,
+            "int": 0
           },
-          "score": 95.0,
-          "hudlLink": "",
+          "score": 110.0,
+          "hudlLink": "https://www.hudl.com/profile/11689312/Cashius-Howell",
           "pffLink": "",
-          "state": ""
+          "state": "MO",
+          "allMac": 3
         },
         {
-          "player": "Bryan McCoy",
-          "team": "Akron",
+          "player": "Kyle Moretti",
+          "team": "Central Mich.",
           "position": "LB",
           "season": 2023,
           "totals": {
-            "games": 11.0,
-            "total": 94.0,
-            "tfl": 0.0,
-            "sacks": 0.0,
-            "pbu": 0.0,
-            "int": 0.0
+            "games": 9,
+            "total": 65,
+            "tfl": 5.0,
+            "sacks": 2.0,
+            "pbu": 4,
+            "int": 0
           },
-          "score": 94.0,
-          "hudlLink": "https://www.hudl.com/profile/11229287",
+          "score": 103.0,
+          "hudlLink": "https://www.hudl.com/profile/9752206/kyle-moretti",
           "pffLink": "",
-          "state": "IL"
-        },
-        {
-          "player": "Daniel Bolden",
-          "team": "Toledo",
-          "position": "LB",
-          "season": 2023,
-          "totals": {
-            "games": 14.0,
-            "total": 94.0,
-            "tfl": 0.0,
-            "sacks": 0.0,
-            "pbu": 0.0,
-            "int": 0.0
-          },
-          "score": 94.0,
-          "hudlLink": "",
-          "pffLink": "",
-          "state": ""
-        },
-        {
-          "player": "Keye Thompson",
-          "team": "Ohio",
-          "position": "LB",
-          "season": 2023,
-          "totals": {
-            "games": 12.0,
-            "total": 93.0,
-            "tfl": 0.0,
-            "sacks": 0.0,
-            "pbu": 0.0,
-            "int": 0.0
-          },
-          "score": 93.0,
-          "hudlLink": "",
-          "pffLink": "",
-          "state": ""
+          "state": "CO",
+          "allMac": 3
         }
       ],
       "2024": [
@@ -3657,7 +3867,8 @@
           "score": 304.0,
           "hudlLink": "https://www.hudl.com/profile/6316923/Shaun-Dolac/about",
           "pffLink": "",
-          "state": "NY"
+          "state": "NY",
+          "allMac": 1
         },
         {
           "player": "Red Murdock",
@@ -3675,7 +3886,8 @@
           "score": 201.0,
           "hudlLink": "https://www.hudl.com/video/3/9349397/606b230f420771195cea645e",
           "pffLink": "",
-          "state": "VA"
+          "state": "VA",
+          "allMac": 1
         },
         {
           "player": "Matt Salopek",
@@ -3693,7 +3905,27 @@
           "score": 180.0,
           "hudlLink": "https://www.hudl.com/profile/6036828/Matt-Salopek",
           "pffLink": "",
-          "state": "OH"
+          "state": "OH",
+          "allMac": 1
+        },
+        {
+          "player": "Ty Wise",
+          "team": "Miami (OH)",
+          "position": "LB",
+          "season": 2024,
+          "totals": {
+            "games": 14,
+            "total": 89,
+            "tfl": 10.5,
+            "sacks": 5.0,
+            "pbu": 0,
+            "int": 2
+          },
+          "score": 156.0,
+          "hudlLink": "https://www.hudl.com/profile/7673970",
+          "pffLink": "",
+          "state": "IN",
+          "allMac": 2
         },
         {
           "player": "Joseph Sipp Jr.",
@@ -3711,7 +3943,46 @@
           "score": 150.0,
           "hudlLink": "https://hudl.com/v/2FsWDU",
           "pffLink": "",
-          "state": "FL"
+          "state": "FL",
+          "allMac": 1
+        },
+        {
+          "player": "Jordan Kwiatkowski",
+          "team": "Central Mich.",
+          "position": "LB",
+          "season": 2024,
+          "totals": {
+            "games": 12,
+            "total": 96,
+            "tfl": 14.5,
+            "sacks": 0,
+            "pbu": 1,
+            "int": 1
+          },
+          "score": 137.0,
+          "hudlLink": "https://www.hudl.com/profile/11394344/Jordan-Kwiatkowski/about",
+          "pffLink": "",
+          "state": "MI",
+          "allMac": 2
+        },
+        {
+          "player": "Shay Taylor",
+          "team": "Ohio",
+          "position": "LB",
+          "season": 2024,
+          "totals": {
+            "games": 13,
+            "total": 72,
+            "tfl": 10.0,
+            "sacks": 3.0,
+            "pbu": 4,
+            "int": 1
+          },
+          "score": 134.0,
+          "hudlLink": "https://www.hudl.com/profile/10451014/Shay-Taylor",
+          "pffLink": "",
+          "state": "OH",
+          "allMac": 3
         },
         {
           "player": "Bryan McCoy",
@@ -3729,7 +4000,27 @@
           "score": 131.0,
           "hudlLink": "https://www.hudl.com/profile/11229287",
           "pffLink": "",
-          "state": "IL"
+          "state": "IL",
+          "allMac": 2
+        },
+        {
+          "player": "Blake Leake",
+          "team": "Ohio",
+          "position": "LB",
+          "season": 2024,
+          "totals": {
+            "games": 14,
+            "total": 91,
+            "tfl": 4.0,
+            "sacks": 0,
+            "pbu": 3,
+            "int": 1
+          },
+          "score": 119.0,
+          "hudlLink": "https://www.hudl.com/profile/7895713",
+          "pffLink": "",
+          "state": "VA",
+          "allMac": 3
         },
         {
           "player": "Dion Crawford",
@@ -3747,79 +4038,8 @@
           "score": 110.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": ""
-        },
-        {
-          "player": "Donald Willis",
-          "team": "Western Mich.",
-          "position": "LB",
-          "season": 2024,
-          "totals": {
-            "games": 13.0,
-            "total": 109.0,
-            "tfl": 0.0,
-            "sacks": 0.0,
-            "pbu": 0.0,
-            "int": 0.0
-          },
-          "score": 109.0,
-          "hudlLink": "",
-          "pffLink": "",
-          "state": ""
-        },
-        {
-          "player": "Charles Rosser",
-          "team": "Bowling Green",
-          "position": "LB",
-          "season": 2024,
-          "totals": {
-            "games": 13.0,
-            "total": 63.0,
-            "tfl": 0.0,
-            "sacks": 6.0,
-            "pbu": 0.0,
-            "int": 0.0
-          },
-          "score": 99.0,
-          "hudlLink": "",
-          "pffLink": "",
-          "state": ""
-        },
-        {
-          "player": "James Djonkam",
-          "team": "Eastern Mich.",
-          "position": "LB",
-          "season": 2024,
-          "totals": {
-            "games": 10.0,
-            "total": 98.0,
-            "tfl": 0.0,
-            "sacks": 0.0,
-            "pbu": 0.0,
-            "int": 0.0
-          },
-          "score": 98.0,
-          "hudlLink": "",
-          "pffLink": "",
-          "state": ""
-        },
-        {
-          "player": "Daniel Bolden",
-          "team": "Toledo",
-          "position": "LB",
-          "season": 2024,
-          "totals": {
-            "games": 13.0,
-            "total": 97.0,
-            "tfl": 0.0,
-            "sacks": 0.0,
-            "pbu": 0.0,
-            "int": 0.0
-          },
-          "score": 97.0,
-          "hudlLink": "",
-          "pffLink": "",
-          "state": ""
+          "state": "",
+          "allMac": null
         }
       ],
       "2025": [
@@ -3839,7 +4059,8 @@
           "score": 207.0,
           "hudlLink": "https://www.hudl.com/profile/11394344/Jordan-Kwiatkowski/about",
           "pffLink": "",
-          "state": "MI"
+          "state": "MI",
+          "allMac": 1
         },
         {
           "player": "Red Murdock",
@@ -3857,7 +4078,27 @@
           "score": 203.0,
           "hudlLink": "https://www.hudl.com/video/3/9349397/606b230f420771195cea645e",
           "pffLink": "",
-          "state": "VA"
+          "state": "VA",
+          "allMac": 1
+        },
+        {
+          "player": "Quinton Urwiler",
+          "team": "Northern Illinois",
+          "position": "LB",
+          "season": 2025,
+          "totals": {
+            "games": 12,
+            "total": 141,
+            "tfl": 7.5,
+            "sacks": 1.5,
+            "pbu": 1,
+            "int": 1
+          },
+          "score": 177.0,
+          "hudlLink": "https://www.hudl.com/profile/7862989",
+          "pffLink": "",
+          "state": "IL",
+          "allMac": 2
         },
         {
           "player": "Gideon Lampron",
@@ -3875,7 +4116,8 @@
           "score": 173.0,
           "hudlLink": "https://www.hudl.com/profile/11293236",
           "pffLink": "",
-          "state": "OH"
+          "state": "OH",
+          "allMac": 1
         },
         {
           "player": "Jackson Kuwatch",
@@ -3893,7 +4135,8 @@
           "score": 163.0,
           "hudlLink": "https://www.hudl.com/profile/13109292/Jackson-Kuwatch",
           "pffLink": "",
-          "state": "OH"
+          "state": "OH",
+          "allMac": 3
         },
         {
           "player": "Adam Trick",
@@ -3911,7 +4154,27 @@
           "score": 159.0,
           "hudlLink": "https://www.hudl.com/profile/11351013",
           "pffLink": "",
-          "state": "OH"
+          "state": "OH",
+          "allMac": null
+        },
+        {
+          "player": "Corban Hondru",
+          "team": "Miami (OH)",
+          "position": "LB",
+          "season": 2025,
+          "totals": {
+            "games": 10,
+            "total": 83,
+            "tfl": 6.0,
+            "sacks": 1.0,
+            "pbu": 0,
+            "int": 3
+          },
+          "score": 125.0,
+          "hudlLink": "https://www.hudl.com/profile/9792324/Corban-Hondru",
+          "pffLink": "",
+          "state": "PA",
+          "allMac": 2
         },
         {
           "player": "Tyler Martin",
@@ -3929,79 +4192,46 @@
           "score": 103.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": ""
+          "state": "",
+          "allMac": 3
         },
         {
-          "player": "Mason Woods",
-          "team": "Kent St.",
+          "player": "Dakota Cochran",
+          "team": "Central Mich.",
           "position": "LB",
           "season": 2025,
           "totals": {
-            "games": 12.0,
-            "total": 94.0,
-            "tfl": 0.0,
-            "sacks": 0.0,
-            "pbu": 0.0,
-            "int": 0.0
+            "games": 13,
+            "total": 67,
+            "tfl": 6.0,
+            "sacks": 0.5,
+            "pbu": 2,
+            "int": 1
           },
-          "score": 94.0,
-          "hudlLink": "",
+          "score": 98.0,
+          "hudlLink": "https://www.hudl.com/profile/8880907/dakota-cochran",
           "pffLink": "",
-          "state": ""
+          "state": "OH",
+          "allMac": 2
         },
         {
-          "player": "K'Von Sherman",
+          "player": "Chris D'Appolonia",
           "team": "Toledo",
           "position": "LB",
           "season": 2025,
           "totals": {
-            "games": 13.0,
-            "total": 94.0,
-            "tfl": 0.0,
-            "sacks": 0.0,
-            "pbu": 0.0,
-            "int": 0.0
+            "games": 12,
+            "total": 68,
+            "tfl": 3.5,
+            "sacks": 1.0,
+            "pbu": 4,
+            "int": 0
           },
-          "score": 94.0,
+          "score": 97.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": ""
-        },
-        {
-          "player": "CJ Young",
-          "team": "Kent St.",
-          "position": "LB",
-          "season": 2025,
-          "totals": {
-            "games": 11.0,
-            "total": 89.0,
-            "tfl": 0.0,
-            "sacks": 0.0,
-            "pbu": 0.0,
-            "int": 0.0
-          },
-          "score": 89.0,
-          "hudlLink": "",
-          "pffLink": "",
-          "state": ""
-        },
-        {
-          "player": "James Camden",
-          "team": "Western Mich.",
-          "position": "LB",
-          "season": 2025,
-          "totals": {
-            "games": 14.0,
-            "total": 84.0,
-            "tfl": 0.0,
-            "sacks": 0.0,
-            "pbu": 0.0,
-            "int": 0.0
-          },
-          "score": 84.0,
-          "hudlLink": "",
-          "pffLink": "",
-          "state": ""
+          "state": "",
+          "allMac": 3
         }
       ],
       "2026": [
@@ -4021,7 +4251,8 @@
           "score": 79.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": "IN"
+          "state": "IN",
+          "allMac": null
         },
         {
           "player": "Michael Molnar",
@@ -4039,7 +4270,8 @@
           "score": 74.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": "OH"
+          "state": "OH",
+          "allMac": null
         },
         {
           "player": "SaVeon Brown",
@@ -4057,7 +4289,8 @@
           "score": 64.0,
           "hudlLink": "https://www.hudl.com/profile/11179653/Saveon-Brown",
           "pffLink": "",
-          "state": "IL"
+          "state": "IL",
+          "allMac": null
         },
         {
           "player": "Zach Mowchan",
@@ -4075,7 +4308,8 @@
           "score": 64.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": "PA"
+          "state": "PA",
+          "allMac": null
         },
         {
           "player": "Dillon Moore",
@@ -4093,7 +4327,8 @@
           "score": 51.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": "IN"
+          "state": "IN",
+          "allMac": null
         },
         {
           "player": "Dorian Pringle",
@@ -4111,7 +4346,8 @@
           "score": 51.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": "OH"
+          "state": "OH",
+          "allMac": null
         },
         {
           "player": "Rocco Nicholl",
@@ -4129,7 +4365,8 @@
           "score": 50.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": "PA"
+          "state": "PA",
+          "allMac": null
         },
         {
           "player": "Julian Fox",
@@ -4147,7 +4384,8 @@
           "score": 50.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": "GA"
+          "state": "GA",
+          "allMac": null
         },
         {
           "player": "Jack Fries",
@@ -4165,7 +4403,8 @@
           "score": 47.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": "OH"
+          "state": "OH",
+          "allMac": null
         },
         {
           "player": "Cashmire Lewis",
@@ -4183,7 +4422,8 @@
           "score": 46.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": "CT"
+          "state": "CT",
+          "allMac": null
         }
       ]
     },
@@ -4203,7 +4443,8 @@
           "score": 134,
           "hudlLink": "https://www.hudl.com/profile/6112865",
           "pffLink": "",
-          "state": "GA"
+          "state": "GA",
+          "allMac": 2
         },
         {
           "player": "Quinyon Mitchell",
@@ -4219,7 +4460,8 @@
           "score": 121.0,
           "hudlLink": "https://www.hudl.com/video/3/7624493/5c40ce3c4797ed1060561168",
           "pffLink": "",
-          "state": "FL"
+          "state": "FL",
+          "allMac": 1
         },
         {
           "player": "Jalen Huskey",
@@ -4235,7 +4477,8 @@
           "score": 108.0,
           "hudlLink": "https://www.hudl.com/profile/11389555",
           "pffLink": "",
-          "state": "MD"
+          "state": "MD",
+          "allMac": 1
         },
         {
           "player": "Kempton Shine",
@@ -4251,7 +4494,25 @@
           "score": 92,
           "hudlLink": "https://www.hudl.com/profile/6688408",
           "pffLink": "",
-          "state": "IL"
+          "state": "IL",
+          "allMac": null
+        },
+        {
+          "player": "JaVaughn Byrd",
+          "team": "Northern Illinois",
+          "position": "CB",
+          "season": 2023,
+          "totals": {
+            "games": 13,
+            "total": 32,
+            "pbu": 8,
+            "int": 3
+          },
+          "score": 88,
+          "hudlLink": "https://www.hudl.com/profile/9687565",
+          "pffLink": "",
+          "state": "WI",
+          "allMac": 2
         },
         {
           "player": "Donte Kent",
@@ -4267,7 +4528,8 @@
           "score": 86,
           "hudlLink": "https://www.hudl.com/profile/9753443",
           "pffLink": "",
-          "state": "PA"
+          "state": "PA",
+          "allMac": 2
         },
         {
           "player": "Jordan Oladokun",
@@ -4283,7 +4545,8 @@
           "score": 82.0,
           "hudlLink": "https://www.hudl.com/profile/11269460",
           "pffLink": "",
-          "state": "FL"
+          "state": "FL",
+          "allMac": 2
         },
         {
           "player": "Chris McDonald",
@@ -4299,7 +4562,8 @@
           "score": 82,
           "hudlLink": "",
           "pffLink": "",
-          "state": "FL"
+          "state": "FL",
+          "allMac": 3
         },
         {
           "player": "Charles McCartherens",
@@ -4315,7 +4579,8 @@
           "score": 70.0,
           "hudlLink": "https://www.hudl.com/profile/12953144",
           "pffLink": "",
-          "state": "GA"
+          "state": "GA",
+          "allMac": null
         },
         {
           "player": "Tyler Potts",
@@ -4331,23 +4596,8 @@
           "score": 67,
           "hudlLink": "https://www.hudl.com/profile/7497583",
           "pffLink": "",
-          "state": "OH"
-        },
-        {
-          "player": "Bennett Walker",
-          "team": "Eastern Mich.",
-          "position": "CB",
-          "season": 2023,
-          "totals": {
-            "games": 10,
-            "total": 23,
-            "pbu": 4,
-            "int": 3
-          },
-          "score": 63,
-          "hudlLink": "https://www.hudl.com/profile/13312806",
-          "pffLink": "",
-          "state": "CA"
+          "state": "OH",
+          "allMac": null
         }
       ],
       "2024": [
@@ -4365,7 +4615,8 @@
           "score": 141,
           "hudlLink": "https://www.hudl.com/profile/15490539",
           "pffLink": "",
-          "state": "PA"
+          "state": "PA",
+          "allMac": 1
         },
         {
           "player": "Avery Smith",
@@ -4381,7 +4632,8 @@
           "score": 130.0,
           "hudlLink": "https://www.hudl.com/profile/13236427",
           "pffLink": "",
-          "state": "GA"
+          "state": "GA",
+          "allMac": 2
         },
         {
           "player": "Bilhal Kone",
@@ -4397,7 +4649,8 @@
           "score": 114.0,
           "hudlLink": "https://www.hudl.com/profile/8203660",
           "pffLink": "",
-          "state": "MN"
+          "state": "MN",
+          "allMac": null
         },
         {
           "player": "Tank Pearson",
@@ -4413,7 +4666,8 @@
           "score": 107.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": "MS"
+          "state": "MS",
+          "allMac": null
         },
         {
           "player": "Darrian Lewis",
@@ -4429,7 +4683,8 @@
           "score": 106,
           "hudlLink": "https://www.hudl.com/profile/11011761",
           "pffLink": "",
-          "state": "OH"
+          "state": "OH",
+          "allMac": null
         },
         {
           "player": "Jordan Oladokun",
@@ -4445,7 +4700,8 @@
           "score": 99.0,
           "hudlLink": "https://www.hudl.com/profile/11269460",
           "pffLink": "",
-          "state": "FL"
+          "state": "FL",
+          "allMac": 1
         },
         {
           "player": "Paul Lewis III",
@@ -4461,7 +4717,8 @@
           "score": 97.0,
           "hudlLink": "https://www.hudl.com/video/3/6079625/5721d65764e96b63802202c3",
           "pffLink": "",
-          "state": "MD"
+          "state": "MD",
+          "allMac": 3
         },
         {
           "player": "Donte Kent",
@@ -4477,7 +4734,8 @@
           "score": 89,
           "hudlLink": "https://www.hudl.com/profile/9753443",
           "pffLink": "",
-          "state": "PA"
+          "state": "PA",
+          "allMac": 2
         },
         {
           "player": "JaVaughn Byrd",
@@ -4493,7 +4751,8 @@
           "score": 51,
           "hudlLink": "https://www.hudl.com/profile/9687565",
           "pffLink": "",
-          "state": "WI"
+          "state": "WI",
+          "allMac": 3
         },
         {
           "player": "Todd Bumphis",
@@ -4509,7 +4768,8 @@
           "score": 16.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": ""
+          "state": "",
+          "allMac": null
         }
       ],
       "2025": [
@@ -4527,7 +4787,42 @@
           "score": 117.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": "MS"
+          "state": "MS",
+          "allMac": 3
+        },
+        {
+          "player": "Andre Fuller",
+          "team": "Toledo",
+          "position": "CB",
+          "season": 2025,
+          "totals": {
+            "games": 13,
+            "total": 49,
+            "pbu": 11,
+            "int": 1
+          },
+          "score": 101,
+          "hudlLink": "https://www.hudl.com/video/3/9983967/5da2441319af5105c416ce6c",
+          "pffLink": "",
+          "state": "FL",
+          "allMac": 1
+        },
+        {
+          "player": "Avery Smith",
+          "team": "Toledo",
+          "position": "CB",
+          "season": 2025,
+          "totals": {
+            "games": 13,
+            "total": 42,
+            "pbu": 11,
+            "int": 1
+          },
+          "score": 94,
+          "hudlLink": "https://www.hudl.com/profile/13236427",
+          "pffLink": "",
+          "state": "GA",
+          "allMac": 2
         },
         {
           "player": "MJ Cannon",
@@ -4543,7 +4838,8 @@
           "score": 85.0,
           "hudlLink": "https://www.hudl.com/profile/13071182",
           "pffLink": "",
-          "state": "IL"
+          "state": "IL",
+          "allMac": 3
         },
         {
           "player": "Jalen McClendon",
@@ -4559,7 +4855,8 @@
           "score": 83.0,
           "hudlLink": "https://www.hudl.com/profile/10964406",
           "pffLink": "",
-          "state": "FL"
+          "state": "FL",
+          "allMac": 3
         },
         {
           "player": "Kalen Carroll",
@@ -4575,7 +4872,8 @@
           "score": 83,
           "hudlLink": "https://www.hudl.com/profile/11249917/Kalen-Carroll/about",
           "pffLink": "",
-          "state": "IN"
+          "state": "IN",
+          "allMac": null
         },
         {
           "player": "JoJo Johnson",
@@ -4591,7 +4889,8 @@
           "score": 82.0,
           "hudlLink": "https://www.hudl.com/profile/9454727",
           "pffLink": "",
-          "state": "IN"
+          "state": "IN",
+          "allMac": null
         },
         {
           "player": "Jarvarius Sims",
@@ -4607,7 +4906,8 @@
           "score": 80.0,
           "hudlLink": "https://www.hudl.com/profile/11281944",
           "pffLink": "",
-          "state": "GA"
+          "state": "GA",
+          "allMac": null
         },
         {
           "player": "Elijah Reed",
@@ -4623,7 +4923,8 @@
           "score": 79,
           "hudlLink": "https://www.hudl.com/profile/12921009",
           "pffLink": "",
-          "state": "KY"
+          "state": "KY",
+          "allMac": null
         },
         {
           "player": "Willizhuan Yates",
@@ -4639,39 +4940,8 @@
           "score": 66,
           "hudlLink": "https://www.hudl.com/profile/14888843/Will-Yates",
           "pffLink": "",
-          "state": "OH"
-        },
-        {
-          "player": "Donte Harrison",
-          "team": "Northern Illinois",
-          "position": "CB",
-          "season": 2025,
-          "totals": {
-            "games": 10,
-            "total": 30,
-            "pbu": 6,
-            "int": 1
-          },
-          "score": 62,
-          "hudlLink": "",
-          "pffLink": "",
-          "state": "DC"
-        },
-        {
-          "player": "Joshua Scott",
-          "team": "Eastern Mich.",
-          "position": "CB",
-          "season": 2025,
-          "totals": {
-            "games": 11,
-            "total": 29,
-            "pbu": 4,
-            "int": 1
-          },
-          "score": 53,
-          "hudlLink": "https://www.hudl.com/profile/22282832/joshua-scott",
-          "pffLink": "",
-          "state": "CA"
+          "state": "OH",
+          "allMac": null
         }
       ],
       "2026": [
@@ -4689,7 +4959,8 @@
           "score": 39.0,
           "hudlLink": "https://www.hudl.com/profile/15729844",
           "pffLink": "",
-          "state": "VA"
+          "state": "VA",
+          "allMac": null
         },
         {
           "player": "Isaiah Reed",
@@ -4705,7 +4976,8 @@
           "score": 34.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": "FL"
+          "state": "FL",
+          "allMac": null
         },
         {
           "player": "Israel Petite",
@@ -4721,7 +4993,8 @@
           "score": 31.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": "OH"
+          "state": "OH",
+          "allMac": null
         },
         {
           "player": "Kobi Blackwell",
@@ -4737,7 +5010,8 @@
           "score": 28.0,
           "hudlLink": "https://www.hudl.com/profile/1476743/Kobi-Blackwell/about",
           "pffLink": "",
-          "state": "GA"
+          "state": "GA",
+          "allMac": null
         },
         {
           "player": "Caiden Newsome",
@@ -4753,7 +5027,8 @@
           "score": 27.0,
           "hudlLink": "https://www.hudl.com/profile/20427970/caiden-newsome",
           "pffLink": "",
-          "state": "MD"
+          "state": "MD",
+          "allMac": null
         },
         {
           "player": "Jarvarius Sims",
@@ -4769,7 +5044,8 @@
           "score": 26.0,
           "hudlLink": "https://www.hudl.com/profile/11281944",
           "pffLink": "",
-          "state": "GA"
+          "state": "GA",
+          "allMac": null
         },
         {
           "player": "Dionte Thornton",
@@ -4785,7 +5061,8 @@
           "score": 25.0,
           "hudlLink": "https://www.hudl.com/profile/4436431/dionte-thornton",
           "pffLink": "",
-          "state": "CA"
+          "state": "CA",
+          "allMac": null
         },
         {
           "player": "Cam Jones",
@@ -4801,7 +5078,8 @@
           "score": 25.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": "PA"
+          "state": "PA",
+          "allMac": null
         },
         {
           "player": "Barry Dillon",
@@ -4817,7 +5095,8 @@
           "score": 23.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": "MS"
+          "state": "MS",
+          "allMac": null
         },
         {
           "player": "Josira Andrews",
@@ -4833,7 +5112,8 @@
           "score": 20.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": "NY"
+          "state": "NY",
+          "allMac": null
         }
       ]
     },
@@ -4854,7 +5134,8 @@
           "score": 118.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": "NY"
+          "state": "NY",
+          "allMac": 1
         },
         {
           "player": "Bryce Sheppert",
@@ -4871,7 +5152,8 @@
           "score": 106.0,
           "hudlLink": "https://www.hudl.com/profile/5124830/Bryce-Sheppert/about",
           "pffLink": "",
-          "state": "OH"
+          "state": "OH",
+          "allMac": null
         },
         {
           "player": "Darrian Lewis",
@@ -4888,7 +5170,8 @@
           "score": 105.0,
           "hudlLink": "https://www.hudl.com/profile/11011761",
           "pffLink": "",
-          "state": "OH"
+          "state": "OH",
+          "allMac": null
         },
         {
           "player": "Tate Hallock",
@@ -4905,7 +5188,8 @@
           "score": 101.2,
           "hudlLink": "https://www.hudl.com/profile/5409851",
           "pffLink": "",
-          "state": "MI"
+          "state": "MI",
+          "allMac": null
         },
         {
           "player": "Aaron Wofford",
@@ -4922,7 +5206,8 @@
           "score": 98.0,
           "hudlLink": "https://www.hudl.com/profile/19482468/aaron-wofford",
           "pffLink": "",
-          "state": "IL"
+          "state": "IL",
+          "allMac": null
         },
         {
           "player": "Walter Reynolds",
@@ -4939,7 +5224,8 @@
           "score": 71.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": ""
+          "state": "",
+          "allMac": null
         },
         {
           "player": "Jacquez Warren",
@@ -4956,7 +5242,8 @@
           "score": 70.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": ""
+          "state": "",
+          "allMac": null
         },
         {
           "player": "Emmanuel McNeil-Warren",
@@ -4973,7 +5260,8 @@
           "score": 69.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": ""
+          "state": "",
+          "allMac": null
         },
         {
           "player": "Trey Jones III",
@@ -4990,7 +5278,8 @@
           "score": 66.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": ""
+          "state": "",
+          "allMac": null
         },
         {
           "player": "Nate Bauer",
@@ -5007,7 +5296,8 @@
           "score": 64.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": ""
+          "state": "",
+          "allMac": null
         }
       ],
       "2024": [
@@ -5026,7 +5316,8 @@
           "score": 132.5,
           "hudlLink": "https://www.hudl.com/profile/4193936/Maxen-Hook/about",
           "pffLink": "",
-          "state": "IN"
+          "state": "IN",
+          "allMac": 1
         },
         {
           "player": "Silas Walters",
@@ -5043,7 +5334,8 @@
           "score": 131.0,
           "hudlLink": "https://www.hudl.com/profile/8856518",
           "pffLink": "",
-          "state": "OH"
+          "state": "OH",
+          "allMac": null
         },
         {
           "player": "Tate Hallock",
@@ -5060,7 +5352,8 @@
           "score": 123.0,
           "hudlLink": "https://www.hudl.com/profile/5409851",
           "pffLink": "",
-          "state": "MI"
+          "state": "MI",
+          "allMac": 2
         },
         {
           "player": "Raion Strader",
@@ -5077,7 +5370,8 @@
           "score": 119.0,
           "hudlLink": "https://www.hudl.com/profile/15490539",
           "pffLink": "",
-          "state": "PA"
+          "state": "PA",
+          "allMac": null
         },
         {
           "player": "Braden Awls",
@@ -5094,7 +5388,44 @@
           "score": 96.0,
           "hudlLink": "https://www.hudl.com/profile/14213226/Braden-Awls",
           "pffLink": "",
-          "state": "OH"
+          "state": "OH",
+          "allMac": null
+        },
+        {
+          "player": "Nate Valcarcel",
+          "team": "Northern Illinois",
+          "position": "SAF",
+          "season": 2024,
+          "totals": {
+            "games": 13,
+            "total": 51,
+            "tfl": 1.5,
+            "pbu": 8,
+            "int": 3
+          },
+          "score": 95.2,
+          "hudlLink": "https://www.hudl.com/profile/7906707/Nate-Valcarcel",
+          "pffLink": "",
+          "state": "WI",
+          "allMac": 1
+        },
+        {
+          "player": "DJ Walker",
+          "team": "Ohio",
+          "position": "SAF",
+          "season": 2024,
+          "totals": {
+            "games": 14,
+            "total": 53,
+            "tfl": 7.0,
+            "pbu": 7,
+            "int": 1
+          },
+          "score": 90.5,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "PA",
+          "allMac": 2
         },
         {
           "player": "Josh Baka",
@@ -5111,7 +5442,8 @@
           "score": 90.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": ""
+          "state": "",
+          "allMac": null
         },
         {
           "player": "Eli Blakey",
@@ -5128,7 +5460,8 @@
           "score": 89.0,
           "hudlLink": "https://www.hudl.com/profile/9739430/eli-blakey",
           "pffLink": "",
-          "state": "KY"
+          "state": "KY",
+          "allMac": 3
         },
         {
           "player": "George Udo",
@@ -5145,41 +5478,8 @@
           "score": 78.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": ""
-        },
-        {
-          "player": "Dustin Johnson",
-          "team": "Ohio",
-          "position": "SAF",
-          "season": 2024,
-          "totals": {
-            "games": 14.0,
-            "total": 77.0,
-            "tfl": 0.0,
-            "pbu": 0.0,
-            "int": 0.0
-          },
-          "score": 77.0,
-          "hudlLink": "",
-          "pffLink": "",
-          "state": ""
-        },
-        {
-          "player": "Darrian Lewis",
-          "team": "Akron",
-          "position": "SAF",
-          "season": 2024,
-          "totals": {
-            "games": 12.0,
-            "total": 74.0,
-            "tfl": 0.0,
-            "pbu": 0.0,
-            "int": 0.0
-          },
-          "score": 74.0,
-          "hudlLink": "https://www.hudl.com/profile/11011761",
-          "pffLink": "",
-          "state": "OH"
+          "state": "",
+          "allMac": null
         }
       ],
       "2025": [
@@ -5198,7 +5498,8 @@
           "score": 160.8,
           "hudlLink": "https://www.hudl.com/profile/9739430/eli-blakey",
           "pffLink": "",
-          "state": "KY"
+          "state": "KY",
+          "allMac": 1
         },
         {
           "player": "Bryce Llewellyn",
@@ -5215,7 +5516,26 @@
           "score": 133.5,
           "hudlLink": "https://www.hudl.com/profile/17498941/bryce-llewellyn",
           "pffLink": "",
-          "state": "IN"
+          "state": "IN",
+          "allMac": 2
+        },
+        {
+          "player": "Braden Awls",
+          "team": "Toledo",
+          "position": "SAF",
+          "season": 2025,
+          "totals": {
+            "games": 12,
+            "total": 52,
+            "tfl": 6.5,
+            "pbu": 9,
+            "int": 5
+          },
+          "score": 118.8,
+          "hudlLink": "https://www.hudl.com/profile/14213226/Braden-Awls",
+          "pffLink": "",
+          "state": "OH",
+          "allMac": 1
         },
         {
           "player": "Silas Walters",
@@ -5232,7 +5552,8 @@
           "score": 110.0,
           "hudlLink": "https://www.hudl.com/profile/8856518",
           "pffLink": "",
-          "state": "OH"
+          "state": "OH",
+          "allMac": 2
         },
         {
           "player": "Kal-El Pascal",
@@ -5249,7 +5570,8 @@
           "score": 107.0,
           "hudlLink": "https://www.hudl.com/profile/15335920/KalEl-Pascal",
           "pffLink": "",
-          "state": "FL"
+          "state": "FL",
+          "allMac": null
         },
         {
           "player": "Jalen Thomeson",
@@ -5266,7 +5588,26 @@
           "score": 105.5,
           "hudlLink": "",
           "pffLink": "",
-          "state": "IN"
+          "state": "IN",
+          "allMac": null
+        },
+        {
+          "player": "Tate Hallock",
+          "team": "Western Mich.",
+          "position": "SAF",
+          "season": 2025,
+          "totals": {
+            "games": 14,
+            "total": 67,
+            "tfl": 2.0,
+            "pbu": 4,
+            "int": 3
+          },
+          "score": 100.0,
+          "hudlLink": "https://www.hudl.com/profile/5409851",
+          "pffLink": "",
+          "state": "MI",
+          "allMac": 2
         },
         {
           "player": "Adonis Williams Jr.",
@@ -5283,7 +5624,8 @@
           "score": 80.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": ""
+          "state": "",
+          "allMac": null
         },
         {
           "player": "Emmanuel McNeil-Warren",
@@ -5300,7 +5642,8 @@
           "score": 77.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": ""
+          "state": "",
+          "allMac": 1
         },
         {
           "player": "Zeraun Daniel",
@@ -5317,41 +5660,8 @@
           "score": 75.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": ""
-        },
-        {
-          "player": "Miles Greer",
-          "team": "Buffalo",
-          "position": "SAF",
-          "season": 2025,
-          "totals": {
-            "games": 12.0,
-            "total": 74.0,
-            "tfl": 0.0,
-            "pbu": 0.0,
-            "int": 0.0
-          },
-          "score": 74.0,
-          "hudlLink": "",
-          "pffLink": "",
-          "state": ""
-        },
-        {
-          "player": "Barry Manning",
-          "team": "Eastern Mich.",
-          "position": "SAF",
-          "season": 2025,
-          "totals": {
-            "games": 12.0,
-            "total": 73.0,
-            "tfl": 0.0,
-            "pbu": 0.0,
-            "int": 0.0
-          },
-          "score": 73.0,
-          "hudlLink": "",
-          "pffLink": "",
-          "state": ""
+          "state": "",
+          "allMac": null
         }
       ],
       "2026": [
@@ -5370,7 +5680,8 @@
           "score": 54.0,
           "hudlLink": "https://www.hudl.com/profile/696595",
           "pffLink": "",
-          "state": "IL"
+          "state": "IL",
+          "allMac": null
         },
         {
           "player": "Armorion Smith",
@@ -5387,7 +5698,8 @@
           "score": 50.8,
           "hudlLink": "",
           "pffLink": "",
-          "state": "MI"
+          "state": "MI",
+          "allMac": null
         },
         {
           "player": "Caleb Dobbs",
@@ -5404,7 +5716,8 @@
           "score": 44.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": "FL"
+          "state": "FL",
+          "allMac": null
         },
         {
           "player": "Kal-El Pascal",
@@ -5421,7 +5734,8 @@
           "score": 42.5,
           "hudlLink": "https://www.hudl.com/profile/15335920/KalEl-Pascal",
           "pffLink": "",
-          "state": "FL"
+          "state": "FL",
+          "allMac": null
         },
         {
           "player": "Jason Marshall",
@@ -5438,7 +5752,8 @@
           "score": 39.5,
           "hudlLink": "",
           "pffLink": "",
-          "state": "MI"
+          "state": "MI",
+          "allMac": null
         },
         {
           "player": "Zeraun Daniel",
@@ -5455,7 +5770,8 @@
           "score": 38.5,
           "hudlLink": "",
           "pffLink": "",
-          "state": "NY"
+          "state": "NY",
+          "allMac": null
         },
         {
           "player": "Sterling Smith",
@@ -5472,7 +5788,8 @@
           "score": 38.5,
           "hudlLink": "",
           "pffLink": "",
-          "state": "IN"
+          "state": "IN",
+          "allMac": null
         },
         {
           "player": "Bryce Llewellyn",
@@ -5489,7 +5806,8 @@
           "score": 37.0,
           "hudlLink": "https://www.hudl.com/profile/17498941/bryce-llewellyn",
           "pffLink": "",
-          "state": "IN"
+          "state": "IN",
+          "allMac": null
         },
         {
           "player": "Darrell Bryant Jr.",
@@ -5506,7 +5824,8 @@
           "score": 37.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": "VA"
+          "state": "VA",
+          "allMac": null
         },
         {
           "player": "Boogsie Silvera",
@@ -5523,7 +5842,8 @@
           "score": 36.0,
           "hudlLink": "",
           "pffLink": "",
-          "state": "FL"
+          "state": "FL",
+          "allMac": null
         }
       ]
     }

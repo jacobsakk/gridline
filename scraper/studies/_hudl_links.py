@@ -75,6 +75,8 @@ CB_SUPPLEMENT = {
         {"player": "Donte Kent", "team": "Central Mich.", "totals": {"games": 11, "total": 58, "pbu": 7, "int": 0}},
         {"player": "Kempton Shine", "team": "Eastern Mich.", "totals": {"games": 13, "total": 56, "pbu": 9, "int": 0}},
         {"player": "Bennett Walker", "team": "Eastern Mich.", "totals": {"games": 10, "total": 23, "pbu": 4, "int": 3}},
+        # All-MAC 2nd-team CB, missing before the full cross-reference against the official All-MAC teams.
+        {"player": "JaVaughn Byrd", "team": "Northern Illinois", "totals": {"games": 13, "total": 32, "pbu": 8, "int": 3}},
     ],
     "2024": [
         {"player": "Raion Strader", "team": "Miami (OH)", "totals": {"games": 12, "total": 53, "pbu": 18, "int": 2}},
@@ -88,6 +90,9 @@ CB_SUPPLEMENT = {
         {"player": "Willizhuan Yates", "team": "Ball St.", "totals": {"games": 10, "total": 34, "pbu": 6, "int": 1}},
         {"player": "Donte Harrison", "team": "Northern Illinois", "totals": {"games": 10, "total": 30, "pbu": 6, "int": 1}},
         {"player": "Joshua Scott", "team": "Eastern Mich.", "totals": {"games": 11, "total": 29, "pbu": 4, "int": 1}},
+        # All-MAC 1st/2nd-team CB, missing before the full cross-reference against the official All-MAC teams.
+        {"player": "Andre Fuller", "team": "Toledo", "totals": {"games": 13, "total": 49, "pbu": 11, "int": 1}},
+        {"player": "Avery Smith", "team": "Toledo", "totals": {"games": 13, "total": 42, "pbu": 11, "int": 1}},
     ],
     # No 2026 entry on purpose, same reason as TE_SUPPLEMENT above -- real-stats.json's MAC CB pool is a
     # full roster (dozens of corners), not the handful the NCAA leaderboard carried.
@@ -102,8 +107,97 @@ QB_SUPPLEMENT = {
     ],
 }
 WR_SUPPLEMENT = {
+    "2023": [
+        # Every one of these is an official All-MAC WR honoree (2nd or 3rd team) missing from the
+        # national leaderboard pull -- found via each school's own 2023 season stats page.
+        {"player": "Daniel George", "team": "Akron", "totals": {"games": 12, "rec": 52, "yards": 529, "td": 1}},
+        {"player": "Tanner Knue", "team": "Eastern Mich.", "totals": {"games": 12, "rec": 50, "yards": 479, "td": 3}},
+        {"player": "Jesse Prewitt III", "team": "Central Mich.", "totals": {"games": 12, "rec": 31, "yards": 438, "td": 4}},
+        {"player": "Luke Floriea", "team": "Kent St.", "totals": {"games": 12, "rec": 39, "yards": 405, "td": 4}},
+        {"player": "Trayvon Rudolph", "team": "Northern Illinois", "totals": {"games": 13, "rec": 51, "yards": 531, "td": 2}},
+        {"player": "Anthony Sambucci", "team": "Western Mich.", "totals": {"games": 9, "rec": 21, "yards": 318, "td": 5}},
+    ],
+    "2024": [
+        {"player": "Oran Singleton", "team": "Eastern Mich.", "totals": {"games": 12, "rec": 64, "yards": 639, "td": 2}},
+        {"player": "Cam Pickett", "team": "Ball St.", "totals": {"games": 12, "rec": 49, "yards": 528, "td": 2}},
+        {"player": "Terry Lockett", "team": "Eastern Mich.", "totals": {"games": 12, "rec": 46, "yards": 660, "td": 5}},
+    ],
     "2025": [
         {"player": "Nick Devereaux", "team": "Eastern Mich.", "totals": {"games": 10, "rec": 34, "yards": 510, "td": 7}},
+        {"player": "Israel Polk", "team": "Akron", "totals": {"games": 12, "rec": 33, "yards": 525, "td": 8}},
+        # Same player as Trayvon Rudolph (Northern Illinois) in the 2023 list above -- transferred to
+        # Toledo; confirmed via matching hometown and Hudl profile, kept as its own season/team row like
+        # every other multi-year player here.
+        {"player": "Trayvon Rudolph", "team": "Toledo", "totals": {"games": 13, "rec": 39, "yards": 435, "td": 2}},
+        {"player": "Cade Wolford", "team": "Kent St.", "totals": {"games": 12, "rec": 19, "yards": 509, "td": 7}},
+    ],
+}
+# RB/DL/LB/SAF never needed supplementing before (their real leaderboard pool was always >= TOP_N) --
+# these exist purely to cover specific All-MAC honorees the full cross-reference turned up missing, same
+# sourcing standard as everything else in this file.
+RB_SUPPLEMENT = {
+    "2023": [
+        {"player": "Antario Brown", "team": "Northern Illinois", "totals": {"games": 12, "att": 212, "yards": 1296, "td": 10}},
+    ],
+    "2025": [
+        {"player": "Chavon Wright", "team": "Northern Illinois", "totals": {"games": 12, "att": 196, "yards": 875, "td": 5}},
+    ],
+}
+DL_SUPPLEMENT = {
+    "2023": [
+        {"player": "Jacques Bristol", "team": "Central Mich.", "totals": {"games": 12, "total": 44, "tfl": 8.0, "sacks": 4.0, "pbu": 2, "int": 0}},
+        {"player": "James Ester", "team": "Northern Illinois", "totals": {"games": 13, "total": 49, "tfl": 6.5, "sacks": 4.0, "pbu": 0, "int": 0}},
+        {"player": "CJ West", "team": "Kent St.", "totals": {"games": 12, "total": 40, "tfl": 7.0, "sacks": 2.0, "pbu": 0, "int": 0}},
+        {"player": "Rayyan Buell", "team": "Ohio", "totals": {"games": 13, "total": 30, "tfl": 12.5, "sacks": 4.5, "pbu": 0, "int": 0}},
+        {"player": "Darius Alexander", "team": "Toledo", "totals": {"games": 14, "total": 36, "tfl": 5.5, "sacks": 4.0, "pbu": 0, "int": 0}},
+    ],
+    "2024": [
+        {"player": "Devonte O'Malley", "team": "Northern Illinois", "totals": {"games": 13, "total": 39, "tfl": 11.5, "sacks": 8.0, "pbu": 0, "int": 0}},
+        {"player": "Roy Williams", "team": "Northern Illinois", "totals": {"games": 13, "total": 38, "tfl": 4.0, "sacks": 6.5, "pbu": 2, "int": 0}},
+        {"player": "Darius Alexander", "team": "Toledo", "totals": {"games": 13, "total": 40, "tfl": 7.5, "sacks": 3.5, "pbu": 4, "int": 1}},
+        {"player": "Brandon Berger", "team": "Ball St.", "totals": {"games": 12, "total": 37, "tfl": 9.5, "sacks": 5.0, "pbu": 4, "int": 1}},
+        {"player": "Anthony Hawkins", "team": "Bowling Green", "totals": {"games": 13, "total": 46, "tfl": 7.5, "sacks": 5.0, "pbu": 3, "int": 0}},
+        {"player": "Skyler Gill-Howard", "team": "Northern Illinois", "totals": {"games": 12, "total": 51, "tfl": 8.0, "sacks": 5.0, "pbu": 0, "int": 0}},
+    ],
+    "2025": [
+        {"player": "Julien Laventure", "team": "Akron", "totals": {"games": 12, "total": 45, "tfl": 10.5, "sacks": 4.0, "pbu": 0, "int": 0}},
+        {"player": "Bruno Dall", "team": "Akron", "totals": {"games": 12, "total": 44, "tfl": 8.5, "sacks": 4.0, "pbu": 6, "int": 1}},
+        {"player": "Junior Poyser", "team": "Buffalo", "totals": {"games": 12, "total": 31, "tfl": 0, "sacks": 5.5, "pbu": 0, "int": 0}},
+        {"player": "Esean Carter", "team": "Toledo", "totals": {"games": 13, "total": 36, "tfl": 3.0, "sacks": 3.0, "pbu": 0, "int": 0}},
+    ],
+}
+LB_SUPPLEMENT = {
+    "2023": [
+        {"player": "Cole Pearce", "team": "Ball St.", "totals": {"games": 12, "total": 78, "tfl": 10.0, "sacks": 3.0, "pbu": 2, "int": 1}},
+        {"player": "Darren Anders", "team": "Bowling Green", "totals": {"games": 13, "total": 82, "tfl": 10.5, "sacks": 4.5, "pbu": 2, "int": 0}},
+        {"player": "Cashius Howell", "team": "Bowling Green", "totals": {"games": 13, "total": 28, "tfl": 10.5, "sacks": 9.5, "pbu": 1, "int": 0}},
+        {"player": "Kyle Moretti", "team": "Central Mich.", "totals": {"games": 9, "total": 65, "tfl": 5.0, "sacks": 2.0, "pbu": 4, "int": 0}},
+    ],
+    "2024": [
+        # Kwiatkowski and Wise are each already on the 2025/2023 list respectively (multi-year All-MAC
+        # honorees) -- this is their 2024 season specifically, a separate row like every other year.
+        {"player": "Jordan Kwiatkowski", "team": "Central Mich.", "totals": {"games": 12, "total": 96, "tfl": 14.5, "sacks": 0, "pbu": 1, "int": 1}},
+        {"player": "Ty Wise", "team": "Miami (OH)", "totals": {"games": 14, "total": 89, "tfl": 10.5, "sacks": 5.0, "pbu": 0, "int": 2}},
+        {"player": "Shay Taylor", "team": "Ohio", "totals": {"games": 13, "total": 72, "tfl": 10.0, "sacks": 3.0, "pbu": 4, "int": 1}},
+        {"player": "Blake Leake", "team": "Ohio", "totals": {"games": 14, "total": 91, "tfl": 4.0, "sacks": 0, "pbu": 3, "int": 1}},
+    ],
+    "2025": [
+        {"player": "Dakota Cochran", "team": "Central Mich.", "totals": {"games": 13, "total": 67, "tfl": 6.0, "sacks": 0.5, "pbu": 2, "int": 1}},
+        {"player": "Corban Hondru", "team": "Miami (OH)", "totals": {"games": 10, "total": 83, "tfl": 6.0, "sacks": 1.0, "pbu": 0, "int": 3}},
+        {"player": "Quinton Urwiler", "team": "Northern Illinois", "totals": {"games": 12, "total": 141, "tfl": 7.5, "sacks": 1.5, "pbu": 1, "int": 1}},
+        {"player": "Chris D'Appolonia", "team": "Toledo", "totals": {"games": 12, "total": 68, "tfl": 3.5, "sacks": 1.0, "pbu": 4, "int": 0}},
+    ],
+}
+SAF_SUPPLEMENT = {
+    "2024": [
+        {"player": "Nate Valcarcel", "team": "Northern Illinois", "totals": {"games": 13, "total": 51, "tfl": 1.5, "pbu": 8, "int": 3}},
+        {"player": "Jacorey Benjamin", "team": "Bowling Green", "totals": {"games": 13, "total": 27, "tfl": 2.0, "pbu": 6, "int": 2}},
+        {"player": "DJ Walker", "team": "Ohio", "totals": {"games": 14, "total": 53, "tfl": 7.0, "pbu": 7, "int": 1}},
+    ],
+    "2025": [
+        {"player": "Braden Awls", "team": "Toledo", "totals": {"games": 12, "total": 52, "tfl": 6.5, "pbu": 9, "int": 5}},
+        {"player": "Tate Hallock", "team": "Western Mich.", "totals": {"games": 14, "total": 67, "tfl": 2.0, "pbu": 4, "int": 3}},
+        {"player": "Josh Franklin", "team": "Western Mich.", "totals": {"games": 14, "total": 41, "tfl": 3.5, "pbu": 4, "int": 0}},
     ],
 }
 HUDL_LINKS.update({
@@ -286,4 +380,45 @@ HUDL_LINKS.update({
     "ELIJAH REED": "https://www.hudl.com/profile/12921009",
     "WILLIZHUAN YATES": "https://www.hudl.com/profile/14888843/Will-Yates",
     "JOSHUA SCOTT": "https://www.hudl.com/profile/22282832/joshua-scott",
+})
+HUDL_LINKS.update({
+    # Names added by the full All-MAC cross-reference (every First/Second/Third Team honoree 2023-2025
+    # checked against what was already here). A few (Buell, Berger, Pearce, D'Appolonia) turned up no
+    # confirmed profile and are left blank rather than guessed.
+    "ANDRE FULLER": "https://www.hudl.com/video/3/9983967/5da2441319af5105c416ce6c",
+    "ANTARIO BROWN": "https://www.hudl.com/profile/11662722/Antario-Brown",
+    "CHAVON WRIGHT": "https://www.hudl.com/profile/8576954",
+    "DANIEL GEORGE": "http://www.hudl.com/profile/3829193",
+    "TANNER KNUE": "https://www.hudl.com/profile/3978815",
+    "JESSE PREWITT III": "https://m.hudl.com/profile/5415763/jesse-prewitt-iii",
+    "LUKE FLORIEA": "https://www.hudl.com/profile/4040392/Luke-Floriea/about",
+    "TRAYVON RUDOLPH": "https://www.hudl.com/profile/7779101",
+    "ANTHONY SAMBUCCI": "https://www.hudl.com/profile/4657605/Anthony-Sambucci",
+    "ORAN SINGLETON": "https://www.hudl.com/profile/11031414/Oran-Singleton-Jr/highlights",
+    "CAM PICKETT": "http://www.hudl.com/profile/11537946",
+    "TERRY LOCKETT": "https://www.hudl.com/profile/9765808/terry-lockett",
+    "ISRAEL POLK": "https://www.hudl.com/profile/14998491/israel-polk",
+    "CADE WOLFORD": "https://www.hudl.com/profile/13193565",
+    "JACQUES BRISTOL": "https://www.hudl.com/profile/8456395",
+    "JAMES ESTER": "https://www.hudl.com/profile/6025881",
+    "CJ WEST": "https://www.hudl.com/profile/7992145",
+    "DARIUS ALEXANDER": "https://www.hudl.com/profile/12268505",
+    "DEVONTE O'MALLEY": "https://www.hudl.com/profile/10424969",
+    "ROY WILLIAMS": "https://www.hudl.com/profile/13680985",
+    "ANTHONY HAWKINS": "https://a.hudl.com/profile/8302419/anthony-hawkins",
+    "SKYLER GILL-HOWARD": "https://www.hudl.com/profile/11404635",
+    "JULIEN LAVENTURE": "https://www.hudl.com/profile/17959240/julien-laventure",
+    "BRUNO DALL": "https://www.hudl.com/profile/15667109",
+    "JUNIOR POYSER": "https://www.hudl.com/profile/16921410",
+    "ESEAN CARTER": "https://www.hudl.com/profile/11725826",
+    "CASHIUS HOWELL": "https://www.hudl.com/profile/11689312/Cashius-Howell",
+    "KYLE MORETTI": "https://www.hudl.com/profile/9752206/kyle-moretti",
+    "SHAY TAYLOR": "https://www.hudl.com/profile/10451014/Shay-Taylor",
+    "BLAKE LEAKE": "https://www.hudl.com/profile/7895713",
+    "DAKOTA COCHRAN": "https://www.hudl.com/profile/8880907/dakota-cochran",
+    "CORBAN HONDRU": "https://www.hudl.com/profile/9792324/Corban-Hondru",
+    "QUINTON URWILER": "https://www.hudl.com/profile/7862989",
+    "NATE VALCARCEL": "https://www.hudl.com/profile/7906707/Nate-Valcarcel",
+    "JACOREY BENJAMIN": "https://www.hudl.com/profile/6224007",
+    "JOSH FRANKLIN": "https://www.hudl.com/profile/12989484",
 })

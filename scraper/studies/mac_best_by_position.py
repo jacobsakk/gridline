@@ -33,9 +33,22 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from ncaa_api import build_division_rows
-from studies._hudl_links import HUDL_LINKS, PFF_LINKS, TE_SUPPLEMENT, CB_SUPPLEMENT, QB_SUPPLEMENT, WR_SUPPLEMENT
+from studies._hudl_links import (
+    HUDL_LINKS, PFF_LINKS, TE_SUPPLEMENT, CB_SUPPLEMENT, QB_SUPPLEMENT, WR_SUPPLEMENT,
+    RB_SUPPLEMENT, DL_SUPPLEMENT, LB_SUPPLEMENT, SAF_SUPPLEMENT,
+)
 from studies._stat_overrides import STAT_OVERRIDES
 from studies._home_states import HOME_STATES
+from studies._all_mac import all_mac_tier
+
+# Every group but TE (which fully replaces its leaderboard pull when a supplement exists for that
+# season -- see below) tops up additively: the real leaderboard candidates for that season stay, these
+# just add whoever else belongs on the list (an All-MAC honoree the leaderboard's national cutoff
+# missed, say). Empty for a group/season that's never needed one.
+SUPPLEMENTS = {
+    "QB": QB_SUPPLEMENT, "RB": RB_SUPPLEMENT, "WR": WR_SUPPLEMENT,
+    "DL": DL_SUPPLEMENT, "LB": LB_SUPPLEMENT, "CB": CB_SUPPLEMENT, "SAF": SAF_SUPPLEMENT,
+}
 
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 OUT_PATH = os.path.join(REPO_ROOT, "frontend", "src", "data", "studies", "mac-best-by-position.json")
@@ -158,6 +171,10 @@ def build():
                     # more complete than hand-curating every week's shifting top-5 pool one player at a
                     # time). 2023-2025 rows have no "homeState" key at all, so this is a no-op for them.
                     "state": HOME_STATES.get(r["player"].upper(), "") or r.get("homeState", ""),
+                    # Gold/silver/bronze if this player made the official All-MAC team that season at
+                    # this position (see _all_mac.py) -- None (no medal) otherwise. Purely informational,
+                    # never affects ranking.
+                    "allMac": all_mac_tier(group_key, season, r["player"]),
                 })
             if group_key == "TE" and season in TE_SUPPLEMENT:
                 # The leaderboard pull above still runs (kept, in case a future season has more nationally-
@@ -168,32 +185,21 @@ def build():
                 ranked = [
                     {"player": e["player"], "team": e["team"], "position": "TE", "season": int(season), "totals": e["totals"],
                      "score": round(cfg["score"](e["totals"]), 1), "hudlLink": HUDL_LINKS.get(e["player"].upper(), ""),
-                     "pffLink": PFF_LINKS.get(e["player"].upper(), ""), "state": HOME_STATES.get(e["player"].upper(), "")}
+                     "pffLink": PFF_LINKS.get(e["player"].upper(), ""), "state": HOME_STATES.get(e["player"].upper(), ""),
+                     "allMac": all_mac_tier("TE", season, e["player"])}
                     for e in TE_SUPPLEMENT.get(season, [])
                 ]
-            if group_key == "CB":
-                # Unlike TE, CB's leaderboard coverage is fine most seasons -- this only tops up a season
-                # whose raw candidate pool came in under TOP_N (see CB_SUPPLEMENT's comment). Additive, not
-                # a replacement: the real leaderboard candidates for this season stay in `ranked` too.
-                for e in CB_SUPPLEMENT.get(season, []):
-                    totals = {k: e["totals"].get(k, 0) for k in cfg["stats"]}
-                    ranked.append({
-                        "player": e["player"], "team": e["team"], "position": "CB", "season": int(season),
-                        "totals": totals, "score": round(cfg["score"](totals), 1),
-                        "hudlLink": HUDL_LINKS.get(e["player"].upper(), ""), "pffLink": PFF_LINKS.get(e["player"].upper(), ""),
-                        "state": HOME_STATES.get(e["player"].upper(), ""),
-                    })
-            if group_key in ("QB", "WR"):
-                # Same additive top-up as CB above, for the one season each of these came in under TOP_N.
-                supplement = QB_SUPPLEMENT if group_key == "QB" else WR_SUPPLEMENT
-                for e in supplement.get(season, []):
-                    totals = {k: e["totals"].get(k, 0) for k in cfg["stats"]}
-                    ranked.append({
-                        "player": e["player"], "team": e["team"], "position": group_key, "season": int(season),
-                        "totals": totals, "score": round(cfg["score"](totals), 1),
-                        "hudlLink": HUDL_LINKS.get(e["player"].upper(), ""), "pffLink": PFF_LINKS.get(e["player"].upper(), ""),
-                        "state": HOME_STATES.get(e["player"].upper(), ""),
-                    })
+            # Every other group tops up additively from its own SUPPLEMENT dict (empty where never
+            # needed) -- the real leaderboard candidates for this season stay in `ranked` too.
+            for e in SUPPLEMENTS.get(group_key, {}).get(season, []):
+                totals = {k: e["totals"].get(k, 0) for k in cfg["stats"]}
+                ranked.append({
+                    "player": e["player"], "team": e["team"], "position": group_key, "season": int(season),
+                    "totals": totals, "score": round(cfg["score"](totals), 1),
+                    "hudlLink": HUDL_LINKS.get(e["player"].upper(), ""), "pffLink": PFF_LINKS.get(e["player"].upper(), ""),
+                    "state": HOME_STATES.get(e["player"].upper(), ""),
+                    "allMac": all_mac_tier(group_key, season, e["player"]),
+                })
             ranked.sort(key=lambda x: -x["score"])
             study[group_key][season] = ranked[:TOP_N]
             print(f"  {group_key} {season}: {len(rows)} leaderboard candidates, {len(ranked)} in the final list")

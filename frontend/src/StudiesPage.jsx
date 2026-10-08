@@ -11,6 +11,15 @@ import { submitStudyRequest, useStudyRequests } from "./studyRequests.js";
 
 const ghostBtn = { ...control, cursor: "pointer", fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 7 };
 
+// Gold/silver/bronze for a real, official All-MAC First/Second/Third Team honor that season (see
+// scraper/studies/_all_mac.py) -- purely informational, next to the name, never affects the ranking.
+const MEDAL = { 1: { emoji: "🥇", label: "First Team All-MAC" }, 2: { emoji: "🥈", label: "Second Team All-MAC" }, 3: { emoji: "🥉", label: "Third Team All-MAC" } };
+function Medal({ tier }) {
+  const m = MEDAL[tier];
+  if (!m) return null;
+  return <span title={m.label} aria-label={m.label} style={{ marginRight: 5 }}>{m.emoji}</span>;
+}
+
 // Studies that don't fit the generic position-group/season/stat shape StudyDetail renders (MAC's
 // Most Productive) -- each one of these gets its own detail component instead, picked by id below.
 // Still listed as an ordinary card on the landing page, same as STUDIES.
@@ -499,6 +508,7 @@ function StudyDetail({ studyId, canEdit, onBack }) {
                 return (
                 <tr key={r.id || r.player} style={{ background: i % 2 === 0 ? "var(--bg-panel)" : "var(--bg-page)" }}>
                   <td style={{ ...td, fontWeight: 700, color: "var(--text-primary)" }}>
+                    <Medal tier={r.allMac} />
                     {isManualRow ? <TextCell row={r} field="player" placeholder="Player name" editable={canEdit} onSave={(v) => study.updateManualRow(r.id, { player: v })} /> : r.player}
                   </td>
                   <td style={td}>
