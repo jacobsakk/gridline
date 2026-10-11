@@ -845,7 +845,18 @@ function FaceBlock({ player, week, status, why, onGame, updatePlayer, updateGame
       </div>
 
       <div style={{ ...headCell, gridColumn: 2, gridRow: 1 }}>RECORD</div>
-      <div style={{ ...valueCell, gridColumn: 2, gridRow: 2 }} className="tabular">{player.record.played ? player.record.text : "—"}</div>
+      <div style={{ ...valueCell, gridColumn: 2, gridRow: 2, padding: 0 }}>
+        <input
+          key={player.recordText || ""}
+          defaultValue={player.recordText || ""}
+          onBlur={(e) => e.target.value.trim() !== (player.recordText || "") && updatePlayer(player.id, { recordText: e.target.value.trim() })}
+          aria-label={`Record for ${player.name}`}
+          title="Overrides the computed record -- use for players (e.g. CA JUCOs) whose full schedule isn't entered"
+          placeholder={player.record.played ? player.record.text : "—"}
+          className="tabular"
+          style={{ width: "100%", height: "100%", border: "none", background: "transparent", textAlign: "center", fontWeight: 800, color: SHEET.ink, fontFamily: "inherit", fontSize: "var(--hs-font)", padding: "0 4px", minWidth: 0 }}
+        />
+      </div>
       <div style={{ ...headCell, gridColumn: 2, gridRow: 3 }}>OPPONENT</div>
       <div className={game ? "hs-game-click" : undefined} title={game ? "Click for this game's sources" : undefined} onClick={game ? () => onGame(player, game) : undefined} style={{ ...valueCell, gridColumn: 2, gridRow: 4, ...fit(game?.opponent), cursor: game ? "pointer" : "default" }}>{game?.opponent || "—"}</div>
       <div style={{ ...headCell, gridColumn: 2, gridRow: 5 }}>SCORE</div>
