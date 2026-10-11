@@ -506,7 +506,7 @@ function StudyDetail({ studyId, canEdit, onBack }) {
                 // it's in. An OL row is always one of these since that group has no computed rows at all.
                 const isManualRow = !!r.id;
                 return (
-                <tr key={r.id || r.player} style={{ background: i % 2 === 0 ? "var(--bg-panel)" : "var(--bg-page)" }}>
+                <tr key={r.id || `${r.player}__${r.team}`} style={{ background: i % 2 === 0 ? "var(--bg-panel)" : "var(--bg-page)" }}>
                   <td style={{ ...td, fontWeight: 700, color: "var(--text-primary)" }}>
                     <Medal tier={r.allMac} />
                     {isManualRow ? <TextCell row={r} field="player" placeholder="Player name" editable={canEdit} onSave={(v) => study.updateManualRow(r.id, { player: v })} /> : r.player}
