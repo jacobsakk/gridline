@@ -487,44 +487,46 @@ export async function importWorkbook(file, classYear) {
   return summary;
 }
 
-// The feed names schools the way a recruiting site does.
-const FEED_COLLEGE_TO_TEAM = {
-  "MIAMI (OH)": "MIAMI (OH)", "KENT STATE": "KENT STATE", TOLEDO: "TOLEDO", "BOWLING GREEN": "BGSU",
-  "SAC STATE": "SAC STATE", "EASTERN MICHIGAN": "EMU", AKRON: "AKRON", "WESTERN MICHIGAN": "WMU",
-  BUFFALO: "BUFFALO", OHIO: "OHIO", MASSACHUSETTS: "UMASS", UMASS: "UMASS", "BALL STATE": "BALL STATE",
-  "CENTRAL MICHIGAN": "CMU",
-  // MVC and Ivy boards are fed the same way. "Northern Iowa" is confirmed against a real export; the
-  // rest are the same names spelled the usual way -- an unrecognized one shows up in the import
-  // summary's skipped-colleges list rather than silently vanishing.
-  "NORTH DAKOTA STATE": "NORTH DAKOTA STATE", "SOUTH DAKOTA STATE": "SOUTH DAKOTA STATE",
-  "SOUTH DAKOTA": "SOUTH DAKOTA", "NORTH DAKOTA": "NORTH DAKOTA", "ILLINOIS STATE": "ILLINOIS STATE",
-  "SOUTHERN ILLINOIS": "SOUTHERN ILLINOIS", "INDIANA STATE": "INDIANA STATE",
-  "YOUNGSTOWN STATE": "YOUNGSTOWN STATE", "NORTHERN IOWA": "NORTHERN IOWA", "MURRAY STATE": "MURRAY STATE",
-  COLUMBIA: "COLUMBIA", CORNELL: "CORNELL", YALE: "YALE", PRINCETON: "PRINCETON", HARVARD: "HARVARD",
-  DARTMOUTH: "DARTMOUTH", PENN: "PENN", BROWN: "BROWN",
+// The feed names schools the way a recruiting site does ("Kent State University", "University of
+// Northern Iowa", "California State University - Sacramento"), so a college is resolved to a tracked team
+// by normalizing the name and looking it up against every team in TEAM_CONFERENCE (key and label) -- a
+// team added there is recognized by the feed importer automatically. FEED_ALIASES only covers spellings
+// that differ from the team's own name.
+const FEED_ALIASES = {
+  "BOWLING GREEN": "BGSU", "EASTERN MICHIGAN": "EMU", "WESTERN MICHIGAN": "WMU", "CENTRAL MICHIGAN": "CMU",
+  MASSACHUSETTS: "UMASS", "CALIFORNIA STATE SACRAMENTO": "SAC STATE", "SACRAMENTO STATE": "SAC STATE",
+  "CAL STATE SACRAMENTO": "SAC STATE", PENNSYLVANIA: "PENN", "SOUTHERN ILLINOIS CARBONDALE": "SOUTHERN ILLINOIS",
+  "NORTH DAKOTA ST": "NORTH DAKOTA STATE", "SOUTH DAKOTA ST": "SOUTH DAKOTA STATE", "ILLINOIS ST": "ILLINOIS STATE",
+  "INDIANA ST": "INDIANA STATE", "YOUNGSTOWN ST": "YOUNGSTOWN STATE", "MURRAY ST": "MURRAY STATE",
+  "KENT ST": "KENT STATE", "BALL ST": "BALL STATE",
 };
-
-// How the feed's "All Offer Schools" column spells every school we already
-// track (MAC, MVC, Ivy). Matched exactly, not fuzzily -- "Toledo (Spain)"
-// is a different school from Toledo. Anything not listed is an "other
-// offer": a school outside the conferences we track.
-const TRACKED_SCHOOL_NAMES = new Set([
-  "Central Michigan University", "Bowling Green", "Western Michigan University", "Eastern Michigan University",
-  "California State University - Sacramento", "Ball State University", "University of Akron", "Ohio", "Toledo",
-  "Miami University (OH)", "Kent State University", "University of Massachusetts", "University at Buffalo",
-  "North Dakota State University", "South Dakota State University", "University of South Dakota",
-  "University of North Dakota", "Illinois State University", "Southern Illinois University Carbondale",
-  "Indiana State University", "Youngstown State University", "University of Northern Iowa", "Murray State University",
-  "Columbia University", "Cornell University", "Yale University", "Princeton University", "Harvard University",
-  "Dartmouth College", "University of Pennsylvania", "Brown University",
-].map((n) => n.toUpperCase()));
+const normalizeCollege = (name) =>
+  String(name || "")
+    .toUpperCase()
+    .replace(/&/g, " AND ")
+    .replace(/[^A-Z0-9()]+/g, " ")
+    .split(" ")
+    .filter((w) => w && !["UNIVERSITY", "OF", "THE", "AT", "COLLEGE"].includes(w))
+    .join(" ");
+const FEED_COLLEGE_LOOKUP = (() => {
+  const map = new Map();
+  Object.entries(TEAM_CONFERENCE).forEach(([key, t]) => {
+    map.set(normalizeCollege(key), key);
+    map.set(normalizeCollege(t.label), key);
+  });
+  Object.entries(FEED_ALIASES).forEach(([alias, key]) => map.set(normalizeCollege(alias), key));
+  return map;
+})();
+export function feedCollegeToTeam(name) {
+  return FEED_COLLEGE_LOOKUP.get(normalizeCollege(name)) || null;
+}
 
 function otherOffersFromFeed(allOfferSchools) {
   const seen = new Set();
   return (allOfferSchools || "")
     .split(",")
     .map((n) => n.trim())
-    .filter((n) => n && !TRACKED_SCHOOL_NAMES.has(n.toUpperCase()) && !seen.has(n.toUpperCase()) && seen.add(n.toUpperCase()))
+    .filter((n) => n && !feedCollegeToTeam(n) && !seen.has(n.toUpperCase()) && seen.add(n.toUpperCase()))
     .sort((a, b) => a.localeCompare(b));
 }
 
@@ -567,7 +569,7 @@ export async function importActivityFeed(file, { dryRun = false, forceClassYear 
 
   const events = [];
   feedRows.forEach((r) => {
-    const team = FEED_COLLEGE_TO_TEAM[r["Recruiting College"].toUpperCase()];
+    const team = feedCollegeToTeam(r["Recruiting College"]);
     if (!team) {
       if (r["Recruiting College"]) skipped.add(r["Recruiting College"]);
       return;
