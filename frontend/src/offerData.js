@@ -540,8 +540,10 @@ function feedDateToText(iso) {
 // `gradYear` field instead of overloading classYear with it. Pass "JUCO" when the upload is a JUCO
 // board; omit it for a normal graduating-class feed, where Grad Year IS the classYear as before.
 export async function importActivityFeed(file, { dryRun = false, forceClassYear = null } = {}) {
-  const text = await file.text();
-  const workbook = XLSX.read(text, { type: "string", raw: true });
+  // A feed exported from Numbers arrives as a binary .numbers package (same columns as the CSV).
+  const workbook = /\.numbers$/i.test(file.name)
+    ? XLSX.read(await file.arrayBuffer(), { type: "array" })
+    : XLSX.read(await file.text(), { type: "string", raw: true });
   const feedRows = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { defval: "", raw: true }).map((r) => {
     const o = {};
     Object.keys(r).forEach((k) => (o[k.trim()] = String(r[k]).trim()));

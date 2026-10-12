@@ -233,7 +233,7 @@ function UploadModal({ classYears, defaultJuco, onClose, onImport }) {
   // forceClassYear. Pre-checked when the modal was opened from the JUCO tab, but always changeable.
   const [jucoFeed, setJucoFeed] = useState(!!defaultJuco);
 
-  const isFeed = !!file && /\.csv$/i.test(file.name);
+  const isFeed = !!file && /\.(csv|numbers)$/i.test(file.name);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -311,10 +311,10 @@ function UploadModal({ classYears, defaultJuco, onClose, onImport }) {
           </div>
         ) : (
           <form onSubmit={handleSubmit}>
-            <label style={{ display: "block", fontSize: 11, color: "var(--text-faint)", marginBottom: 5 }}>File (.xlsx workbook or .csv activity feed)</label>
+            <label style={{ display: "block", fontSize: 11, color: "var(--text-faint)", marginBottom: 5 }}>File (.xlsx workbook, or .csv / .numbers activity feed)</label>
             <input
               type="file"
-              accept=".xlsx,.csv"
+              accept=".xlsx,.csv,.numbers"
               onChange={(e) => setFile(e.target.files?.[0] || null)}
               style={{ width: "100%", fontSize: 13, color: "var(--text-secondary)", marginBottom: 16 }}
             />
