@@ -493,6 +493,15 @@ const FEED_COLLEGE_TO_TEAM = {
   "SAC STATE": "SAC STATE", "EASTERN MICHIGAN": "EMU", AKRON: "AKRON", "WESTERN MICHIGAN": "WMU",
   BUFFALO: "BUFFALO", OHIO: "OHIO", MASSACHUSETTS: "UMASS", UMASS: "UMASS", "BALL STATE": "BALL STATE",
   "CENTRAL MICHIGAN": "CMU",
+  // MVC and Ivy boards are fed the same way. "Northern Iowa" is confirmed against a real export; the
+  // rest are the same names spelled the usual way -- an unrecognized one shows up in the import
+  // summary's skipped-colleges list rather than silently vanishing.
+  "NORTH DAKOTA STATE": "NORTH DAKOTA STATE", "SOUTH DAKOTA STATE": "SOUTH DAKOTA STATE",
+  "SOUTH DAKOTA": "SOUTH DAKOTA", "NORTH DAKOTA": "NORTH DAKOTA", "ILLINOIS STATE": "ILLINOIS STATE",
+  "SOUTHERN ILLINOIS": "SOUTHERN ILLINOIS", "INDIANA STATE": "INDIANA STATE",
+  "YOUNGSTOWN STATE": "YOUNGSTOWN STATE", "NORTHERN IOWA": "NORTHERN IOWA", "MURRAY STATE": "MURRAY STATE",
+  COLUMBIA: "COLUMBIA", CORNELL: "CORNELL", YALE: "YALE", PRINCETON: "PRINCETON", HARVARD: "HARVARD",
+  DARTMOUTH: "DARTMOUTH", PENN: "PENN", BROWN: "BROWN",
 };
 
 // How the feed's "All Offer Schools" column spells every school we already
