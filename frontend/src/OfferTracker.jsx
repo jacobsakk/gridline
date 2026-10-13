@@ -373,7 +373,7 @@ function UploadModal({ classYears, defaultJuco, onClose, onImport }) {
 // One team's offer turned out to be wrong. Confirms first, since it
 // hides the row everywhere (and keeps it out of future uploads).
 function RemoveOfferButton({ row, onRemove }) {
-  const label = TEAM_CONFERENCE[row.team]?.label || row.team;
+  const label = TEAM_CONFERENCE[row.team]?.label || row.teamLabel || row.team;
   return (
     <button
       onClick={async () => {
@@ -483,7 +483,7 @@ export function PlayerProfileModal({ player, classYear, tracker, onClose }) {
     if (!text) return;
     const k = text.toLowerCase();
     if (!noteGroups.has(k)) noteGroups.set(k, { text, teams: [] });
-    noteGroups.get(k).teams.push(TEAM_CONFERENCE[r.team]?.label || r.team);
+    noteGroups.get(k).teams.push(TEAM_CONFERENCE[r.team]?.label || r.teamLabel || r.team);
   });
   const notes = [...noteGroups.values()].map((n) => ({ text: n.text, teams: noteGroups.size > 1 && rows.length > 1 ? n.teams.join(", ") : "" }));
   const otherOffers = (rows.find((r) => r.otherOffers?.length) || {}).otherOffers || [];
@@ -550,7 +550,7 @@ export function PlayerProfileModal({ player, classYear, tracker, onClose }) {
                     const meta = TEAM_CONFERENCE[r.team];
                     return (
                       <tr key={r.id} style={{ borderTop: "1px solid var(--border-subtle)" }}>
-                        <td style={{ ...tdStyle, fontWeight: 700, color: meta ? textAccentFor(meta, theme) : "var(--text-primary)" }}>{meta?.label || r.team}</td>
+                        <td style={{ ...tdStyle, fontWeight: 700, color: meta ? textAccentFor(meta, theme) : "var(--text-primary)" }}>{meta?.label || r.teamLabel || r.team}</td>
                         <td style={tdStyle} className="tabular">{r.dateOffered || "—"}</td>
                         <td style={{ ...tdStyle, borderRight: "none", textAlign: "center", width: 40 }}>
                           <RemoveOfferButton row={r} onRemove={(row) => tracker.removeOffer(row)} />
@@ -1040,7 +1040,7 @@ function TeamOffersTable({ rows, onEdit, onOpenProfile, onRemove, sortKey, sortD
             )}
             {showTeam && (
               <td style={{ ...tdStyle, fontWeight: 700, whiteSpace: "nowrap", color: textAccentFor(TEAM_CONFERENCE[r.team], theme) || "var(--text-primary)" }}>
-                {TEAM_CONFERENCE[r.team]?.label || r.team}
+                {TEAM_CONFERENCE[r.team]?.label || r.teamLabel || r.team}
               </td>
             )}
             {FIELDS.map(({ key, width, upper, titleCase }) => {
