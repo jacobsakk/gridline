@@ -1159,13 +1159,14 @@ function JucoFeedTable({ rows, theme, teamFilter, setTeamFilter, teamOptions, on
               <th style={th}>Grad Year</th>
               <th style={th}>Recruiting College</th>
               <th style={th}>Date</th>
+              <th style={th}>Pipeline</th>
               <th style={th}> </th>
             </tr>
           </thead>
           <tbody>
             {sorted.length === 0 && (
               <tr>
-                <td colSpan={6} style={{ ...td, textAlign: "center", color: "var(--text-faint)", padding: 32 }}>No JUCO rows yet.</td>
+                <td colSpan={7} style={{ ...td, textAlign: "center", color: "var(--text-faint)", padding: 32 }}>No JUCO rows yet.</td>
               </tr>
             )}
             {sorted.map((r) => {
@@ -1191,6 +1192,9 @@ function JucoFeedTable({ rows, theme, teamFilter, setTeamFilter, teamOptions, on
                     </span>
                   </td>
                   <td style={td} className="tabular">{r.dateOffered}</td>
+                  <td style={td}>
+                    <PipelineSelect value={r.pipelineStatus} width={150} onCommit={(v) => onEdit(r, "pipelineStatus", v)} />
+                  </td>
                   <td style={{ ...td, textAlign: "right" }}>
                     <RemoveOfferButton row={r} onRemove={onRemove} />
                   </td>
@@ -1492,6 +1496,7 @@ export default function OfferTracker({ onBack: toDashboard }) {
                 setTeamFilter={setJucoTeamFilter}
                 teamOptions={jucoTeamOptions}
                 onOpenProfile={(player) => setProfilePlayer(player)}
+                onEdit={(row, field, value) => tracker.updateOfferField(row, field, value)}
                 onRemove={(row) => tracker.removeOffer(row)}
               />
             ) : subView === "teams" ? (
