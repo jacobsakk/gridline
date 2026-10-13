@@ -879,6 +879,12 @@ function BreakdownTables({ classYear, conference, tracker }) {
 // months old. A bare "2026-04-11" (no time component -- the assignment sheet's hand-noted dates, not a
 // real upload's timestamp) is parsed directly rather than through Date(), which would apply the
 // browser's local timezone to a UTC-midnight value and could shift the date back a day.
+function formatUpdatedAt(iso) {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  return d.toLocaleString([], { month: "numeric", day: "numeric", year: "2-digit", hour: "numeric", minute: "2-digit" });
+}
+
 function formatUploadDate(iso) {
   if (!iso) return "";
   const dateOnly = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso);
@@ -1134,7 +1140,7 @@ function parseOfferDate(value) {
 // continuous feed across every recruiting college at once, newest interest first -- a JUCO transfer's
 // own grad year varies player to player, so it's its own column rather than the tab itself. Filterable
 // down to one recruiting college, but shows all of them by default.
-function JucoFeedTable({ rows, theme, teamFilter, setTeamFilter, teamOptions, confFilter, setConfFilter, confOptions, onOpenProfile, onEdit, onRemove }) {
+function JucoFeedTable({ rows, theme, teamFilter, setTeamFilter, teamOptions, confFilter, setConfFilter, confOptions, updatedAt, onOpenProfile, onEdit, onRemove }) {
   const sorted = useMemo(() => [...rows].sort((a, b) => (parseOfferDate(b.dateOffered) || 0) - (parseOfferDate(a.dateOffered) || 0)), [rows]);
   const th = { textAlign: "left", padding: "9px 10px", fontSize: 11, color: "var(--text-faint)", textTransform: "uppercase", letterSpacing: "0.03em", whiteSpace: "nowrap", position: "sticky", top: 0, background: "var(--bg-surface)", zIndex: 1 };
   const td = { padding: "8px 10px", fontSize: 13, color: "var(--text-secondary)", borderTop: "1px solid var(--border-subtle)", verticalAlign: "top" };
@@ -1155,6 +1161,7 @@ function JucoFeedTable({ rows, theme, teamFilter, setTeamFilter, teamOptions, co
           ))}
         </select>
         <span style={{ fontSize: 12.5, color: "var(--text-faint)" }}>{sorted.length} row{sorted.length === 1 ? "" : "s"}</span>
+        {updatedAt && <span style={{ fontSize: 12.5, color: "var(--text-faint)", marginLeft: "auto" }}>Last updated {formatUpdatedAt(updatedAt)}</span>}
       </div>
       <div style={{ flex: 1, minHeight: 0, overflow: "auto", border: "1px solid var(--border)", borderRadius: 6 }}>
         <table style={{ width: "100%", borderCollapse: "collapse" }}>
@@ -1522,6 +1529,7 @@ export default function OfferTracker({ onBack: toDashboard }) {
                 confFilter={jucoConfFilter}
                 setConfFilter={(c) => { setJucoConfFilter(c); setJucoTeamFilter(""); }}
                 confOptions={jucoConferenceOptions}
+                updatedAt={tracker.jucoUpdatedAt()}
                 onOpenProfile={(player) => setProfilePlayer(player)}
                 onEdit={(row, field, value) => tracker.updateOfferField(row, field, value)}
                 onRemove={(row) => tracker.removeOffer(row)}

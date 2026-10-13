@@ -748,6 +748,9 @@ export async function importActivityFeed(file, { dryRun = false, forceClassYear 
     commits.push(batch.commit());
   }
   await Promise.all(commits);
+  // The JUCO tab shows when its feed was last loaded; same collection (and doc shape) a team workbook
+  // upload stamps, keyed "JUCO" instead of a team.
+  if (forceClassYear) await setDoc(doc(db, "teamUploads", "JUCO"), { team: "JUCO", lastUploadedAt: now });
   return summary;
 }
 
@@ -1121,6 +1124,14 @@ export function useOfferTracker() {
   // upload) and the assignment sheet's hand-noted historical date (KNOWN_LAST_UPLOAD) -- covers both "a
   // sheet came in before this feature existed" and "nobody's touched this team's rows since, but the
   // sheet said 4/11".
+  // When the JUCO feed was last loaded. Before the first stamped upload, falls back to the newest row
+  // write so the tab isn't blank for data that's already there.
+  function jucoUpdatedAt() {
+    if (teamUploads.JUCO) return teamUploads.JUCO;
+    const stamps = docs.filter((d) => d.classYear === "JUCO" && d.updatedAt).map((d) => d.updatedAt);
+    return stamps.length ? stamps.sort().pop() : "";
+  }
+
   function lastUploadedFor(team) {
     if (teamUploads[team]) return teamUploads[team];
     const stamps = docs.filter((d) => d.team === team && d.updatedAt).map((d) => d.updatedAt);
@@ -1144,5 +1155,5 @@ export function useOfferTracker() {
     await setDoc(doc(db, "teamAssignments", team), { team, coach: coach.trim(), updatedAt: new Date().toISOString() });
   }
 
-  return { ready, classYears, teamsForConference, rowsForClassYear, rowsForTeam, rowsForPlayer, rowsByPlayer, rowsByLast, profileNames, suggestFixes, wordReplacementPreview, replaceWord, mergeProfile, mergeProfiles, positionBreakdown, areaBreakdown, importWorkbook, importActivityFeed, updateOfferField, removeOffer, addOffer, lastUploadedFor, coachFor, setTeamCoach };
+  return { ready, classYears, teamsForConference, rowsForClassYear, rowsForTeam, rowsForPlayer, rowsByPlayer, rowsByLast, profileNames, suggestFixes, wordReplacementPreview, replaceWord, mergeProfile, mergeProfiles, positionBreakdown, areaBreakdown, importWorkbook, importActivityFeed, updateOfferField, removeOffer, addOffer, lastUploadedFor, jucoUpdatedAt, coachFor, setTeamCoach };
 }
