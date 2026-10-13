@@ -431,6 +431,7 @@ export async function importWorkbook(file, classYear) {
     // team's name is recognized and imported, whether or not it had any rows, so an admin can tell a
     // just-cleared board apart from one nobody's touched in months.
     operations.push({ coll: "teamUploads", type: "set", id: teamKey, data: { team: teamKey, lastUploadedAt: now } });
+    operations.push({ coll: "teamUploads", type: "set", id: `${teamKey}__${classYear}`, data: { team: teamKey, classYear, lastUploadedAt: now } });
 
     const records = parseTeamSheet(workbook.Sheets[sheetName], teamKey);
     records.forEach((r) => {
@@ -751,6 +752,11 @@ export async function importActivityFeed(file, { dryRun = false, forceClassYear 
   // The JUCO tab shows when its feed was last loaded; same collection (and doc shape) a team workbook
   // upload stamps, keyed "JUCO" instead of a team.
   if (forceClassYear) await setDoc(doc(db, "teamUploads", "JUCO"), { team: "JUCO", lastUploadedAt: now });
+  // And each tracked team + graduating class the feed had rows for, for the Assignments tab.
+  if (!forceClassYear) {
+    const seen = new Set(events.filter((e) => TEAM_CONFERENCE[e.team]).map((e) => `${e.team}__${e.classYear}`));
+    await Promise.all([...seen].map((id) => setDoc(doc(db, "teamUploads", id), { team: id.split("__")[0], classYear: id.split("__")[1], lastUploadedAt: now })));
+  }
   return summary;
 }
 
@@ -1114,6 +1120,14 @@ export function useOfferTracker() {
     return { teams, states, counts, stateTotals };
   }
 
+  // When the JUCO feed was last loaded. Before the first stamped upload, falls back to the newest row
+  // write so the tab isn't blank for data that's already there.
+  function jucoUpdatedAt() {
+    if (teamUploads.JUCO) return teamUploads.JUCO;
+    const stamps = docs.filter((d) => d.classYear === "JUCO" && d.updatedAt).map((d) => d.updatedAt);
+    return stamps.length ? stamps.sort().pop() : "";
+  }
+
   // The Assignments tab's "last uploaded" time for a team. The authoritative source is teamUploads,
   // written by importWorkbook every time that team's sheet is recognized in an upload. For a team that
   // already had offer rows before this feature existed (or one whose sheet was last touched by the
@@ -1124,22 +1138,20 @@ export function useOfferTracker() {
   // upload) and the assignment sheet's hand-noted historical date (KNOWN_LAST_UPLOAD) -- covers both "a
   // sheet came in before this feature existed" and "nobody's touched this team's rows since, but the
   // sheet said 4/11".
-  // When the JUCO feed was last loaded. Before the first stamped upload, falls back to the newest row
-  // write so the tab isn't blank for data that's already there.
-  function jucoUpdatedAt() {
-    if (teamUploads.JUCO) return teamUploads.JUCO;
-    const stamps = docs.filter((d) => d.classYear === "JUCO" && d.updatedAt).map((d) => d.updatedAt);
-    return stamps.length ? stamps.sort().pop() : "";
-  }
-
-  function lastUploadedFor(team) {
-    if (teamUploads[team]) return teamUploads[team];
-    const stamps = docs.filter((d) => d.team === team && d.updatedAt).map((d) => d.updatedAt);
+  // `classYear` separates the dates by graduating class: a team's 2027 sheet and 2028 sheet are uploaded
+  // separately. A class's own stamp (written per team + class by every workbook or feed import) wins; before
+  // one exists it falls back to that class's newest row write. The older team-wide stamp and the assignment
+  // sheet's hand-noted date predate per-class tracking and describe the first class's board, so they only
+  // apply to the lowest class year.
+  function lastUploadedFor(team, classYear) {
+    const own = teamUploads[`${team}__${classYear}`];
+    if (own) return own;
+    const stamps = docs.filter((d) => d.team === team && d.classYear === classYear && d.updatedAt).map((d) => d.updatedAt);
     const rowFallback = stamps.length ? stamps.sort().pop() : "";
-    const known = KNOWN_LAST_UPLOAD[team] || "";
-    if (!rowFallback) return known;
-    if (!known) return rowFallback;
-    return rowFallback > known ? rowFallback : known;
+    const firstClass = [...new Set(docs.map((d) => d.classYear).filter((y) => /^\d{4}$/.test(y)))].sort()[0];
+    if (classYear !== firstClass) return rowFallback;
+    const legacy = [teamUploads[team] || "", KNOWN_LAST_UPLOAD[team] || ""].filter(Boolean).sort().pop() || "";
+    return rowFallback > legacy ? rowFallback : legacy;
   }
 
   // Who's actually assigned to a team's board -- TEAM_ASSIGNMENTS' hand-maintained default, unless

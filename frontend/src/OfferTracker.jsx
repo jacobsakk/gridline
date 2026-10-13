@@ -923,15 +923,17 @@ function CoachCell({ coach, onCommit }) {
 
 function AssignmentsTable({ conference, tracker }) {
   const theme = useContext(ThemeContext);
+  // One "last uploaded" column per graduating class (JUCO is a single feed, not a per-team board).
+  const assignmentClasses = tracker.classYears.filter((y) => /^\d{4}$/.test(y));
   const rows = useMemo(
     () =>
       TEAM_ASSIGNMENTS.filter((a) => (TEAM_CONFERENCE[a.team]?.conference || "MAC") === conference)
-        .map((a) => ({ ...a, meta: TEAM_CONFERENCE[a.team], coach: tracker.coachFor(a.team), lastUploadedAt: a.retired ? "" : tracker.lastUploadedFor(a.team) }))
+        .map((a) => ({ ...a, meta: TEAM_CONFERENCE[a.team], coach: tracker.coachFor(a.team), uploads: a.retired ? {} : Object.fromEntries(assignmentClasses.map((y) => [y, tracker.lastUploadedFor(a.team, y)])) }))
         .sort((x, y) => {
           const cx = COACH_ORDER.indexOf(x.coach), cy = COACH_ORDER.indexOf(y.coach);
           return (cx === -1 ? 99 : cx) - (cy === -1 ? 99 : cy) || x.coach.localeCompare(y.coach) || (x.meta?.label || x.team).localeCompare(y.meta?.label || y.team);
         }),
-    [conference, tracker]
+    [conference, tracker, assignmentClasses.join(",")] // eslint-disable-line react-hooks/exhaustive-deps
   );
 
   const th = { textAlign: "left", padding: "9px 12px", fontSize: 11, color: "var(--text-faint)", textTransform: "uppercase", letterSpacing: "0.03em", whiteSpace: "nowrap" };
@@ -940,7 +942,7 @@ function AssignmentsTable({ conference, tracker }) {
   return (
     <div>
       <p style={{ margin: "0 0 14px", fontSize: 12.5, color: "var(--text-faint)", maxWidth: 640, lineHeight: 1.5 }}>
-        Who's assigned to each {CONFERENCE_LABEL[conference]} board, and when their sheet was last uploaded here. Click a name to reassign. The date updates on its own the next time that team's sheet comes in through Upload.
+        Who's assigned to each {CONFERENCE_LABEL[conference]} board, and when each class's sheet was last uploaded here. Click a name to reassign. A date updates on its own the next time that team's sheet (or an activity feed with its rows) comes in through Upload for that class.
       </p>
       <div style={{ border: "1px solid var(--border)", borderRadius: 6, overflow: "hidden" }}>
         <table style={{ width: "100%", borderCollapse: "collapse" }}>
@@ -948,13 +950,15 @@ function AssignmentsTable({ conference, tracker }) {
             <tr style={{ background: "var(--bg-surface)" }}>
               <th style={th}>Coach</th>
               <th style={th}>Team</th>
-              <th style={th}>Last Uploaded</th>
+              {assignmentClasses.map((y) => (
+                <th key={y} style={th}>Last Uploaded · {y}</th>
+              ))}
             </tr>
           </thead>
           <tbody>
             {rows.length === 0 && (
               <tr>
-                <td colSpan={3} style={{ ...td, textAlign: "center", color: "var(--text-faint)", padding: 28 }}>
+                <td colSpan={2 + assignmentClasses.length} style={{ ...td, textAlign: "center", color: "var(--text-faint)", padding: 28 }}>
                   No assignments on file for {CONFERENCE_LABEL[conference]}.
                 </td>
               </tr>
@@ -965,15 +969,21 @@ function AssignmentsTable({ conference, tracker }) {
                   <CoachCell coach={r.coach} onCommit={(next) => tracker.setTeamCoach(r.team, next)} />
                 </td>
                 <td style={{ ...td, color: textAccentFor(r.meta, theme) || "var(--text-secondary)", fontWeight: 600 }}>{r.meta?.label || toTitleCase(r.team)}</td>
-                <td style={td} className="tabular">
-                  {r.retired ? (
+                {r.retired ? (
+                  <td style={td} colSpan={assignmentClasses.length || 1}>
                     <span style={{ color: "var(--text-faint)", fontStyle: "italic" }}>No longer tracked — left the MAC</span>
-                  ) : r.lastUploadedAt ? (
-                    <span title={new Date(r.lastUploadedAt).toLocaleString()}>{formatUploadDate(r.lastUploadedAt)}</span>
-                  ) : (
-                    <span style={{ color: "var(--text-faint)" }}>Never uploaded</span>
-                  )}
-                </td>
+                  </td>
+                ) : (
+                  assignmentClasses.map((y) => (
+                    <td key={y} style={td} className="tabular">
+                      {r.uploads[y] ? (
+                        <span title={new Date(r.uploads[y]).toLocaleString()}>{formatUploadDate(r.uploads[y])}</span>
+                      ) : (
+                        <span style={{ color: "var(--text-faint)" }}>Never uploaded</span>
+                      )}
+                    </td>
+                  ))
+                )}
               </tr>
             ))}
           </tbody>
