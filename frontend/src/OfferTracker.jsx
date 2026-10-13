@@ -4,7 +4,7 @@ import { initialSubRoute, setSubRoute, useBack } from "./route.js";
 import NameFixModal from "./NameFixModal.jsx";
 import { Upload, X, Loader2, ChevronUp, ChevronDown, ChevronsUpDown, TrendingUp, MapPin, Search, Plus, ExternalLink, Pencil } from "lucide-react";
 import { confirmAction } from "./ConfirmDialog.jsx";
-import { collegeForLabel, logoFor, teamKey } from "./collegeData.js";
+import { OTHER_CONFERENCE, collegeForLabel, conferenceForCollege, logoFor, teamKey } from "./collegeData.js";
 import { canonicalSchool, fixBrandCase } from "./schoolNames.js";
 import { ThemeSwitcher, useTheme } from "./theme.jsx";
 import { COACH_ORDER, CONFERENCE_ORDER, PIPELINE_OPTIONS, TEAM_ASSIGNMENTS, TEAM_CONFERENCE, normalizePipelineStatus, normalizePosition, useOfferTracker } from "./offerData.js";
@@ -1134,7 +1134,7 @@ function parseOfferDate(value) {
 // continuous feed across every recruiting college at once, newest interest first -- a JUCO transfer's
 // own grad year varies player to player, so it's its own column rather than the tab itself. Filterable
 // down to one recruiting college, but shows all of them by default.
-function JucoFeedTable({ rows, theme, teamFilter, setTeamFilter, teamOptions, onOpenProfile, onEdit, onRemove }) {
+function JucoFeedTable({ rows, theme, teamFilter, setTeamFilter, teamOptions, confFilter, setConfFilter, confOptions, onOpenProfile, onEdit, onRemove }) {
   const sorted = useMemo(() => [...rows].sort((a, b) => (parseOfferDate(b.dateOffered) || 0) - (parseOfferDate(a.dateOffered) || 0)), [rows]);
   const th = { textAlign: "left", padding: "9px 10px", fontSize: 11, color: "var(--text-faint)", textTransform: "uppercase", letterSpacing: "0.03em", whiteSpace: "nowrap", position: "sticky", top: 0, background: "var(--bg-surface)", zIndex: 1 };
   const td = { padding: "8px 10px", fontSize: 13, color: "var(--text-secondary)", borderTop: "1px solid var(--border-subtle)", verticalAlign: "top" };
@@ -1142,6 +1142,12 @@ function JucoFeedTable({ rows, theme, teamFilter, setTeamFilter, teamOptions, on
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 10, flex: 1, minHeight: 0 }}>
       <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap", flexShrink: 0 }}>
+        <select value={confFilter} onChange={(e) => setConfFilter(e.target.value)} style={filterSelectStyle} aria-label="Filter by conference">
+          <option value="">All Conferences</option>
+          {confOptions.map((c) => (
+            <option key={c.conference} value={c.conference}>{c.conference} ({c.count})</option>
+          ))}
+        </select>
         <select value={teamFilter} onChange={(e) => setTeamFilter(e.target.value)} style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", color: "var(--text-primary)", borderRadius: 5, padding: "7px 10px", fontSize: 13, fontFamily: "inherit", cursor: "pointer" }}>
           <option value="">All Recruiting Colleges</option>
           {teamOptions.map((t) => (
@@ -1230,6 +1236,7 @@ export default function OfferTracker({ onBack: toDashboard }) {
   const [stateFilter, setStateFilter] = useState("");
   const [positionFilter, setPositionFilter] = useState("");
   const [jucoTeamFilter, setJucoTeamFilter] = useState("");
+  const [jucoConfFilter, setJucoConfFilter] = useState("");
   const [commitsOnly, setCommitsOnly] = useState(false);
   const [profilePlayer, setProfilePlayer] = useState(null);
   const [adding, setAdding] = useState(false);
@@ -1308,11 +1315,24 @@ export default function OfferTracker({ onBack: toDashboard }) {
   // at a time, so this pulls straight from rowsForClassYear regardless of searching/activeTeam.
   const isJuco = activeClassYear === "JUCO";
   const jucoAllRows = useMemo(() => (isJuco ? tracker.rowsForClassYear("JUCO") : []), [isJuco, tracker]);
+  // Tracked teams use the tracker's own conference; any other recruiting school is looked up by name.
+  const TRACKED_CONF_LABEL = { MAC: "MAC", MVC: "MVFC", IVY: "Ivy" };
+  const jucoConferenceOf = (r) => {
+    const tracked = TEAM_CONFERENCE[r.team];
+    return tracked ? TRACKED_CONF_LABEL[tracked.conference] || tracked.conference : conferenceForCollege(r.teamLabel || r.team);
+  };
+  const jucoConfRows = useMemo(() => (jucoConfFilter ? jucoAllRows.filter((r) => jucoConferenceOf(r) === jucoConfFilter) : jucoAllRows), [jucoAllRows, jucoConfFilter]); // eslint-disable-line react-hooks/exhaustive-deps
+  const jucoConferenceOptions = useMemo(() => {
+    const counts = new Map();
+    jucoAllRows.forEach((r) => counts.set(jucoConferenceOf(r), (counts.get(jucoConferenceOf(r)) || 0) + 1));
+    const last = (c) => (c === OTHER_CONFERENCE ? 2 : c === "JUCO" ? 1 : 0);
+    return [...counts].map(([conference, count]) => ({ conference, count })).sort((a, b) => last(a.conference) - last(b.conference) || a.conference.localeCompare(b.conference));
+  }, [jucoAllRows]); // eslint-disable-line react-hooks/exhaustive-deps
   const jucoTeamOptions = useMemo(() => {
-    const present = new Set(jucoAllRows.map((r) => r.team));
-    return [...present].map((team) => ({ team, label: TEAM_CONFERENCE[team]?.label || team })).sort((a, b) => a.label.localeCompare(b.label));
-  }, [jucoAllRows]);
-  const jucoRows = useMemo(() => (jucoTeamFilter ? jucoAllRows.filter((r) => r.team === jucoTeamFilter) : jucoAllRows), [jucoAllRows, jucoTeamFilter]);
+    const present = new Set(jucoConfRows.map((r) => r.team));
+    return [...present].map((team) => ({ team, label: TEAM_CONFERENCE[team]?.label || jucoConfRows.find((r) => r.team === team)?.teamLabel || team })).sort((a, b) => a.label.localeCompare(b.label));
+  }, [jucoConfRows]);
+  const jucoRows = useMemo(() => (jucoTeamFilter ? jucoConfRows.filter((r) => r.team === jucoTeamFilter) : jucoConfRows), [jucoConfRows, jucoTeamFilter]);
 
   const teamRows = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -1499,6 +1519,9 @@ export default function OfferTracker({ onBack: toDashboard }) {
                 teamFilter={jucoTeamFilter}
                 setTeamFilter={setJucoTeamFilter}
                 teamOptions={jucoTeamOptions}
+                confFilter={jucoConfFilter}
+                setConfFilter={(c) => { setJucoConfFilter(c); setJucoTeamFilter(""); }}
+                confOptions={jucoConferenceOptions}
                 onOpenProfile={(player) => setProfilePlayer(player)}
                 onEdit={(row, field, value) => tracker.updateOfferField(row, field, value)}
                 onRemove={(row) => tracker.removeOffer(row)}

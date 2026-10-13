@@ -569,7 +569,9 @@ export async function importActivityFeed(file, { dryRun = false, forceClassYear 
 
   const events = [];
   feedRows.forEach((r) => {
-    const team = feedCollegeToTeam(r["Recruiting College"]);
+    // A JUCO board follows every school that recruits these players, not just the ones with their own
+    // tab -- an untracked one gets its upper-cased name as its team key and keeps its name as its label.
+    const team = feedCollegeToTeam(r["Recruiting College"]) || (forceClassYear && r["Recruiting College"] ? r["Recruiting College"].toUpperCase() : null);
     if (!team) {
       if (r["Recruiting College"]) skipped.add(r["Recruiting College"]);
       return;
@@ -675,7 +677,7 @@ export async function importActivityFeed(file, { dryRun = false, forceClassYear 
       }
     } else {
       const id = offerDocId(e.classYear, e.team, e["Name"]);
-      const meta = TEAM_CONFERENCE[e.team];
+      const meta = TEAM_CONFERENCE[e.team] || { label: e["Recruiting College"], conference: "OTHER" };
       newDocs.set(id, {
         player: e["Name"].toUpperCase(),
         highSchool: cleanSchool.toUpperCase(),

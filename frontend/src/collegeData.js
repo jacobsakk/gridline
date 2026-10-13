@@ -496,3 +496,17 @@ export function statLinesFor(college) {
   });
   return Object.fromEntries(STAT_CATEGORIES.map((c) => [c, [...out[c].values()]]));
 }
+
+export const OTHER_CONFERENCE = "D2 / NAIA / Other";
+// Schools the college list doesn't carry that still belong to a real conference.
+const CONFERENCE_OVERRIDES = new Map([["mcneese state", "Southland"]]);
+
+// The conference a recruiting school plays in, for filtering the JUCO feed. A "JUCO-" school is a junior
+// college recruiting another; anything not in the college list (D2/NAIA/D3) falls into one catch-all.
+export function conferenceForCollege(name) {
+  const text = (name || "").trim();
+  if (/^JUCO[-\s]/i.test(text)) return "JUCO";
+  const college = collegeForLabel(text);
+  if (college?.conference) return college.conference;
+  return CONFERENCE_OVERRIDES.get(text.toLowerCase()) || OTHER_CONFERENCE;
+}
