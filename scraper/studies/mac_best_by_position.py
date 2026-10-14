@@ -117,6 +117,11 @@ def fetch_season_from_real_stats():
     return [r for r in all_rows if r.get("division") == "FBS" and r.get("week") == "total" and r.get("conference") == "MAC"]
 
 
+def _name_key(name):
+    """Letters only, upper-cased -- "J.J. Lippe" and "JJ Lippe" are the same person."""
+    return "".join(ch for ch in str(name).upper() if ch.isalpha())
+
+
 def all_mac_by_name():
     """Every All-MAC honoree by group/season/name -> tier, for the page to attach a medal to hand-entered
     rows (OL has no computed rows at all, so nothing in build() ever sets allMac for it)."""
@@ -202,6 +207,10 @@ def build():
             # needed) -- the real leaderboard candidates for this season stay in `ranked` too.
             for e in SUPPLEMENTS.get(group_key, {}).get(season, []):
                 totals = {k: e["totals"].get(k, 0) for k in cfg["stats"]}
+                # A researched entry replaces the same player's scraped row (same person, fuller stat line --
+                # the leaderboard is often missing TFL/sacks/PBU) instead of sitting next to it as a duplicate.
+                key = _name_key(e["player"])
+                ranked = [r for r in ranked if _name_key(r["player"]) != key]
                 ranked.append({
                     "player": e["player"], "team": e["team"], "position": group_key, "season": int(season),
                     "totals": totals, "score": round(cfg["score"](totals), 1),
@@ -210,6 +219,9 @@ def build():
                     "allMac": all_mac_tier(group_key, season, e["player"]),
                 })
             ranked.sort(key=lambda x: -x["score"])
+            # The same player + team never appears twice in one list (the page keys its rows by it).
+            seen = set()
+            ranked = [r for r in ranked if not ((_name_key(r["player"]), r["team"]) in seen or seen.add((_name_key(r["player"]), r["team"])))]
             # The top N by score, plus any All-MAC honoree who ranks below that cut -- the list is "the
             # best at each position", and a player the conference itself named to its all-conference
             # team belongs on it even if his stat line alone doesn't crack the top N.
