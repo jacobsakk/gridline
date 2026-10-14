@@ -1,13 +1,13 @@
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";
-import { Camera, ChevronDown, ChevronUp, Image as ImageIcon, Plus, Printer, Trash2, Upload, X } from "lucide-react";
+import { Camera, ChevronDown, ChevronUp, ExternalLink, Image as ImageIcon, Plus, Printer, Trash2, Upload, X } from "lucide-react";
 import { BackButton, HomeButton } from "./HomeButton.jsx";
 import { ThemeSwitcher, useTheme } from "./theme.jsx";
 import { confirmAction } from "./ConfirmDialog.jsx";
 import { initialSubRoute, setSubRoute, useBack } from "./route.js";
-import { matchPhotoFiles, photoFromFile } from "./hsData.js";
+import { matchPhotoFiles, mondayOf, photoFromFile, toIso } from "./hsData.js";
 import {
-  FLAGS, RATING_KEYS, STATUSES, STATUS_BY_KEY, TRENDS, VISITS, blankCreditRow, blankPlayer, boardTitle, classYearFromTitle,
-  commitCounts, diffBoards, handChange, nameKey, parseBoardSheet, parseCreditSheet, readWorkbook, useBigBoards,
+  FLAGS, RATING_KEYS, STATUSES, STATUS_BY_KEY, TRENDS, VISITS, blankPlayer, boardTitle, buildCreditList, classYearFromTitle,
+  commitCounts, creditKey, diffBoards, handChange, nameKey, parseBoardSheet, parseCreditSheet, readWorkbook, useBigBoards,
 } from "./bigBoardData.js";
 
 const VIEWS = [
@@ -204,7 +204,18 @@ export function PlayerModal({ board, colKey, player, isNew, photo, onSave, onDel
     <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20, zIndex: 80 }}>
       <div onClick={(e) => e.stopPropagation()} style={{ background: "var(--bg-panel)", border: "1px solid var(--border)", borderRadius: 10, width: 560, maxWidth: "100%", maxHeight: "90vh", overflowY: "auto", padding: 22 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
-          <h2 className="oswald" style={{ margin: 0, fontSize: 19 }}>{isNew ? "Add a player" : draft.name || "Edit player"}</h2>
+          <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+            <h2 className="oswald" style={{ margin: 0, fontSize: 19 }}>{isNew ? "Add a player" : draft.name || "Edit player"}</h2>
+            {!isNew && draft.name.trim() && (
+              <a
+                href={`#/hs/face-sheet/${toIso(mondayOf(new Date()))}/${encodeURIComponent(draft.name.trim())}`}
+                title="Open this player's face sheet in Game Update"
+                style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 12.5, fontWeight: 700, color: "var(--accent)", textDecoration: "none", border: "1px solid var(--accent)", borderRadius: 6, padding: "4px 9px" }}
+              >
+                <ExternalLink size={13} /> Game Update sheet
+              </a>
+            )}
+          </div>
           <button onClick={onClose} aria-label="Close" style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer", lineHeight: 0 }}><X size={18} /></button>
         </div>
 
@@ -351,13 +362,16 @@ const CREDIT_COLS = [
   { key: "credits", label: "Credits /16", w: 70 },
 ];
 
-export function CreditSheet({ rows, onChange, classYear }) {
-  const update = (id, patch) => onChange(rows.map((r) => (r.id === id ? { ...r, ...patch } : r)));
-  const remove = (id) => onChange(rows.filter((r) => r.id !== id));
+// The credit table lists itself from the board: everyone committed (gold) or offered (green), name, position,
+// school and coach filled in. Only what the board can't know is typed here -- and saved with the person.
+const EDITABLE_CREDIT = new Set(["coach", "transcript", "qualifier", "gpa", "credits"]);
+
+export function CreditSheet({ list, onEdit, classYear }) {
   const groups = [
-    { key: "commit", title: "Committed", color: "#B6D7A8", rows: rows.filter((r) => r.group !== "elsewhere") },
-    { key: "elsewhere", title: "Committed elsewhere", color: "#EA9999", rows: rows.filter((r) => r.group === "elsewhere") },
+    { key: "committed", title: "Committed", color: STATUS_BY_KEY.committed.color, rows: list.committed },
+    { key: "offered", title: "Offered", color: STATUS_BY_KEY.offered.color, rows: list.offered },
   ];
+  const total = list.committed.length + list.offered.length;
   const cell = { padding: 0, border: "1px solid rgba(0,0,0,0.12)" };
   const input = { width: "100%", border: "none", background: "transparent", color: "#111", fontFamily: "inherit", fontSize: 12.5, padding: "5px 6px", textAlign: "center" };
   return (
@@ -369,51 +383,48 @@ export function CreditSheet({ rows, onChange, classYear }) {
             {CREDIT_COLS.map((c) => (
               <th key={c.key} style={{ background: "#BFBFBF", color: "#111", fontSize: 11, padding: "5px 6px", border: "1px solid rgba(0,0,0,0.12)", minWidth: c.w }}>{c.label.toUpperCase()}</th>
             ))}
-            <th className="hs-no-print" style={{ background: "#BFBFBF", width: 64 }} />
           </tr>
         </thead>
         <tbody>
+          {total === 0 && (
+            <tr><td colSpan={CREDIT_COLS.length} style={{ padding: 24, textAlign: "center", fontSize: 13, color: "#555" }}>No one is committed or offered on this class's boards yet. This list fills itself in from the board.</td></tr>
+          )}
           {groups.map((g) => (
             <Fragment key={g.key}>
-              {g.key === "elsewhere" && g.rows.length > 0 && (
-                <tr><td colSpan={CREDIT_COLS.length + 1} style={{ background: "#111", height: 8, padding: 0 }} /></tr>
+              {g.key === "offered" && g.rows.length > 0 && list.committed.length > 0 && (
+                <tr><td colSpan={CREDIT_COLS.length} style={{ background: "#111", height: 8, padding: 0 }} /></tr>
               )}
               {g.rows.map((r) => (
-                <tr key={r.id} style={{ background: g.color }}>
+                <tr key={r.key} style={{ background: g.color }}>
                   {CREDIT_COLS.map((c) => (
                     <td key={c.key} style={cell}>
                       {c.select ? (
-                        <select value={r.qualifier} onChange={(e) => update(r.id, { qualifier: e.target.value })} style={{ ...input, appearance: "none", cursor: "pointer" }}>
+                        <select value={r.qualifier} onChange={(e) => onEdit(r, { qualifier: e.target.value })} style={{ ...input, appearance: "none", cursor: "pointer" }}>
                           {r.qualifier && !QUALIFIERS.includes(r.qualifier) && <option value={r.qualifier}>{r.qualifier}</option>}
                           <option value="" />
                           {QUALIFIERS.map((q) => <option key={q} value={q}>{q}</option>)}
                         </select>
-                      ) : (
+                      ) : EDITABLE_CREDIT.has(c.key) ? (
                         <input
                           key={r[c.key]}
                           defaultValue={r[c.key]}
                           aria-label={`${c.label} for ${r.first} ${r.last}`}
-                          onBlur={(e) => e.target.value.trim() !== r[c.key] && update(r.id, { [c.key]: c.key === "pos" || c.key === "state" || c.key === "coach" ? e.target.value.trim().toUpperCase() : e.target.value.trim() })}
+                          onBlur={(e) => e.target.value.trim() !== r[c.key] && onEdit(r, { [c.key]: c.key === "coach" ? e.target.value.trim().toUpperCase() : e.target.value.trim() })}
                           style={input}
                         />
+                      ) : (
+                        <div style={{ ...input, padding: "5px 6px" }}>{r[c.key]}</div>
                       )}
                     </td>
                   ))}
-                  <td className="hs-no-print" style={{ ...cell, textAlign: "center", whiteSpace: "nowrap" }}>
-                    <button onClick={() => update(r.id, { group: g.key === "commit" ? "elsewhere" : "commit" })} title={g.key === "commit" ? "Move to committed elsewhere" : "Move to committed"} aria-label="Switch group" style={{ background: "none", border: "none", cursor: "pointer", color: "#111", padding: 3, lineHeight: 0 }}>
-                      {g.key === "commit" ? <ChevronDown size={14} /> : <ChevronUp size={14} />}
-                    </button>
-                    <button onClick={() => remove(r.id)} title="Remove" aria-label={`Remove ${r.first} ${r.last}`} style={{ background: "none", border: "none", cursor: "pointer", color: "#111", padding: 3, lineHeight: 0 }}><Trash2 size={13} /></button>
-                  </td>
                 </tr>
               ))}
             </Fragment>
           ))}
         </tbody>
       </table>
-      <div className="hs-no-print" style={{ display: "flex", gap: 8, padding: 10, background: "var(--bg-panel)" }}>
-        <button onClick={() => onChange([...rows.filter((r) => r.group !== "elsewhere"), blankCreditRow("commit"), ...rows.filter((r) => r.group === "elsewhere")])} style={ghostBtn}><Plus size={14} /> Add recruit</button>
-        <button onClick={() => onChange([...rows, blankCreditRow("elsewhere")])} style={ghostBtn}><Plus size={14} /> Add committed elsewhere</button>
+      <div className="hs-no-print" style={{ padding: "8px 12px", fontSize: 12, color: "#555", background: "#f4f4f4", borderTop: "1px solid #ddd" }}>
+        Built from the board: committed (gold) and offered (green) only. Name, position, school and state come from the card; the coach, transcript date, NCAA qualifier, GPA and credits are typed here and kept with the person.
       </div>
     </div>
   );
@@ -737,13 +748,27 @@ export default function BigBoard({ onBack: toDashboard }) {
     await bb.saveBoard(classYear, view, next);
   }
 
+  // The credit list builds itself from the committed and offered players on the boards; what's typed into it is
+  // saved per person (by name), so it survives the board being re-uploaded every week.
+  const offBoard = bb.board(classYear, "off");
+  const defBoard = bb.board(classYear, "def");
+  const creditList = useMemo(() => buildCreditList([offBoard, defBoard], credit?.rows || []), [offBoard, defBoard, credit]);
+
+  async function editCredit(row, patch) {
+    const saved = credit?.rows || [];
+    const at = saved.findIndex((r) => (r.key || creditKey(r.first, r.last)) === row.key);
+    const base = at >= 0 ? saved[at] : { first: row.first, last: row.last };
+    const merged = { ...base, key: row.key, ...patch };
+    await bb.saveCredit(classYear, at >= 0 ? saved.map((r, i) => (i === at ? merged : r)) : [...saved, merged]);
+  }
+
   async function savePlayer(colKey, draft) {
     const player = { ...draft, name: draft.name.trim() };
     const next = upsertPlayer(board, colKey, player);
     await persist(next);
     if (editing?.isNew) {
       const label = board.columns.find((c) => c.key === colKey)?.label || colKey;
-      const change = handChange("added", view, board, player, label);
+      const change = handChange("added", view, player, label);
       if (change) await bb.logActivity(classYear, [change], "by hand");
     }
     setEditing(null);
@@ -753,7 +778,7 @@ export default function BigBoard({ onBack: toDashboard }) {
     const ok = await confirmAction({ title: `Remove ${p.name || "this player"}?`, message: "This takes the card off this board (their photo is kept). It's logged on the Activity tab." });
     if (!ok) return;
     const label = board.columns.filter((c) => c.players.some((x) => x.id === p.id)).map((c) => c.label).join(", ");
-    const change = handChange("removed", view, board, p, label);
+    const change = handChange("removed", view, p, label);
     await persist(removePlayer(board, p.id));
     if (change) await bb.logActivity(classYear, [change], "by hand");
     setEditing(null);
@@ -865,11 +890,7 @@ export default function BigBoard({ onBack: toDashboard }) {
         {!bb.ready ? (
           <div style={{ padding: 40, textAlign: "center", color: "var(--text-faint)" }}>Loading…</div>
         ) : view === "credit" ? (
-          credit ? (
-            <CreditSheet rows={credit.rows || []} classYear={classYear} onChange={(rows) => bb.saveCredit(classYear, rows)} />
-          ) : (
-            <Empty what="credit evaluation" year={classYear} onUpload={() => setUploading(true)} onStart={() => bb.saveCredit(classYear, [])} />
-          )
+          <CreditSheet list={creditList} classYear={classYear} onEdit={editCredit} />
         ) : view === "activity" ? (
           <ActivitySheet rows={bb.activity} classYear={classYear} />
         ) : board ? (

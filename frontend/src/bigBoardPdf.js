@@ -1,4 +1,4 @@
-import { blankPlayer, nameKey } from "./bigBoardData.js";
+import { blankPlayer, nameKey, positionAbbreviation } from "./bigBoardData.js";
 
 // The whole board from the ARMs board PDF. That PDF is a "print to PDF" of the web page: every word is drawn
 // as shapes (nothing to copy out), the board is turned sideways, and it's cut into page-sized tiles -- a tile
@@ -483,6 +483,7 @@ export function boardsFromCards(cards, classYear) {
         prospectStatus: c.prospectStatus || "",
         lastVisit: c.lastVisit || "",
         midYear: !!c.midYear,
+        pos: positionAbbreviation(c.positionTitle),
         tier: c.tier,
       });
     });

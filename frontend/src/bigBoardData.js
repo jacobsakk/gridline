@@ -263,11 +263,70 @@ export function diffBoards(oldBoard, newBoard, side) {
   ];
 }
 
-// The same, for one card added or taken off by hand: null if that person is still on the board elsewhere.
-export function handChange(type, side, board, player, positions) {
-  const stillThere = (board?.columns || []).some((c) => c.players.some((p) => p.id !== player.id && nameKey(p.name) === nameKey(player.name)));
-  if (stillThere || !nameKey(player.name)) return null;
+// The same, for one card added or taken off by hand -- logged for every card, with its column, even when that
+// person is still on the board in another one (taking Dawson Kahl off RB still reads as a removal from RB).
+export function handChange(type, side, player, positions) {
+  if (!nameKey(player.name)) return null;
   return { type, side, name: player.name, school: player.school || "", state: player.state || "", status: player.status || "", tier: player.tier || 1, positions };
+}
+
+// ---------------------------------------------------------------- credit evaluation
+
+// The credit table is not typed in: it lists the committed and offered players on the class's boards, and only
+// what the board can't know (transcript date, NCAA qualifier, credits, a changed GPA or coach) is saved, per
+// person, in bigBoardCredit. Those saved bits are kept even while someone is off the list, so they come back
+// if he is committed or offered again.
+const CREDIT_POS_ORDER = ["QB", "RB", "WR", "TE", "OL", "DL", "LB", "CB", "SAF", "LS", "K", "P", "ATH"];
+const POS_FROM_COLUMN = { QB: "QB", RB: "RB", WR: "WR", TE: "TE", OT: "OL", "OG/OC": "OL", DE: "DL", DT: "DL", LB: "LB", CB: "CB", SAF: "SAF", LS: "LS", K: "K", P: "P" };
+const POS_FROM_TITLE = [[/quarter/i, "QB"], [/running|fullback/i, "RB"], [/receiv/i, "WR"], [/tight/i, "TE"], [/offensive/i, "OL"], [/defensive/i, "DL"], [/linebac/i, "LB"], [/corner/i, "CB"], [/safety/i, "SAF"], [/snapper/i, "LS"], [/kicker|punter/i, "K"]];
+
+export function positionAbbreviation(title) {
+  return POS_FROM_TITLE.find(([re]) => re.test(title || ""))?.[1] || "";
+}
+
+// "Christian Dukes" -> "DUKES"; "Recruiting Staff" -> "RECRUITING" (as the staff sheet writes them).
+const coachShort = (name) => (/recruiting/i.test(name || "") ? "RECRUITING" : String(name || "").trim().split(/\s+/).slice(-1)[0].toUpperCase());
+
+export function creditKey(first, last) {
+  return nameKey(`${first || ""}${last || ""}`);
+}
+
+export function buildCreditList(boards, saved = []) {
+  const byKey = new Map();
+  saved.forEach((r) => {
+    const key = r.key || creditKey(r.first, r.last);
+    if (key) byKey.set(key, r);
+  });
+  const seen = new Map();
+  // Position columns before the flex columns, so a person is described by his real position.
+  const ordered = [];
+  boards.filter(Boolean).forEach((b) => b.columns.forEach((c) => ordered.push({ c, flex: /^flex/i.test(c.label) })));
+  ordered.sort((a, b) => Number(a.flex) - Number(b.flex));
+  ordered.forEach(({ c }) =>
+    c.players.forEach((p) => {
+      const key = nameKey(p.name);
+      if (!key || seen.has(key) || (p.status !== "committed" && p.status !== "offered")) return;
+      const parts = p.name.trim().split(/\s+/);
+      const own = byKey.get(key) || {};
+      seen.set(key, {
+        key,
+        status: p.status,
+        first: parts[0] || "",
+        last: parts.slice(1).join(" "),
+        pos: p.pos || POS_FROM_COLUMN[c.label] || positionAbbreviation(p.positionTitle) || "ATH",
+        school: p.school || "",
+        state: p.state || "",
+        coach: own.coach || coachShort(p.coach),
+        transcript: own.transcript || "",
+        qualifier: own.qualifier || "",
+        gpa: own.gpa || p.gpa || "",
+        credits: own.credits || "",
+      });
+    })
+  );
+  const rank = (r) => (CREDIT_POS_ORDER.indexOf(r.pos) < 0 ? 99 : CREDIT_POS_ORDER.indexOf(r.pos));
+  const list = [...seen.values()].sort((a, b) => rank(a) - rank(b) || a.last.localeCompare(b.last));
+  return { committed: list.filter((r) => r.status === "committed"), offered: list.filter((r) => r.status === "offered") };
 }
 
 export const blankPlayer = (tier = 1) => ({
@@ -290,6 +349,7 @@ export const blankPlayer = (tier = 1) => ({
   lastVisit: "",
   midYear: false,
   gradYear: "",
+  pos: "",
 });
 
 export const blankCreditRow = (group = "commit") => ({

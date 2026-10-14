@@ -1765,6 +1765,26 @@ export default function HsGameUpdate({ onBack: toDashboard }) {
     setTab("Staff Face Sheet");
   };
 
+  // Arriving by a link with a player's name (#/hs/face-sheet/<week>/<name>, as from the Big Board): open his face
+  // sheet, or search for his name if he isn't one of the players tracked here.
+  const [linkedName, setLinkedName] = useState(initial[2] ? decodeURIComponent(initial[2]) : "");
+  useEffect(() => {
+    if (!linkedName || !hs.ready) return;
+    const letters = (t) => String(t || "").toLowerCase().replace(/[^a-z]/g, "");
+    const words = (t) => String(t || "").toLowerCase().replace(/[^a-z ]/g, "").split(/\s+/).filter(Boolean);
+    const want = letters(linkedName);
+    const w = words(linkedName);
+    const hit =
+      players.find((p) => [p.name, p.hsName].some((n) => letters(n) === want)) ||
+      players.find((p) => [p.name, p.hsName].some((n) => { const x = words(n); return x.length > 1 && w.length > 1 && x[x.length - 1] === w[w.length - 1] && x[0].slice(0, 3) === w[0].slice(0, 3); }));
+    if (hit) openPlayer(hit.id);
+    else {
+      setSearch(linkedName);
+      setTab("Master Tracker");
+    }
+    setLinkedName("");
+  }, [linkedName, hs.ready, players]); // eslint-disable-line react-hooks/exhaustive-deps
+
   return (
     <div
       className={`app-shell hs-shell${tab === "Staff Face Sheet" ? " hs-face-print" : ""}`}
