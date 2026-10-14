@@ -39,7 +39,7 @@ from studies._hudl_links import (
 )
 from studies._stat_overrides import STAT_OVERRIDES
 from studies._home_states import HOME_STATES
-from studies._all_mac import all_mac_tier
+from studies._all_mac import ALL_MAC, all_mac_tier
 
 # Every group but TE (which fully replaces its leaderboard pull when a supplement exists for that
 # season -- see below) tops up additively: the real leaderboard candidates for that season stay, these
@@ -115,6 +115,15 @@ def fetch_season_from_real_stats():
     with open(REAL_STATS_PATH) as f:
         all_rows = json.load(f)
     return [r for r in all_rows if r.get("division") == "FBS" and r.get("week") == "total" and r.get("conference") == "MAC"]
+
+
+def all_mac_by_name():
+    """Every All-MAC honoree by group/season/name -> tier, for the page to attach a medal to hand-entered
+    rows (OL has no computed rows at all, so nothing in build() ever sets allMac for it)."""
+    out = {}
+    for (season, group, name), tier in ALL_MAC.items():
+        out.setdefault(group, {}).setdefault(season, {})[name] = tier
+    return out
 
 
 def build():
@@ -206,7 +215,7 @@ def build():
 
     os.makedirs(os.path.dirname(OUT_PATH), exist_ok=True)
     with open(OUT_PATH, "w") as f:
-        json.dump({"generatedAt": __import__("datetime").datetime.utcnow().isoformat() + "Z", "seasons": [int(s) for s in SEASONS], "groups": study}, f, indent=2)
+        json.dump({"generatedAt": __import__("datetime").datetime.utcnow().isoformat() + "Z", "seasons": [int(s) for s in SEASONS], "groups": study, "allMacByName": all_mac_by_name()}, f, indent=2)
     print(f"\nWrote {OUT_PATH}")
 
 

@@ -5847,5 +5847,309 @@
         }
       ]
     }
+  },
+  "allMacByName": {
+    "QB": {
+      "2023": {
+        "DEQUAN FINN": 1,
+        "KURTIS ROURKE": 2,
+        "BRETT GABBERT": 3
+      },
+      "2024": {
+        "BRETT GABBERT": 1,
+        "PARKER NAVARRO": 2,
+        "CONNOR BAZELAK": 3
+      },
+      "2025": {
+        "BROC LOWRY": 1,
+        "PARKER NAVARRO": 2,
+        "TUCKER GLEASON": 3
+      }
+    },
+    "RB": {
+      "2023": {
+        "ANTARIO BROWN": 1,
+        "PENY BOONE": 1,
+        "MARQUEZ COOPER": 2,
+        "TERION STEWART": 2,
+        "RASHAD AMOS": 3,
+        "JALEN BUCKLEY": 3
+      },
+      "2024": {
+        "TERION STEWART": 1,
+        "JADEN NIXON": 1,
+        "KEYON MOZEE": 2,
+        "ANTHONY TYUS III": 2,
+        "AL-JAY HENDERSON": 3,
+        "MARION LUKES": 3
+      },
+      "2025": {
+        "SIEH BANGURA": 1,
+        "CHIP TRAYANUM": 1,
+        "JORDAN GANT": 2,
+        "DONTAE MCMILLAN": 2,
+        "CHAVON WRIGHT": 3,
+        "JALEN BUCKLEY": 3
+      }
+    },
+    "WR": {
+      "2023": {
+        "CHRISHON MCCRAY": 1,
+        "SAM WIGLUSZ": 1,
+        "JERJUAN NEWTON": 1,
+        "KENNETH WOMACK": 1,
+        "DANIEL GEORGE": 2,
+        "JASAIAH GATHINGS": 2,
+        "TANNER KNUE": 2,
+        "JESSE PREWITT III": 2,
+        "ODIEU HILIARE": 3,
+        "LUKE FLORIEA": 3,
+        "TRAYVON RUDOLPH": 3,
+        "ANTHONY SAMBUCCI": 3
+      },
+      "2024": {
+        "JAVON TRACY": 1,
+        "COLEMAN OWEN": 1,
+        "JERJUAN NEWTON": 1,
+        "JUNIOR VANDEROSS III": 1,
+        "ADRIAN NORTON": 2,
+        "ORAN SINGLETON": 2,
+        "CHRISHON MCCRAY": 2,
+        "REGGIE VIRGIL": 2,
+        "CAM PICKETT": 3,
+        "VICTOR SNOW": 3,
+        "TERRY LOCKETT": 3,
+        "LUKE FLORIEA": 3
+      },
+      "2025": {
+        "NIK MCMILLAN": 1,
+        "VICTOR SNOW": 1,
+        "KAM PERRY": 1,
+        "JUNIOR VANDEROSS III": 1,
+        "ISRAEL POLK": 2,
+        "MARCEL WILLIAMS": 2,
+        "CHASE HENDRICKS": 2,
+        "TRAYVON RUDOLPH": 2,
+        "LANGSTON LEWIS": 3,
+        "NICK DEVEREAUX": 3,
+        "CADE WOLFORD": 3,
+        "JACQUON GIBSON": 3
+      }
+    },
+    "TE": {
+      "2023": {
+        "HAROLD FANNIN JR.": 1,
+        "ANTHONY TORRES": 2,
+        "TANNER KOZIOL": 3
+      },
+      "2024": {
+        "HAROLD FANNIN JR.": 1,
+        "TANNER KOZIOL": 2,
+        "BLAKE BOSMA": 3
+      },
+      "2025": {
+        "JYRIN JOHNSON": 1,
+        "JOSHUA LONG": 2,
+        "MASON WILLIAMS": 3
+      }
+    },
+    "OL": {
+      "2023": {
+        "COREY STEWART": 1,
+        "NOLAN POTTER": 1,
+        "NICK ROSI": 1,
+        "VINNY SCIURY": 1,
+        "JACOB GIDEON": 1,
+        "DEIYANTEI POWELL-WOODS": 2,
+        "BRAYDEN SWARTOUT": 2,
+        "BRIAN DOOLEY": 2,
+        "WILL JADOS": 2,
+        "REID HOLSKEY": 2,
+        "DAMON KAYLOR": 3,
+        "ALEX WOLLSCHLAEGER": 3,
+        "GABE WALLACE": 3,
+        "TYLER DOTY": 3,
+        "ADDISON WEST": 3
+      },
+      "2024": {
+        "ALEX WOLLSCHLAEGER": 1,
+        "REID HOLSKEY": 1,
+        "JJ LIPPE": 1,
+        "ADDISON WEST": 1,
+        "JACOB GIDEON": 1,
+        "JON MUCCIOLO": 2,
+        "BRAYDEN SWARTOUT": 2,
+        "JOHN CHAMPE": 2,
+        "LOGAN ZSCHERNITZ": 2,
+        "PARKER TITSWORTH": 2,
+        "CARSON HEIDECKER": 2,
+        "ETHAN CROWE": 3,
+        "TARAN TYO": 3,
+        "TREVOR BROCK": 3,
+        "TYLER DOTY": 3,
+        "ETHAN SPOTH": 3
+      },
+      "2025": {
+        "TREVOR BROCK": 1,
+        "DAVION WEATHERSPOON": 1,
+        "ANTHONY BOSWELL": 1,
+        "RAHEEM ANDERSON": 1,
+        "RAHEEM ANDERSON II": 1,
+        "CHAD SCHUSTER": 1,
+        "NATE PABST": 2,
+        "TYLER DOTY": 2,
+        "DREW TERRILL": 2,
+        "JORDON JONES": 2,
+        "ETHAN SPOTH": 2,
+        "KEYLEN DAVIS": 3,
+        "MICKEY REWOLINSKI": 3,
+        "ERIC SMITH": 3,
+        "EVAN MALCORE": 3,
+        "NICK MARINARO": 3
+      }
+    },
+    "DL": {
+      "2023": {
+        "CJ NUNNALLY": 1,
+        "SIDNEY HOUSTON": 1,
+        "CAIDEN WOULLARD": 1,
+        "JUDGE CULPEPPER": 1,
+        "JACQUES BRISTOL": 2,
+        "BRIAN UGWU": 2,
+        "JAMES ESTER": 2,
+        "MARSHAWN KNEELAND": 2,
+        "CJ WEST": 3,
+        "VONNIE WATKINS": 3,
+        "RAYYAN BUELL": 3,
+        "DARIUS ALEXANDER": 3
+      },
+      "2024": {
+        "CJ NUNNALLY": 1,
+        "BRIAN UGWU": 1,
+        "DEVONTE O'MALLEY": 1,
+        "BRADLEY WEAVER": 1,
+        "KOBE STEWART": 2,
+        "COREY SUTTLE": 2,
+        "ROY WILLIAMS": 2,
+        "DARIUS ALEXANDER": 2,
+        "BRANDON BERGER": 3,
+        "ANTHONY HAWKINS": 3,
+        "DION CRAWFORD": 3,
+        "SKYLER GILL-HOWARD": 3
+      },
+      "2025": {
+        "NATHAN VOORHIS": 1,
+        "MICHAEL HELDMAN": 1,
+        "ADAM TRICK": 1,
+        "NADAME TUCKER": 1,
+        "JULIEN LAVENTURE": 2,
+        "JAMOND MATHIS": 2,
+        "MARQUES WHITE": 2,
+        "JAY CRABLE": 2,
+        "MARTEZ POYNTER": 2,
+        "BRUNO DALL": 3,
+        "JUNIOR POYSER": 3,
+        "MALACHI DAVIS": 3,
+        "ESEAN CARTER": 3
+      }
+    },
+    "LB": {
+      "2023": {
+        "MATT SALOPEK": 1,
+        "BRYCE HOUSTON": 1,
+        "KEYE THOMPSON": 1,
+        "DALLAS GANT": 1,
+        "COLE PEARCE": 2,
+        "DARREN ANDERS": 2,
+        "JOE SPARACIO": 2,
+        "TY WISE": 2,
+        "BRYAN MCCOY": 3,
+        "CASHIUS HOWELL": 3,
+        "KYLE MORETTI": 3,
+        "CHASE KLINE": 3
+      },
+      "2024": {
+        "JOSEPH SIPP JR.": 1,
+        "SHAUN DOLAC": 1,
+        "RED MURDOCK": 1,
+        "MATT SALOPEK": 1,
+        "BRYAN MCCOY": 2,
+        "JORDAN KWIATKOWSKI": 2,
+        "JAMES DJONKAM": 2,
+        "TY WISE": 2,
+        "SHAY TAYLOR": 3,
+        "BLAKE LEAKE": 3,
+        "DANIEL BOLDEN": 3,
+        "DONALD WILLIS": 3
+      },
+      "2025": {
+        "GIDEON LAMPRON": 1,
+        "RED MURDOCK": 1,
+        "JORDAN KWIATKOWSKI": 1,
+        "K'VON SHERMAN": 1,
+        "DAKOTA COCHRAN": 2,
+        "CJ YOUNG": 2,
+        "CORBAN HONDRU": 2,
+        "QUINTON URWILER": 2,
+        "QUINN URWILER": 2,
+        "MASON WOODS": 3,
+        "TYLER MARTIN": 3,
+        "JACKSON KUWATCH": 3,
+        "CHRIS D'APPOLONIA": 3
+      }
+    },
+    "CB": {
+      "2023": {
+        "JALEN HUSKEY": 1,
+        "QUINYON MITCHELL": 1,
+        "JORDAN OLADOKUN": 2,
+        "DONTE KENT": 2,
+        "YAHSYN MCKEE": 2,
+        "JAVAUGHN BYRD": 2,
+        "DAVON FERGUSON": 3,
+        "CHRIS MCDONALD": 3,
+        "KENI-H LOVELY": 3
+      },
+      "2024": {
+        "JORDAN OLADOKUN": 1,
+        "RAION STRADER": 1,
+        "DONTE KENT": 2,
+        "AVERY SMITH": 2,
+        "PAUL LEWIS III": 3,
+        "JAVAUGHN BYRD": 3
+      },
+      "2025": {
+        "ANDRE FULLER": 1,
+        "AVERY SMITH": 2,
+        "MJ CANNON": 3,
+        "JALEN MCCLENDON": 3,
+        "TANK PEARSON": 3
+      }
+    },
+    "SAF": {
+      "2023": {
+        "DEVIN GRANT": 1,
+        "MAXEN HOOK": 1,
+        "KJ MARTIN": 3
+      },
+      "2024": {
+        "NATE VALCARCEL": 1,
+        "MAXEN HOOK": 1,
+        "DJ WALKER": 2,
+        "TATE HALLOCK": 2,
+        "JACOREY BENJAMIN": 3,
+        "ELI BLAKEY": 3
+      },
+      "2025": {
+        "ELI BLAKEY": 1,
+        "EMMANUEL MCNEIL-WARREN": 1,
+        "BRADEN AWLS": 1,
+        "BRYCE LLEWELLYN": 2,
+        "SILAS WALTERS": 2,
+        "TATE HALLOCK": 2,
+        "JOSH FRANKLIN": 3,
+        "JOSHUA FRANKLIN": 3
+      }
+    }
   }
 }

@@ -202,6 +202,16 @@ export function useStudy(studyId) {
     // written against r.totals[key] -- needs no manual-vs-real branching of its own; it just works. A
     // row carries its own `id` (a real computed row never does) -- that's what marks it editable/
     // removable on the page, not which group it's in.
+    // A hand-entered row has no allMac from the scraper, so its medal comes from the honoree list by name
+    // (letters only, so "J.J. Lippe" and "JJ Lippe" are the same person).
+    const letters = (t) => String(t ?? "").toUpperCase().replace(/[^A-Z]/g, "");
+    const allMacTier = (group, season, player) => {
+      const byName = data.allMacByName?.[group]?.[season];
+      if (!byName || !player) return null;
+      const key = letters(player);
+      const hit = Object.keys(byName).find((n) => letters(n) === key);
+      return hit ? byName[hit] : null;
+    };
     meta.groups.forEach((g) => {
       (data.seasons || []).forEach((season) => {
         const seasonKey = String(season);
@@ -212,7 +222,7 @@ export function useStudy(studyId) {
             (g.stats || []).forEach((s) => {
               totals[s.key] = r[s.key] ?? 0;
             });
-            const row = { id: r.id, player: r.player || "", team: r.team || "", state: r.state || "", hudlLink: r.hudlLink || "", pffLink: r.pffLink || "", totals };
+            const row = { id: r.id, player: r.player || "", team: r.team || "", state: r.state || "", hudlLink: r.hudlLink || "", pffLink: r.pffLink || "", totals, allMac: allMacTier(g.key, seasonKey, r.player) };
             if (g.scoreFormula) row.score = Math.round(g.scoreFormula.reduce((sum, t) => sum + (totals[t.key] ?? 0) * t.coef, 0) * 10) / 10;
             return row;
           });
