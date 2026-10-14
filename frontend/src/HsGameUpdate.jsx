@@ -495,7 +495,7 @@ function sortPlayers(players, sort, statusOf) {
   });
 }
 
-function MasterTab({ players, weeks, currentWeek, cmuByWeek, statusOf, statusWhy, autoStatusOf, onGame, onDeleteGame, onOpenPlayer, onProfile, hasProfile, selected, setSelected, sort, setSort, coaches, updatePlayer, editSchool }) {
+function MasterTab({ players, weeks, currentWeek, cmuByWeek, statusOf, statusWhy, autoStatusOf, onGame, onAddGame, onDeleteGame, onOpenPlayer, onProfile, hasProfile, selected, setSelected, sort, setSort, coaches, updatePlayer, editSchool }) {
   const thBase = {
     position: "sticky", top: 0, zIndex: 2, background: "var(--bg-surface)", padding: "9px 10px", fontSize: 11, color: "var(--text-faint)", textTransform: "uppercase",
     textAlign: "left", whiteSpace: "nowrap", borderBottom: "1px solid var(--border)", letterSpacing: "0.04em",
@@ -612,6 +612,17 @@ function MasterTab({ players, weeks, currentWeek, cmuByWeek, statusOf, statusWhy
                           <span style={{ fontSize: 11, color: "var(--text-faint)" }}>{mmdd(g.date)}{!g.result && g.date < toIso(new Date()) ? " · no score reported" : ""}</span>
                         </div>
                       ))}
+                      {inWeek.length === 0 && (
+                        <button
+                          className="hs-no-print"
+                          onClick={() => onAddGame(p, w)}
+                          title="No game this week -- add one by hand"
+                          aria-label={`Add a game in the week of ${weekLabel(fromIso(w))} for ${p.name}`}
+                          style={{ background: "none", border: "none", color: "var(--text-faint)", cursor: "pointer", padding: 2, lineHeight: 0 }}
+                        >
+                          <Plus size={13} />
+                        </button>
+                      )}
                     </td>
                   );
                 })}
@@ -1812,7 +1823,7 @@ export default function HsGameUpdate({ onBack: toDashboard }) {
             </div>
           </div>
         ) : tab === "Master Tracker" ? (
-          <MasterTab players={sortedForMaster} weeks={weeks} currentWeek={weekKey(new Date())} cmuByWeek={cmuByWeek} statusOf={statusOf} statusWhy={statusWhy} onOpenPlayer={openPlayer} onProfile={setProfile} hasProfile={hasProfile} selected={selected} setSelected={setSelected} sort={sort} setSort={setSort} coaches={coaches} updatePlayer={hs.updatePlayer} editSchool={hs.editSchool} autoStatusOf={autoStatusOf} onGame={(player, game) => setGameSource({ id: player.id, key: game.date || game.opponent })} onDeleteGame={deleteGame} />
+          <MasterTab onAddGame={(player, wk) => setAddGameFor({ id: player.id, week: wk })} players={sortedForMaster} weeks={weeks} currentWeek={weekKey(new Date())} cmuByWeek={cmuByWeek} statusOf={statusOf} statusWhy={statusWhy} onOpenPlayer={openPlayer} onProfile={setProfile} hasProfile={hasProfile} selected={selected} setSelected={setSelected} sort={sort} setSort={setSort} coaches={coaches} updatePlayer={hs.updatePlayer} editSchool={hs.editSchool} autoStatusOf={autoStatusOf} onGame={(player, game) => setGameSource({ id: player.id, key: game.date || game.opponent })} onDeleteGame={deleteGame} />
         ) : tab === "Weekly Tracker" ? (
           <WeeklyTab players={filtered} week={week} statusOf={statusOf} autoStatusOf={autoStatusOf} updatePlayer={hs.updatePlayer} onGame={(player, game) => setGameSource({ id: player.id, key: game.date || game.opponent })} onAddGame={(player, wk) => setAddGameFor({ id: player.id, week: wk })} updateGame={hs.updateGame} onOpenPlayer={openPlayer} onProfile={setProfile} hasProfile={hasProfile} />
         ) : (
