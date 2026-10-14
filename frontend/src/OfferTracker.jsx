@@ -1150,7 +1150,7 @@ function parseOfferDate(value) {
 // continuous feed across every recruiting college at once, newest interest first -- a JUCO transfer's
 // own grad year varies player to player, so it's its own column rather than the tab itself. Filterable
 // down to one recruiting college, but shows all of them by default.
-function JucoFeedTable({ rows, theme, teamFilter, setTeamFilter, teamOptions, confFilter, setConfFilter, confOptions, updatedAt, onOpenProfile, onEdit, onRemove }) {
+function JucoFeedTable({ rows, theme, teamFilter, setTeamFilter, teamOptions, confFilter, setConfFilter, confOptions, posFilter, setPosFilter, posOptions, updatedAt, onOpenProfile, onEdit, onRemove }) {
   const sorted = useMemo(() => [...rows].sort((a, b) => (parseOfferDate(b.dateOffered) || 0) - (parseOfferDate(a.dateOffered) || 0)), [rows]);
   const th = { textAlign: "left", padding: "9px 10px", fontSize: 11, color: "var(--text-faint)", textTransform: "uppercase", letterSpacing: "0.03em", whiteSpace: "nowrap", position: "sticky", top: 0, background: "var(--bg-surface)", zIndex: 1 };
   const td = { padding: "8px 10px", fontSize: 13, color: "var(--text-secondary)", borderTop: "1px solid var(--border-subtle)", verticalAlign: "top" };
@@ -1168,6 +1168,12 @@ function JucoFeedTable({ rows, theme, teamFilter, setTeamFilter, teamOptions, co
           <option value="">All Recruiting Colleges</option>
           {teamOptions.map((t) => (
             <option key={t.team} value={t.team}>{t.label}</option>
+          ))}
+        </select>
+        <select value={posFilter} onChange={(e) => setPosFilter(e.target.value)} style={filterSelectStyle} aria-label="Filter by position">
+          <option value="">All Positions</option>
+          {posOptions.map((p) => (
+            <option key={p.position} value={p.position}>{p.position} ({p.count})</option>
           ))}
         </select>
         <span style={{ fontSize: 12.5, color: "var(--text-faint)" }}>{sorted.length} row{sorted.length === 1 ? "" : "s"}</span>
@@ -1254,6 +1260,7 @@ export default function OfferTracker({ onBack: toDashboard }) {
   const [positionFilter, setPositionFilter] = useState("");
   const [jucoTeamFilter, setJucoTeamFilter] = useState("");
   const [jucoConfFilter, setJucoConfFilter] = useState("");
+  const [jucoPosFilter, setJucoPosFilter] = useState("");
   const [commitsOnly, setCommitsOnly] = useState(false);
   const [profilePlayer, setProfilePlayer] = useState(null);
   const [adding, setAdding] = useState(false);
@@ -1349,7 +1356,18 @@ export default function OfferTracker({ onBack: toDashboard }) {
     const present = new Set(jucoConfRows.map((r) => r.team));
     return [...present].map((team) => ({ team, label: TEAM_CONFERENCE[team]?.label || jucoConfRows.find((r) => r.team === team)?.teamLabel || team })).sort((a, b) => a.label.localeCompare(b.label));
   }, [jucoConfRows]);
-  const jucoRows = useMemo(() => (jucoTeamFilter ? jucoConfRows.filter((r) => r.team === jucoTeamFilter) : jucoConfRows), [jucoConfRows, jucoTeamFilter]);
+  const jucoPositionOptions = useMemo(() => {
+    const counts = new Map();
+    jucoConfRows.forEach((r) => {
+      const pos = normalizePosition(r.position);
+      if (pos) counts.set(pos, (counts.get(pos) || 0) + 1);
+    });
+    return [...counts].map(([position, count]) => ({ position, count })).sort((a, b) => a.position.localeCompare(b.position));
+  }, [jucoConfRows]);
+  const jucoRows = useMemo(
+    () => jucoConfRows.filter((r) => (!jucoTeamFilter || r.team === jucoTeamFilter) && (!jucoPosFilter || normalizePosition(r.position) === jucoPosFilter)),
+    [jucoConfRows, jucoTeamFilter, jucoPosFilter]
+  );
 
   const teamRows = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -1539,6 +1557,9 @@ export default function OfferTracker({ onBack: toDashboard }) {
                 confFilter={jucoConfFilter}
                 setConfFilter={(c) => { setJucoConfFilter(c); setJucoTeamFilter(""); }}
                 confOptions={jucoConferenceOptions}
+                posFilter={jucoPosFilter}
+                setPosFilter={setJucoPosFilter}
+                posOptions={jucoPositionOptions}
                 updatedAt={tracker.jucoUpdatedAt()}
                 onOpenProfile={(player) => setProfilePlayer(player)}
                 onEdit={(row, field, value) => tracker.updateOfferField(row, field, value)}
