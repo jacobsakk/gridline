@@ -52,6 +52,10 @@ service cloud.firestore {
       allow read, delete: if isAdmin();
     }
 
+    // Each coach's own dashboard card order (doc id = their email). Only they read or change it.
+    match /dashboardPrefs/{email} {
+      allow read, write: if signedIn() && myEmail() == email;
+    }
     match /watchlist/{docId} {
       allow read, write: if invited();
     }

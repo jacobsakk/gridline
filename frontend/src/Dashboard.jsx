@@ -1,62 +1,23 @@
 import { useState } from "react";
-import { Settings, ClipboardList, ChevronRight, FileSpreadsheet, GraduationCap, LogOut, Trophy, Users, FlaskConical, LayoutGrid } from "lucide-react";
+import { Settings, ChevronRight, LogOut } from "lucide-react";
 import { coachTitle } from "./auth.js";
 import { ThemeSwitcher, useTheme } from "./theme.jsx";
 import actionCDark from "./assets/cmu-action-c-dark.png";
 import anniversaryLogo from "./assets/anniversary-125.png";
 import HubSchedule from "./HubSchedule.jsx";
+import { CARDS } from "./dashboardCards.js";
+import { applyOrder, useDashboardOrder } from "./dashboardOrder.js";
 
 // The main hub -- everything else (the Pre-Portal Tracker and Offer
 // Tracker today, more tools later) is a card here rather than its own
 // standalone page, so there's one consistent place to land and
 // navigate from.
-const CARDS = [
-  {
-    key: "tracker",
-    label: "Pre-Portal Tracker",
-    description: "Weekly stats across NAIA, JUCO, D3, D2, FCS and FBS",
-    icon: ClipboardList,
-  },
-  {
-    key: "offers",
-    label: "Offer Tracker",
-    description: "Offers by class year, conference and team, with position/area trends",
-    icon: FileSpreadsheet,
-  },
-  {
-    key: "colleges",
-    label: "Colleges",
-    description: "Every FBS and FCS team: standings, schedules, recruiting, rosters and depth charts",
-    icon: GraduationCap,
-  },
-  {
-    key: "hs",
-    label: "Game Update",
-    description: "Commits and targets: weekly results, records, area coach and game summaries (high school and JUCO)",
-    icon: Trophy,
-  },
-  {
-    key: "roster",
-    label: "Roster Management",
-    description: "Depth chart by years left, projections for future seasons, and the full roster spreadsheet",
-    icon: Users,
-  },
-  {
-    key: "studies",
-    label: "Studies",
-    description: "Ask for a data study on anything already in the site; the result shows up here as a spreadsheet",
-    icon: FlaskConical,
-  },
-  {
-    key: "bigboard",
-    label: "Big Board",
-    description: "Upload the staff's big board by class year (JUCO too) as a clean, editable, printable board, plus the credit evaluation",
-    icon: LayoutGrid,
-  },
-];
+
 
 export default function Dashboard({ onOpenCard, onOpenSettings, session }) {
   const [theme, setTheme] = useTheme();
+  const { order } = useDashboardOrder(session?.profile?.email);
+  const cards = applyOrder(CARDS, order);
   return (
     <div
       className="app-shell"
@@ -127,7 +88,7 @@ export default function Dashboard({ onOpenCard, onOpenSettings, session }) {
             Dashboard
           </h2>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 16 }}>
-            {CARDS.map(({ key, label, description, icon: Icon }, i) => (
+            {cards.map(({ key, label, description, icon: Icon }, i) => (
               <button
                 key={key}
                 className="dashboard-card"

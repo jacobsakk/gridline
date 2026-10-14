@@ -2,10 +2,12 @@ import { useState, useEffect, useMemo } from "react";
 import { BackButton, HomeButton } from "./HomeButton.jsx";
 import { collection, deleteDoc, doc, onSnapshot, orderBy, query, setDoc } from "firebase/firestore";
 import { db } from "./firebase";
-import { Check, Mail, Send, Trash2 } from "lucide-react";
+import { ArrowDown, ArrowUp, Check, Mail, RotateCcw, Send, Trash2 } from "lucide-react";
 import { useBack } from "./route.js";
 import { ROLES, normalizeEmail, sendInviteEmail } from "./auth.js";
 import { ThemeSwitcher, useTheme } from "./theme.jsx";
+import { CARDS } from "./dashboardCards.js";
+import { applyOrder, useDashboardOrder } from "./dashboardOrder.js";
 
 // "Request access" submissions from the sign-in page -- pending until an admin approves (creates the
 // real invite below) or denies (just deletes the request) them.
@@ -79,6 +81,65 @@ function inviteError(err) {
       : err?.code === "auth/too-many-requests"
         ? "Too many emails sent in a short time. Wait a few minutes and try again."
         : "Something went wrong. Try again.";
+}
+
+// Your own dashboard order: shown to every coach, saved per person (not for the whole staff).
+function DashboardOrder({ email }) {
+  const { order, setOrder } = useDashboardOrder(email);
+  const cards = applyOrder(CARDS, order);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+  const isDefault = cards.every((c, i) => c.key === CARDS[i].key);
+
+  async function save(next) {
+    setSaving(true);
+    setError("");
+    try {
+      await setOrder(next.map((c) => c.key));
+    } catch {
+      setError("Couldn't save that. Your order will reset when you reload; try again.");
+    }
+    setSaving(false);
+  }
+  function move(i, dir) {
+    const next = [...cards];
+    [next[i], next[i + dir]] = [next[i + dir], next[i]];
+    save(next);
+  }
+  const arrow = (disabled) => ({ background: "var(--bg-surface)", border: "1px solid var(--border)", color: "var(--text-primary)", borderRadius: 5, padding: 5, lineHeight: 0, cursor: disabled ? "default" : "pointer", opacity: disabled ? 0.35 : 1 });
+
+  return (
+    <div style={{ background: "var(--bg-panel)", border: "1px solid var(--border)", borderRadius: 8, padding: 20, marginBottom: 22 }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, flexWrap: "wrap", marginBottom: 6 }}>
+        <h2 className="oswald" style={{ fontSize: 18, fontWeight: 700, margin: 0 }}>Dashboard order</h2>
+        <button
+          onClick={() => save(CARDS)}
+          disabled={isDefault || saving}
+          style={{ display: "flex", alignItems: "center", gap: 6, background: "var(--bg-surface)", border: "1px solid var(--border)", color: "var(--text-primary)", borderRadius: 5, padding: "6px 11px", fontSize: 12.5, fontWeight: 600, cursor: isDefault ? "default" : "pointer", opacity: isDefault ? 0.5 : 1 }}
+        >
+          <RotateCcw size={13} /> Reset to default
+        </button>
+      </div>
+      <p style={{ margin: "0 0 14px", fontSize: 13, color: "var(--text-muted)", lineHeight: 1.5 }}>
+        Put the home page's cards in whatever order you want. This is your own order and doesn't change anyone else's dashboard.
+      </p>
+      <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+        {cards.map((card, i) => {
+          const Icon = card.icon;
+          return (
+            <div key={card.key} style={{ display: "flex", alignItems: "center", gap: 12, background: "var(--bg-page)", border: "1px solid var(--border)", borderRadius: 6, padding: "8px 12px" }}>
+              <span className="tabular" style={{ width: 18, color: "var(--text-faint)", fontSize: 13 }}>{i + 1}</span>
+              <Icon size={17} color="var(--accent)" />
+              <span style={{ flex: 1, fontSize: 14, fontWeight: 600 }}>{card.label}</span>
+              <button onClick={() => move(i, -1)} disabled={i === 0 || saving} aria-label={`Move ${card.label} up`} title="Move up" style={arrow(i === 0)}><ArrowUp size={14} /></button>
+              <button onClick={() => move(i, 1)} disabled={i === cards.length - 1 || saving} aria-label={`Move ${card.label} down`} title="Move down" style={arrow(i === cards.length - 1)}><ArrowDown size={14} /></button>
+            </div>
+          );
+        })}
+      </div>
+      {error && <div role="alert" style={{ marginTop: 10, fontSize: 13, color: "var(--danger-text)" }}>{error}</div>}
+    </div>
+  );
 }
 
 export default function SettingsPage({ onBack: toDashboard, session }) {
@@ -210,6 +271,10 @@ export default function SettingsPage({ onBack: toDashboard, session }) {
 
       <div style={{ flex: 1, minHeight: 0, overflow: "auto", padding: "16px var(--gutter) var(--gutter)" }}>
         <div style={{ maxWidth: 900, margin: "0 auto" }}>
+          <div style={{ marginBottom: 10, fontSize: 11, color: "var(--text-faint)", letterSpacing: "0.03em", textTransform: "uppercase" }}>
+            Dashboard
+          </div>
+          <DashboardOrder email={session?.profile?.email} />
           <div style={{ marginBottom: 10, fontSize: 11, color: "var(--text-faint)", letterSpacing: "0.03em", textTransform: "uppercase" }}>
             Staff & Access
           </div>
