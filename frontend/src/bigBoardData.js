@@ -283,6 +283,13 @@ export const blankPlayer = (tier = 1) => ({
   status: "recruit",
   rating: { A: "", P: "", C: "", R: "" },
   tier,
+  // Carried by the ARMs board PDF (not the workbook).
+  coach: "",
+  ratingLabel: "",
+  prospectStatus: "",
+  lastVisit: "",
+  midYear: false,
+  gradYear: "",
 });
 
 export const blankCreditRow = (group = "commit") => ({

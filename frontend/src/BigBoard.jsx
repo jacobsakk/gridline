@@ -88,6 +88,7 @@ function PlayerCard({ p, hasRating, photo, onOpen }) {
         {(p.school || p.state) && <div>{p.school}{p.state ? ` (${p.state})` : ""}</div>}
         {p.measurables && <div>{p.measurables}</div>}
         {(p.gpa || p.visits) && <div>{p.gpa ? `${p.gpaLabel || "cGPA"}: ${p.gpa}` : ""} {p.visits}</div>}
+        {(p.ratingLabel || p.coach) && <div className="bb-extra">{[p.ratingLabel, p.coach].filter(Boolean).join(" · ")}</div>}
       </div>
       {hasRating && (
         <div className="bb-rating">
@@ -235,6 +236,16 @@ export function PlayerModal({ board, colKey, player, isNew, photo, onSave, onDel
           <div>
             <label style={label} htmlFor="bb-meas">Measurables (as shown on the card)</label>
             <input id="bb-meas" value={draft.measurables} onChange={(e) => set({ measurables: e.target.value })} placeholder={`6'2" ✅ 187 ✅ 6'3" ✅`} style={{ ...ctl, width: "100%" }} />
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+            <div>
+              <label style={label} htmlFor="bb-coach">Assigned coach</label>
+              <input id="bb-coach" value={draft.coach || ""} onChange={(e) => set({ coach: e.target.value })} style={{ ...ctl, width: "100%" }} />
+            </div>
+            <div>
+              <label style={label} htmlFor="bb-rate">Rating</label>
+              <input id="bb-rate" value={draft.ratingLabel || ""} onChange={(e) => set({ ratingLabel: e.target.value })} placeholder="1 - SOLID STARTER" style={{ ...ctl, width: "100%" }} />
+            </div>
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "110px 100px 1fr", gap: 10, alignItems: "end" }}>
             <div>
@@ -583,113 +594,72 @@ export function UploadModal({ classYears, defaultYear, onClose, onImport }) {
 
 // ------------------------------------------------------------------ photos from the ARMs PDF
 
-// Reads the ARMs board PDF's photos and matches each to a card on this class's board (see bigBoardPdf.js),
-// then lets you check the matches before anything is saved.
-export function PdfPhotosModal({ candidates, haveKeys, onSave, onClose }) {
-  const [phase, setPhase] = useState("pick"); // pick | reading | review | saved
+// Choosing the ARMs board PDF is the whole job: the board, its tiers and colours, every card's details and the
+// photos are read from it (see bigBoardPdf.js) and the board for the class is replaced -- with what was added
+// and taken off logged on the Activity tab. Nothing to confirm along the way.
+export function UploadPdfModal({ defaultYear, onImport, onClose }) {
+  const [phase, setPhase] = useState("pick"); // pick | reading | done
   const [progress, setProgress] = useState(null);
-  const [matches, setMatches] = useState([]);
-  const [chosen, setChosen] = useState({}); // key -> { on, name }
   const [error, setError] = useState("");
-  const [saved, setSaved] = useState(0);
+  const [result, setResult] = useState(null);
+  const [year, setYear] = useState(defaultYear);
 
-  async function read(file) {
+  // The class comes from the file name ("1. 2027 BIG BOARD.pdf", "JUCO BIG BOARD.pdf") when it says one.
+  const yearFor = (file) => (/juco/i.test(file.name) ? "JUCO" : (/\b(20\d{2})\b/.exec(file.name) || [])[1] || year);
+
+  async function run(file) {
     setError("");
     setPhase("reading");
+    setProgress(null);
     try {
-      const { extractPdfPhotos } = await import("./bigBoardPdf.js");
-      const result = await extractPdfPhotos(file, candidates, setProgress);
-      setMatches(result.matches);
-      setChosen(Object.fromEntries(result.matches.map((m) => [m.key, { on: true, name: m.name }])));
-      setPhase("review");
+      const chosenYear = yearFor(file);
+      setYear(chosenYear);
+      setResult({ year: chosenYear, ...(await onImport(chosenYear, file, setProgress)) });
+      setPhase("done");
     } catch (err) {
-      setError(/fetch|network|import|load/i.test(String(err?.message)) ? "The reader couldn't load (it needs internet the first time). Check your connection and try again." : "That PDF couldn't be read. Use the PDF exported from the board.");
+      setError(/fetch|network|import|load/i.test(String(err?.message)) ? "The reader couldn't load (it needs internet the first time). Check your connection and try again." : err?.message || "That PDF couldn't be read. Use the PDF exported from the board.");
       setPhase("pick");
     }
   }
 
-  async function save() {
-    const picked = matches.filter((m) => chosen[m.key]?.on);
-    setPhase("reading");
-    setProgress({ stage: "save", page: 0, pages: picked.length, found: 0 });
-    // Two matches pointing at one person: the better read wins, so nobody gets two photos.
-    const best = new Map();
-    picked.forEach((m) => {
-      const name = chosen[m.key].name;
-      const prev = best.get(nameKey(name));
-      if (!prev || m.score < prev.score) best.set(nameKey(name), { ...m, name });
-    });
-    for (const m of best.values()) await onSave(m.name, m.photo);
-    setSaved(best.size);
-    setPhase("saved");
-  }
-
-  const matchedKeys = new Set(matches.filter((m) => chosen[m.key]?.on).map((m) => nameKey(chosen[m.key].name)));
-  const missing = candidates.filter((c) => !matchedKeys.has(nameKey(c.name)));
-  const count = Object.values(chosen).filter((c) => c.on).length;
-
   return (
-    <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20, zIndex: 80 }}>
-      <div onClick={(e) => e.stopPropagation()} style={{ background: "var(--bg-panel)", border: "1px solid var(--border)", borderRadius: 10, width: 720, maxWidth: "100%", maxHeight: "90vh", overflowY: "auto", padding: 22 }}>
+    <div onClick={phase === "reading" ? undefined : onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20, zIndex: 80 }}>
+      <div onClick={(e) => e.stopPropagation()} style={{ background: "var(--bg-panel)", border: "1px solid var(--border)", borderRadius: 10, width: 520, maxWidth: "100%", padding: 22 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-          <h2 className="oswald" style={{ margin: 0, fontSize: 19 }}>Photos from the ARMs PDF</h2>
-          <button onClick={onClose} aria-label="Close" style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer", lineHeight: 0 }}><X size={18} /></button>
+          <h2 className="oswald" style={{ margin: 0, fontSize: 19 }}>Upload the board PDF</h2>
+          {phase !== "reading" && <button onClick={onClose} aria-label="Close" style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer", lineHeight: 0 }}><X size={18} /></button>}
         </div>
 
         {phase === "pick" && (
           <>
             <p style={{ margin: "0 0 12px", fontSize: 12.5, color: "var(--text-faint)", lineHeight: 1.55 }}>
-              Choose the board PDF exported from ARMs. Each photo is matched to the card with the same name on this class's board; you check the matches before anything is saved. Anyone no longer on the board (or without a photo in the PDF) is simply skipped.
+              Choose the board PDF exported from ARMs. The class comes from the file name (a file with no year goes to the tab you're on, currently <b>{year}</b>). The board is rebuilt from it, photos included, and the people added and removed since the last upload are logged on the Activity tab. Your own additions to a card (GPA, ratings, visits) are kept.
             </p>
-            <input type="file" accept="application/pdf,.pdf" onChange={(e) => e.target.files[0] && read(e.target.files[0])} style={{ fontSize: 13, width: "100%" }} />
+            <input type="file" accept="application/pdf,.pdf" onChange={(e) => e.target.files[0] && run(e.target.files[0])} style={{ fontSize: 13, width: "100%" }} />
             {error && <div role="alert" style={{ color: "var(--danger-text)", fontSize: 13, marginTop: 10 }}>{error}</div>}
           </>
         )}
 
         {phase === "reading" && (
-          <p style={{ fontSize: 13.5, color: "var(--text-secondary)" }}>
+          <p style={{ fontSize: 13.5, color: "var(--text-secondary)", lineHeight: 1.6 }}>
             {progress?.stage === "save"
-              ? "Saving photos…"
+              ? "Saving the board and photos…"
               : progress?.page
-                ? `Reading page ${progress.page} of ${progress.pages}… ${progress.found} matched so far.`
+                ? `Reading page ${progress.page} of ${progress.pages}… ${progress.cards} cards so far.`
                 : "Getting the reader ready (the first time can take a few seconds)…"}
           </p>
         )}
 
-        {phase === "review" && (
-          <>
-            <p style={{ margin: "0 0 10px", fontSize: 13, color: "var(--text-secondary)" }}>
-              <b>{matches.length}</b> photos matched to cards. Uncheck any that look wrong or pick a different name.
-              {haveKeys.size > 0 && " People who already have a photo will be replaced if you keep them checked."}
+        {phase === "done" && result && (
+          <div style={{ fontSize: 13.5, lineHeight: 1.65 }}>
+            <p style={{ margin: "0 0 8px" }}>
+              Loaded <b>{result.cards}</b> cards into the <b>{result.year}</b> board ({result.off} offense, {result.def} defense/specialists) with <b>{result.photos}</b> photos.
             </p>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 8, marginBottom: 14 }}>
-              {matches.map((m) => {
-                const c = chosen[m.key] || { on: false, name: m.name };
-                return (
-                  <div key={m.key} style={{ display: "flex", gap: 8, alignItems: "center", border: "1px solid var(--border)", borderRadius: 8, padding: 6, opacity: c.on ? 1 : 0.45 }}>
-                    <input type="checkbox" checked={c.on} onChange={(e) => setChosen({ ...chosen, [m.key]: { ...c, on: e.target.checked } })} aria-label={`Use the photo for ${c.name}`} />
-                    <img src={m.photo} alt="" style={{ width: 44, height: 44, borderRadius: "50%", objectFit: "cover", flexShrink: 0 }} />
-                    <select value={c.name} onChange={(e) => setChosen({ ...chosen, [m.key]: { ...c, name: e.target.value } })} style={{ ...ctl, flex: 1, padding: "5px 6px", fontSize: 12 }}>
-                      {candidates.map((cand) => <option key={cand.name} value={cand.name}>{cand.name}</option>)}
-                    </select>
-                  </div>
-                );
-              })}
-            </div>
-            {missing.length > 0 && (
-              <p style={{ fontSize: 12.5, color: "var(--text-faint)", lineHeight: 1.5 }}>
-                No photo in the PDF for {missing.length}: {missing.slice(0, 12).map((c) => c.name).join(", ")}{missing.length > 12 ? "…" : ""}. They may have come off the board since the PDF was made.
-              </p>
-            )}
-            <div style={{ textAlign: "right" }}>
-              <button onClick={save} disabled={count === 0} style={{ ...primaryBtn, opacity: count ? 1 : 0.5 }}>Save {count} photo{count === 1 ? "" : "s"}</button>
-            </div>
-          </>
-        )}
-
-        {phase === "saved" && (
-          <div>
-            <p style={{ fontSize: 13.5 }}>Saved {saved} photo{saved === 1 ? "" : "s"}. They now show on the board and print with it.</p>
+            <p style={{ margin: "0 0 12px", color: "var(--text-secondary)" }}>
+              {result.compared
+                ? `Compared with the board it replaced: ${result.added} added, ${result.removed} removed (see the Activity tab).`
+                : "This is the first board for that class, so there's nothing to compare it with yet."}
+            </p>
             <div style={{ textAlign: "right" }}><button onClick={onClose} style={primaryBtn}>Done</button></div>
           </div>
         )}
@@ -709,7 +679,7 @@ export default function BigBoard({ onBack: toDashboard }) {
   const bb = useBigBoards(classYear);
   const [editing, setEditing] = useState(null); // { colKey, player, isNew }
   const [uploading, setUploading] = useState(false);
-  const [pdfPhotos, setPdfPhotos] = useState(false);
+  const [pdfUpload, setPdfUpload] = useState(false);
   const [note, setNote] = useState("");
   const photoInput = useRef(null);
 
@@ -768,6 +738,34 @@ export default function BigBoard({ onBack: toDashboard }) {
     return { compared, added: entries.filter((e) => e.type === "added").length, removed: entries.filter((e) => e.type === "removed").length };
   }
 
+  // The whole board from the ARMs PDF. Each side replaces the class's board for it, but anything added to a card
+  // here that the PDF doesn't carry (GPA, ratings, visits, marks) stays with that person.
+  async function importBoardPdf(year, file, onProgress) {
+    const { readBoardPdf, boardsFromCards } = await import("./bigBoardPdf.js");
+    const known = [];
+    ["off", "def"].forEach((side) => (bb.board(year, side)?.columns || []).forEach((c) => c.players.forEach((p) => known.push(p.name))));
+    const read = await readBoardPdf(file, known, onProgress);
+    if (!read.cards.length) throw new Error("No player cards were found in that PDF. Use the board PDF exported from ARMs.");
+    onProgress({ stage: "save" });
+    const built = boardsFromCards(read.cards, year);
+    const entries = [];
+    let compared = false;
+    for (const side of ["off", "def"]) {
+      const previous = bb.board(year, side);
+      const merged = carryOver(built[side], previous);
+      if (previous) {
+        compared = true;
+        entries.push(...diffBoards(previous, merged, side));
+      }
+      await bb.saveBoard(year, side, { ...merged, sourceFile: file.name });
+    }
+    for (const p of read.photos) await bb.savePhoto(year, p.name, p.photo);
+    await bb.logActivity(year, entries, file.name);
+    go(year, view === "credit" || view === "activity" ? "off" : view);
+    const count = (b) => new Set(b.columns.flatMap((c) => c.players.map((p) => nameKey(p.name)))).size;
+    return { cards: new Set(read.cards.map((c) => nameKey(c.name))).size, off: count(built.off), def: count(built.def), photos: read.photos.length, compared, added: entries.filter((e) => e.type === "added").length, removed: entries.filter((e) => e.type === "removed").length };
+  }
+
   async function addPhotos(files) {
     setNote("");
     const everyone = [];
@@ -785,15 +783,6 @@ export default function BigBoard({ onBack: toDashboard }) {
     }
     setNote(`${saved} photo${saved === 1 ? "" : "s"} added${unmatched.length ? `; no match for ${unmatched.slice(0, 4).join(", ")}${unmatched.length > 4 ? "…" : ""} (name the file after the player)` : ""}.`);
   }
-
-  // Everyone on this class's offense and defense boards, once each (a flex spot repeats a player).
-  const offBoard = bb.board(classYear, "off");
-  const defBoard = bb.board(classYear, "def");
-  const everyoneOnBoards = useMemo(() => {
-    const people = new Map();
-    [offBoard, defBoard].forEach((b) => (b?.columns || []).forEach((c) => c.players.forEach((p) => nameKey(p.name) && people.set(nameKey(p.name), { name: p.name }))));
-    return [...people.values()];
-  }, [offBoard, defBoard]);
 
   return (
     <div className="app-shell hs-shell bb-shell" data-theme={theme} style={{ display: "flex", flexDirection: "column", overflow: "hidden", background: "var(--bg-page)", color: "var(--text-primary)", fontFamily: "'Century Gothic', 'Jost', 'Helvetica Neue', Arial, sans-serif" }}>
@@ -818,10 +807,10 @@ export default function BigBoard({ onBack: toDashboard }) {
           </div>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
             <input ref={photoInput} type="file" accept="image/*" multiple style={{ display: "none" }} onChange={(e) => { addPhotos(e.target.files); e.target.value = ""; }} />
-            {view !== "credit" && view !== "activity" && <button onClick={() => setPdfPhotos(true)} style={ghostBtn} title="Pull the photos out of the board PDF exported from ARMs"><ImageIcon size={14} /> Photos from PDF</button>}
-            {view !== "credit" && view !== "activity" && <button onClick={() => photoInput.current?.click()} style={ghostBtn} title="Pick photos named after the players (e.g. Sam Rouleau.jpg)"><ImageIcon size={14} /> Add photos</button>}
-            <button onClick={() => setUploading(true)} style={ghostBtn}><Upload size={14} /> Upload workbook</button>
-            <button onClick={() => window.print()} style={primaryBtn}><Printer size={14} /> Print / PDF</button>
+            <button onClick={() => setPdfUpload(true)} style={primaryBtn} title="Upload the board PDF exported from ARMs -- the whole board, photos included, is built from it"><Upload size={14} /> Upload board PDF</button>
+            {view !== "credit" && view !== "activity" && <button onClick={() => photoInput.current?.click()} style={ghostBtn} title="Add or replace photos by hand (name each file after the player, e.g. Sam Rouleau.jpg)"><ImageIcon size={14} /> Add photos</button>}
+            <button onClick={() => setUploading(true)} style={ghostBtn} title="Upload the staff workbook -- for the credit evaluation sheet"><Upload size={14} /> Upload workbook</button>
+            <button onClick={() => window.print()} style={ghostBtn}><Printer size={14} /> Print / PDF</button>
           </div>
         </div>
 
@@ -852,7 +841,7 @@ export default function BigBoard({ onBack: toDashboard }) {
             onAdd={(colKey, tier) => setEditing({ colKey, player: blankPlayer(tier), isNew: true })}
           />
         ) : (
-          <Empty what={view === "off" ? "offensive board" : "defensive board"} year={classYear} onUpload={() => setUploading(true)} />
+          <Empty what={view === "off" ? "offensive board" : "defensive board"} year={classYear} onUpload={() => setPdfUpload(true)} uploadLabel="Upload board PDF" />
         )}
       </div>
 
@@ -871,25 +860,35 @@ export default function BigBoard({ onBack: toDashboard }) {
           onClose={() => setEditing(null)}
         />
       )}
-      {pdfPhotos && (
-        <PdfPhotosModal
-          candidates={everyoneOnBoards}
-          haveKeys={new Set(Object.keys(bb.photos))}
-          onSave={(name, data) => bb.savePhoto(classYear, name, data)}
-          onClose={() => setPdfPhotos(false)}
-        />
-      )}
+      {pdfUpload && <UploadPdfModal defaultYear={classYear} onImport={importBoardPdf} onClose={() => setPdfUpload(false)} />}
       {uploading && <UploadModal classYears={bb.classYears} defaultYear={classYear} onClose={() => setUploading(false)} onImport={importWorkbook} />}
     </div>
   );
 }
 
-function Empty({ what, year, onUpload, onStart }) {
+// What a card has that the PDF doesn't carry: the GPA, the A/P/C/R trend ratings, the visit icons and the marks
+// after a name. A fresh read of the PDF replaces the board, so those are carried over by person.
+function carryOver(next, previous) {
+  const before = new Map();
+  (previous?.columns || []).forEach((c) => c.players.forEach((p) => before.has(nameKey(p.name)) || before.set(nameKey(p.name), p)));
+  return {
+    ...next,
+    columns: next.columns.map((c) => ({
+      ...c,
+      players: c.players.map((p) => {
+        const old = before.get(nameKey(p.name));
+        return old ? { ...p, gpa: old.gpa ?? p.gpa, gpaLabel: old.gpaLabel ?? p.gpaLabel, visits: old.visits ?? p.visits, flags: old.flags ?? p.flags, rating: old.rating ?? p.rating } : p;
+      }),
+    })),
+  };
+}
+
+function Empty({ what, year, onUpload, onStart, uploadLabel = "Upload workbook" }) {
   return (
     <div style={{ border: "1px dashed var(--border)", borderRadius: 10, padding: 40, textAlign: "center", color: "var(--text-muted)" }}>
       <p style={{ margin: "0 0 14px", fontSize: 14 }}>No {what} for {year} yet.</p>
       <div style={{ display: "flex", gap: 8, justifyContent: "center" }}>
-        <button onClick={onUpload} style={primaryBtn}><Upload size={14} /> Upload workbook</button>
+        <button onClick={onUpload} style={primaryBtn}><Upload size={14} /> {uploadLabel}</button>
         {onStart && <button onClick={onStart} style={ghostBtn}>Start blank</button>}
       </div>
     </div>

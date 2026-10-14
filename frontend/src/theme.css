@@ -193,6 +193,7 @@ tbody tr:hover { background: var(--row-hover) !important; }
 .bb-card:hover { filter: brightness(0.95); }
 .bb-card-text { flex: 1; min-width: 0; overflow-wrap: anywhere; }
 .bb-name { font-weight: 800; font-size: 11.5px; }
+.bb-extra { font-size: 9.5px; color: #333; margin-top: 1px; }
 .bb-photo { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; flex-shrink: 0; align-self: flex-start; }
 .bb-rating { flex-shrink: 0; font-size: 9.5px; line-height: 1.2; text-align: left; white-space: nowrap; }
 .bb-footer { display: grid; grid-template-columns: 1fr 2fr 1fr; gap: 0; border-top: 2px solid #111; font-size: 10px; }
@@ -213,6 +214,7 @@ tbody tr:hover { background: var(--row-hover) !important; }
   .bb-tier { font-size: 6.5pt; padding: 1px 4px; }
   .bb-card { font-size: 6.2pt; padding: 2px 3px; gap: 3px; }
   .bb-name { font-size: 7pt; }
+  .bb-extra { font-size: 5.6pt; }
   .bb-photo { width: 0.26in; height: 0.26in; }
   .bb-rating { font-size: 5.8pt; }
   .bb-footer { font-size: 6pt; }
