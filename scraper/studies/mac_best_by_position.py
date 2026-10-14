@@ -210,7 +210,10 @@ def build():
                     "allMac": all_mac_tier(group_key, season, e["player"]),
                 })
             ranked.sort(key=lambda x: -x["score"])
-            study[group_key][season] = ranked[:TOP_N]
+            # The top N by score, plus any All-MAC honoree who ranks below that cut -- the list is "the
+            # best at each position", and a player the conference itself named to its all-conference
+            # team belongs on it even if his stat line alone doesn't crack the top N.
+            study[group_key][season] = ranked[:TOP_N] + [r for r in ranked[TOP_N:] if r["allMac"]]
             print(f"  {group_key} {season}: {len(rows)} leaderboard candidates, {len(ranked)} in the final list")
 
     os.makedirs(os.path.dirname(OUT_PATH), exist_ok=True)

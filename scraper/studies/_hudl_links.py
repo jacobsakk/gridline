@@ -77,6 +77,9 @@ CB_SUPPLEMENT = {
         {"player": "Bennett Walker", "team": "Eastern Mich.", "totals": {"games": 10, "total": 23, "pbu": 4, "int": 3}},
         # All-MAC 2nd-team CB, missing before the full cross-reference against the official All-MAC teams.
         {"player": "JaVaughn Byrd", "team": "Northern Illinois", "totals": {"games": 13, "total": 32, "pbu": 8, "int": 3}},
+        # All-MAC honoree who ranks below the top 10 by stats -- added so the list matches the official team.
+        {"player": "Davon Ferguson", "team": "Bowling Green", "totals": {"games": 13, "total": 50, "pbu": 6, "int": 2}},
+        {"player": "Keni-H Lovely", "team": "Western Mich.", "totals": {"games": 11, "total": 48, "pbu": 5, "int": 2}},
     ],
     "2024": [
         {"player": "Raion Strader", "team": "Miami (OH)", "totals": {"games": 12, "total": 53, "pbu": 18, "int": 2}},
@@ -93,6 +96,8 @@ CB_SUPPLEMENT = {
         # All-MAC 1st/2nd-team CB, missing before the full cross-reference against the official All-MAC teams.
         {"player": "Andre Fuller", "team": "Toledo", "totals": {"games": 13, "total": 49, "pbu": 11, "int": 1}},
         {"player": "Avery Smith", "team": "Toledo", "totals": {"games": 13, "total": 42, "pbu": 11, "int": 1}},
+        # 3rd-team All-MAC; Western Michigan lists him as a cornerback (moved here from the safety list), 53 tackles / 10 PBU per ESPN and WMU.
+        {"player": "Josh Franklin", "team": "Western Mich.", "totals": {"games": 14, "total": 53, "pbu": 10, "int": 0}},
     ],
     # No 2026 entry on purpose, same reason as TE_SUPPLEMENT above -- real-stats.json's MAC CB pool is a
     # full roster (dozens of corners), not the handful the NCAA leaderboard carried.
@@ -150,6 +155,9 @@ DL_SUPPLEMENT = {
         {"player": "CJ West", "team": "Kent St.", "totals": {"games": 12, "total": 40, "tfl": 7.0, "sacks": 2.0, "pbu": 0, "int": 0}},
         {"player": "Rayyan Buell", "team": "Ohio", "totals": {"games": 13, "total": 30, "tfl": 12.5, "sacks": 4.5, "pbu": 0, "int": 0}},
         {"player": "Darius Alexander", "team": "Toledo", "totals": {"games": 14, "total": 36, "tfl": 5.5, "sacks": 4.0, "pbu": 0, "int": 0}},
+        # All-MAC honoree who ranks below the top 10 by stats -- added so the list matches the official team.
+        {"player": "Brian Ugwu", "team": "Miami (OH)", "totals": {"games": 14, "total": 62, "tfl": 12.0, "sacks": 8.0, "pbu": 0, "int": 0}},
+        {"player": "Vonnie Watkins", "team": "Ohio", "totals": {"games": 13, "total": 33, "tfl": 8.0, "sacks": 5.0, "pbu": 0, "int": 0}},
     ],
     "2024": [
         {"player": "Devonte O'Malley", "team": "Northern Illinois", "totals": {"games": 13, "total": 39, "tfl": 11.5, "sacks": 8.0, "pbu": 0, "int": 0}},
@@ -158,12 +166,19 @@ DL_SUPPLEMENT = {
         {"player": "Brandon Berger", "team": "Ball St.", "totals": {"games": 12, "total": 37, "tfl": 9.5, "sacks": 5.0, "pbu": 4, "int": 1}},
         {"player": "Anthony Hawkins", "team": "Bowling Green", "totals": {"games": 13, "total": 46, "tfl": 7.5, "sacks": 5.0, "pbu": 3, "int": 0}},
         {"player": "Skyler Gill-Howard", "team": "Northern Illinois", "totals": {"games": 12, "total": 51, "tfl": 8.0, "sacks": 5.0, "pbu": 0, "int": 0}},
+        # All-MAC honoree who ranks below the top 10 by stats -- added so the list matches the official team.
+        {"player": "Brian Ugwu", "team": "Miami (OH)", "totals": {"games": 14, "total": 59, "tfl": 14.5, "sacks": 7.5, "pbu": 3, "int": 0}},
+        {"player": "Corey Suttle", "team": "Miami (OH)", "totals": {"games": 12, "total": 36, "tfl": 8.0, "sacks": 5.5, "pbu": 0, "int": 0}},
+        {"player": "Dion Crawford", "team": "Buffalo", "totals": {"games": 13, "total": 59, "tfl": 15.0, "sacks": 8.5, "pbu": 2, "int": 0}},
     ],
     "2025": [
         {"player": "Julien Laventure", "team": "Akron", "totals": {"games": 12, "total": 45, "tfl": 10.5, "sacks": 4.0, "pbu": 0, "int": 0}},
         {"player": "Bruno Dall", "team": "Akron", "totals": {"games": 12, "total": 44, "tfl": 8.5, "sacks": 4.0, "pbu": 6, "int": 1}},
         {"player": "Junior Poyser", "team": "Buffalo", "totals": {"games": 12, "total": 31, "tfl": 0, "sacks": 5.5, "pbu": 0, "int": 0}},
         {"player": "Esean Carter", "team": "Toledo", "totals": {"games": 13, "total": 36, "tfl": 3.0, "sacks": 3.0, "pbu": 0, "int": 0}},
+        # All-MAC honoree who ranks below the top 10 by stats -- added so the list matches the official team.
+        {"player": "Adam Trick", "team": "Miami (OH)", "totals": {"games": 13, "total": 59, "tfl": 12.5, "sacks": 8.5, "pbu": 4, "int": 1}},
+        {"player": "Jamond Mathis", "team": "Kent St.", "totals": {"games": 12, "total": 28, "tfl": 8.0, "sacks": 6.0, "pbu": 3, "int": 0}},
     ],
 }
 LB_SUPPLEMENT = {
@@ -172,6 +187,9 @@ LB_SUPPLEMENT = {
         {"player": "Darren Anders", "team": "Bowling Green", "totals": {"games": 13, "total": 82, "tfl": 10.5, "sacks": 4.5, "pbu": 2, "int": 0}},
         {"player": "Cashius Howell", "team": "Bowling Green", "totals": {"games": 13, "total": 28, "tfl": 10.5, "sacks": 9.5, "pbu": 1, "int": 0}},
         {"player": "Kyle Moretti", "team": "Central Mich.", "totals": {"games": 9, "total": 65, "tfl": 5.0, "sacks": 2.0, "pbu": 4, "int": 0}},
+        # All-MAC honoree who ranks below the top 10 by stats -- added so the list matches the official team.
+        {"player": "Bryan McCoy", "team": "Akron", "totals": {"games": 12, "total": 95, "tfl": 7.0, "sacks": 1.0, "pbu": 0, "int": 0}},
+        {"player": "Keye Thompson", "team": "Ohio", "totals": {"games": 12, "total": 94, "tfl": 10.0, "sacks": 1.5, "pbu": 2, "int": 1}},
     ],
     "2024": [
         # Kwiatkowski and Wise are each already on the 2025/2023 list respectively (multi-year All-MAC
@@ -180,12 +198,20 @@ LB_SUPPLEMENT = {
         {"player": "Ty Wise", "team": "Miami (OH)", "totals": {"games": 14, "total": 89, "tfl": 10.5, "sacks": 5.0, "pbu": 0, "int": 2}},
         {"player": "Shay Taylor", "team": "Ohio", "totals": {"games": 13, "total": 72, "tfl": 10.0, "sacks": 3.0, "pbu": 4, "int": 1}},
         {"player": "Blake Leake", "team": "Ohio", "totals": {"games": 14, "total": 91, "tfl": 4.0, "sacks": 0, "pbu": 3, "int": 1}},
+        # All-MAC honoree who ranks below the top 10 by stats -- added so the list matches the official team.
+        {"player": "Daniel Bolden", "team": "Toledo", "totals": {"games": 13, "total": 97, "tfl": 8.0, "sacks": 2.5, "pbu": 0, "int": 0}},
+        {"player": "Donald Willis", "team": "Western Mich.", "totals": {"games": 13, "total": 109, "tfl": 6.0, "sacks": 1.0, "pbu": 4, "int": 0}},
+        {"player": "James Djonkam", "team": "Eastern Mich.", "totals": {"games": 10, "total": 98, "tfl": 11.5, "sacks": 3.0, "pbu": 3, "int": 0}},
     ],
     "2025": [
         {"player": "Dakota Cochran", "team": "Central Mich.", "totals": {"games": 13, "total": 67, "tfl": 6.0, "sacks": 0.5, "pbu": 2, "int": 1}},
         {"player": "Corban Hondru", "team": "Miami (OH)", "totals": {"games": 10, "total": 83, "tfl": 6.0, "sacks": 1.0, "pbu": 0, "int": 3}},
         {"player": "Quinton Urwiler", "team": "Northern Illinois", "totals": {"games": 12, "total": 141, "tfl": 7.5, "sacks": 1.5, "pbu": 1, "int": 1}},
         {"player": "Chris D'Appolonia", "team": "Toledo", "totals": {"games": 12, "total": 68, "tfl": 3.5, "sacks": 1.0, "pbu": 4, "int": 0}},
+        # All-MAC honoree who ranks below the top 10 by stats -- added so the list matches the official team.
+        {"player": "CJ Young", "team": "Kent St.", "totals": {"games": 11, "total": 89, "tfl": 8.0, "sacks": 2.5, "pbu": 3, "int": 1}},
+        {"player": "K'Von Sherman", "team": "Toledo", "totals": {"games": 13, "total": 94, "tfl": 14.5, "sacks": 4.5, "pbu": 1, "int": 0}},
+        {"player": "Mason Woods", "team": "Kent St.", "totals": {"games": 12, "total": 94, "tfl": 11.0, "sacks": 2.0, "pbu": 1, "int": 0}},
     ],
 }
 SAF_SUPPLEMENT = {
@@ -197,7 +223,11 @@ SAF_SUPPLEMENT = {
     "2025": [
         {"player": "Braden Awls", "team": "Toledo", "totals": {"games": 12, "total": 52, "tfl": 6.5, "pbu": 9, "int": 5}},
         {"player": "Tate Hallock", "team": "Western Mich.", "totals": {"games": 14, "total": 67, "tfl": 2.0, "pbu": 4, "int": 3}},
-        {"player": "Josh Franklin", "team": "Western Mich.", "totals": {"games": 14, "total": 41, "tfl": 3.5, "pbu": 4, "int": 0}},
+    ],
+    "2023": [
+        # All-MAC safeties. Hook's TFL isn't published anywhere found (shown 0); he missed 5 games to injury.
+        {"player": "Maxen Hook", "team": "Toledo", "totals": {"games": 9, "total": 69, "tfl": 0, "pbu": 4, "int": 3}},
+        {"player": "KJ Martin", "team": "Akron", "totals": {"games": 11, "total": 45, "tfl": 1.5, "pbu": 6, "int": 2}},
     ],
 }
 HUDL_LINKS.update({

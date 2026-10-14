@@ -245,8 +245,8 @@ ALL_MAC = {
     ("2025", "SAF", "BRYCE LLEWELLYN"): 2,
     ("2025", "SAF", "SILAS WALTERS"): 2,
     ("2025", "SAF", "TATE HALLOCK"): 2,
-    ("2025", "SAF", "JOSH FRANKLIN"): 3,
-    ("2025", "SAF", "JOSHUA FRANKLIN"): 3,
+    ("2025", "CB", "JOSH FRANKLIN"): 3,
+    ("2025", "CB", "JOSHUA FRANKLIN"): 3,
 }
 
 
