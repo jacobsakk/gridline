@@ -77,6 +77,17 @@ service cloud.firestore {
     match /statsUploads/{docId} {
       allow read, write: if invited();
     }
+    // The Big Board: one doc per class year + side ("2027__off"), the credit evaluation table per class
+    // year, and recruit photos (kept apart so a board doc stays small). Any invited coach can upload/edit.
+    match /bigBoards/{docId} {
+      allow read, write: if invited();
+    }
+    match /bigBoardCredit/{docId} {
+      allow read, write: if invited();
+    }
+    match /bigBoardPhotos/{docId} {
+      allow read, write: if invited();
+    }
     match /hsPlayers/{docId} {
       allow read, write: if invited();
     }
