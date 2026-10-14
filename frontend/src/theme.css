@@ -182,7 +182,7 @@ tbody tr:hover { background: var(--row-hover) !important; }
 @media (prefers-reduced-motion: reduce) { .app-shell .app-header .home-helmet img { transition: none; } .app-shell .app-header .home-helmet:hover img, .app-shell .app-header .home-helmet:focus-visible img { transform: none; } }
 
 /* Big Board: a light, fixed-colour sheet on screen that prints the same way (landscape, one board per page). */
-.bb-sheet { background: #fff; color: #111; font-family: Arial, "Helvetica Neue", sans-serif; border: 1px solid #bbb; min-width: 900px; }
+.bb-sheet { background: #fff; color: #111; font-family: 'Century Gothic', 'Jost', 'Helvetica Neue', Arial, sans-serif; border: 1px solid #bbb; min-width: 900px; }
 .bb-title { background: #510F1D; color: #FBAB18; text-align: center; font-weight: 800; letter-spacing: 0.05em; padding: 7px; font-size: 13px; }
 .bb-cols { display: grid; }
 .bb-col { min-width: 0; border-right: 1px solid #fff; }
@@ -203,7 +203,7 @@ tbody tr:hover { background: var(--row-hover) !important; }
 .bb-emoji-grid span { display: inline-block; min-width: 20px; }
 .bb-counts { padding-bottom: 6px; }
 .bb-counts > div:not(.bb-footh) { padding: 1px 8px; }
-.bb-credit input, .bb-credit select { color: #111; }
+.bb-credit input, .bb-credit select { color: #111; font-family: inherit; }
 @page bb { size: letter landscape; margin: 0.3in; }
 @media print {
   .bb-shell { page: bb; }
