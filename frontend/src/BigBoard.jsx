@@ -1,4 +1,4 @@
-import { Fragment, useMemo, useRef, useState } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { Camera, ChevronDown, ChevronUp, Image as ImageIcon, Plus, Printer, Trash2, Upload, X } from "lucide-react";
 import { BackButton, HomeButton } from "./HomeButton.jsx";
 import { ThemeSwitcher, useTheme } from "./theme.jsx";
@@ -90,7 +90,7 @@ function PlayerCard({ p, hasRating, photo, onOpen }) {
         {(p.gpa || p.visits) && <div>{p.gpa ? `${p.gpaLabel || "cGPA"}: ${p.gpa}` : ""} {p.visits}</div>}
         {(p.ratingLabel || p.coach) && <div className="bb-extra">{[p.ratingLabel, p.coach].filter(Boolean).join(" · ")}</div>}
       </div>
-      {hasRating && (
+      {hasRating && RATING_KEYS.some((k) => p.rating?.[k]) && (
         <div className="bb-rating">
           {RATING_KEYS.map((k) => (
             <div key={k}>{k}:{trendEmoji(p.rating?.[k]) || "–"}</div>
@@ -107,7 +107,7 @@ export function BoardSheet({ board, side, classYear, photos, onOpen, onAdd }) {
   const tiers = Array.from({ length: maxTier }, (_, i) => i + 1);
   const title = board.title && /\d{4}/.test(board.title) ? board.title : `${SIDE_TITLE[side]} - ${classYear}`;
   return (
-    <div className="bb-sheet">
+    <div className="bb-sheet bb-board">
       <div className="bb-title">{title}</div>
       <div className="bb-cols" style={{ gridTemplateColumns: `repeat(${board.columns.length}, minmax(0, 1fr))` }}>
         {board.columns.map((col) => {
@@ -682,6 +682,47 @@ export default function BigBoard({ onBack: toDashboard }) {
   const [pdfUpload, setPdfUpload] = useState(false);
   const [note, setNote] = useState("");
   const photoInput = useRef(null);
+
+  // Printing: a board plus its key and counts is shrunk to fit one landscape letter page. The size the page will
+  // have is measured just before printing (at the width the paper allows), so the key always prints with the
+  // prospects instead of spilling onto a second sheet.
+  useEffect(() => {
+    const PAGE_W = 990; // 10.4in of printable width, in CSS pixels, with a little to spare
+    const PAGE_H = 735; // 7.9in of printable height
+    const fit = () => {
+      document.querySelectorAll(".bb-board").forEach((el) => {
+        el.style.zoom = "";
+        // The biggest scale at which the whole sheet fits the page: at scale z the sheet is laid out PAGE_W / z
+        // wide (a smaller scale gives it more room, so less wrapping) and prints z times its height.
+        const printedHeight = (z) => {
+          el.style.width = `${PAGE_W / z}px`;
+          return el.scrollHeight * z;
+        };
+        let lo = 0.3;
+        let hi = 1;
+        if (printedHeight(hi) <= PAGE_H) lo = hi;
+        else for (let i = 0; i < 12; i++) {
+          const mid = (lo + hi) / 2;
+          if (printedHeight(mid) <= PAGE_H) lo = mid;
+          else hi = mid;
+        }
+        el.style.width = `${PAGE_W / lo}px`;
+        el.style.zoom = String(lo);
+      });
+    };
+    const reset = () => {
+      document.querySelectorAll(".bb-board").forEach((el) => {
+        el.style.zoom = "";
+        el.style.width = "";
+      });
+    };
+    window.addEventListener("beforeprint", fit);
+    window.addEventListener("afterprint", reset);
+    return () => {
+      window.removeEventListener("beforeprint", fit);
+      window.removeEventListener("afterprint", reset);
+    };
+  }, []);
 
   const board = view === "credit" || view === "activity" ? null : bb.board(classYear, view);
   const credit = bb.credit(classYear);

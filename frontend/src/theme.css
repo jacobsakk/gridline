@@ -208,18 +208,10 @@ tbody tr:hover { background: var(--row-hover) !important; }
 @page bb { size: letter landscape; margin: 0.3in; }
 @media print {
   .bb-shell { page: bb; }
-  .bb-sheet { border: none; min-width: 0; }
-  .bb-title { font-size: 10pt; padding: 3px; }
-  .bb-colhead { font-size: 8pt; padding: 2px 4px; }
-  .bb-tier { font-size: 6.5pt; padding: 1px 4px; }
-  .bb-card { font-size: 6.2pt; padding: 2px 3px; gap: 3px; }
-  .bb-name { font-size: 7pt; }
-  .bb-extra { font-size: 5.6pt; }
-  .bb-photo { width: 0.26in; height: 0.26in; }
-  .bb-rating { font-size: 5.8pt; }
-  .bb-footer { font-size: 6pt; }
-  .bb-footh { padding: 2px 4px; }
-  .bb-key > div:not(.bb-footh) { padding: 2px 4px; }
+  /* A board prints exactly as it looks, shrunk by the page to fit one sheet with its key (see BigBoard.jsx's
+     fit-to-page on beforeprint); the key and counts are inside the sheet, so they can't land on another page. */
+  .bb-sheet { border: none; min-width: 0; break-inside: avoid; page-break-inside: avoid; }
+  .bb-sheet .bb-footer { break-inside: avoid; }
   .bb-credit th, .bb-credit td { font-size: 8pt; }
   .bb-credit input, .bb-credit select { font-size: 8pt !important; padding: 2px 3px !important; }
 }
