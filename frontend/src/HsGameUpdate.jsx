@@ -866,7 +866,7 @@ const fit = (text) => {
   return { fontSize: `calc(var(--hs-font) * ${scale})`, whiteSpace: "nowrap" };
 };
 
-function FaceBlock({ player, week, status, why, onGame, updatePlayer, updateGame, removePlayer, onProfile, hasProfile }) {
+function FaceBlock({ player, week, status, why, onGame, onAddGame, updatePlayer, updateGame, removePlayer, onProfile, hasProfile }) {
   const { game, next } = pickWeekGames(player, week);
   const s = STATUS_BY_KEY[status];
   const [photoError, setPhotoError] = useState("");
@@ -882,6 +882,8 @@ function FaceBlock({ player, week, status, why, onGame, updatePlayer, updateGame
   }
 
   const summaryText = game?.summary || "";
+  const nextWeek = toIso(new Date(fromIso(week).getFullYear(), fromIso(week).getMonth(), fromIso(week).getDate() + 7));
+  const addGameButton = { background: "none", border: "none", color: "#777", fontFamily: "inherit", fontSize: "calc(var(--hs-font) * 0.8)", cursor: "pointer", padding: 0 };
   return (
     <article
       className="hs-block"
@@ -936,7 +938,14 @@ function FaceBlock({ player, week, status, why, onGame, updatePlayer, updateGame
         />
       </div>
       <div style={{ ...headCell, gridColumn: 2, gridRow: 3 }}>OPPONENT</div>
-      <div className={game ? "hs-game-click" : undefined} title={game ? "Click for this game's sources" : undefined} onClick={game ? () => onGame(player, game) : undefined} style={{ ...valueCell, gridColumn: 2, gridRow: 4, ...fit(game?.opponent), cursor: game ? "pointer" : "default" }}>{game?.opponent || "—"}</div>
+      <div className={game ? "hs-game-click" : undefined} title={game ? "Click for this game's sources" : undefined} onClick={game ? () => onGame(player, game) : undefined} style={{ ...valueCell, gridColumn: 2, gridRow: 4, ...fit(game?.opponent), cursor: game ? "pointer" : "default" }}>
+        {game?.opponent || (
+          <>
+            <span className="hs-print-only">—</span>
+            <button className="hs-no-print" onClick={() => onAddGame(player, week)} title="No game found this week -- add one by hand (California JUCO, say)" style={addGameButton}>+ Add game</button>
+          </>
+        )}
+      </div>
       <div style={{ ...headCell, gridColumn: 2, gridRow: 5 }}>SCORE</div>
       <div style={{ ...valueCell, gridColumn: 2, gridRow: 6, cursor: game ? "pointer" : "default" }} className="tabular" onClick={game ? () => onGame(player, game) : undefined} title={game ? "Click for this game's sources" : undefined}>
         {game?.result ? (
@@ -958,7 +967,14 @@ function FaceBlock({ player, week, status, why, onGame, updatePlayer, updateGame
         />
       </div>
       <div style={{ ...headCell, gridColumn: 3, gridRow: 3 }}>NEXT OPPONENT</div>
-      <div style={{ ...valueCell, gridColumn: 3, gridRow: 4, ...fit(next?.opponent) }}>{next?.opponent || "—"}</div>
+      <div className={next ? "hs-game-click" : undefined} title={next ? "Click to edit this game" : undefined} onClick={next ? () => onGame(player, next) : undefined} style={{ ...valueCell, gridColumn: 3, gridRow: 4, ...fit(next?.opponent), cursor: next ? "pointer" : "default" }}>
+        {next?.opponent || (
+          <>
+            <span className="hs-print-only">—</span>
+            <button className="hs-no-print" onClick={() => onAddGame(player, nextWeek)} title="No game found next week -- add one by hand" style={addGameButton}>+ Add game</button>
+          </>
+        )}
+      </div>
       <div style={{ ...headCell, gridColumn: 3, gridRow: 5 }}>NEXT WEEK DATE</div>
       <div style={{ ...valueCell, gridColumn: 3, gridRow: 6 }} className="tabular">{next ? sheetDate(next.date) : "—"}</div>
 
@@ -1202,7 +1218,7 @@ function FaceSheetTab(props) {
               ))}
             </div>
             {page.map((p) => (
-              <FaceBlock key={p.id} player={p} week={week} status={statusOf(p)} why={props.statusWhy(p)} onGame={props.onGame} updatePlayer={updatePlayer} updateGame={props.updateGame} removePlayer={props.removePlayer} onProfile={props.onProfile} hasProfile={props.hasProfile} />
+              <FaceBlock key={p.id} player={p} week={week} status={statusOf(p)} why={props.statusWhy(p)} onGame={props.onGame} onAddGame={props.onAddGame} updatePlayer={updatePlayer} updateGame={props.updateGame} removePlayer={props.removePlayer} onProfile={props.onProfile} hasProfile={props.hasProfile} />
             ))}
           </section>
         ))}
@@ -1882,6 +1898,7 @@ export default function HsGameUpdate({ onBack: toDashboard }) {
             statusOf={statusOf}
             statusWhy={statusWhy}
             onGame={(player, game) => setGameSource({ id: player.id, key: game.date || game.opponent })}
+            onAddGame={(player, wk) => setAddGameFor({ id: player.id, week: wk })}
             focusId={focusId}
             clearFocus={() => setFocusId(null)}
             updatePlayer={hs.updatePlayer}
