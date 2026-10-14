@@ -7,13 +7,14 @@ import { initialSubRoute, setSubRoute, useBack } from "./route.js";
 import { matchPhotoFiles, photoFromFile } from "./hsData.js";
 import {
   FLAGS, RATING_KEYS, STATUSES, STATUS_BY_KEY, TRENDS, VISITS, blankCreditRow, blankPlayer, boardTitle, classYearFromTitle,
-  commitCounts, nameKey, parseBoardSheet, parseCreditSheet, readWorkbook, useBigBoards,
+  commitCounts, diffBoards, handChange, nameKey, parseBoardSheet, parseCreditSheet, readWorkbook, useBigBoards,
 } from "./bigBoardData.js";
 
 const VIEWS = [
   { key: "off", label: "Offense" },
   { key: "def", label: "Defense / Specialists" },
   { key: "credit", label: "Credit Evaluation" },
+  { key: "activity", label: "Activity" },
 ];
 const SIDE_TITLE = { off: "HIGH SCHOOL OFFENSIVE BIG BOARD", def: "HIGH SCHOOL DEFENSIVE/SPEC BIG BOARD" };
 
@@ -407,6 +408,71 @@ export function CreditSheet({ rows, onChange, classYear }) {
   );
 }
 
+// ------------------------------------------------------------------ activity
+
+const shortDate = (iso) => {
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso || "");
+  return m ? `${Number(m[2])}/${Number(m[3])}/${m[1].slice(2)}` : "";
+};
+
+// Who has been added to and taken off the board, newest first, with the date -- written by every upload (the
+// new board compared with the one it replaces) and by cards added or removed by hand.
+export function ActivitySheet({ rows, classYear }) {
+  const [filter, setFilter] = useState("all");
+  const shown = rows.filter((r) => filter === "all" || r.type === filter);
+  const added = rows.filter((r) => r.type === "added").length;
+  const removed = rows.length - added;
+  const groups = [];
+  shown.forEach((r) => {
+    const last = groups[groups.length - 1];
+    if (last && last.date === r.date) last.rows.push(r);
+    else groups.push({ date: r.date, rows: [r] });
+  });
+  const th = { background: "#BFBFBF", color: "#111", fontSize: 11, padding: "5px 8px", border: "1px solid rgba(0,0,0,0.12)", textAlign: "left" };
+  const td = { padding: "5px 8px", fontSize: 12.5, border: "1px solid rgba(0,0,0,0.12)", color: "#111" };
+  const chip = (key, label, n) => (
+    <button key={key} onClick={() => setFilter(key)} style={{ ...ghostBtn, padding: "5px 12px", fontSize: 12.5, background: filter === key ? "var(--accent-bg)" : "var(--bg-surface)", borderColor: filter === key ? "var(--accent)" : "var(--border)", color: filter === key ? "var(--accent)" : "var(--text-secondary)" }}>{label} ({n})</button>
+  );
+  return (
+    <div>
+      <div className="hs-no-print" style={{ display: "flex", gap: 6, marginBottom: 10, flexWrap: "wrap" }}>
+        {chip("all", "All", rows.length)}
+        {chip("added", "Added", added)}
+        {chip("removed", "Removed", removed)}
+      </div>
+      <div className="bb-sheet bb-credit" style={{ minWidth: 0 }}>
+        <div className="bb-title">BIG BOARD ACTIVITY - {classYear}</div>
+        {groups.length === 0 ? (
+          <div style={{ padding: 24, textAlign: "center", fontSize: 13, color: "#555" }}>
+            {rows.length === 0 ? "Nothing yet. Each time you upload a board, the people added to it and taken off it are listed here with the date. The first upload for a class has nothing to compare against." : "Nothing to show for this filter."}
+          </div>
+        ) : (
+          <table style={{ width: "100%", borderCollapse: "collapse" }}>
+            <thead>
+              <tr>{["Date", "Change", "Player", "Position", "High school", "Status", "From"].map((h) => <th key={h} style={th}>{h.toUpperCase()}</th>)}</tr>
+            </thead>
+            <tbody>
+              {groups.map((g) =>
+                g.rows.map((r, i) => (
+                  <tr key={r.id} style={{ background: r.type === "added" ? "#B6D7A8" : "#EA9999" }}>
+                    <td style={{ ...td, fontWeight: 700, whiteSpace: "nowrap" }}>{i === 0 ? shortDate(g.date) : ""}</td>
+                    <td style={{ ...td, fontWeight: 800 }}>{r.type === "added" ? "Added" : "Removed"}</td>
+                    <td style={{ ...td, fontWeight: 700 }}>{r.name}</td>
+                    <td style={td}>{r.positions}{r.side ? <span style={{ color: "#555" }}> · {r.side === "def" ? "Defense" : "Offense"}</span> : null}</td>
+                    <td style={td}>{r.school}{r.state ? ` (${r.state})` : ""}</td>
+                    <td style={td}>{STATUS_BY_KEY[r.status]?.label || ""}</td>
+                    <td style={{ ...td, color: "#555" }} title={r.source}>{/\.xls/i.test(r.source || "") ? "Upload" : "By hand"}</td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ------------------------------------------------------------------ upload
 
 export function UploadModal({ classYears, defaultYear, onClose, onImport }) {
@@ -446,9 +512,9 @@ export function UploadModal({ classYears, defaultYear, onClose, onImport }) {
       if (sheets.def) result.def = parseBoardSheet(wb.Sheets[sheets.def]);
       if (sheets.credit) result.credit = parseCreditSheet(wb.Sheets[sheets.credit]);
       if (!result.off && !result.def && !result.credit) throw new Error("Pick at least one sheet to import.");
-      await onImport(year.trim(), result, fileName);
+      const changes = await onImport(year.trim(), result, fileName);
       const count = (b) => (b ? b.columns.reduce((n, c) => n + c.players.length, 0) : 0);
-      setSummary({ off: count(result.off), def: count(result.def), credit: result.credit ? result.credit.rows.length : 0 });
+      setSummary({ off: count(result.off), def: count(result.def), credit: result.credit ? result.credit.rows.length : 0, changes });
     } catch (err) {
       setError(err.message || "Something went wrong reading that workbook.");
     } finally {
@@ -478,6 +544,11 @@ export function UploadModal({ classYears, defaultYear, onClose, onImport }) {
             <p style={{ fontSize: 13.5, lineHeight: 1.6 }}>
               Loaded into <b>{year}</b>: {summary.off ? `${summary.off} offensive cards` : ""}{summary.off && summary.def ? ", " : ""}{summary.def ? `${summary.def} defensive cards` : ""}
               {summary.credit ? `${summary.off || summary.def ? ", " : ""}${summary.credit} credit evaluations` : ""}.
+            </p>
+            <p style={{ fontSize: 13.5, lineHeight: 1.6, margin: "0 0 12px" }}>
+              {summary.changes?.compared
+                ? `Compared with the board it replaced: ${summary.changes.added} added, ${summary.changes.removed} removed (see the Activity tab).`
+                : "This is the first board for that class, so there's nothing to compare it with yet."}
             </p>
             <div style={{ textAlign: "right" }}><button onClick={onClose} style={primaryBtn}>Done</button></div>
           </div>
@@ -510,6 +581,123 @@ export function UploadModal({ classYears, defaultYear, onClose, onImport }) {
   );
 }
 
+// ------------------------------------------------------------------ photos from the ARMs PDF
+
+// Reads the ARMs board PDF's photos and matches each to a card on this class's board (see bigBoardPdf.js),
+// then lets you check the matches before anything is saved.
+export function PdfPhotosModal({ candidates, haveKeys, onSave, onClose }) {
+  const [phase, setPhase] = useState("pick"); // pick | reading | review | saved
+  const [progress, setProgress] = useState(null);
+  const [matches, setMatches] = useState([]);
+  const [chosen, setChosen] = useState({}); // key -> { on, name }
+  const [error, setError] = useState("");
+  const [saved, setSaved] = useState(0);
+
+  async function read(file) {
+    setError("");
+    setPhase("reading");
+    try {
+      const { extractPdfPhotos } = await import("./bigBoardPdf.js");
+      const result = await extractPdfPhotos(file, candidates, setProgress);
+      setMatches(result.matches);
+      setChosen(Object.fromEntries(result.matches.map((m) => [m.key, { on: true, name: m.name }])));
+      setPhase("review");
+    } catch (err) {
+      setError(/fetch|network|import|load/i.test(String(err?.message)) ? "The reader couldn't load (it needs internet the first time). Check your connection and try again." : "That PDF couldn't be read. Use the PDF exported from the board.");
+      setPhase("pick");
+    }
+  }
+
+  async function save() {
+    const picked = matches.filter((m) => chosen[m.key]?.on);
+    setPhase("reading");
+    setProgress({ stage: "save", page: 0, pages: picked.length, found: 0 });
+    // Two matches pointing at one person: the better read wins, so nobody gets two photos.
+    const best = new Map();
+    picked.forEach((m) => {
+      const name = chosen[m.key].name;
+      const prev = best.get(nameKey(name));
+      if (!prev || m.score < prev.score) best.set(nameKey(name), { ...m, name });
+    });
+    for (const m of best.values()) await onSave(m.name, m.photo);
+    setSaved(best.size);
+    setPhase("saved");
+  }
+
+  const matchedKeys = new Set(matches.filter((m) => chosen[m.key]?.on).map((m) => nameKey(chosen[m.key].name)));
+  const missing = candidates.filter((c) => !matchedKeys.has(nameKey(c.name)));
+  const count = Object.values(chosen).filter((c) => c.on).length;
+
+  return (
+    <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20, zIndex: 80 }}>
+      <div onClick={(e) => e.stopPropagation()} style={{ background: "var(--bg-panel)", border: "1px solid var(--border)", borderRadius: 10, width: 720, maxWidth: "100%", maxHeight: "90vh", overflowY: "auto", padding: 22 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+          <h2 className="oswald" style={{ margin: 0, fontSize: 19 }}>Photos from the ARMs PDF</h2>
+          <button onClick={onClose} aria-label="Close" style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer", lineHeight: 0 }}><X size={18} /></button>
+        </div>
+
+        {phase === "pick" && (
+          <>
+            <p style={{ margin: "0 0 12px", fontSize: 12.5, color: "var(--text-faint)", lineHeight: 1.55 }}>
+              Choose the board PDF exported from ARMs. Each photo is matched to the card with the same name on this class's board; you check the matches before anything is saved. Anyone no longer on the board (or without a photo in the PDF) is simply skipped.
+            </p>
+            <input type="file" accept="application/pdf,.pdf" onChange={(e) => e.target.files[0] && read(e.target.files[0])} style={{ fontSize: 13, width: "100%" }} />
+            {error && <div role="alert" style={{ color: "var(--danger-text)", fontSize: 13, marginTop: 10 }}>{error}</div>}
+          </>
+        )}
+
+        {phase === "reading" && (
+          <p style={{ fontSize: 13.5, color: "var(--text-secondary)" }}>
+            {progress?.stage === "save"
+              ? "Saving photos…"
+              : progress?.page
+                ? `Reading page ${progress.page} of ${progress.pages}… ${progress.found} matched so far.`
+                : "Getting the reader ready (the first time can take a few seconds)…"}
+          </p>
+        )}
+
+        {phase === "review" && (
+          <>
+            <p style={{ margin: "0 0 10px", fontSize: 13, color: "var(--text-secondary)" }}>
+              <b>{matches.length}</b> photos matched to cards. Uncheck any that look wrong or pick a different name.
+              {haveKeys.size > 0 && " People who already have a photo will be replaced if you keep them checked."}
+            </p>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 8, marginBottom: 14 }}>
+              {matches.map((m) => {
+                const c = chosen[m.key] || { on: false, name: m.name };
+                return (
+                  <div key={m.key} style={{ display: "flex", gap: 8, alignItems: "center", border: "1px solid var(--border)", borderRadius: 8, padding: 6, opacity: c.on ? 1 : 0.45 }}>
+                    <input type="checkbox" checked={c.on} onChange={(e) => setChosen({ ...chosen, [m.key]: { ...c, on: e.target.checked } })} aria-label={`Use the photo for ${c.name}`} />
+                    <img src={m.photo} alt="" style={{ width: 44, height: 44, borderRadius: "50%", objectFit: "cover", flexShrink: 0 }} />
+                    <select value={c.name} onChange={(e) => setChosen({ ...chosen, [m.key]: { ...c, name: e.target.value } })} style={{ ...ctl, flex: 1, padding: "5px 6px", fontSize: 12 }}>
+                      {candidates.map((cand) => <option key={cand.name} value={cand.name}>{cand.name}</option>)}
+                    </select>
+                  </div>
+                );
+              })}
+            </div>
+            {missing.length > 0 && (
+              <p style={{ fontSize: 12.5, color: "var(--text-faint)", lineHeight: 1.5 }}>
+                No photo in the PDF for {missing.length}: {missing.slice(0, 12).map((c) => c.name).join(", ")}{missing.length > 12 ? "…" : ""}. They may have come off the board since the PDF was made.
+              </p>
+            )}
+            <div style={{ textAlign: "right" }}>
+              <button onClick={save} disabled={count === 0} style={{ ...primaryBtn, opacity: count ? 1 : 0.5 }}>Save {count} photo{count === 1 ? "" : "s"}</button>
+            </div>
+          </>
+        )}
+
+        {phase === "saved" && (
+          <div>
+            <p style={{ fontSize: 13.5 }}>Saved {saved} photo{saved === 1 ? "" : "s"}. They now show on the board and print with it.</p>
+            <div style={{ textAlign: "right" }}><button onClick={onClose} style={primaryBtn}>Done</button></div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ------------------------------------------------------------------ page
 
 export default function BigBoard({ onBack: toDashboard }) {
@@ -521,10 +709,11 @@ export default function BigBoard({ onBack: toDashboard }) {
   const bb = useBigBoards(classYear);
   const [editing, setEditing] = useState(null); // { colKey, player, isNew }
   const [uploading, setUploading] = useState(false);
+  const [pdfPhotos, setPdfPhotos] = useState(false);
   const [note, setNote] = useState("");
   const photoInput = useRef(null);
 
-  const board = view === "credit" ? null : bb.board(classYear, view);
+  const board = view === "credit" || view === "activity" ? null : bb.board(classYear, view);
   const credit = bb.credit(classYear);
 
   function go(nextYear, nextView) {
@@ -538,23 +727,45 @@ export default function BigBoard({ onBack: toDashboard }) {
   }
 
   async function savePlayer(colKey, draft) {
-    const next = upsertPlayer(board, colKey, { ...draft, name: draft.name.trim() });
+    const player = { ...draft, name: draft.name.trim() };
+    const next = upsertPlayer(board, colKey, player);
     await persist(next);
+    if (editing?.isNew) {
+      const label = board.columns.find((c) => c.key === colKey)?.label || colKey;
+      const change = handChange("added", view, board, player, label);
+      if (change) await bb.logActivity(classYear, [change], "by hand");
+    }
     setEditing(null);
   }
 
   async function deletePlayer(p) {
-    const ok = await confirmAction({ title: `Remove ${p.name || "this player"}?`, message: "This takes the card off this board (their photo is kept)." });
+    const ok = await confirmAction({ title: `Remove ${p.name || "this player"}?`, message: "This takes the card off this board (their photo is kept). It's logged on the Activity tab." });
     if (!ok) return;
+    const label = board.columns.filter((c) => c.players.some((x) => x.id === p.id)).map((c) => c.label).join(", ");
+    const change = handChange("removed", view, board, p, label);
     await persist(removePlayer(board, p.id));
+    if (change) await bb.logActivity(classYear, [change], "by hand");
     setEditing(null);
   }
 
+  // Loads the sheets and logs what changed against the board each one replaces: people new to it and people
+  // gone from it (one side at a time, so uploading only offense never reads as defense being emptied).
   async function importWorkbook(year, parsed, fileName) {
-    if (parsed.off) await bb.saveBoard(year, "off", { ...parsed.off, sourceFile: fileName });
-    if (parsed.def) await bb.saveBoard(year, "def", { ...parsed.def, sourceFile: fileName });
+    const entries = [];
+    let compared = false;
+    for (const side of ["off", "def"]) {
+      if (!parsed[side]) continue;
+      const previous = bb.board(year, side);
+      if (previous) {
+        compared = true;
+        entries.push(...diffBoards(previous, parsed[side], side));
+      }
+      await bb.saveBoard(year, side, { ...parsed[side], sourceFile: fileName });
+    }
     if (parsed.credit) await bb.saveCredit(year, parsed.credit.rows);
+    await bb.logActivity(year, entries, fileName);
     go(year, parsed.off ? "off" : parsed.def ? "def" : "credit");
+    return { compared, added: entries.filter((e) => e.type === "added").length, removed: entries.filter((e) => e.type === "removed").length };
   }
 
   async function addPhotos(files) {
@@ -575,7 +786,14 @@ export default function BigBoard({ onBack: toDashboard }) {
     setNote(`${saved} photo${saved === 1 ? "" : "s"} added${unmatched.length ? `; no match for ${unmatched.slice(0, 4).join(", ")}${unmatched.length > 4 ? "…" : ""} (name the file after the player)` : ""}.`);
   }
 
-  const players = useMemo(() => (board ? board.columns.flatMap((c) => c.players) : []), [board]);
+  // Everyone on this class's offense and defense boards, once each (a flex spot repeats a player).
+  const offBoard = bb.board(classYear, "off");
+  const defBoard = bb.board(classYear, "def");
+  const everyoneOnBoards = useMemo(() => {
+    const people = new Map();
+    [offBoard, defBoard].forEach((b) => (b?.columns || []).forEach((c) => c.players.forEach((p) => nameKey(p.name) && people.set(nameKey(p.name), { name: p.name }))));
+    return [...people.values()];
+  }, [offBoard, defBoard]);
 
   return (
     <div className="app-shell hs-shell bb-shell" data-theme={theme} style={{ display: "flex", flexDirection: "column", overflow: "hidden", background: "var(--bg-page)", color: "var(--text-primary)", fontFamily: "'Century Gothic', 'Jost', 'Helvetica Neue', Arial, sans-serif" }}>
@@ -600,7 +818,8 @@ export default function BigBoard({ onBack: toDashboard }) {
           </div>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
             <input ref={photoInput} type="file" accept="image/*" multiple style={{ display: "none" }} onChange={(e) => { addPhotos(e.target.files); e.target.value = ""; }} />
-            {view !== "credit" && <button onClick={() => photoInput.current?.click()} style={ghostBtn} title="Pick photos named after the players (e.g. Sam Rouleau.jpg)"><ImageIcon size={14} /> Add photos</button>}
+            {view !== "credit" && view !== "activity" && <button onClick={() => setPdfPhotos(true)} style={ghostBtn} title="Pull the photos out of the board PDF exported from ARMs"><ImageIcon size={14} /> Photos from PDF</button>}
+            {view !== "credit" && view !== "activity" && <button onClick={() => photoInput.current?.click()} style={ghostBtn} title="Pick photos named after the players (e.g. Sam Rouleau.jpg)"><ImageIcon size={14} /> Add photos</button>}
             <button onClick={() => setUploading(true)} style={ghostBtn}><Upload size={14} /> Upload workbook</button>
             <button onClick={() => window.print()} style={primaryBtn}><Printer size={14} /> Print / PDF</button>
           </div>
@@ -621,6 +840,8 @@ export default function BigBoard({ onBack: toDashboard }) {
           ) : (
             <Empty what="credit evaluation" year={classYear} onUpload={() => setUploading(true)} onStart={() => bb.saveCredit(classYear, [])} />
           )
+        ) : view === "activity" ? (
+          <ActivitySheet rows={bb.activity} classYear={classYear} />
         ) : board ? (
           <BoardSheet
             board={board}
@@ -648,6 +869,14 @@ export default function BigBoard({ onBack: toDashboard }) {
           onNudge={(id, dir) => persist(nudge(board, id, dir))}
           onPhoto={(name, data) => (data ? bb.savePhoto(classYear, name, data) : bb.removePhoto(classYear, name))}
           onClose={() => setEditing(null)}
+        />
+      )}
+      {pdfPhotos && (
+        <PdfPhotosModal
+          candidates={everyoneOnBoards}
+          haveKeys={new Set(Object.keys(bb.photos))}
+          onSave={(name, data) => bb.savePhoto(classYear, name, data)}
+          onClose={() => setPdfPhotos(false)}
         />
       )}
       {uploading && <UploadModal classYears={bb.classYears} defaultYear={classYear} onClose={() => setUploading(false)} onImport={importWorkbook} />}

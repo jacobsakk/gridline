@@ -89,6 +89,10 @@ service cloud.firestore {
     match /bigBoardCredit/{docId} {
       allow read, write: if invited();
     }
+    // The log of who was added to / taken off each class's board (by upload or by hand), with the date.
+    match /bigBoardActivity/{docId} {
+      allow read, write: if invited();
+    }
     match /bigBoardPhotos/{docId} {
       allow read, write: if invited();
     }

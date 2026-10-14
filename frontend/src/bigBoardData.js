@@ -1,5 +1,5 @@
 import * as XLSX from "xlsx";
-import { collection, deleteDoc, doc, onSnapshot, query, setDoc, where } from "firebase/firestore";
+import { collection, deleteDoc, doc, onSnapshot, query, setDoc, where, writeBatch } from "firebase/firestore";
 import { useEffect, useMemo, useState } from "react";
 import { db } from "./firebase";
 
@@ -235,6 +235,41 @@ export function commitCounts(board) {
   return { rows, total: rows.reduce((sum, r) => sum + r.count, 0) };
 }
 
+// Who is on a board, by person: a player on several columns (a flex spot as well as his position) is one person.
+function peopleOn(board) {
+  const map = new Map();
+  (board?.columns || []).forEach((c) =>
+    c.players.forEach((p) => {
+      const key = nameKey(p.name);
+      if (!key) return;
+      const have = map.get(key);
+      if (have) have.positions.push(c.label);
+      else map.set(key, { name: p.name, school: p.school, state: p.state, status: p.status, tier: p.tier, positions: [c.label] });
+    })
+  );
+  return map;
+}
+
+// What changed between the board that was there and the one just uploaded: people who are new and people
+// who are gone. Compared one side (offense or defense) at a time, so uploading only one sheet never reads as
+// the other side's whole board being removed.
+export function diffBoards(oldBoard, newBoard, side) {
+  const before = peopleOn(oldBoard);
+  const after = peopleOn(newBoard);
+  const entry = (type, p) => ({ type, side, name: p.name, school: p.school || "", state: p.state || "", status: p.status || "", tier: p.tier || 1, positions: [...new Set(p.positions)].join(", ") });
+  return [
+    ...[...after].filter(([k]) => !before.has(k)).map(([, p]) => entry("added", p)),
+    ...[...before].filter(([k]) => !after.has(k)).map(([, p]) => entry("removed", p)),
+  ];
+}
+
+// The same, for one card added or taken off by hand: null if that person is still on the board elsewhere.
+export function handChange(type, side, board, player, positions) {
+  const stillThere = (board?.columns || []).some((c) => c.players.some((p) => p.id !== player.id && nameKey(p.name) === nameKey(player.name)));
+  if (stillThere || !nameKey(player.name)) return null;
+  return { type, side, name: player.name, school: player.school || "", state: player.state || "", status: player.status || "", tier: player.tier || 1, positions };
+}
+
 export const blankPlayer = (tier = 1) => ({
   id: newId(),
   name: "",
@@ -258,6 +293,7 @@ export function useBigBoards(classYear) {
   const [boards, setBoards] = useState({});
   const [credits, setCredits] = useState({});
   const [photos, setPhotos] = useState({});
+  const [activity, setActivity] = useState([]);
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
@@ -303,6 +339,17 @@ export function useBigBoards(classYear) {
     return unsubscribe;
   }, [classYear]);
 
+  // The log of who was added to and removed from the board, newest first.
+  useEffect(() => {
+    if (!classYear) return undefined;
+    const unsubscribe = onSnapshot(
+      query(collection(db, "bigBoardActivity"), where("classYear", "==", classYear)),
+      (snap) => setActivity(snap.docs.map((d) => ({ id: d.id, ...d.data() })).sort((a, b) => (b.at || "").localeCompare(a.at || "") || a.name.localeCompare(b.name))),
+      () => {}
+    );
+    return unsubscribe;
+  }, [classYear]);
+
   const classYears = useMemo(() => {
     const years = new Set(["2027", "2028", "JUCO"]);
     Object.values(boards).forEach((b) => b.classYear && years.add(b.classYear));
@@ -314,6 +361,7 @@ export function useBigBoards(classYear) {
     ready,
     classYears,
     photos,
+    activity,
     board: (year, side) => boards[`${year}__${side}`] || null,
     credit: (year) => credits[year] || null,
     async saveBoard(year, side, board) {
@@ -321,6 +369,19 @@ export function useBigBoards(classYear) {
     },
     async saveCredit(year, rows) {
       await setDoc(doc(db, "bigBoardCredit", year), { classYear: year, rows, updatedAt: new Date().toISOString() });
+    },
+    async logActivity(year, entries, source) {
+      if (!entries.length) return;
+      const now = new Date();
+      const date = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+      for (let i = 0; i < entries.length; i += 400) {
+        const batch = writeBatch(db);
+        entries.slice(i, i + 400).forEach((e) => {
+          const id = `${year}__${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`;
+          batch.set(doc(db, "bigBoardActivity", id), { ...e, classYear: year, source, date, at: now.toISOString() });
+        });
+        await batch.commit();
+      }
     },
     async savePhoto(year, name, photo) {
       const key = nameKey(name);
