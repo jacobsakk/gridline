@@ -1126,12 +1126,10 @@ export function useOfferTracker() {
     return { teams, states, counts, stateTotals };
   }
 
-  // When the JUCO feed was last loaded. Before the first stamped upload, falls back to the newest row
-  // write so the tab isn't blank for data that's already there.
+  // When a JUCO feed was last uploaded -- only real imports stamp this (row edits like a note or pipeline
+  // change deliberately don't), so it stays blank until the first upload after this was added.
   function jucoUpdatedAt() {
-    if (teamUploads.JUCO) return teamUploads.JUCO;
-    const stamps = docs.filter((d) => d.classYear === "JUCO" && d.updatedAt).map((d) => d.updatedAt);
-    return stamps.length ? stamps.sort().pop() : "";
+    return teamUploads.JUCO || "";
   }
 
   // The Assignments tab's "last uploaded" time for a team. The authoritative source is teamUploads,
