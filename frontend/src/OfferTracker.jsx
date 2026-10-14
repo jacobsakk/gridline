@@ -4,6 +4,8 @@ import { initialSubRoute, setSubRoute, useBack } from "./route.js";
 import NameFixModal from "./NameFixModal.jsx";
 import { Upload, X, Loader2, ChevronUp, ChevronDown, ChevronsUpDown, TrendingUp, MapPin, Search, Plus, ExternalLink, Pencil } from "lucide-react";
 import { confirmAction } from "./ConfirmDialog.jsx";
+import { findJucoStats, formatStatLine } from "./transferStats.js";
+import { useRealStatsReady } from "./statsData.js";
 import { OTHER_CONFERENCE, collegeForLabel, conferenceForCollege, logoFor, teamKey } from "./collegeData.js";
 import { canonicalSchool, fixBrandCase } from "./schoolNames.js";
 import { ThemeSwitcher, useTheme } from "./theme.jsx";
@@ -463,6 +465,32 @@ function recruitSearchUrl(player, highSchool, state, position, classYear) {
   return `https://www.google.com/search?q=${encodeURIComponent(q)}`;
 }
 
+// A JUCO recruit's own season stats, read live from the Pre-Portal Tracker's JUCO data by name. A separate
+// component so that data (large, loaded on demand) is only fetched when a JUCO profile is actually open.
+function JucoStatsSection({ player, school, sectionLabel }) {
+  const statsReady = useRealStatsReady();
+  const stats = useMemo(() => (statsReady ? findJucoStats(player, school) : []), [statsReady, player, school]);
+  if (stats.length === 0) return null;
+  return (
+    <div>
+      <div style={sectionLabel}>
+        JUCO stats<span style={{ textTransform: "none", letterSpacing: 0 }}> — from the Pre-Portal Tracker</span>
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+        {stats.map((m) => (
+          <div key={m.category} style={{ fontSize: 13.5, color: "var(--text-secondary)" }}>
+            <a href={`#/tracker/${encodeURIComponent(m.row.division)}/${encodeURIComponent(m.row.player)}`} title="Open in the Pre-Portal Tracker" style={{ color: "var(--accent)", fontWeight: 700 }}>
+              {m.row.team}
+            </a>
+            <span style={{ color: "var(--text-faint)" }}>{m.row.games ? ` · ${m.row.games} G` : ""} · </span>
+            {formatStatLine(m)}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export function PlayerProfileModal({ player, classYear, tracker, onClose }) {
   const theme = useContext(ThemeContext);
   const rows = useMemo(() => tracker.rowsForPlayer(classYear, player), [tracker, classYear, player]);
@@ -562,6 +590,8 @@ export function PlayerProfileModal({ player, classYear, tracker, onClose }) {
               </table>
             </div>
           </div>
+
+          {classYear === "JUCO" && <JucoStatsSection player={first.player} school={first.highSchool} sectionLabel={sectionLabel} />}
 
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 16 }}>
             <div>

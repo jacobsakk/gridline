@@ -43,3 +43,19 @@ export function formatStatLine({ category, row }) {
   const meta = CATEGORIES[category];
   return `${meta.label}: ${meta.columns.map((c) => `${c.label} ${row[c.key] ?? 0}`).join(" · ")}`;
 }
+
+// A JUCO recruit's season stats from the Pre-Portal Tracker's JUCO division, by exact normalized name.
+// When more than one JUCO player nationally shares the name, only a hit whose team looks like the
+// recruit's own junior college is used -- showing nobody's stats beats showing a namesake's.
+export function findJucoStats(name, school) {
+  if (!name) return [];
+  const targetName = norm(name);
+  return Object.keys(CATEGORIES)
+    .map((category) => {
+      const hits = DATA.filter((r) => r.division === "JUCO" && r.week === "total" && r.category === category && norm(r.player) === targetName);
+      if (hits.length === 0) return null;
+      const row = hits.length === 1 ? hits[0] : hits.find((r) => teamLooksRelated(school, r.team));
+      return row ? { category, row } : null;
+    })
+    .filter(Boolean);
+}
