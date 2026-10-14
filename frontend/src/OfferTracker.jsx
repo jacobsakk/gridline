@@ -1151,8 +1151,37 @@ function parseOfferDate(value) {
 // own grad year varies player to player, so it's its own column rather than the tab itself. Filterable
 // down to one recruiting college, but shows all of them by default.
 function JucoFeedTable({ rows, theme, teamFilter, setTeamFilter, teamOptions, confFilter, setConfFilter, confOptions, posFilter, setPosFilter, posOptions, updatedAt, onOpenProfile, onEdit, onRemove }) {
-  const sorted = useMemo(() => [...rows].sort((a, b) => (parseOfferDate(b.dateOffered) || 0) - (parseOfferDate(a.dateOffered) || 0)), [rows]);
-  const th = { textAlign: "left", padding: "9px 10px", fontSize: 11, color: "var(--text-faint)", textTransform: "uppercase", letterSpacing: "0.03em", whiteSpace: "nowrap", position: "sticky", top: 0, background: "var(--bg-surface)", zIndex: 1 };
+  // Newest offer first by default; click a header to sort by it (again to reverse).
+  const [sort, setSort] = useState({ key: "date", dir: "desc" });
+  const sortValue = {
+    player: (r) => (r.player || "").toLowerCase(),
+    school: (r) => (r.highSchool || "").toLowerCase(),
+    gradYear: (r) => Number(r.gradYear) || 0,
+    college: (r) => (r.teamLabel || r.team || "").toLowerCase(),
+    date: (r) => parseOfferDate(r.dateOffered) || 0,
+    // Along the pipeline ladder (Reject lowest), not alphabetically; unset sorts as lowest.
+    pipeline: (r) => PIPELINE_OPTIONS.indexOf(normalizePipelineStatus(r.pipelineStatus)) + 1,
+    notes: (r) => (r.notes || "").toLowerCase(),
+  };
+  const sorted = useMemo(() => {
+    const get = sortValue[sort.key];
+    const dir = sort.dir === "asc" ? 1 : -1;
+    return [...rows].sort((a, b) => {
+      const av = get(a), bv = get(b);
+      // A blank always sinks to the bottom whichever way you're sorting.
+      const aBlank = av === "" || av === 0, bBlank = bv === "" || bv === 0;
+      if (aBlank !== bBlank) return aBlank ? 1 : -1;
+      const cmp = typeof av === "string" ? av.localeCompare(bv) : av - bv;
+      return cmp * dir || (parseOfferDate(b.dateOffered) || 0) - (parseOfferDate(a.dateOffered) || 0);
+    });
+  }, [rows, sort]); // eslint-disable-line react-hooks/exhaustive-deps
+  const sortBy = (key) => setSort((s) => (s.key === key ? { key, dir: s.dir === "asc" ? "desc" : "asc" } : { key, dir: key === "date" ? "desc" : "asc" }));
+  const th = { textAlign: "left", padding: "9px 10px", fontSize: 11, color: "var(--text-faint)", textTransform: "uppercase", letterSpacing: "0.03em", whiteSpace: "nowrap", position: "sticky", top: 0, background: "var(--bg-surface)", zIndex: 1, cursor: "pointer", userSelect: "none" };
+  const SortTh = ({ id, children }) => (
+    <th style={th} onClick={() => sortBy(id)} aria-sort={sort.key === id ? (sort.dir === "asc" ? "ascending" : "descending") : "none"}>
+      <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>{children}<SortIcon active={sort.key === id} dir={sort.dir} /></span>
+    </th>
+  );
   const td = { padding: "8px 10px", fontSize: 13, color: "var(--text-secondary)", borderTop: "1px solid var(--border-subtle)", verticalAlign: "top" };
 
   return (
@@ -1183,13 +1212,13 @@ function JucoFeedTable({ rows, theme, teamFilter, setTeamFilter, teamOptions, co
         <table style={{ width: "100%", borderCollapse: "collapse" }}>
           <thead>
             <tr>
-              <th style={th}>Player</th>
-              <th style={th}>Current School</th>
-              <th style={th}>Grad Year</th>
-              <th style={th}>Recruiting College</th>
-              <th style={th}>Date</th>
-              <th style={th}>Pipeline</th>
-              <th style={th}>Notes</th>
+              <SortTh id="player">Player</SortTh>
+              <SortTh id="school">Current School</SortTh>
+              <SortTh id="gradYear">Grad Year</SortTh>
+              <SortTh id="college">Recruiting College</SortTh>
+              <SortTh id="date">Date</SortTh>
+              <SortTh id="pipeline">Pipeline</SortTh>
+              <SortTh id="notes">Notes</SortTh>
               <th style={th}> </th>
             </tr>
           </thead>
