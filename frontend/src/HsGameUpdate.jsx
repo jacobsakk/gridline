@@ -1467,7 +1467,7 @@ function AddGameModal({ player, week, updateGame, onClose }) {
     setBusy(true);
     setError("");
     try {
-      const fields = hasScore && ours !== "" && theirs !== "" ? { result, ours: Number(ours), theirs: Number(theirs) } : {};
+      const fields = { manual: true, ...(hasScore && ours !== "" && theirs !== "" ? { result, ours: Number(ours), theirs: Number(theirs) } : {}) };
       await updateGame(player, { date, opponent: opponent.trim(), homeAway }, fields);
       onClose();
     } catch {
