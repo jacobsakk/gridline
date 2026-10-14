@@ -317,15 +317,18 @@ export function overlayScraped(games, teamDoc) {
   const teamGames = teamDoc?.games?.length ? dedupeGames(teamDoc.games) : teamDoc?.games;
   if (!teamGames?.length) return games;
   const deleted = games.filter((g) => g.removed && g.date);
+  // A game edited by hand (opponent / date / home-away changed) remembers the scraped game it replaced
+  // (editedFrom), so the scraper's copy still matches it -- and doesn't reappear beside it -- afterwards.
+  const identity = (g) => g.editedFrom || g;
   const findStored = (t, pool) =>
     pool
-      .filter((g) => g.date && daysApart(g.date, t.date) <= 1 && sameSchool(g.opponent, t.opponent))
+      .filter((g) => g.date && daysApart(identity(g).date, t.date) <= 1 && sameSchool(identity(g).opponent, t.opponent))
       .sort((a, b) => nameSimilarity(t.opponent, b.opponent) - nameSimilarity(t.opponent, a.opponent))[0];
 
   const claimed = new Set();
   const merged = teamGames.map((t) => {
     // Deleted by hand: hidden, whichever copy of the game this is.
-    if (deleted.some((d) => daysApart(d.date, t.date) <= 1 && sameSchool(d.opponent, t.opponent))) return null;
+    if (deleted.some((d) => daysApart(identity(d).date, t.date) <= 1 && sameSchool(identity(d).opponent, t.opponent))) return null;
     const mine = findStored(t, games.filter((g) => !claimed.has(g)));
     if (mine) claimed.add(mine);
     if (mine?.removed) return null; // deleted by hand: the scraper's copy stays hidden
@@ -334,9 +337,9 @@ export function overlayScraped(games, teamDoc) {
     return {
       ...(mine || {}),
       storedKey: mine ? gameKey(mine) : "",
-      date: t.date,
+      date: mine?.edited ? mine.date : t.date,
       opponent: (mine && mine.opponent) || t.opponent,
-      homeAway: t.homeAway || mine?.homeAway || "",
+      homeAway: mine?.edited ? mine.homeAway || t.homeAway || "" : t.homeAway || mine?.homeAway || "",
       ...(t.result && !locked ? { result: t.result, ours: t.ours, theirs: t.theirs } : {}),
       // What the sources say, kept for reference when the score on the sheet was set by hand.
       ...(locked && t.result ? { sourceReported: { result: t.result, ours: t.ours, theirs: t.theirs, conflict: t.conflict || null } } : {}),

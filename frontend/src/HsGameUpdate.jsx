@@ -677,6 +677,11 @@ function groupForWeeklyTab(players, statusOf) {
 
 function WeeklyTab({ players, week, statusOf, autoStatusOf, updatePlayer, onGame, onAddGame, updateGame, onOpenPlayer, onProfile, hasProfile }) {
   const groups = useMemo(() => groupForWeeklyTab(players, statusOf), [players, statusOf]);
+  const nextWeek = useMemo(() => {
+    const d = fromIso(week);
+    d.setDate(d.getDate() + 7);
+    return toIso(d);
+  }, [week]);
   const head = { fontSize: 10.5, letterSpacing: "0.1em", color: "var(--text-faint)", textTransform: "uppercase" };
 
   return (
@@ -748,7 +753,15 @@ function WeeklyTab({ players, week, statusOf, autoStatusOf, updatePlayer, onGame
                   <div>
                     {game ? <EditableSummary value={game.summary} onSave={(text) => updateGame(p, game, { summary: text })} /> : <span style={{ color: "var(--text-faint)", fontSize: 12.5 }}>—</span>}
                   </div>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                  <div
+                    className={next ? "hs-game-click" : undefined}
+                    role={next ? "button" : undefined}
+                    tabIndex={next ? 0 : undefined}
+                    title={next ? "Click to edit this game" : undefined}
+                    onClick={next ? () => onGame(p, next) : undefined}
+                    onKeyDown={next ? (e) => e.key === "Enter" && onGame(p, next) : undefined}
+                    style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", cursor: next ? "pointer" : "default" }}
+                  >
                     {next ? (
                       <>
                         <span style={{ color: "var(--text-muted)", fontWeight: 700 }}>{next.homeAway === "A" ? "@" : "vs"}</span>
@@ -756,7 +769,9 @@ function WeeklyTab({ players, week, statusOf, autoStatusOf, updatePlayer, onGame
                         <span style={{ background: "#fff", color: "#111", borderRadius: 4, padding: "2px 8px", fontSize: 11, fontWeight: 800 }}>{dayName(next.date)}</span>
                       </>
                     ) : (
-                      <span style={{ color: "var(--text-faint)", fontSize: 13 }}>—</span>
+                      <button className="hs-no-print" onClick={() => onAddGame(p, nextWeek)} title="No game found next week -- add one by hand" style={{ background: "none", border: "none", color: "var(--text-faint)", fontSize: 13, cursor: "pointer", padding: 0, display: "inline-flex", alignItems: "center", gap: 5 }}>
+                        <Plus size={13} /> Add next game
+                      </button>
                     )}
                   </div>
                 </div>
@@ -1259,6 +1274,19 @@ function GameSourcesModal({ player, game, updateGame, onDelete, onClose }) {
     await updateGame(player, game, { resolved: false, result: "", ours: null, theirs: null });
     setBusy(false);
   }
+  const [details, setDetails] = useState({ opponent: game.opponent || "", date: game.date || "", homeAway: game.homeAway || "H" });
+  const detailsChanged = details.opponent.trim() !== (game.opponent || "") || details.date !== (game.date || "") || details.homeAway !== (game.homeAway || "H");
+  const canSaveDetails = details.opponent.trim() && details.date && detailsChanged && !busy;
+  async function saveDetails() {
+    setBusy(true);
+    // editedFrom keeps the scraped game this replaced, so the scraper doesn't put its own copy back.
+    await updateGame(player, game, {
+      opponent: details.opponent.trim(), date: details.date, homeAway: details.homeAway,
+      edited: true, editedFrom: game.editedFrom || { date: game.date, opponent: game.opponent },
+    });
+    setBusy(false);
+    onClose();
+  }
   const num = { ...controlStyle, width: 58, padding: "6px 8px", textAlign: "center" };
   const anyLink = sources.some((s) => game.links?.[s.key] || player.sources?.[s.key]);
   return (
@@ -1312,6 +1340,24 @@ function GameSourcesModal({ player, game, updateGame, onDelete, onClose }) {
             {game.resolved && (
               <button onClick={useSources} disabled={busy} style={{ ...controlStyle, padding: "6px 10px", cursor: "pointer", fontSize: 12.5 }}>Use the sources again</button>
             )}
+          </div>
+        </div>
+        <div style={{ marginTop: 14, paddingTop: 12, borderTop: "1px solid var(--border-subtle)" }}>
+          <div style={{ fontSize: 11, letterSpacing: "0.06em", textTransform: "uppercase", color: "var(--text-faint)", marginBottom: 6 }}>
+            Game details{game.edited ? " — changed by hand" : ""}
+          </div>
+          <div style={{ display: "grid", gap: 8 }}>
+            <input aria-label="Opponent" value={details.opponent} onChange={(e) => setDetails({ ...details, opponent: e.target.value })} placeholder="Opponent" style={controlStyle} />
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 100px auto", gap: 8, alignItems: "center" }}>
+              <input type="date" aria-label="Date" value={details.date} onChange={(e) => setDetails({ ...details, date: e.target.value })} style={controlStyle} />
+              <select aria-label="Home or away" value={details.homeAway} onChange={(e) => setDetails({ ...details, homeAway: e.target.value })} style={{ ...controlStyle, cursor: "pointer" }}>
+                <option value="H">Home</option>
+                <option value="A">Away</option>
+              </select>
+              <button onClick={saveDetails} disabled={!canSaveDetails} style={{ background: "var(--accent-bg)", border: "1px solid var(--accent)", color: "var(--accent)", borderRadius: 6, padding: "6px 12px", fontSize: 13, fontWeight: 700, cursor: "pointer", opacity: canSaveDetails ? 1 : 0.5 }}>
+                Save game
+              </button>
+            </div>
           </div>
         </div>
         <div style={{ marginTop: 14, textAlign: "right" }}>
