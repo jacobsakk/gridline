@@ -686,6 +686,54 @@ function groupForWeeklyTab(players, statusOf) {
   return [...map.entries()].filter(([, list]) => list.length);
 }
 
+// Typing over the opponent in place (Weekly tab) -- same hand edit as the game window's Game details, so it
+// also survives the next scrape. Clicking the box doesn't open the game window; clicking around it does.
+function EditableOpponent({ player, game, updateGame, style }) {
+  const name = game.opponent || "";
+  return (
+    <input
+      key={name}
+      defaultValue={name}
+      aria-label={`Opponent for ${player.name}`}
+      title="Click to change the opponent"
+      className="offer-cell-input"
+      onClick={(e) => e.stopPropagation()}
+      onKeyDown={(e) => {
+        e.stopPropagation();
+        if (e.key === "Enter") e.target.blur();
+      }}
+      onBlur={(e) => {
+        const next = e.target.value.trim();
+        if (next && next !== name) updateGame(player, game, { opponent: next, edited: true, editedFrom: game.editedFrom || { date: game.date, opponent: game.opponent } });
+        else e.target.value = name;
+      }}
+      style={{ ...style, width: `${Math.max(name.length, 6) + 2}ch`, maxWidth: "100%" }}
+    />
+  );
+}
+
+// The record shown beside a player: the computed one by default, typed over to override it (the
+// override only applies while it implies more games than are entered -- see useHsTracker).
+function EditableRecord({ player, updatePlayer }) {
+  const shown = player.record.played ? player.record.text : "";
+  return (
+    <input
+      key={shown}
+      defaultValue={shown}
+      placeholder="0W - 0L"
+      aria-label={`Record for ${player.name}`}
+      title="Updates from entered games -- type over it to set the record by hand"
+      className="offer-cell-input tabular"
+      onBlur={(e) => {
+        const next = e.target.value.trim();
+        if (next !== shown) updatePlayer(player.id, { recordText: next });
+      }}
+      onKeyDown={(e) => e.key === "Enter" && e.target.blur()}
+      style={{ width: "9ch", fontSize: "inherit", color: "inherit", padding: "0 2px" }}
+    />
+  );
+}
+
 function WeeklyTab({ players, week, statusOf, autoStatusOf, updatePlayer, onGame, onAddGame, updateGame, onOpenPlayer, onProfile, hasProfile }) {
   const groups = useMemo(() => groupForWeeklyTab(players, statusOf), [players, statusOf]);
   const nextWeek = useMemo(() => {
@@ -732,7 +780,7 @@ function WeeklyTab({ players, week, statusOf, autoStatusOf, updatePlayer, onGame
                         </button>
                       </div>
                       <div style={{ fontSize: 12, color: "var(--text-muted)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                        {p.highSchool}{p.state ? ` · ${p.state}` : ""} · <span className="tabular">{p.record.played ? p.record.text : "0W - 0L"}</span>
+                        {p.highSchool}{p.state ? ` · ${p.state}` : ""} · <EditableRecord player={p} updatePlayer={updatePlayer} />
                       </div>
                       <div className="hs-no-print" style={{ marginTop: 3 }}>
                         <StatusSelect player={p} status={status} updatePlayer={updatePlayer} style={{ padding: "1px 4px" }} />
@@ -751,7 +799,7 @@ function WeeklyTab({ players, week, statusOf, autoStatusOf, updatePlayer, onGame
                     {game ? (
                       <>
                         <span style={{ color: "var(--text-muted)", fontWeight: 700 }}>{game.homeAway === "A" ? "@" : "vs"}</span>
-                        <span className="oswald" style={{ fontSize: 17, fontWeight: 700 }}>{game.opponent}</span>
+                        <EditableOpponent player={p} game={game} updateGame={updateGame} style={{ fontSize: 17, fontWeight: 700, fontFamily: "inherit", color: "inherit" }} />
                         <span style={{ background: "#fff", color: "#111", borderRadius: 4, padding: "2px 8px", fontSize: 11, fontWeight: 800 }}>{dayName(game.date)}</span>
                         <ResultChip game={game} big />
                       </>
@@ -776,7 +824,7 @@ function WeeklyTab({ players, week, statusOf, autoStatusOf, updatePlayer, onGame
                     {next ? (
                       <>
                         <span style={{ color: "var(--text-muted)", fontWeight: 700 }}>{next.homeAway === "A" ? "@" : "vs"}</span>
-                        <span style={{ fontWeight: 600 }}>{next.opponent}</span>
+                        <EditableOpponent player={p} game={next} updateGame={updateGame} style={{ fontWeight: 600, fontFamily: "inherit", color: "inherit" }} />
                         <span style={{ background: "#fff", color: "#111", borderRadius: 4, padding: "2px 8px", fontSize: 11, fontWeight: 800 }}>{dayName(next.date)}</span>
                       </>
                     ) : (
