@@ -29,7 +29,6 @@ const SCALE = 6;
 const COLUMN_LABELS = ["QB", "RB", "WR", "TE", "OT", "OG/OC", "FLEX BIG", "FLEX SKILL", "DE", "DT", "LB", "CB", "SAF", "LS", "K", "P"];
 const COLUMN_SIDES = { off: ["QB", "RB", "WR", "TE", "OT", "OG/OC", "FLEX BIG", "FLEX SKILL"], def: ["DE", "DT", "LB", "CB", "SAF", "FLEX BIG", "FLEX SKILL", "LS", "K", "P"] };
 const SIDE_TITLES = { off: "HIGH SCHOOL OFFENSIVE BIG BOARD", def: "HIGH SCHOOL DEFENSIVE/SPEC BIG BOARD" };
-const OFFENSE_WORDS = /quarterback|running back|fullback|wide receiver|tight end|offensive|receiver/i;
 
 const STATE_CODES = {
   alabama: "AL", alaska: "AK", arizona: "AZ", arkansas: "AR", california: "CA", colorado: "CO", connecticut: "CT", delaware: "DE",
@@ -300,8 +299,6 @@ const POSITION_TITLES = [
   [/cornerb|corner/i, "Cornerback"], [/safety/i, "Safety"], [/kicker|punter/i, "Kicker-Punter"], [/snapper/i, "Long Snapper"], [/athlete/i, "Athlete"],
 ];
 
-const sideOf = (positionTitle) => (OFFENSE_WORDS.test(positionTitle) ? "off" : "def");
-
 // A cheap look at a tile with no OCR: whether it has column names above its first row, and how many columns.
 async function peekTile(pdf, n, pdfjs) {
   const page = await pdf.getPage(n);
@@ -462,15 +459,15 @@ export async function readBoardPdf(file, knownNames = [], onProgress = () => {})
   return { cards, photos: [...photos.values()], pages: pdf.numPages };
 }
 
-// The cards -> the two boards (offense; defense and specialists). A flex column holds players from both sides,
-// so each flex card goes to the side its position belongs to.
+// The cards -> the two boards (offense; defense and specialists). The flex columns are shown whole on both.
 export function boardsFromCards(cards, classYear) {
   const out = {};
   ["off", "def"].forEach((side) => {
     const columns = COLUMN_SIDES[side].map((label) => ({ key: label.replace(/[^A-Z0-9]+/g, "-"), label, hasRating: !["LS", "K", "P"].includes(label), players: [] }));
     cards.forEach((c) => {
       const isFlex = /^FLEX/.test(c.columnLabel);
-      if (isFlex ? sideOf(c.positionTitle) !== side : !COLUMN_SIDES[side].includes(c.columnLabel)) return;
+      // A flex column is shown whole on both boards (as on the staff sheets); every other column on its own side.
+      if (!isFlex && !COLUMN_SIDES[side].includes(c.columnLabel)) return;
       const col = columns.find((x) => x.label === c.columnLabel);
       if (!col) return;
       col.players.push({
