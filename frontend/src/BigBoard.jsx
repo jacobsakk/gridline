@@ -17,6 +17,7 @@ const VIEWS = [
   { key: "activity", label: "Activity" },
 ];
 const SIDE_TITLE = { off: "HIGH SCHOOL OFFENSIVE BIG BOARD", def: "HIGH SCHOOL DEFENSIVE/SPEC BIG BOARD" };
+const JUCO_SIDE_TITLE = { off: "JUCO OFFENSIVE BIG BOARD", def: "JUCO DEFENSIVE/SPEC BIG BOARD" };
 
 const ctl = {
   background: "var(--bg-surface)", border: "1px solid var(--border)", color: "var(--text-primary)", borderRadius: 6,
@@ -97,9 +98,7 @@ function PlayerCard({ p, showCoach, photo, onOpen }) {
 
 export function BoardSheet({ board, side, classYear, photos, onOpen, onAdd }) {
   const counts = commitCounts(board);
-  const maxTier = Math.max(3, ...board.columns.flatMap((c) => c.players.map((p) => p.tier)));
-  const tiers = Array.from({ length: maxTier }, (_, i) => i + 1);
-  const title = board.title && /\d{4}/.test(board.title) ? board.title : `${SIDE_TITLE[side]} - ${classYear}`;
+  const title = board.title && /\d{4}/.test(board.title) ? board.title : classYear === "JUCO" ? JUCO_SIDE_TITLE[side] : `${SIDE_TITLE[side]} - ${classYear}`;
   return (
     <div className="bb-sheet bb-board">
       <div className="bb-title">{title}</div>
@@ -112,7 +111,9 @@ export function BoardSheet({ board, side, classYear, photos, onOpen, onAdd }) {
                 <span>{col.label}</span>
                 <span style={{ color: "#B3261E" }}>({committed})</span>
               </div>
-              {tiers.map((tier) => {
+              {/* Tier 1 is always there (it carries the + to add a player; the card's form picks any tier); tiers 2 and
+                  up only appear in a column while someone is in them. */}
+              {[1, ...[...new Set(col.players.map((p) => p.tier))].filter((t) => t > 1).sort((a, b) => a - b)].map((tier) => {
                 const inTier = col.players.filter((p) => p.tier === tier);
                 return (
                   <Fragment key={tier}>
@@ -226,7 +227,7 @@ export function PlayerModal({ board, classYear, colKey, player, isNew, photo, on
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 80px", gap: 10 }}>
             <div>
-              <label style={label} htmlFor="bb-school">High school</label>
+              <label style={label} htmlFor="bb-school">School</label>
               <input id="bb-school" value={draft.school} onChange={(e) => set({ school: e.target.value })} style={{ ...ctl, width: "100%" }} />
             </div>
             <div>
@@ -322,7 +323,7 @@ const CREDIT_COLS = [
   { key: "first", label: "First name", w: 92 },
   { key: "last", label: "Last name", w: 100 },
   { key: "pos", label: "Pos", w: 52 },
-  { key: "school", label: "High school", w: 150 },
+  { key: "school", label: "School", w: 150 },
   { key: "state", label: "State", w: 52 },
   { key: "coach", label: "Area coach", w: 110 },
   { key: "transcript", label: "Updated transcript", w: 86 },
@@ -478,7 +479,7 @@ export function ActivitySheet({ rows, classYear }) {
         ) : (
           <table style={{ width: "100%", borderCollapse: "collapse" }}>
             <thead>
-              <tr>{["Change", "Player", "Position", "High school", "Status", "From"].map((h) => <th key={h} style={tableHead}>{h}</th>)}</tr>
+              <tr>{["Change", "Player", "Position", "School", "Status", "From"].map((h) => <th key={h} style={tableHead}>{h}</th>)}</tr>
             </thead>
             <tbody>
               {groups.map((g) => (
@@ -723,6 +724,7 @@ export default function BigBoard({ onBack: toDashboard }) {
     const fit = () => {
       document.querySelectorAll(".bb-board").forEach((el) => {
         el.style.zoom = "";
+        el.style.minHeight = "0px";
         // The biggest scale at which the whole sheet fits the page: at scale z the sheet is laid out PAGE_W / z
         // wide (a smaller scale gives it more room, so less wrapping) and prints z times its height.
         const printedHeight = (z) => {
@@ -739,12 +741,16 @@ export default function BigBoard({ onBack: toDashboard }) {
         }
         el.style.width = `${PAGE_W / lo}px`;
         el.style.zoom = String(lo);
+        // A short board (the JUCO one) is stretched to the full page, its key at the bottom, instead of ending
+        // halfway down the sheet.
+        el.style.minHeight = `${PAGE_H / lo - 2}px`;
       });
     };
     const reset = () => {
       document.querySelectorAll(".bb-board").forEach((el) => {
         el.style.zoom = "";
         el.style.width = "";
+        el.style.minHeight = "";
       });
     };
     window.addEventListener("beforeprint", fit);
