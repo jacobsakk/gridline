@@ -335,6 +335,27 @@ const CREDIT_COLS = [
 // school and coach filled in. Only what the board can't know is typed here -- and saved with the person.
 const EDITABLE_CREDIT = new Set(["coach", "transcript", "qualifier", "gpa", "credits"]);
 
+// Credit Evaluation and Activity are working screens, not the printed board, so they use the site's own look
+// (themed panels, the table style of the other trackers) -- they still print cleanly in black on white.
+const tableHead = { position: "sticky", top: 0, background: "var(--bg-surface)", textAlign: "left", padding: "9px 10px", fontSize: 11, color: "var(--text-faint)", textTransform: "uppercase", letterSpacing: "0.03em", whiteSpace: "nowrap", borderBottom: "1px solid var(--border)" };
+const tableCell = { padding: "6px 10px", fontSize: 13.5, color: "var(--text-secondary)", borderTop: "1px solid var(--border-subtle)", whiteSpace: "nowrap" };
+
+function SheetHeading({ title, classYear, children }) {
+  return (
+    <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 12, flexWrap: "wrap", marginBottom: 10 }}>
+      <h2 className="oswald" style={{ margin: 0, fontSize: 20, fontWeight: 700 }}>{title}{classYear ? <span style={{ color: "var(--text-faint)", fontWeight: 400 }}> · {classYear}</span> : null}</h2>
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>{children}</div>
+    </div>
+  );
+}
+
+const countPill = (color, label, n) => (
+  <span key={label} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 999, padding: "3px 11px", fontSize: 12.5, fontWeight: 700, color: "var(--text-secondary)" }}>
+    {color && <span style={{ width: 9, height: 9, borderRadius: "50%", background: color }} />}
+    {label} <span className="tabular" style={{ color: "var(--text-primary)" }}>{n}</span>
+  </span>
+);
+
 export function CreditSheet({ list, onEdit, classYear }) {
   const groups = [
     { key: "committed", title: "Committed", color: STATUS_BY_KEY.committed.color, rows: list.committed },
@@ -343,60 +364,71 @@ export function CreditSheet({ list, onEdit, classYear }) {
   const total = list.committed.length + list.offered.length;
   // The JUCO board has no area coach, so its credit table has no coach column either.
   const cols = classYear === "JUCO" ? CREDIT_COLS.filter((c) => c.key !== "coach") : CREDIT_COLS;
-  const cell = { padding: 0, border: "1px solid rgba(0,0,0,0.12)" };
-  const input = { width: "100%", border: "none", background: "transparent", color: "#111", fontFamily: "inherit", fontSize: 12.5, padding: "5px 6px", textAlign: "center" };
+  const input = { width: "100%", color: "var(--text-primary)", fontFamily: "inherit", fontSize: 13.5, padding: "4px 7px", minWidth: 0 };
   return (
-    <div className="bb-sheet bb-credit">
-      <div className="bb-title">HS BOARD CREDIT EVALUATION{classYear ? ` - ${classYear}` : ""}</div>
-      <table style={{ width: "100%", borderCollapse: "collapse" }}>
-        <thead>
-          <tr>
-            {cols.map((c) => (
-              <th key={c.key} style={{ background: "#BFBFBF", color: "#111", fontSize: 11, padding: "5px 6px", border: "1px solid rgba(0,0,0,0.12)", minWidth: c.w }}>{c.label.toUpperCase()}</th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {total === 0 && (
-            <tr><td colSpan={cols.length} style={{ padding: 24, textAlign: "center", fontSize: 13, color: "#555" }}>No one is committed or offered on this class's boards yet. This list fills itself in from the board.</td></tr>
-          )}
-          {groups.map((g) => (
-            <Fragment key={g.key}>
-              {g.key === "offered" && g.rows.length > 0 && list.committed.length > 0 && (
-                <tr><td colSpan={cols.length} style={{ background: "#111", height: 8, padding: 0 }} /></tr>
-              )}
-              {g.rows.map((r) => (
-                <tr key={r.key} style={{ background: g.color }}>
-                  {cols.map((c) => (
-                    <td key={c.key} style={cell}>
-                      {c.select ? (
-                        <select value={r.qualifier} onChange={(e) => onEdit(r, { qualifier: e.target.value })} style={{ ...input, appearance: "none", cursor: "pointer" }}>
-                          {r.qualifier && !QUALIFIERS.includes(r.qualifier) && <option value={r.qualifier}>{r.qualifier}</option>}
-                          <option value="" />
-                          {QUALIFIERS.map((q) => <option key={q} value={q}>{q}</option>)}
-                        </select>
-                      ) : EDITABLE_CREDIT.has(c.key) ? (
-                        <input
-                          key={r[c.key]}
-                          defaultValue={r[c.key]}
-                          aria-label={`${c.label} for ${r.first} ${r.last}`}
-                          onBlur={(e) => e.target.value.trim() !== r[c.key] && onEdit(r, { [c.key]: c.key === "coach" ? e.target.value.trim().toUpperCase() : e.target.value.trim() })}
-                          style={input}
-                        />
-                      ) : (
-                        <div style={{ ...input, padding: "5px 6px" }}>{r[c.key]}</div>
-                      )}
-                    </td>
-                  ))}
-                </tr>
+    <div className="bb-themed">
+      <SheetHeading title="Credit evaluation" classYear={classYear}>
+        {countPill(STATUS_BY_KEY.committed.color, "Committed", list.committed.length)}
+        {countPill(STATUS_BY_KEY.offered.color, "Offered", list.offered.length)}
+      </SheetHeading>
+      <div style={{ border: "1px solid var(--border)", borderRadius: 8, overflow: "auto", background: "var(--bg-panel)" }}>
+        <table style={{ width: "100%", borderCollapse: "collapse" }}>
+          <thead>
+            <tr>
+              {cols.map((c) => (
+                <th key={c.key} style={{ ...tableHead, minWidth: c.w }}>{c.label}</th>
               ))}
-            </Fragment>
-          ))}
-        </tbody>
-      </table>
-      <div className="hs-no-print" style={{ padding: "8px 12px", fontSize: 12, color: "#555", background: "#f4f4f4", borderTop: "1px solid #ddd" }}>
-        Built from the board: committed (gold) and offered (green) only. Name, position, school and state come from the card; the coach, transcript date, NCAA qualifier, GPA and credits are typed here and kept with the person.
+            </tr>
+          </thead>
+          <tbody>
+            {total === 0 && (
+              <tr><td colSpan={cols.length} style={{ ...tableCell, textAlign: "center", padding: 28, color: "var(--text-faint)", whiteSpace: "normal" }}>No one is committed or offered on this class's boards yet. This list fills itself in from the board.</td></tr>
+            )}
+            {groups.map((g) => (
+              <Fragment key={g.key}>
+                {g.rows.length > 0 && (
+                  <tr>
+                    <td colSpan={cols.length} style={{ ...tableCell, background: "var(--bg-surface)", fontWeight: 800, fontSize: 12, letterSpacing: "0.04em", textTransform: "uppercase", color: "var(--text-primary)" }}>
+                      <span style={{ display: "inline-block", width: 9, height: 9, borderRadius: "50%", background: g.color, marginRight: 8 }} />
+                      {g.title} <span className="tabular" style={{ color: "var(--text-faint)", fontWeight: 600 }}>· {g.rows.length}</span>
+                    </td>
+                  </tr>
+                )}
+                {g.rows.map((r) => (
+                  <tr key={r.key}>
+                    {cols.map((c, ci) => (
+                      <td key={c.key} style={{ ...tableCell, padding: EDITABLE_CREDIT.has(c.key) ? "3px 4px" : "6px 10px", boxShadow: ci === 0 ? `inset 3px 0 0 ${g.color}` : undefined, fontWeight: c.key === "first" || c.key === "last" ? 700 : undefined, color: c.key === "first" || c.key === "last" ? "var(--text-primary)" : undefined }}>
+                        {c.select ? (
+                          <select className="offer-cell-input" value={r.qualifier} onChange={(e) => onEdit(r, { qualifier: e.target.value })} style={{ ...input, cursor: "pointer" }}>
+                            {r.qualifier && !QUALIFIERS.includes(r.qualifier) && <option value={r.qualifier}>{r.qualifier}</option>}
+                            <option value="">—</option>
+                            {QUALIFIERS.map((q) => <option key={q} value={q}>{q}</option>)}
+                          </select>
+                        ) : EDITABLE_CREDIT.has(c.key) ? (
+                          <input
+                            className="offer-cell-input"
+                            key={r[c.key]}
+                            defaultValue={r[c.key]}
+                            placeholder="—"
+                            aria-label={`${c.label} for ${r.first} ${r.last}`}
+                            onBlur={(e) => e.target.value.trim() !== r[c.key] && onEdit(r, { [c.key]: c.key === "coach" ? e.target.value.trim().toUpperCase() : e.target.value.trim() })}
+                            style={input}
+                          />
+                        ) : (
+                          r[c.key]
+                        )}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </Fragment>
+            ))}
+          </tbody>
+        </table>
       </div>
+      <p className="hs-no-print" style={{ margin: "10px 0 0", fontSize: 12.5, color: "var(--text-faint)", lineHeight: 1.5 }}>
+        Built from the board: committed and offered only. Name, position, school and state come from the card; the coach, transcript date, NCAA qualifier, GPA and credits are typed here and kept with the person.
+      </p>
     </div>
   );
 }
@@ -421,43 +453,60 @@ export function ActivitySheet({ rows, classYear }) {
     if (last && last.date === r.date) last.rows.push(r);
     else groups.push({ date: r.date, rows: [r] });
   });
-  const th = { background: "#BFBFBF", color: "#111", fontSize: 11, padding: "5px 8px", border: "1px solid rgba(0,0,0,0.12)", textAlign: "left" };
-  const td = { padding: "5px 8px", fontSize: 12.5, border: "1px solid rgba(0,0,0,0.12)", color: "#111" };
   const chip = (key, label, n) => (
     <button key={key} onClick={() => setFilter(key)} style={{ ...ghostBtn, padding: "5px 12px", fontSize: 12.5, background: filter === key ? "var(--accent-bg)" : "var(--bg-surface)", borderColor: filter === key ? "var(--accent)" : "var(--border)", color: filter === key ? "var(--accent)" : "var(--text-secondary)" }}>{label} ({n})</button>
   );
+  const changePill = (type) => (
+    <span style={{ display: "inline-block", borderRadius: 999, padding: "2px 10px", fontSize: 11.5, fontWeight: 800, letterSpacing: "0.02em", background: type === "added" ? "var(--success-bg)" : "var(--danger-bg)", color: type === "added" ? "var(--success)" : "var(--danger-text)", border: `1px solid ${type === "added" ? "var(--success-border)" : "var(--danger)"}` }}>
+      {type === "added" ? "Added" : "Removed"}
+    </span>
+  );
   return (
-    <div>
-      <div className="hs-no-print" style={{ display: "flex", gap: 6, marginBottom: 10, flexWrap: "wrap" }}>
-        {chip("all", "All", rows.length)}
-        {chip("added", "Added", added)}
-        {chip("removed", "Removed", removed)}
-      </div>
-      <div className="bb-sheet bb-credit" style={{ minWidth: 0 }}>
-        <div className="bb-title">BIG BOARD ACTIVITY - {classYear}</div>
+    <div className="bb-themed">
+      <SheetHeading title="Board activity" classYear={classYear}>
+        <span className="hs-no-print" style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+          {chip("all", "All", rows.length)}
+          {chip("added", "Added", added)}
+          {chip("removed", "Removed", removed)}
+        </span>
+      </SheetHeading>
+      <div style={{ border: "1px solid var(--border)", borderRadius: 8, overflow: "auto", background: "var(--bg-panel)" }}>
         {groups.length === 0 ? (
-          <div style={{ padding: 24, textAlign: "center", fontSize: 13, color: "#555" }}>
+          <div style={{ padding: 28, textAlign: "center", fontSize: 13.5, color: "var(--text-faint)", lineHeight: 1.6 }}>
             {rows.length === 0 ? "Nothing yet. Each time you upload a board, the people added to it and taken off it are listed here with the date. The first upload for a class has nothing to compare against." : "Nothing to show for this filter."}
           </div>
         ) : (
           <table style={{ width: "100%", borderCollapse: "collapse" }}>
             <thead>
-              <tr>{["Date", "Change", "Player", "Position", "High school", "Status", "From"].map((h) => <th key={h} style={th}>{h.toUpperCase()}</th>)}</tr>
+              <tr>{["Change", "Player", "Position", "High school", "Status", "From"].map((h) => <th key={h} style={tableHead}>{h}</th>)}</tr>
             </thead>
             <tbody>
-              {groups.map((g) =>
-                g.rows.map((r, i) => (
-                  <tr key={r.id} style={{ background: r.type === "added" ? "#B6D7A8" : "#EA9999" }}>
-                    <td style={{ ...td, fontWeight: 700, whiteSpace: "nowrap" }}>{i === 0 ? shortDate(g.date) : ""}</td>
-                    <td style={{ ...td, fontWeight: 800 }}>{r.type === "added" ? "Added" : "Removed"}</td>
-                    <td style={{ ...td, fontWeight: 700 }}>{r.name}</td>
-                    <td style={td}>{r.positions}{r.side ? <span style={{ color: "#555" }}> · {r.side === "def" ? "Defense" : "Offense"}</span> : null}</td>
-                    <td style={td}>{r.school}{r.state ? ` (${r.state})` : ""}</td>
-                    <td style={td}>{STATUS_BY_KEY[r.status]?.label || ""}</td>
-                    <td style={{ ...td, color: "#555" }} title={r.source}>{/\.xls/i.test(r.source || "") ? "Upload" : "By hand"}</td>
+              {groups.map((g) => (
+                <Fragment key={g.date}>
+                  <tr>
+                    <td colSpan={6} style={{ ...tableCell, background: "var(--bg-surface)", fontWeight: 800, fontSize: 12, letterSpacing: "0.04em", color: "var(--text-primary)" }}>
+                      {shortDate(g.date)} <span className="tabular" style={{ color: "var(--text-faint)", fontWeight: 600 }}>· {g.rows.length} change{g.rows.length === 1 ? "" : "s"}</span>
+                    </td>
                   </tr>
-                ))
-              )}
+                  {g.rows.map((r) => (
+                    <tr key={r.id}>
+                      <td style={tableCell}>{changePill(r.type)}</td>
+                      <td style={{ ...tableCell, fontWeight: 700, color: "var(--text-primary)" }}>{r.name}</td>
+                      <td style={tableCell}>{r.positions}{r.side ? <span style={{ color: "var(--text-faint)" }}> · {r.side === "def" ? "Defense" : "Offense"}</span> : null}</td>
+                      <td style={tableCell}>{r.school}{r.state ? ` (${r.state})` : ""}</td>
+                      <td style={tableCell}>
+                        {STATUS_BY_KEY[r.status] ? (
+                          <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                            <span style={{ width: 9, height: 9, borderRadius: "50%", background: STATUS_BY_KEY[r.status].color }} />
+                            {STATUS_BY_KEY[r.status].label}
+                          </span>
+                        ) : ""}
+                      </td>
+                      <td style={{ ...tableCell, color: "var(--text-faint)" }} title={r.source}>{r.source === "by hand" ? "By hand" : "Upload"}</td>
+                    </tr>
+                  ))}
+                </Fragment>
+              ))}
             </tbody>
           </table>
         )}

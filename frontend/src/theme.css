@@ -204,7 +204,6 @@ tbody tr:hover { background: var(--row-hover) !important; }
 .bb-emoji-grid span { display: inline-block; min-width: 20px; }
 .bb-counts { padding-bottom: 6px; }
 .bb-counts > div:not(.bb-footh) { padding: 1px 8px; }
-.bb-credit input, .bb-credit select { color: #111; font-family: inherit; }
 @page bb { size: letter landscape; margin: 0.3in; }
 @media print {
   .bb-shell { page: bb; }
@@ -212,6 +211,19 @@ tbody tr:hover { background: var(--row-hover) !important; }
      fit-to-page on beforeprint); the key and counts are inside the sheet, so they can't land on another page. */
   .bb-sheet { border: none; min-width: 0; break-inside: avoid; page-break-inside: avoid; }
   .bb-sheet .bb-footer { break-inside: avoid; }
-  .bb-credit th, .bb-credit td { font-size: 8pt; }
-  .bb-credit input, .bb-credit select { font-size: 8pt !important; padding: 2px 3px !important; }
+  /* Credit Evaluation and Activity use the site's themed look on screen; on paper they are black on white
+     whatever the theme, in a smaller type so a long list stays compact. */
+  .bb-themed {
+    --bg-panel: #fff; --bg-surface: #f1f1f1; --border: #bbb; --border-subtle: #ddd;
+    --text-primary: #111; --text-secondary: #222; --text-muted: #444; --text-faint: #555;
+    --accent: #510F1D; --accent-bg: #f5e7ea; --success: #1f6b2c; --success-bg: #e3f2e1; --success-border: #9fcba0;
+    --danger: #a23b3b; --danger-bg: #fbe6e6; --danger-text: #8a2323;
+    color: #111;
+  }
+  .bb-themed div { overflow: visible !important; }
+  .bb-themed table { width: 100% !important; table-layout: auto; }
+  .bb-themed th, .bb-themed td { font-size: 8pt !important; padding-top: 2px !important; padding-bottom: 2px !important; white-space: normal !important; min-width: 0 !important; }
+  .bb-themed thead th { position: static !important; }
+  .bb-themed .offer-cell-input { border-color: transparent !important; background: transparent !important; appearance: none; font-size: 8pt !important; padding: 0 3px !important; }
+  .bb-themed tr { break-inside: avoid; }
 }
