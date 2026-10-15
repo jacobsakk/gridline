@@ -6,7 +6,7 @@ import { confirmAction } from "./ConfirmDialog.jsx";
 import { initialSubRoute, setSubRoute, useBack } from "./route.js";
 import { matchPhotoFiles, mondayOf, photoFromFile, toIso } from "./hsData.js";
 import {
-  FLAGS, RATING_KEYS, STATUSES, STATUS_BY_KEY, TRENDS, VISITS, blankPlayer, boardTitle, buildCreditList, classYearFromTitle,
+  FLAGS, STATUSES, STATUS_BY_KEY, VISITS, blankPlayer, boardTitle, buildCreditList, classYearFromTitle,
   commitCounts, creditKey, diffBoards, handChange, nameKey, parseBoardSheet, parseCreditSheet, readWorkbook, useBigBoards,
 } from "./bigBoardData.js";
 
@@ -25,7 +25,6 @@ const ctl = {
 const ghostBtn = { ...ctl, display: "inline-flex", alignItems: "center", gap: 6, cursor: "pointer", fontWeight: 600 };
 const primaryBtn = { ...ghostBtn, background: "var(--accent-bg)", border: "1px solid var(--accent)", color: "var(--accent)", fontWeight: 700 };
 
-const trendEmoji = (key) => TRENDS.find((t) => t.key === key)?.emoji || "";
 
 // ------------------------------------------------------------------ board edits (pure)
 
@@ -77,7 +76,9 @@ function nudge(board, id, dir) {
 
 const markersFor = (p) => [p.flags?.snap ? "($)" : "", p.flags?.punt ? "(#)" : "", p.flags?.noMidYear ? "🚫" : "", p.flags?.injured ? "⛑️" : ""].filter(Boolean).join(" ");
 
-function PlayerCard({ p, hasRating, photo, onOpen }) {
+// A card shows no rating (neither ARMs' "2 - ALL MAC PLAYER" nor the A/P/C/R trend marks), and the JUCO board
+// shows no area coach either. The data stays on the card; it's just not displayed.
+function PlayerCard({ p, showCoach, photo, onOpen }) {
   const status = STATUS_BY_KEY[p.status] || STATUS_BY_KEY.recruit;
   const marks = markersFor(p);
   return (
@@ -88,15 +89,8 @@ function PlayerCard({ p, hasRating, photo, onOpen }) {
         {(p.school || p.state) && <div>{p.school}{p.state ? ` (${p.state})` : ""}</div>}
         {p.measurables && <div>{p.measurables}</div>}
         {(p.gpa || p.visits) && <div>{p.gpa ? `${p.gpaLabel || "cGPA"}: ${p.gpa}` : ""} {p.visits}</div>}
-        {(p.ratingLabel || p.coach) && <div className="bb-extra">{[p.ratingLabel, p.coach].filter(Boolean).join(" · ")}</div>}
+        {showCoach && p.coach && <div className="bb-extra">{p.coach}</div>}
       </div>
-      {hasRating && RATING_KEYS.some((k) => p.rating?.[k]) && (
-        <div className="bb-rating">
-          {RATING_KEYS.map((k) => (
-            <div key={k}>{k}:{trendEmoji(p.rating?.[k]) || "–"}</div>
-          ))}
-        </div>
-      )}
     </div>
   );
 }
@@ -129,7 +123,7 @@ export function BoardSheet({ board, side, classYear, photos, onOpen, onAdd }) {
                       </button>
                     </div>
                     {inTier.map((p) => (
-                      <PlayerCard key={p.id} p={p} hasRating={col.hasRating} photo={photos[nameKey(p.name)]} onOpen={() => onOpen(col.key, p)} />
+                      <PlayerCard key={p.id} p={p} showCoach={classYear !== "JUCO"} photo={photos[nameKey(p.name)]} onOpen={() => onOpen(col.key, p)} />
                     ))}
                   </Fragment>
                 );
@@ -155,9 +149,6 @@ function BoardFooter({ counts, side }) {
       <div className="bb-emojis">
         <div className="bb-footh">EMOJIS</div>
         <div className="bb-emoji-grid">
-          {TRENDS.map((t) => (
-            <div key={t.key}><span>{t.emoji}</span> {t.label}</div>
-          ))}
           {FLAGS.map((f) => (
             <div key={f.key}><span>{f.marker === "$" ? "($)" : f.marker === "#" ? "(#)" : f.marker}</span> {f.label}</div>
           ))}
@@ -181,12 +172,11 @@ function BoardFooter({ counts, side }) {
 
 // ------------------------------------------------------------------ editing a card
 
-export function PlayerModal({ board, colKey, player, isNew, photo, onSave, onDelete, onNudge, onPhoto, onClose }) {
+export function PlayerModal({ board, classYear, colKey, player, isNew, photo, onSave, onDelete, onNudge, onPhoto, onClose }) {
   const [draft, setDraft] = useState(player);
   const [col, setCol] = useState(colKey);
   const fileInput = useRef(null);
   const [photoError, setPhotoError] = useState("");
-  const column = board.columns.find((c) => c.key === col);
   const set = (patch) => setDraft((d) => ({ ...d, ...patch }));
   const label = { fontSize: 11, color: "var(--text-faint)", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: 4, display: "block" };
   const addVisit = (marker) => set({ visits: `${draft.visits || ""}${marker}` });
@@ -248,16 +238,12 @@ export function PlayerModal({ board, colKey, player, isNew, photo, onSave, onDel
             <label style={label} htmlFor="bb-meas">Measurables (as shown on the card)</label>
             <input id="bb-meas" value={draft.measurables} onChange={(e) => set({ measurables: e.target.value })} placeholder={`6'2" ✅ 187 ✅ 6'3" ✅`} style={{ ...ctl, width: "100%" }} />
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+          {classYear !== "JUCO" && (
             <div>
               <label style={label} htmlFor="bb-coach">Assigned coach</label>
               <input id="bb-coach" value={draft.coach || ""} onChange={(e) => set({ coach: e.target.value })} style={{ ...ctl, width: "100%" }} />
             </div>
-            <div>
-              <label style={label} htmlFor="bb-rate">Rating</label>
-              <input id="bb-rate" value={draft.ratingLabel || ""} onChange={(e) => set({ ratingLabel: e.target.value })} placeholder="1 - SOLID STARTER" style={{ ...ctl, width: "100%" }} />
-            </div>
-          </div>
+          )}
           <div style={{ display: "grid", gridTemplateColumns: "110px 100px 1fr", gap: 10, alignItems: "end" }}>
             <div>
               <label style={label} htmlFor="bb-gl">GPA</label>
@@ -295,23 +281,6 @@ export function PlayerModal({ board, colKey, player, isNew, photo, onSave, onDel
               </div>
             </div>
           </div>
-
-          {column?.hasRating !== false && (
-            <div>
-              <label style={label}>Rating</label>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8 }}>
-                {RATING_KEYS.map((k) => (
-                  <label key={k} style={{ display: "flex", alignItems: "center", gap: 6, fontWeight: 700 }}>
-                    {k}:
-                    <select value={draft.rating?.[k] || ""} onChange={(e) => set({ rating: { ...draft.rating, [k]: e.target.value } })} style={{ ...ctl, flex: 1, padding: "6px 4px" }}>
-                      <option value="">–</option>
-                      {TRENDS.map((t) => <option key={t.key} value={t.key}>{t.emoji}</option>)}
-                    </select>
-                  </label>
-                ))}
-              </div>
-            </div>
-          )}
 
           <div style={{ display: "grid", gridTemplateColumns: "1fr 100px", gap: 10 }}>
             <div>
@@ -372,6 +341,8 @@ export function CreditSheet({ list, onEdit, classYear }) {
     { key: "offered", title: "Offered", color: STATUS_BY_KEY.offered.color, rows: list.offered },
   ];
   const total = list.committed.length + list.offered.length;
+  // The JUCO board has no area coach, so its credit table has no coach column either.
+  const cols = classYear === "JUCO" ? CREDIT_COLS.filter((c) => c.key !== "coach") : CREDIT_COLS;
   const cell = { padding: 0, border: "1px solid rgba(0,0,0,0.12)" };
   const input = { width: "100%", border: "none", background: "transparent", color: "#111", fontFamily: "inherit", fontSize: 12.5, padding: "5px 6px", textAlign: "center" };
   return (
@@ -380,23 +351,23 @@ export function CreditSheet({ list, onEdit, classYear }) {
       <table style={{ width: "100%", borderCollapse: "collapse" }}>
         <thead>
           <tr>
-            {CREDIT_COLS.map((c) => (
+            {cols.map((c) => (
               <th key={c.key} style={{ background: "#BFBFBF", color: "#111", fontSize: 11, padding: "5px 6px", border: "1px solid rgba(0,0,0,0.12)", minWidth: c.w }}>{c.label.toUpperCase()}</th>
             ))}
           </tr>
         </thead>
         <tbody>
           {total === 0 && (
-            <tr><td colSpan={CREDIT_COLS.length} style={{ padding: 24, textAlign: "center", fontSize: 13, color: "#555" }}>No one is committed or offered on this class's boards yet. This list fills itself in from the board.</td></tr>
+            <tr><td colSpan={cols.length} style={{ padding: 24, textAlign: "center", fontSize: 13, color: "#555" }}>No one is committed or offered on this class's boards yet. This list fills itself in from the board.</td></tr>
           )}
           {groups.map((g) => (
             <Fragment key={g.key}>
               {g.key === "offered" && g.rows.length > 0 && list.committed.length > 0 && (
-                <tr><td colSpan={CREDIT_COLS.length} style={{ background: "#111", height: 8, padding: 0 }} /></tr>
+                <tr><td colSpan={cols.length} style={{ background: "#111", height: 8, padding: 0 }} /></tr>
               )}
               {g.rows.map((r) => (
                 <tr key={r.key} style={{ background: g.color }}>
-                  {CREDIT_COLS.map((c) => (
+                  {cols.map((c) => (
                     <td key={c.key} style={cell}>
                       {c.select ? (
                         <select value={r.qualifier} onChange={(e) => onEdit(r, { qualifier: e.target.value })} style={{ ...input, appearance: "none", cursor: "pointer" }}>
@@ -911,6 +882,7 @@ export default function BigBoard({ onBack: toDashboard }) {
         <PlayerModal
           key={editing.player.id}
           board={board}
+          classYear={classYear}
           colKey={editing.colKey}
           player={editing.player}
           isNew={editing.isNew}
