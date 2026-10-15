@@ -344,7 +344,7 @@ function UploadModal({ classYears, defaultJuco, onClose, onImport }) {
               {isFeed
                 ? jucoFeed
                   ? "JUCO board: every row lands on the JUCO tab regardless of its own Grad Year (that's kept as a separate field). Nothing is replaced -- new offers are added, blanks filled in, and commitments update that recruit everywhere."
-                  : "Activity feed or athlete export (hs-athletes...): every class year in the file is handled together. Nothing is replaced -- new offers are added, blanks are filled in, and commitments update that recruit on every sheet. Pipeline and notes are left alone. An athlete export adds each recruit to every school on his Offers list that has a board here (it has no offer dates, so new rows start with a blank date)."
+                  : "Activity feed: every class year in the file is handled together (it has a Grad Year column). Nothing is replaced -- new offers are added, blanks are filled in, and commitments update that recruit on every sheet. Pipeline and notes are left alone."
                 : "Workbook: each recognized team tab replaces that team's rows for this class year, so a player dropped from the export won't linger. Assignments, Questionnaire and breakdown tabs are skipped."}
             </p>
             {error && <p style={{ fontSize: 13, color: "var(--danger)" }}>{error}</p>}

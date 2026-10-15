@@ -539,43 +539,6 @@ function feedDateToText(iso) {
   return m ? normalizeOfferDate(`${m[2]}/${m[3]}/${m[1]}`) : "";
 }
 
-// The Verified Athletics athlete export ("hs-athletes_...csv"): one row per recruit, with an "Offers" column
-// listing every school that has offered him and a "Commit School". Turned into the feed's own shape -- one
-// "offer" row per school in that list that has a board here -- so it goes through the same merge. The export
-// carries no per-offer dates, so a new row's date is left blank (a row that already has one keeps it).
-export function athletesToFeedRows(rows) {
-  const out = [];
-  rows.forEach((r) => {
-    const name = `${r["First Name"] || ""} ${r["Last Name"] || ""}`.replace(/\s+/g, " ").trim();
-    if (!name || !r["Year"]) return;
-    const commit = r["Commit School"] || "";
-    const schools = new Map(); // board team -> the school's name as listed
-    [...String(r["Offers"] || "").split(","), commit].forEach((raw) => {
-      const school = raw.trim();
-      const team = school && feedCollegeToTeam(school);
-      if (team && !schools.has(team)) schools.set(team, school);
-    });
-    schools.forEach((school) =>
-      out.push({
-        Name: name,
-        Height: r["Height"] || "",
-        Weight: r["WT"] || "",
-        Position: r["Position"] || "",
-        "Current School": r["Current School"] || "",
-        "School State": r["School State"] || "",
-        "Grad Year": r["Year"],
-        "Recruiting College": school,
-        Date: "",
-        Type: "offer",
-        Source: "",
-        Committed: commit,
-        "All Offer Schools": r["Offers"] || "",
-      })
-    );
-  });
-  return out;
-}
-
 // Merges a weekly activity feed (one row per player + school, each an
 // offer / commit / de-commit event, with a Grad Year column, so 2027 and
 // 2028 come in together) into the boards. Unlike a workbook upload this
@@ -593,18 +556,13 @@ export async function importActivityFeed(file, { dryRun = false, forceClassYear 
   const workbook = /\.numbers$/i.test(file.name)
     ? XLSX.read(await file.arrayBuffer(), { type: "array" })
     : XLSX.read(await file.text(), { type: "string", raw: true });
-  let feedRows = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { defval: "", raw: true }).map((r) => {
+  const feedRows = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { defval: "", raw: true }).map((r) => {
     const o = {};
     Object.keys(r).forEach((k) => (o[k.trim()] = String(r[k]).trim()));
     return o;
   });
-  // The athlete export (one row per recruit, with the list of every school that offered) is read as the same
-  // kind of feed: one offer per tracked school in each recruit's list.
-  if (feedRows.length && "First Name" in feedRows[0] && "Offers" in feedRows[0] && !("Recruiting College" in feedRows[0])) {
-    feedRows = athletesToFeedRows(feedRows);
-  }
   if (feedRows.length && !("Recruiting College" in feedRows[0] && "Grad Year" in feedRows[0] && "Name" in feedRows[0])) {
-    throw new Error("This doesn't look like an activity feed or an athlete export -- expected Name, Grad Year and Recruiting College columns, or First Name, Last Name, Year and Offers.");
+    throw new Error("This doesn't look like an activity feed -- expected Name, Grad Year and Recruiting College columns.");
   }
 
   const summary = { created: 0, updated: 0, commitmentsApplied: 0, otherOffersUpdated: 0, years: [], skippedColleges: [] };
