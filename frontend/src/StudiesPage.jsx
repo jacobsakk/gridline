@@ -3,7 +3,7 @@ import { ChevronRight, ClipboardPaste, Download, Loader2, Paperclip, Plus, Trash
 import { BackButton, HomeButton } from "./HomeButton.jsx";
 import { ThemeSwitcher, useTheme } from "./theme.jsx";
 import { useBack, initialSubRoute, setSubRoute } from "./route.js";
-import { STUDIES, useStudy } from "./studiesData.js";
+import { STUDIES, statValue, useStudy } from "./studiesData.js";
 import { confirmAction } from "./ConfirmDialog.jsx";
 import { control, LinkCell, StateCell, TextCell } from "./EditableCells.jsx";
 import TransferOutTracker from "./TransferOutTracker.jsx";
@@ -370,7 +370,7 @@ function StudyDetail({ studyId, canEdit, onBack }) {
     if (activeSeason != null) setSubRoute("studies", [studyId, group, activeSeason]);
   }, [studyId, group, activeSeason]);
   const sorted = useMemo(() => {
-    const get = (r) => (sort.key === "player" || sort.key === "team" || sort.key === "state" ? String(r[sort.key] ?? "") : sort.key === "score" ? r.score : r.totals[sort.key] ?? 0);
+    const get = (r) => (sort.key === "player" || sort.key === "team" || sort.key === "state" ? String(r[sort.key] ?? "") : sort.key === "score" ? r.score : statValue(r, activeGroup.stats.find((x) => x.key === sort.key) || { key: sort.key }));
     return [...rows].sort((a, b) => {
       const av = get(a);
       const bv = get(b);
@@ -384,7 +384,7 @@ function StudyDetail({ studyId, canEdit, onBack }) {
       { key: "player", label: "Player", get: (r) => r.player },
       { key: "team", label: "Team", get: (r) => r.team },
       { key: "state", label: "State", get: (r) => r.state || "" },
-      ...activeGroup.stats.map((s) => ({ key: s.key, label: s.label, get: (r) => r.totals[s.key] ?? 0 })),
+      ...activeGroup.stats.map((s) => ({ key: s.key, label: s.label, get: (r) => statValue(r, s) })),
       // No Score column for a manual group (OL) -- there's no formula that makes sense for it; sorting
       // by PFF Grade (or anything else) directly via the column header already works without one.
       ...(activeGroup.scoreFormula ? [{ key: "score", label: "Score", get: (r) => r.score }] : []),
@@ -519,12 +519,16 @@ function StudyDetail({ studyId, canEdit, onBack }) {
                   </td>
                   {activeGroup.stats.map((s) => (
                     <td key={s.key} style={td} className="tabular">
+                      {s.perGame ? (
+                        <span style={{ color: "var(--text-muted)" }}>{statValue(r, s).toFixed(2)}</span>
+                      ) : (
                       <StatCell
                         value={r.totals[s.key] ?? 0}
                         canEdit={canEdit}
                         accent={s.key === "pffGrade"}
                         onSave={(value) => (isManualRow ? study.updateManualRow(r.id, { [s.key]: value }) : study.saveStat(group, activeSeason, r.player, s.key, value))}
                       />
+                      )}
                     </td>
                   ))}
                   {activeGroup.scoreFormula && (
