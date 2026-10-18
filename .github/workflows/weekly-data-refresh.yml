@@ -23,9 +23,17 @@ name: Weekly stats refresh
 # Also regenerates the MAC study (frontend/src/data/studies/mac-best-by-position.json) right after,
 # since its current (2026) season reads straight from the real-stats.json this job just refreshed --
 # see studies/mac_best_by_position.py's module docstring.
+#
+# GitHub drops scheduled runs now and then (it did again on 2026-10-18: nothing fired at 10:45 UTC at all, while the
+# other workflows' crons ran as usual). So there are four slots -- Sunday and Monday, morning and afternoon -- and a
+# scheduled run that finds this week's snapshots already saved stops straight away, so only the first slot that
+# actually fires does the work. A manual run always refreshes.
 on:
   schedule:
     - cron: "45 10 * * 0"
+    - cron: "17 15 * * 0"
+    - cron: "45 10 * * 1"
+    - cron: "17 15 * * 1"
   workflow_dispatch: {}
 
 permissions:
@@ -39,25 +47,40 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Skip if this week's stats were already saved
+        id: fresh
+        if: github.event_name == 'schedule'
+        run: |
+          # A snapshot file is named <division>-YYYY-MM-DD.json; one from the last 5 days means this week's run happened.
+          latest=$(ls scraper/snapshots | sed -En 's/.*-([0-9]{4}-[0-9]{2}-[0-9]{2})\.json$/\1/p' | sort | tail -1)
+          age=$(( ( $(date -u +%s) - $(date -u -d "$latest" +%s) ) / 86400 ))
+          echo "newest snapshot: $latest ($age days old)"
+          if [ "$age" -lt 5 ]; then echo "skip=true" >> "$GITHUB_OUTPUT"; fi
+
       - uses: actions/setup-python@v5
+        if: steps.fresh.outputs.skip != 'true'
         with:
           python-version: "3.11"
 
       - name: Install scraper dependencies
+        if: steps.fresh.outputs.skip != 'true'
         working-directory: scraper
         run: |
           pip install -r requirements.txt
           playwright install --with-deps chromium
 
       - name: Run the scraper (all divisions)
+        if: steps.fresh.outputs.skip != 'true'
         working-directory: scraper
         run: python3 build_data.py
 
       - name: Regenerate the MAC study (2026 reads the real-stats.json this run just wrote)
+        if: steps.fresh.outputs.skip != 'true'
         working-directory: scraper
         run: python3 studies/mac_best_by_position.py
 
       - name: Commit, push and redeploy
+        if: steps.fresh.outputs.skip != 'true'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
