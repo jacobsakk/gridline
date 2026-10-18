@@ -25,15 +25,19 @@ name: Weekly stats refresh
 # see studies/mac_best_by_position.py's module docstring.
 #
 # GitHub drops scheduled runs now and then (it did again on 2026-10-18: nothing fired at 10:45 UTC at all, while the
-# other workflows' crons ran as usual). So there are four slots -- Sunday and Monday, morning and afternoon -- and a
+# other workflows' crons ran as usual). So there are eight slots -- five on Sunday, three on Monday -- and a
 # scheduled run that finds this week's snapshots already saved stops straight away, so only the first slot that
 # actually fires does the work. A manual run always refreshes.
 on:
   schedule:
     - cron: "45 10 * * 0"
+    - cron: "37 12 * * 0"
     - cron: "17 15 * * 0"
+    - cron: "7 18 * * 0"
+    - cron: "23 21 * * 0"
     - cron: "45 10 * * 1"
-    - cron: "17 15 * * 1"
+    - cron: "17 13 * * 1"
+    - cron: "41 16 * * 1"
   workflow_dispatch: {}
 
 permissions:
