@@ -1,6 +1,6 @@
 import { confirmAction } from "./ConfirmDialog.jsx";
 import { BackButton, HomeButton } from "./HomeButton.jsx";
-import { useState, useMemo, useEffect, useRef, useCallback, Fragment } from "react";
+import { useState, useMemo, useEffect, useRef, useCallback, useDeferredValue, Fragment } from "react";
 import { ChevronUp, ChevronDown, ChevronsUpDown, Crown, BadgeCheck, FlaskConical, Star, X, Plus, ExternalLink, Search, Download, Columns3, TrendingUp, GripVertical, CheckCircle2, AlertTriangle, Upload } from "lucide-react";
 import { collection, doc, addDoc, updateDoc, onSnapshot, query, orderBy } from "firebase/firestore";
 import { db } from "./firebase";
@@ -13,6 +13,7 @@ import { loadUploads } from "./statsUpload.js";
 import { canonicalSchool } from "./schoolNames.js";
 
 const DIVISIONS = ["NAIA", "JUCO", "D3", "D2", "FCS", "FBS"];
+const ROW_PAGE = 120; // rows drawn at first, and added each time the table is scrolled to its end
 
 // Same canonical set every scraper normalizes to (see POSITION_MAP in
 // scraper/ncaa_api.py) -- the watch list groups by these.
@@ -1489,9 +1490,12 @@ function GridlineMain({ onBack: toDashboard, initialSearch, onUploadStats }) {
   const [homeState, setHomeState] = useState("All");
   const [search, setSearch] = useState(initialSearch || (DIVISIONS.includes(linked[0]) ? linked[1] || "" : ""));
   // the division and search live in the address, so coming back to this screen lands on the same list
+  // Typing stays instant: the table filters on a deferred copy of the box, which React updates in the background
+  // and drops if another key arrives first. The address follows the same copy.
+  const deferredSearch = useDeferredValue(search);
   useEffect(() => {
-    setSubRoute("tracker", [division, ...(search.trim() ? [search.trim()] : [])]);
-  }, [division, search]);
+    setSubRoute("tracker", [division, ...(deferredSearch.trim() ? [deferredSearch.trim()] : [])]);
+  }, [division, deferredSearch]);
   const [sortKey, setSortKey] = useState("yards");
   const [sortDir, setSortDir] = useState("desc");
   const [watchlistOpen, setWatchlistOpen] = useState(false);
@@ -1512,7 +1516,7 @@ function GridlineMain({ onBack: toDashboard, initialSearch, onUploadStats }) {
     if (position !== "All") filtered = filtered.filter((r) => r.position === position);
     if (conference !== "All") filtered = filtered.filter((r) => r.conference === conference);
     if (homeState !== "All") filtered = filtered.filter((r) => r.homeState === homeState);
-    const q = search.trim().toLowerCase();
+    const q = deferredSearch.trim().toLowerCase();
     if (q) filtered = filtered.filter((r) => r.player.toLowerCase().includes(q) || (r.team.toLowerCase().includes(q) || canonicalSchool(r.team).toLowerCase().includes(q)));
 
     // Sorting always ranks by the season-total number for whatever column is clicked, even when a
@@ -1539,7 +1543,23 @@ function GridlineMain({ onBack: toDashboard, initialSearch, onUploadStats }) {
       return sortDir === "desc" ? bv - av : av - bv;
     });
     return filtered;
-  }, [division, category, week, position, conference, homeState, search, sortKey, sortDir]);
+  }, [division, category, week, position, conference, homeState, deferredSearch, sortKey, sortDir]);
+
+  // A division can list thousands of players (tackling alone is over 4,000), and drawing every row is what made
+  // clicks and typing lag. Only the first screens of rows are drawn; more are added as the table is scrolled
+  // toward the bottom. The count starts over whenever the list itself changes (a filter, a sort, a search).
+  const [shownState, setShownState] = useState({ rows: null, n: ROW_PAGE });
+  const shown = shownState.rows === rows ? shownState.n : ROW_PAGE;
+  const moreRef = useRef(null);
+  useEffect(() => {
+    const el = moreRef.current;
+    if (!el || shown >= rows.length) return undefined;
+    const watcher = new IntersectionObserver((entries) => {
+      if (entries.some((e) => e.isIntersecting)) setShownState({ rows, n: shown + ROW_PAGE });
+    }, { rootMargin: "800px" });
+    watcher.observe(el);
+    return () => watcher.disconnect();
+  }, [rows, shown]);
 
   // A search shouldn't be scoped to whatever tab happens to be open -- if
   // there's no match in the current division/category, jump to wherever a
@@ -2000,7 +2020,7 @@ function GridlineMain({ onBack: toDashboard, initialSearch, onUploadStats }) {
               </tr>
             </thead>
             <tbody>
-              {rows.map((r, i) => {
+              {rows.slice(0, shown).map((r, i) => {
                 const isLeader = i === 0 && sortDir === "desc";
                 return (
                   <tr
@@ -2073,6 +2093,15 @@ function GridlineMain({ onBack: toDashboard, initialSearch, onUploadStats }) {
                   </tr>
                 );
               })}
+              {shown < rows.length && (
+                <tr ref={moreRef}>
+                  <td colSpan={7 + cat.columns.length} style={{ ...tdStyle, textAlign: "center", color: "var(--text-faint)", padding: 14 }}>
+                    <button onClick={() => setShownState({ rows, n: rows.length })} style={{ background: "none", border: "none", color: "var(--accent)", cursor: "pointer", fontSize: 13, fontWeight: 600 }}>
+                      Showing {shown} of {rows.length} · show all
+                    </button>
+                  </td>
+                </tr>
+              )}
               {rows.length === 0 && (
                 <tr>
                   <td colSpan={7 + cat.columns.length} style={{ ...tdStyle, textAlign: "center", color: "var(--text-faint)", padding: 32 }}>
