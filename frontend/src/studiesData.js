@@ -36,8 +36,8 @@ export const STUDIES = [
       // positions, so every one of its rows is hand-added. It also has no scoreFormula/Score column --
       // there's no formula that makes sense for it -- so it sorts by PFF Grade instead.
       { key: "OL", label: "Offensive Line", manual: true, stats: [{ key: "games", label: "G" }, { key: "snaps", label: "Snaps" }, { key: "pffGrade", label: "PFF Grade" }] },
-      { key: "DL", label: "Defensive Line", stats: [{ key: "games", label: "G" }, { key: "total", label: "Tackles" }, { key: "tfl", label: "TFL" }, { key: "sacks", label: "Sacks" }, { key: "tflPerGame", label: "TFL/G", perGame: "tfl" }, { key: "sacksPerGame", label: "Sacks/G", perGame: "sacks" }, { key: "pffGrade", label: "PFF Grade" }], scoreFormula: [{ key: "total", label: "tackle", coef: 1 }, { key: "tfl", label: "TFL", coef: 2 }, { key: "sacks", label: "sack", coef: 6 }] },
-      { key: "LB", label: "Linebacker", stats: [{ key: "games", label: "G" }, { key: "total", label: "Tackles" }, { key: "tfl", label: "TFL" }, { key: "sacks", label: "Sacks" }, { key: "pbu", label: "PBU" }, { key: "int", label: "INT" }, { key: "pffGrade", label: "PFF Grade" }], scoreFormula: [{ key: "total", label: "tackle", coef: 1 }, { key: "tfl", label: "TFL", coef: 2 }, { key: "sacks", label: "sack", coef: 6 }, { key: "pbu", label: "PBU", coef: 4 }, { key: "int", label: "INT", coef: 8 }] },
+      { key: "DL", label: "Defensive Line", stats: [{ key: "games", label: "G" }, { key: "total", label: "Tackles" }, { key: "tfl", label: "TFL" }, { key: "sacks", label: "Sacks" }, { key: "tflPerGame", label: "TFL/G", perGame: "tfl" }, { key: "sacksPerGame", label: "Sacks/G", perGame: "sacks" }, { key: "pressures", label: "Pressures" }, { key: "ff", label: "FF" }, { key: "pffGrade", label: "PFF Grade" }], scoreFormula: [{ key: "total", label: "tackle", coef: 1 }, { key: "tfl", label: "TFL", coef: 2 }, { key: "sacks", label: "sack", coef: 6 }] },
+      { key: "LB", label: "Linebacker", stats: [{ key: "games", label: "G" }, { key: "total", label: "Tackles" }, { key: "tfl", label: "TFL" }, { key: "sacks", label: "Sacks" }, { key: "pbu", label: "PBU" }, { key: "int", label: "INT" }, { key: "pressures", label: "Pressures" }, { key: "ff", label: "FF" }, { key: "pffGrade", label: "PFF Grade" }], scoreFormula: [{ key: "total", label: "tackle", coef: 1 }, { key: "tfl", label: "TFL", coef: 2 }, { key: "sacks", label: "sack", coef: 6 }, { key: "pbu", label: "PBU", coef: 4 }, { key: "int", label: "INT", coef: 8 }] },
       { key: "CB", label: "Cornerback", stats: [{ key: "games", label: "G" }, { key: "total", label: "Tackles" }, { key: "pbu", label: "PBU" }, { key: "int", label: "INT" }, { key: "pffGrade", label: "PFF Grade" }], scoreFormula: [{ key: "total", label: "tackle", coef: 1 }, { key: "int", label: "INT", coef: 8 }, { key: "pbu", label: "PBU", coef: 4 }] },
       { key: "SAF", label: "Safety", stats: [{ key: "games", label: "G" }, { key: "total", label: "Tackles" }, { key: "tfl", label: "TFL" }, { key: "pbu", label: "PBU" }, { key: "int", label: "INT" }, { key: "pffGrade", label: "PFF Grade" }], scoreFormula: [{ key: "total", label: "tackle", coef: 1 }, { key: "int", label: "INT", coef: 6 }, { key: "pbu", label: "PBU", coef: 3 }, { key: "tfl", label: "TFL", coef: 1.5 }] },
     ],
@@ -93,6 +93,9 @@ export function parsePffTable(text) {
   const stateCol = col("STATE", "HOME STATE");
   const hudlCol = col("HUDL", "HUDL LINK");
   const gamesCol = col("G", "GP", "GAMES", "GAMES PLAYED");
+  // Defensive tables can carry total pressures and forced fumbles; both are optional (null = not in this paste).
+  const pressuresCol = col("PRESSURES", "TOTAL PRESSURES", "TTL PRESSURES", "PRESS", "TTL PRESS", "TOTAL PRESS");
+  const ffCol = col("FF", "FORCED FUMBLES", "FUM FORCED", "FORCED FUM");
   if (nameCol < 0 || teamCol < 0) {
     throw Object.assign(new Error("Couldn't find NAME and TEAM columns in that header row."), { code: "bad-request" });
   }
@@ -108,6 +111,8 @@ export function parsePffTable(text) {
       state: stateCol >= 0 ? (cells[stateCol] || "").toUpperCase() : "",
       hudlLink: hudlCol >= 0 ? cells[hudlCol] || "" : "",
       games: gamesCol >= 0 ? Number(cells[gamesCol]) || 0 : null,
+      pressures: pressuresCol >= 0 ? Number(cells[pressuresCol]) || 0 : null,
+      ff: ffCol >= 0 ? Number(cells[ffCol]) || 0 : null,
     }));
 }
 
@@ -329,12 +334,14 @@ export function useStudy(studyId) {
           if (!manual.state && row.state) fields.state = row.state;
           if (!manual.hudlLink && row.hudlLink) fields.hudlLink = row.hudlLink;
           if (!manual.games && row.games != null) fields.games = row.games;
+          if (row.pressures != null) fields.pressures = row.pressures;
+          if (row.ff != null) fields.ff = row.ff;
           batch.set(doc(db, "studyManualRows", manual.id), fields, { merge: true });
           updated += 1;
         } else if (computed) {
           const statsKey = statsOverrideKey(group, season, computed.player);
           const existingTotals = overrides[statsKey]?.totals || {};
-          batch.set(doc(db, "studyOverrides", statsKey), { totals: { ...existingTotals, pffGrade: row.pffGrade } }, { merge: true });
+          batch.set(doc(db, "studyOverrides", statsKey), { totals: { ...existingTotals, pffGrade: row.pffGrade, ...(row.pressures != null ? { pressures: row.pressures } : {}), ...(row.ff != null ? { ff: row.ff } : {}) } }, { merge: true });
           const fieldFix = {};
           if (!computed.state && row.state) fieldFix.state = row.state;
           if (!computed.hudlLink && row.hudlLink) fieldFix.hudlLink = row.hudlLink;
