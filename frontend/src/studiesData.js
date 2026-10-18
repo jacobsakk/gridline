@@ -6,16 +6,6 @@ import { db } from "./firebase";
 // a static JSON file plus, optionally, a few fields an admin can edit afterward (a Hudl link the study
 // couldn't find on its own, say) without needing a code change. New studies just add an entry here and a
 // generator script under scraper/studies/.
-
-// A stat marked perGame is worked out from its total and the games played (never typed in).
-export function statValue(row, stat) {
-  if (stat.perGame) {
-    const g = Number(row.totals?.games) || 0;
-    return g ? Math.round(((Number(row.totals?.[stat.perGame]) || 0) / g) * 100) / 100 : 0;
-  }
-  return row.totals?.[stat.key] ?? 0;
-}
-
 export const STUDIES = [
   {
     id: "mac-best-by-position",
@@ -36,7 +26,7 @@ export const STUDIES = [
       // positions, so every one of its rows is hand-added. It also has no scoreFormula/Score column --
       // there's no formula that makes sense for it -- so it sorts by PFF Grade instead.
       { key: "OL", label: "Offensive Line", manual: true, stats: [{ key: "games", label: "G" }, { key: "snaps", label: "Snaps" }, { key: "pffGrade", label: "PFF Grade" }] },
-      { key: "DL", label: "Defensive Line", stats: [{ key: "games", label: "G" }, { key: "total", label: "Tackles" }, { key: "tfl", label: "TFL" }, { key: "sacks", label: "Sacks" }, { key: "tflPerGame", label: "TFL/G", perGame: "tfl" }, { key: "sacksPerGame", label: "Sacks/G", perGame: "sacks" }, { key: "pffGrade", label: "PFF Grade" }], scoreFormula: [{ key: "total", label: "tackle", coef: 1 }, { key: "tfl", label: "TFL", coef: 2 }, { key: "sacks", label: "sack", coef: 6 }] },
+      { key: "DL", label: "Defensive Line", stats: [{ key: "games", label: "G" }, { key: "total", label: "Tackles" }, { key: "tfl", label: "TFL" }, { key: "sacks", label: "Sacks" }, { key: "pbu", label: "PBU" }, { key: "int", label: "INT" }, { key: "pffGrade", label: "PFF Grade" }], scoreFormula: [{ key: "total", label: "tackle", coef: 1 }, { key: "tfl", label: "TFL", coef: 2 }, { key: "sacks", label: "sack", coef: 6 }] },
       { key: "LB", label: "Linebacker", stats: [{ key: "games", label: "G" }, { key: "total", label: "Tackles" }, { key: "tfl", label: "TFL" }, { key: "sacks", label: "Sacks" }, { key: "pbu", label: "PBU" }, { key: "int", label: "INT" }, { key: "pffGrade", label: "PFF Grade" }], scoreFormula: [{ key: "total", label: "tackle", coef: 1 }, { key: "tfl", label: "TFL", coef: 2 }, { key: "sacks", label: "sack", coef: 6 }, { key: "pbu", label: "PBU", coef: 4 }, { key: "int", label: "INT", coef: 8 }] },
       { key: "CB", label: "Cornerback", stats: [{ key: "games", label: "G" }, { key: "total", label: "Tackles" }, { key: "pbu", label: "PBU" }, { key: "int", label: "INT" }, { key: "pffGrade", label: "PFF Grade" }], scoreFormula: [{ key: "total", label: "tackle", coef: 1 }, { key: "int", label: "INT", coef: 8 }, { key: "pbu", label: "PBU", coef: 4 }] },
       { key: "SAF", label: "Safety", stats: [{ key: "games", label: "G" }, { key: "total", label: "Tackles" }, { key: "tfl", label: "TFL" }, { key: "pbu", label: "PBU" }, { key: "int", label: "INT" }, { key: "pffGrade", label: "PFF Grade" }], scoreFormula: [{ key: "total", label: "tackle", coef: 1 }, { key: "int", label: "INT", coef: 6 }, { key: "pbu", label: "PBU", coef: 3 }, { key: "tfl", label: "TFL", coef: 1.5 }] },
@@ -270,7 +260,7 @@ export function useStudy(studyId) {
       const groupMeta = meta.groups.find((g) => g.key === group);
       const id = `${studyId}__${group}__${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`;
       const statDefaults = {};
-      (groupMeta?.stats || []).filter((s) => !s.perGame).forEach((s) => {
+      (groupMeta?.stats || []).forEach((s) => {
         statDefaults[s.key] = 0;
       });
       await setDoc(doc(db, "studyManualRows", id), {

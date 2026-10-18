@@ -80,7 +80,7 @@ GROUPS = {
     "RB": {"category": "rushing", "position": "RB", "score": lambda s: s["yards"] + 10 * s["td"], "stats": ["games", "att", "yards", "td"]},
     "WR": {"category": "receiving", "position": "WR", "score": lambda s: s["yards"] + 10 * s["td"], "stats": ["games", "rec", "yards", "td"]},
     "TE": {"category": "receiving", "position": "TE", "score": lambda s: s["yards"] + 10 * s["td"], "stats": ["games", "rec", "yards", "td"]},
-    "DL": {"category": "tackling", "position": "DL", "score": lambda s: s["total"] + 2 * s["tfl"] + 6 * s["sacks"], "stats": ["games", "total", "tfl", "sacks"]},
+    "DL": {"category": "tackling", "position": "DL", "score": lambda s: s["total"] + 2 * s["tfl"] + 6 * s["sacks"], "stats": ["games", "total", "tfl", "sacks", "pbu", "int"]},
     "LB": {"category": "tackling", "position": "LB", "score": lambda s: s["total"] + 2 * s["tfl"] + 6 * s["sacks"] + 4 * s["pbu"] + 8 * s["int"], "stats": ["games", "total", "tfl", "sacks", "pbu", "int"]},
     "CB": {"category": "tackling", "position": "CB", "score": lambda s: s["total"] + 8 * s["int"] + 4 * s["pbu"], "stats": ["games", "total", "pbu", "int"]},
     "SAF": {"category": "tackling", "position": "SAF", "score": lambda s: s["total"] + 6 * s["int"] + 3 * s["pbu"] + 1.5 * s["tfl"], "stats": ["games", "total", "tfl", "pbu", "int"]},
