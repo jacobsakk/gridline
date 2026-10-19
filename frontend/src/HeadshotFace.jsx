@@ -4,8 +4,9 @@ import { initialsOf, toneFromHex } from "./studyPhotos.js";
 
 // A round ESPN headshot ringed in the school's colour (a lighter shade of it on dark pages); initials in the same
 // ring when there's no ESPN picture for the player, or it doesn't load.
-export default function HeadshotFace({ espnId, name, color, size = 44 }) {
-  const url = espnHeadshotUrl(espnId);
+// `photo` is a picture added by hand (an address or an uploaded image); it wins over ESPN's.
+export default function HeadshotFace({ espnId, photo = "", name, color, size = 44 }) {
+  const url = photo || espnHeadshotUrl(espnId);
   const [failed, setFailed] = useState(false);
   useEffect(() => setFailed(false), [url]);
   return (

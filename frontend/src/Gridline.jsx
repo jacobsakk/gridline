@@ -13,6 +13,7 @@ import { loadUploads } from "./statsUpload.js";
 import { canonicalSchool } from "./schoolNames.js";
 import HeadshotFace from "./HeadshotFace.jsx";
 import { colorForTeam, espnIdFromRow, espnProfileUrl, espnSearchUrl } from "./espnPlayer.js";
+import { photoFromFile } from "./hsData.js";
 
 const WATCH_PAGE = "watch-list";
 let watchOpenedFromTracker = false; // true once the page was opened from the tracker, so Back can pop the history entry
@@ -495,6 +496,8 @@ function WatchListRow({
   const [height, setHeight] = useState(p.height || "");
   const [weight, setWeight] = useState(p.weight || "");
   const notesRef = useRef(null);
+  // The ESPN picture, for a player the Pre-Portal data carries from ESPN (FBS / FCS); anyone else uses a photo added by hand.
+  const espnId = useMemo(() => espnIdFromRow(DATA.find((r) => r.player === p.player && r.team === p.team)), [p.player, p.team]);
 
   // Grows the textarea to fit its content (capped by CSS max-height, which
   // switches to a scrollbar past that) instead of clipping a long note --
@@ -540,7 +543,8 @@ function WatchListRow({
         />
       </td>
       <td style={{ ...tdStyle, fontWeight: 600, color: "var(--text-primary)" }}>
-        <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+        <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+          <HeadshotFace espnId={espnId} photo={p.photo} name={p.player} color={colorForTeam(p.team)} size={40} />
           <span className="player-name" onClick={() => onSelect(p)} title="View full stats">
             {p.player}
           </span>
@@ -1074,6 +1078,10 @@ export function PlayerDetailModal({ sel, onClose, watchlist, portalStatus, espn 
   );
   const first = rows[0];
   const espnId = useMemo(() => rows.map(espnIdFromRow).find(Boolean) || "", [rows]);
+  const [photoError, setPhotoError] = useState("");
+  const [linkingPhoto, setLinkingPhoto] = useState(false);
+  const [photoLink, setPhotoLink] = useState("");
+  const photoInput = useRef(null);
   const watched = watchlist.players.find((p) => p.player === sel.player && p.team === sel.team);
 
   // Local echo of the free-text fields, same as WatchListRow -- commit
@@ -1150,7 +1158,7 @@ export function PlayerDetailModal({ sel, onClose, watchlist, portalStatus, espn 
           }}
         >
           <div style={{ display: "flex", alignItems: "center", gap: 14, minWidth: 0 }}>
-          {espn && <HeadshotFace espnId={espnId} name={sel.player} color={colorForTeam(sel.team)} size={72} />}
+          {espn && <HeadshotFace espnId={espnId} photo={watched?.photo} name={sel.player} color={colorForTeam(sel.team)} size={72} />}
           <div>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <h2 className="oswald" style={{ fontSize: 20, margin: 0, fontWeight: 700 }}>
@@ -1174,6 +1182,52 @@ export function PlayerDetailModal({ sel, onClose, watchlist, portalStatus, espn 
               {canonicalSchool(sel.team)}
               {first ? ` · ${first.conference} · ${first.position} · ${DIVISION_LABEL[sel.division] || sel.division}${first.homeState ? ` · Home: ${first.homeState}` : ""}` : ""}
             </div>
+            {espn && watched && (watched.photo || !espnId) && (
+              <div style={{ fontSize: 12.5, marginTop: 4, display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+                <button onClick={() => photoInput.current?.click()} style={{ background: "none", border: "none", padding: 0, color: "var(--accent)", cursor: "pointer", fontSize: 12.5, fontFamily: "inherit" }}>
+                  {watched.photo ? "Replace photo" : "Add photo"}
+                </button>
+                <button onClick={() => setLinkingPhoto((v) => !v)} style={{ background: "none", border: "none", padding: 0, color: "var(--accent)", cursor: "pointer", fontSize: 12.5, fontFamily: "inherit" }}>Paste image link</button>
+                {watched.photo && (
+                  <button onClick={() => watchlist.updateField(watched.id, "photo", "")} style={{ background: "none", border: "none", padding: 0, color: "var(--text-faint)", cursor: "pointer", fontSize: 12.5, fontFamily: "inherit" }}>Remove</button>
+                )}
+                <input
+                  ref={photoInput}
+                  type="file"
+                  accept="image/*"
+                  style={{ display: "none" }}
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    e.target.value = "";
+                    if (!file) return;
+                    setPhotoError("");
+                    try {
+                      await watchlist.updateField(watched.id, "photo", await photoFromFile(file));
+                    } catch (err) {
+                      setPhotoError(err?.message || "Couldn't add that photo.");
+                    }
+                  }}
+                />
+                {photoError && <span style={{ color: "var(--danger, #c0392b)" }}>{photoError}</span>}
+              </div>
+            )}
+            {espn && watched && linkingPhoto && (
+              <form
+                onSubmit={async (e) => {
+                  e.preventDefault();
+                  const url = photoLink.trim();
+                  if (!/^https?:\/\//i.test(url)) return setPhotoError("Paste a full image address (it starts with https://).");
+                  setPhotoError("");
+                  await watchlist.updateField(watched.id, "photo", url);
+                  setPhotoLink("");
+                  setLinkingPhoto(false);
+                }}
+                style={{ display: "flex", gap: 6, marginTop: 6 }}
+              >
+                <input value={photoLink} onChange={(e) => setPhotoLink(e.target.value)} placeholder="https://… image address" aria-label="Image link" style={{ ...fieldInputStyle, width: 240 }} />
+                <button type="submit" style={{ background: "var(--accent-bg)", border: "1px solid var(--accent)", color: "var(--accent)", borderRadius: 4, padding: "5px 10px", fontSize: 12.5, fontWeight: 600, cursor: "pointer" }}>Save</button>
+              </form>
+            )}
             {espn && (
               <div style={{ fontSize: 12.5, marginTop: 4 }}>
                 <a href={espnId ? espnProfileUrl(espnId) : espnSearchUrl(sel.player)} target="_blank" rel="noreferrer" style={{ color: "var(--accent)" }}>
@@ -1530,6 +1584,7 @@ function GridlineMain({ onBack: toDashboard, initialSearch, onUploadStats }) {
     } else navigate(["tracker", division]);
   };
   const [selectedPlayer, setSelectedPlayer] = useState(null);
+  const [espnModal, setEspnModal] = useState(false); // opened from the watch list: shows the headshot, with a way to add one by hand
   const [theme, setTheme] = useTheme();
   const watchlist = useWatchlist();
   const portalStatus = usePortalStatus();
@@ -1745,12 +1800,13 @@ function GridlineMain({ onBack: toDashboard, initialSearch, onUploadStats }) {
           onHome={toDashboard}
           onSelectPlayer={(p) => {
             watchlist.markSeen(p.id, p.player, p.team);
+            setEspnModal(true);
             setSelectedPlayer({ player: p.player, team: p.team, division: p.division, position: p.position });
           }}
         />
       )}
       {selectedPlayer && (
-        <PlayerDetailModal sel={selectedPlayer} onClose={() => setSelectedPlayer(null)} watchlist={watchlist} portalStatus={portalStatus} />
+        <PlayerDetailModal espn={espnModal} sel={selectedPlayer} onClose={() => { setSelectedPlayer(null); setEspnModal(false); }} watchlist={watchlist} portalStatus={portalStatus} />
       )}
 
       {/* Division tabs -- frozen along with the header above; everything
