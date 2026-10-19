@@ -5,6 +5,7 @@ import { confirmAction } from "./ConfirmDialog.jsx";
 import { parseTransferSheet, useTransferOutTracker } from "./transferOutData.js";
 import { findTransferStats, formatStatLine } from "./transferStats.js";
 import { useRealStatsReady } from "./statsData.js";
+import { ShareLinkButton } from "./StudyShare.jsx";
 
 const ghostBtn = { ...control, cursor: "pointer", fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 7 };
 
@@ -140,7 +141,51 @@ function StatsCell({ matches, statsReady }) {
   );
 }
 
-export default function TransferOutTracker({ canEdit, meta }) {
+// `snapshot` is a shared copy ({ players }) opened from a share link: a read-only table of what each row showed
+// when it was saved -- no live data, no links back into the signed-in site.
+export default function TransferOutTracker({ canEdit, meta, snapshot = null, by = "" }) {
+  return snapshot ? <SharedTransfers meta={meta} snapshot={snapshot} /> : <LiveTransfers canEdit={canEdit} meta={meta} by={by} />;
+}
+
+function SharedTransfers({ meta, snapshot }) {
+  const th = { textAlign: "left", padding: "9px 10px", fontSize: 11, color: "var(--text-faint)", textTransform: "uppercase", letterSpacing: "0.03em", whiteSpace: "nowrap", position: "sticky", top: 0, background: "var(--bg-surface)" };
+  const td = { padding: "7px 10px", fontSize: 13.5, color: "var(--text-secondary)", borderTop: "1px solid var(--border-subtle)", verticalAlign: "top" };
+  const players = snapshot.players || [];
+  return (
+    <div style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column", padding: "16px var(--gutter) var(--gutter)", gap: 12 }}>
+      <div>
+        <h1 className="oswald" style={{ fontSize: 22, fontWeight: 700, margin: 0 }}>{meta.title}</h1>
+        <p style={{ margin: "4px 0 0", fontSize: 13, color: "var(--text-muted)", maxWidth: 720, lineHeight: 1.5 }}>{meta.description}</p>
+      </div>
+      <div style={{ flex: 1, minHeight: 0, overflow: "auto", border: "1px solid var(--border)", borderRadius: 8 }}>
+        <table style={{ width: "100%", borderCollapse: "collapse" }}>
+          <thead>
+            <tr>{["Name", "Position", "College", "Total Stats", "PFF Snaps", "PFF Link"].map((h) => <th key={h} style={th}>{h}</th>)}</tr>
+          </thead>
+          <tbody>
+            {players.length === 0 && (
+              <tr><td colSpan={6} style={{ ...td, textAlign: "center", color: "var(--text-faint)", padding: 32 }}>No one added yet.</td></tr>
+            )}
+            {players.map((p, i) => (
+              <tr key={p.id} style={{ background: i % 2 === 0 ? "var(--bg-panel)" : "var(--bg-page)" }}>
+                <td style={{ ...td, fontWeight: 700, color: "var(--text-primary)" }}>{p.name || "—"}</td>
+                <td style={td}>{p.position || "—"}</td>
+                <td style={td}>{p.college || "—"}</td>
+                <td style={{ ...td, minWidth: 220 }}>
+                  {p.statLines?.length ? <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>{p.statLines.map((l) => <span key={l}>{l}</span>)}</div> : <span style={{ color: "var(--text-faint)" }}>Not found this season</span>}
+                </td>
+                <td style={td}>{p.pffSnaps || "—"}</td>
+                <td style={td}>{p.pffLink ? <a href={p.pffLink} target="_blank" rel="noreferrer" style={{ color: "var(--accent)" }}>PFF</a> : "—"}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+function LiveTransfers({ canEdit, meta, by }) {
   const tracker = useTransferOutTracker();
   const statsReady = useRealStatsReady();
   const fileInput = useRef(null);
@@ -154,6 +199,16 @@ export default function TransferOutTracker({ canEdit, meta }) {
     tracker.players.forEach((p) => map.set(p.id, findTransferStats(p.name, p.college, p.position)));
     return map;
   }, [tracker.players, statsReady]);
+  // What a share link holds: each row as it reads here, with its stat line already worked out.
+  const shareData = useMemo(() => {
+    if (!tracker.ready || !statsReady) return null;
+    return {
+      players: tracker.players.map((p) => {
+        const matches = matchesByPlayer.get(p.id) || [];
+        return { id: p.id, name: matches[0]?.row.player || titleCase(p.name), position: p.position || "", college: p.college || "", statLines: matches.map(formatStatLine), pffSnaps: p.pffSnaps || "", pffLink: p.pffLink || "" };
+      }),
+    };
+  }, [tracker.ready, tracker.players, matchesByPlayer, statsReady]);
   const th = { textAlign: "left", padding: "9px 10px", fontSize: 11, color: "var(--text-faint)", textTransform: "uppercase", letterSpacing: "0.03em", whiteSpace: "nowrap", position: "sticky", top: 0, background: "var(--bg-surface)", zIndex: 1 };
   const td = { padding: "7px 10px", fontSize: 13.5, color: "var(--text-secondary)", borderTop: "1px solid var(--border-subtle)", verticalAlign: "top" };
 
@@ -205,6 +260,7 @@ export default function TransferOutTracker({ canEdit, meta }) {
               <input ref={fileInput} type="file" accept=".xlsx,.xls" onChange={handleFile} style={{ display: "none" }} />
             </>
           )}
+          {canEdit && <ShareLinkButton studyId="transfer-out-tracker" title={meta.title} data={shareData} by={by} />}
           <button onClick={() => downloadCsv(tracker.players, matchesByPlayer, "transfer-out-tracker.csv")} style={ghostBtn}><Download size={14} /> Download</button>
         </div>
       </div>

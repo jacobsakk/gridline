@@ -171,6 +171,14 @@ service cloud.firestore {
       allow read, update, delete: if isAdmin();
     }
 
+    // Study share links: one saved copy of one study per document, whose id is the random code in the link.
+    // Anyone holding the code can read that single document (a get) with no sign-in; nobody but invited coaches
+    // can list the codes or make, refresh or delete a copy -- so the codes can't be discovered, only passed on.
+    match /studyShares/{token} {
+      allow get: if true;
+      allow list, create, update, delete: if invited();
+    }
+
     match /{document=**} {
       allow read, write: if false;
     }

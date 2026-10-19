@@ -104,7 +104,7 @@ export function parsePffTable(text) {
 // Loads one study's bundled data, merged with any admin-edited fields (a Hudl link, say) stored in
 // Firestore under studyOverrides -- keyed by studyId, so those edits survive the JSON being regenerated,
 // as long as a player's name and position group stay the same.
-export function useStudy(studyId) {
+export function useStudy(studyId, snapshot = null) {
   const meta = STUDIES.find((s) => s.id === studyId);
   const [data, setData] = useState(null);
   const [overrides, setOverrides] = useState({});
@@ -112,9 +112,10 @@ export function useStudy(studyId) {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
+    if (snapshot) return undefined; // a shared copy carries its own rows -- nothing to load or listen to
     let live = true;
     setData(null);
-    if (!meta) return;
+    if (!meta) return undefined;
     meta.file().then((m) => live && setData(m.default));
     return () => {
       live = false;
@@ -122,6 +123,7 @@ export function useStudy(studyId) {
   }, [studyId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
+    if (snapshot) return undefined;
     const off = onSnapshot(
       collection(db, "studyOverrides"),
       (snap) => {
@@ -142,6 +144,7 @@ export function useStudy(studyId) {
   // scraped. Same studyId-prefixed-id filtering convention as studyOverrides, just a different collection
   // so an admin can add/remove whole rows here without that meaning anything for the correction-only one.
   useEffect(() => {
+    if (snapshot) return undefined;
     const off = onSnapshot(
       collection(db, "studyManualRows"),
       (snap) => {
@@ -236,10 +239,10 @@ export function useStudy(studyId) {
 
   return {
     meta,
-    ready: ready && !!data,
+    ready: snapshot ? true : ready && !!data,
     generatedAt: data?.generatedAt || "",
-    seasons: data?.seasons || [],
-    groups,
+    seasons: snapshot ? snapshot.seasons : data?.seasons || [],
+    groups: snapshot ? snapshot.groups : groups,
     async saveField(group, player, fields) {
       await setDoc(doc(db, "studyOverrides", overrideKey(group, player)), fields, { merge: true });
     },

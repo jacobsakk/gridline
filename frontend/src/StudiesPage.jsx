@@ -2,11 +2,12 @@ import { useEffect, useMemo, useState } from "react";
 import { ChevronRight, ClipboardPaste, Download, Loader2, Paperclip, Plus, Trash2, X } from "lucide-react";
 import { BackButton, HomeButton } from "./HomeButton.jsx";
 import { ThemeSwitcher, useTheme } from "./theme.jsx";
-import { useBack, initialSubRoute, setSubRoute } from "./route.js";
+import { useBack, initialSubRoute, parseHash, setSubRoute } from "./route.js";
 import { STUDIES, useStudy } from "./studiesData.js";
 import { confirmAction } from "./ConfirmDialog.jsx";
 import { control, LinkCell, StateCell, TextCell } from "./EditableCells.jsx";
 import TransferOutTracker from "./TransferOutTracker.jsx";
+import { ShareLinkButton } from "./StudyShare.jsx";
 import { submitStudyRequest, useStudyRequests } from "./studyRequests.js";
 import { headshotUrls, initialsOf, teamTone, useStudyPhotos } from "./studyPhotos.js";
 
@@ -373,10 +374,12 @@ function PasteTableModal({ allowNewRows, onClose, onSubmit }) {
   );
 }
 
-function StudyDetail({ studyId, canEdit, onBack }) {
-  const study = useStudy(studyId);
+// `snapshot` is a shared copy ({ seasons, groups }) opened from a share link: the same page, read-only, with no
+// live data behind it, and its position in the address kept under #/shared/<code>/... instead of #/studies/....
+export function StudyDetail({ studyId, canEdit, onBack, snapshot = null, shareToken = "", by = "" }) {
+  const study = useStudy(studyId, snapshot);
   const photos = useStudyPhotos();
-  const [initial] = useState(initialSubRoute);
+  const [initial] = useState(() => (snapshot ? [studyId, ...parseHash().slice(2)] : initialSubRoute()));
   const [group, setGroup] = useState(() => study.meta.groups.some((g) => g.key === initial[1]) ? initial[1] : study.meta.groups[0].key);
   const [season, setSeason] = useState(() => (/^\d{4}$/.test(initial[2]) ? Number(initial[2]) : null));
   const [sort, setSort] = useState({ key: "score", dir: "desc" });
@@ -388,8 +391,12 @@ function StudyDetail({ studyId, canEdit, onBack }) {
   const activeSeason = seasons.includes(season) ? season : seasons[seasons.length - 1];
   const rows = study.groups[group]?.[String(activeSeason)] || [];
   useEffect(() => {
-    if (activeSeason != null) setSubRoute("studies", [studyId, group, activeSeason]);
-  }, [studyId, group, activeSeason]);
+    if (activeSeason == null) return;
+    if (snapshot) setSubRoute("shared", [shareToken, group, activeSeason]);
+    else setSubRoute("studies", [studyId, group, activeSeason]);
+  }, [studyId, group, activeSeason]); // eslint-disable-line react-hooks/exhaustive-deps
+  // What a share link holds for this study: the rows exactly as shown here (edits and hand-added rows included).
+  const shareData = useMemo(() => (study.ready && !snapshot ? { seasons: study.seasons, groups: study.groups } : null), [study.ready, study.seasons, study.groups, snapshot]);
   const sorted = useMemo(() => {
     const get = (r) => (sort.key === "player" || sort.key === "team" || sort.key === "state" ? String(r[sort.key] ?? "") : sort.key === "score" ? r.score : r.totals[sort.key] ?? 0);
     return [...rows].sort((a, b) => {
@@ -452,6 +459,7 @@ function StudyDetail({ studyId, canEdit, onBack }) {
           {canEdit && (
             <button onClick={() => setPasting(true)} style={ghostBtn}><ClipboardPaste size={14} /> Paste table</button>
           )}
+          {canEdit && !snapshot && <ShareLinkButton studyId={studyId} title={study.meta.title} data={shareData} by={by} />}
           <button onClick={() => downloadCsv(sorted, columns, `${study.meta.id}-${group}-${activeSeason}.csv`)} style={ghostBtn}><Download size={14} /> Download</button>
         </div>
       </div>
@@ -594,7 +602,7 @@ function StudyDetail({ studyId, canEdit, onBack }) {
   );
 }
 
-const ALL_STUDIES = [...STUDIES, ...CUSTOM_STUDIES];
+export const ALL_STUDIES = [...STUDIES, ...CUSTOM_STUDIES];
 
 export default function StudiesPage({ onBack: toDashboard, session }) {
   const [theme, setTheme] = useTheme();
@@ -634,9 +642,9 @@ export default function StudiesPage({ onBack: toDashboard, session }) {
       </div>
 
       {openMeta?.detail ? (
-        <openMeta.detail canEdit={canEdit} meta={openMeta} onBack={closeStudy} />
+        <openMeta.detail canEdit={canEdit} meta={openMeta} onBack={closeStudy} by={myEmail} />
       ) : openId ? (
-        <StudyDetail studyId={openId} canEdit={canEdit} onBack={closeStudy} />
+        <StudyDetail studyId={openId} canEdit={canEdit} onBack={closeStudy} by={myEmail} />
       ) : (
         <div style={{ flex: 1, minHeight: 0, overflow: "auto", padding: "24px var(--gutter) var(--gutter)" }}>
           <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 14, flexWrap: "wrap", marginBottom: 18 }}>

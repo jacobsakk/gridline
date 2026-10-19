@@ -13,11 +13,15 @@ import { ConfirmHost } from "./ConfirmDialog.jsx";
 import CardTransition from "./CardTransition.jsx";
 import LoginGate from "./LoginGate.jsx";
 import ErrorBoundary from "./ErrorBoundary.jsx";
+import SharedStudyPage from "./SharedStudyPage.jsx";
 
 // The dashboard is the main hub -- everything else (the tracker today,
 // more tools later per the plan) is a screen you navigate into and back
 // out of, rather than its own separately-hosted page.
 export default function App() {
+  // A study's share link (#/shared/<code>) opens without signing in, and shows only that study.
+  const route = useRoute();
+  if (route[0] === "shared") return <SharedStudyPage token={route[1]} />;
   return (
     <>
       <LoginGate>{(session) => <Screens session={session} />}</LoginGate>
