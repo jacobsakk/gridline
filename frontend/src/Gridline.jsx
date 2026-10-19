@@ -566,12 +566,12 @@ function WatchListRow({
       </td>
       <td style={{ ...tdStyle, color: "var(--text-muted)" }}>{canonicalSchool(p.team) || "—"}</td>
       <td style={{ ...tdStyle, color: "var(--text-muted)", fontSize: 12.5 }}>{p.division || "—"}</td>
-      <td style={tdStyle}>
+      <td style={{ ...tdStyle, minWidth: 84 }}>
         <select
           value={p.position || ""}
           onChange={(e) => onUpdate("position", e.target.value)}
           className="oswald"
-          style={{ ...cellInputStyle, cursor: "pointer", color: "var(--accent)", fontWeight: 600 }}
+          style={{ ...cellInputStyle, minWidth: 76, cursor: "pointer", color: "var(--accent)", fontWeight: 600 }}
         >
           <option value="">—</option>
           {WATCH_POSITIONS.map((pos) => (
@@ -1015,7 +1015,8 @@ function WatchListPanel({ watchlist, onClose, onHome, onSelectPlayer, portalStat
             </div>
           ) : (
             <div style={{ flex: 1, minHeight: 0, border: "1px solid var(--border)", borderRadius: 6, overflow: "auto" }}>
-              <table style={{ width: "100%", borderCollapse: "collapse" }}>
+              {/* A minimum width: on a narrower screen the table scrolls sideways instead of squeezing columns (Pos) until they can't be read. */}
+              <table style={{ width: "100%", minWidth: 1280, borderCollapse: "collapse" }}>
                 <thead>
                   <tr style={{ background: "var(--bg-surface)" }}>
                     {WATCHLIST_COLUMNS.map((label, i) => {
