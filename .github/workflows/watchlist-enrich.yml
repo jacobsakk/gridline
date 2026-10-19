@@ -22,9 +22,13 @@ name: Watch list bio / link lookup
 # by how many players actually need a lookup, not by how often this
 # runs, and stays well under the free 1,000-searches/month quota at
 # realistic watch-list sizes.
+#
+# PAUSED (2026-10-19): the watch list is filled in by hand now, so the 15-minute schedule is off. The job is
+# still here and can be started by hand from the Actions tab (workflow_dispatch) if automatic lookups are
+# ever wanted again -- put the `schedule:` block back to resume them.
 on:
-  schedule:
-    - cron: "*/15 * * * *"
+  # schedule:
+  #   - cron: "*/15 * * * *"
   workflow_dispatch: {}
 
 # Queues a new run instead of letting it overlap an in-flight one -- a

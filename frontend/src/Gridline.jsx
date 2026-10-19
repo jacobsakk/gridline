@@ -7,11 +7,13 @@ import { db } from "./firebase";
 import { REAL_STATS, loadRealStats } from "./statsData.js";
 import { LinkCell, StateCell } from "./EditableCells.jsx";
 import { ThemeSwitcher, useTheme } from "./theme.jsx";
-import { initialSubRoute, setSubRoute, useBack } from "./route.js";
+import { initialSubRoute, navigate, parseHash, setSubRoute, useBack, useRoute } from "./route.js";
 import StatsUploadModal from "./StatsUploadModal.jsx";
 import { loadUploads } from "./statsUpload.js";
 import { canonicalSchool } from "./schoolNames.js";
 
+const WATCH_PAGE = "watch-list";
+let watchOpenedFromTracker = false; // true once the page was opened from the tracker, so Back can pop the history entry
 const DIVISIONS = ["NAIA", "JUCO", "D3", "D2", "FCS", "FBS"];
 const ROW_PAGE = 120; // rows drawn at first, and added each time the table is scrolled to its end
 
@@ -702,7 +704,7 @@ function exportWatchListCsv(players) {
   URL.revokeObjectURL(url);
 }
 
-function WatchListPanel({ watchlist, onClose, onSelectPlayer, portalStatus }) {
+function WatchListPanel({ watchlist, onClose, onHome, onSelectPlayer, portalStatus }) {
   const [name, setName] = useState("");
   const [team, setTeam] = useState("");
   const [position, setPosition] = useState(WATCH_POSITIONS[0]);
@@ -889,9 +891,13 @@ function WatchListPanel({ watchlist, onClose, onSelectPlayer, portalStatus }) {
           flexWrap: "wrap",
         }}
       >
-        <h2 className="oswald" style={{ fontSize: 22, margin: 0, fontWeight: 700, color: "var(--text-primary)" }}>
-          Watch List
-        </h2>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <BackButton label="Pre-Portal Tracker" onClick={onClose} />
+          <HomeButton onHome={onHome} />
+          <h2 className="oswald" style={{ fontSize: 22, margin: 0, fontWeight: 700, color: "var(--text-primary)" }}>
+            Watch List
+          </h2>
+        </div>
 
         {watchlist.available && (
           <form onSubmit={handleAdd} style={{ display: "flex", alignItems: "center", gap: 8, flex: 1, maxWidth: 520 }}>
@@ -955,9 +961,6 @@ function WatchListPanel({ watchlist, onClose, onSelectPlayer, portalStatus }) {
           </button>
         )}
 
-        <button onClick={onClose} style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer", padding: 4, lineHeight: 0 }}>
-          <X size={22} />
-        </button>
       </div>
 
       {!watchlist.available ? (
@@ -1097,7 +1100,7 @@ export function PlayerDetailModal({ sel, onClose, watchlist, portalStatus }) {
 
   const byCategory = useMemo(() => {
     const grouped = {};
-    rows.forEach((r) => {
+    rows.filter((r) => r.week === "total").forEach((r) => { // season totals only -- no week-by-week lines
       (grouped[r.category] ||= []).push(r);
     });
     return grouped;
@@ -1484,7 +1487,7 @@ function GridlineMain({ onBack: toDashboard, initialSearch, onUploadStats }) {
   const [linked] = useState(() => initialSubRoute());
   const [division, setDivision] = useState(() => (DIVISIONS.includes(linked[0]) ? linked[0] : "NAIA"));
   const [category, setCategory] = useState("passing");
-  const [week, setWeek] = useState("total");
+  const week = "total"; // the tracker shows season totals only -- no week-by-week view
   const [position, setPosition] = useState("All");
   const [conference, setConference] = useState("All");
   const [homeState, setHomeState] = useState("All");
@@ -1494,11 +1497,24 @@ function GridlineMain({ onBack: toDashboard, initialSearch, onUploadStats }) {
   // and drops if another key arrives first. The address follows the same copy.
   const deferredSearch = useDeferredValue(search);
   useEffect(() => {
+    if (parseHash()[1] === WATCH_PAGE) return; // on the watch list page the address says so
     setSubRoute("tracker", [division, ...(deferredSearch.trim() ? [deferredSearch.trim()] : [])]);
   }, [division, deferredSearch]);
   const [sortKey, setSortKey] = useState("yards");
   const [sortDir, setSortDir] = useState("desc");
-  const [watchlistOpen, setWatchlistOpen] = useState(false);
+  // The watch list is its own page (#/tracker/watch-list): the browser's back button and the Back button on it both
+  // return to the tracker exactly as it was left.
+  const watchlistOpen = useRoute()[1] === WATCH_PAGE;
+  const openWatchlist = () => {
+    watchOpenedFromTracker = true;
+    navigate(["tracker", WATCH_PAGE]);
+  };
+  const closeWatchlist = () => {
+    if (watchOpenedFromTracker) {
+      watchOpenedFromTracker = false;
+      window.history.back();
+    } else navigate(["tracker", division]);
+  };
   const [selectedPlayer, setSelectedPlayer] = useState(null);
   const [theme, setTheme] = useTheme();
   const watchlist = useWatchlist();
@@ -1509,7 +1525,6 @@ function GridlineMain({ onBack: toDashboard, initialSearch, onUploadStats }) {
   const positions = useMemo(() => ["All", ...positionsFor(division, category)], [division, category]);
   const conferences = useMemo(() => ["All", ...conferencesFor(division)], [division]);
   const homeStates = useMemo(() => ["All", ...homeStatesFor(division, category)], [division, category]);
-  const weekOptions = useMemo(() => weeksFor(division), [division]);
 
   const rows = useMemo(() => {
     let filtered = DATA.filter((r) => r.division === division && r.category === category && r.week === week);
@@ -1582,7 +1597,6 @@ function GridlineMain({ onBack: toDashboard, initialSearch, onUploadStats }) {
       if (hit) {
         setDivision(hit.division);
         setCategory(hit.category);
-        setWeek("total");
         setPosition("All");
         setConference("All");
         setSortKey(CATEGORIES[hit.category].leaderKey);
@@ -1606,25 +1620,6 @@ function GridlineMain({ onBack: toDashboard, initialSearch, onUploadStats }) {
     });
   }, [division, week, conference]);
 
-  // Scans the currently open division for whoever actually had the best
-  // single-week production most recently. Real single-week rows only exist
-  // once a division's scraper has run more than once (see
-  // scraper/build_data.py), so this naturally fills in as the season goes
-  // on rather than needing any special-casing here.
-  const breakoutPerformers = useMemo(() => {
-    const weeklyRows = DATA.filter((r) => r.week !== "total" && r.division === division);
-    if (weeklyRows.length === 0) return { week: null, entries: [] };
-    const latestWeek = weeklyRows.reduce((max, r) => (r.week > max ? r.week : max), weeklyRows[0].week);
-    const thisWeek = weeklyRows.filter((r) => r.week === latestWeek);
-    const entries = LEADER_BOARDS.map((board) => {
-      const catRows = thisWeek.filter((r) => r.category === board.categoryKey);
-      const sorted = [...catRows].sort((a, b) => (parseFloat(b[board.sortKey]) || 0) - (parseFloat(a[board.sortKey]) || 0));
-      const col = CATEGORIES[board.categoryKey].columns.find((c) => c.key === board.sortKey);
-      return { board, leader: sorted[0], statLabel: col?.label || "" };
-    }).filter((e) => e.leader);
-    return { week: latestWeek, entries };
-  }, [division]);
-
   function handleSort(key) {
     if (key === sortKey) {
       setSortDir((d) => (d === "desc" ? "asc" : "desc"));
@@ -1637,7 +1632,6 @@ function GridlineMain({ onBack: toDashboard, initialSearch, onUploadStats }) {
   function handleDivisionChange(d) {
     setDivision(d);
     setConference("All");
-    setWeek("total"); // each division has its own set of real weeks, if any
   }
 
   function handleCategoryChange(key) {
@@ -1651,15 +1645,6 @@ function GridlineMain({ onBack: toDashboard, initialSearch, onUploadStats }) {
     setCategory(board.categoryKey);
     setPosition("All");
     setSortKey(board.sortKey);
-    setSortDir("desc");
-  }
-
-  function handleBreakoutClick(entry) {
-    setConference("All");
-    setWeek(entry.leader.week);
-    setCategory(entry.board.categoryKey);
-    setPosition("All");
-    setSortKey(entry.board.sortKey);
     setSortDir("desc");
   }
 
@@ -1713,7 +1698,7 @@ function GridlineMain({ onBack: toDashboard, initialSearch, onUploadStats }) {
                 </button>
               )}
               <button
-                onClick={() => setWatchlistOpen(true)}
+                onClick={openWatchlist}
                 style={{
                   display: "flex", alignItems: "center", gap: 6, flexShrink: 0,
                   background: "var(--bg-surface)", border: "1px solid var(--border)", color: "var(--text-primary)",
@@ -1742,7 +1727,8 @@ function GridlineMain({ onBack: toDashboard, initialSearch, onUploadStats }) {
         <WatchListPanel
           watchlist={watchlist}
           portalStatus={portalStatus}
-          onClose={() => setWatchlistOpen(false)}
+          onClose={closeWatchlist}
+          onHome={toDashboard}
           onSelectPlayer={(p) => {
             watchlist.markSeen(p.id, p.player, p.team);
             setSelectedPlayer({ player: p.player, team: p.team, division: p.division, position: p.position });
@@ -1812,48 +1798,8 @@ function GridlineMain({ onBack: toDashboard, initialSearch, onUploadStats }) {
           takes over freezing the column headers once scrolled past the
           rest of this chrome. */}
       <div style={{ flex: 1, minHeight: 0, overflow: "auto", padding: "0 var(--gutter) var(--gutter)" }}>
-        {/* Breakout performers -- scoped to the currently open division tab,
-            scanning for whoever actually had the best week most recently.
-            The top spacing lives here (not as padding-top on the scroll
-            container above) because a sticky element's top:0 resolves
-            against the container's padding edge -- padding-top there would
-            leave a gap the size of that padding once scrolled past it,
-            since that padding-top has already scrolled out of view. */}
-        <div style={{ marginBottom: 14, paddingTop: 16 }}>
-          <span style={{ fontSize: 11, color: "var(--text-faint)", letterSpacing: "0.03em", display: "flex", alignItems: "center", gap: 5, marginBottom: 6 }}>
-            <TrendingUp size={12} color="var(--accent)" />
-            {DIVISION_LABEL[division]} breakout this week{breakoutPerformers.week ? ` — ${weekLabel(breakoutPerformers.week)}` : ""}
-          </span>
-          {breakoutPerformers.entries.length === 0 ? (
-            <div style={{ fontSize: 12.5, color: "var(--text-faint)", padding: "8px 0" }}>
-              No real single-week numbers yet for {DIVISION_LABEL[division]} — these show up once this division's weekly scrape has run more than once this season.
-            </div>
-          ) : (
-            <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-              {breakoutPerformers.entries.map(({ board, leader, statLabel }) => (
-                <button
-                  key={board.key}
-                  onClick={() => handleBreakoutClick({ board, leader })}
-                  style={{
-                    display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 2,
-                    background: "var(--bg-surface)", border: "1px solid var(--success-border)", borderRadius: 5,
-                    padding: "8px 14px", cursor: "pointer", textAlign: "left", minWidth: 148,
-                  }}
-                >
-                  <span className="oswald" style={{ fontSize: 11, color: "var(--success)", fontWeight: 500 }}>
-                    {board.label}
-                  </span>
-                  <span style={{ fontSize: 13.5, fontWeight: 600, color: "var(--text-primary)" }}>{leader.player}</span>
-                  <span className="tabular" style={{ fontSize: 12.5, color: "var(--accent)" }}>
-                    {leader[board.sortKey]} {statLabel} this week
-                  </span>
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-
         {/* Live / sample banner */}
+        <div style={{ paddingTop: 16 }} />
         <div
           style={{
             display: "flex",
@@ -1881,10 +1827,10 @@ function GridlineMain({ onBack: toDashboard, initialSearch, onUploadStats }) {
           )}
         </div>
 
-        {/* Weekly leaders strip */}
+        {/* Season leaders strip */}
         <div style={{ marginBottom: 14 }}>
           <span style={{ fontSize: 11, color: "var(--text-faint)", letterSpacing: "0.03em", display: "block", marginBottom: 6 }}>
-            {weekLabel(week)} leaders — {conference === "All" ? DIVISION_LABEL[division] : conference}
+            Season leaders — {conference === "All" ? DIVISION_LABEL[division] : conference}
           </span>
           <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
             {weeklyLeaders.map(({ board, leader, statLabel }) => {
@@ -1963,21 +1909,6 @@ function GridlineMain({ onBack: toDashboard, initialSearch, onUploadStats }) {
               {homeStates.map((s2) => (
                 <option key={s2} value={s2}>
                   {s2}
-                </option>
-              ))}
-            </select>
-          </FilterGroup>
-
-          <FilterGroup label="Week">
-            <select
-              value={week}
-              onChange={(e) => setWeek(weekOptions.find((w) => String(w) === e.target.value) ?? "total")}
-              style={selectStyle}
-              title={weekOptions.length === 1 ? "No single-week data yet for this division -- check back after the next weekly update" : undefined}
-            >
-              {weekOptions.map((w) => (
-                <option key={w} value={w}>
-                  {weekLabel(w)}
                 </option>
               ))}
             </select>
@@ -2105,7 +2036,7 @@ function GridlineMain({ onBack: toDashboard, initialSearch, onUploadStats }) {
               {rows.length === 0 && (
                 <tr>
                   <td colSpan={7 + cat.columns.length} style={{ ...tdStyle, textAlign: "center", color: "var(--text-faint)", padding: 32 }}>
-                    No players match this filter for the selected week.
+                    No players match this filter.
                   </td>
                 </tr>
               )}
