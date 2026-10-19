@@ -858,10 +858,10 @@ export function useOfferTracker() {
   const effectiveDocs = useMemo(() => {
     const pipelineByPlayer = new Map();
     const commitByPlayer = new Map();
-    const jucoNoteByPlayer = new Map();
+    const noteByPlayer = new Map();
     docs.forEach((d) => {
       const key = `${d.classYear}|${normalizePlayerKey(d.player)}`;
-      if (d.classYear === "JUCO" && (d.notes || "").trim() && !jucoNoteByPlayer.has(key)) jucoNoteByPlayer.set(key, d.notes);
+      if ((d.notes || "").trim() && !noteByPlayer.has(key)) noteByPlayer.set(key, d.notes);
       const p = (d.pipelineStatus || "").trim();
       if (p && !pipelineByPlayer.has(key)) pipelineByPlayer.set(key, p);
       if (isCommitment(d.status) && !commitByPlayer.has(key)) commitByPlayer.set(key, d.status.trim());
@@ -870,7 +870,9 @@ export function useOfferTracker() {
       const key = `${d.classYear}|${normalizePlayerKey(d.player)}`;
       const pipelineStatus = (d.pipelineStatus || "").trim() ? d.pipelineStatus : pipelineByPlayer.get(key) || "";
       const status = isCommitment(d.status) ? d.status : commitByPlayer.get(key) || d.status;
-      const notes = d.classYear === "JUCO" && !(d.notes || "").trim() ? jucoNoteByPlayer.get(key) || d.notes : d.notes;
+      // A note describes the recruit, not one school's row: a row with none of its own shows the note typed on any
+      // other school's row for the same recruit and class.
+      const notes = !(d.notes || "").trim() ? noteByPlayer.get(key) || d.notes : d.notes;
       return pipelineStatus === d.pipelineStatus && status === d.status && notes === d.notes ? d : { ...d, pipelineStatus, status, notes };
     });
   }, [docs]);
@@ -1064,9 +1066,9 @@ export function useOfferTracker() {
   async function updateOfferField(row, field, rawValue) {
     const value = field === "status" ? normalizeStatus(rawValue) : field === "dateOffered" ? normalizeOfferDate(rawValue) : rawValue;
     const updatedAt = new Date().toISOString();
-    // The JUCO tab is one feed of recruits (not one school's board), so a note there describes the recruit
-    // and follows him to every school's row; on a team board it stays that school's own.
-    const syncedHere = SYNCED_FIELDS.has(field) || (field === "notes" && row.classYear === "JUCO");
+    // A note describes the recruit, so it follows him to every school's row in his class (2027, 2028, JUCO...),
+    // like his pipeline: typed on one school's sheet, it shows on the others and in his profile.
+    const syncedHere = SYNCED_FIELDS.has(field) || field === "notes";
     if (!syncedHere) {
       await updateDoc(doc(db, "offers", row.id), { [field]: value, updatedAt });
       return;

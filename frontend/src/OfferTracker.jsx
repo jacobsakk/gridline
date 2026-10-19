@@ -500,9 +500,10 @@ export function PlayerProfileModal({ player, classYear, tracker, onClose }) {
   const tdStyle = { padding: "9px 12px", fontSize: 13.5, color: "var(--text-secondary)", borderRight: "1px solid var(--border-faint)" };
   const sectionLabel = { fontSize: 11, color: "var(--text-faint)", letterSpacing: "0.03em", textTransform: "uppercase", marginBottom: 8 };
 
-  // Status and pipeline are the same recruit-wide (they sync across
-  // teams), so they're shown once. Notes are per team, so identical
-  // ones collapse to one line and differing ones list which team wrote them.
+  // Status, pipeline and notes are the same recruit-wide (they sync across
+  // teams), so they're shown once. Older notes typed separately on
+  // different schools can still differ: identical ones collapse to one
+  // line and differing ones list which team wrote them.
   const status = (rows.find((r) => /^COMMI?TT?ED TO /i.test((r.status || "").trim())) || rows.find((r) => (r.status || "").trim()) || {}).status || "";
   const pipeline = ((rows.find((r) => (r.pipelineStatus || "").trim()) || {}).pipelineStatus || "").trim();
   const noteGroups = new Map();
