@@ -34,9 +34,9 @@ export default function SharedStudyPage({ token }) {
   const meta = share ? ALL_STUDIES.find((s) => s.id === share.studyId) : null;
   return (
     <div className="app-shell hs-shell" data-theme={theme} style={{ display: "flex", flexDirection: "column", overflow: "hidden", background: "var(--bg-page)", color: "var(--text-primary)", fontFamily: "'Century Gothic', 'Jost', 'Helvetica Neue', Arial, sans-serif" }}>
-      <div className="app-header" style={{ flexShrink: 0, position: "relative", padding: "20px var(--gutter) 16px" }}>
+      <div className="app-header compact-header" style={{ flexShrink: 0, position: "relative", padding: "20px var(--gutter) 16px" }}>
         <div style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: 3, background: "linear-gradient(90deg, var(--gold), var(--maroon))" }} />
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 14, flexWrap: "wrap" }}>
+        <div className="compact-row" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 14, flexWrap: "wrap" }}>
           <div style={{ display: "flex", alignItems: "baseline", gap: 12, flexWrap: "wrap" }}>
             <h1 className="oswald app-title" style={{ fontSize: 22, fontWeight: 700, margin: 0 }}>Central Michigan Recruiting</h1>
             {share && <span style={{ fontSize: 12.5, color: "var(--text-muted)" }}>Shared view · updated {new Date(share.updatedAt).toLocaleString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}</span>}

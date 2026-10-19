@@ -12,7 +12,7 @@ import { useIsPhone } from "./usePhone.js";
 import { submitStudyRequest, useStudyRequests } from "./studyRequests.js";
 import { headshotUrls, initialsOf, teamTone, useStudyPhotos } from "./studyPhotos.js";
 
-const ghostBtn = { ...control, cursor: "pointer", fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 7 };
+const ghostBtn = { ...control, cursor: "pointer", fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 7, flexShrink: 0, whiteSpace: "nowrap" };
 
 // Gold/silver/bronze for a real, official All-MAC First/Second/Third Team honor that season (see
 // scraper/studies/_all_mac.py) -- purely informational, next to the name, never affects the ranking.
@@ -461,7 +461,7 @@ export function StudyDetail({ studyId, canEdit, onBack, snapshot = null, shareTo
             <p style={{ margin: "4px 0 0", fontSize: 13, color: "var(--text-muted)", maxWidth: 720, lineHeight: 1.5 }}>{study.meta.description}</p>
           )}
         </div>
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+        <div style={{ display: "flex", gap: 8, flexWrap: phone ? "nowrap" : "wrap", overflowX: phone ? "auto" : undefined, maxWidth: "100%", paddingBottom: phone ? 2 : 0 }}>
           {canEdit && (
             <button onClick={addPlayer} style={ghostBtn}><Plus size={14} /> Add player</button>
           )}
@@ -707,9 +707,9 @@ export default function StudiesPage({ onBack: toDashboard, session }) {
 
   return (
     <div className="app-shell hs-shell" data-theme={theme} style={{ display: "flex", flexDirection: "column", overflow: "hidden", background: "var(--bg-page)", color: "var(--text-primary)", fontFamily: "'Century Gothic', 'Jost', 'Helvetica Neue', Arial, sans-serif" }}>
-      <div className="app-header" style={{ flexShrink: 0, position: "relative", padding: "20px var(--gutter) 16px" }}>
+      <div className="app-header compact-header" style={{ flexShrink: 0, position: "relative", padding: "20px var(--gutter) 16px" }}>
         <div style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: 3, background: "linear-gradient(90deg, var(--gold), var(--maroon))" }} />
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 14, flexWrap: "wrap" }}>
+        <div className="compact-row" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 14, flexWrap: "wrap" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
             {openId ? <BackButton label="Studies" onClick={closeStudy} /> : back.fromTrail && <BackButton label={back.label} onClick={back.go} />}
             <HomeButton onHome={toDashboard} />
