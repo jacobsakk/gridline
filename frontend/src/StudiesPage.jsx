@@ -36,6 +36,20 @@ function TeamName({ photos, team, children }) {
   return <span className="study-tc study-team" style={teamTone(photos, team) || undefined}>{children}</span>;
 }
 
+// The key to the medals beside names: which All-MAC team each one means.
+function MedalKey() {
+  return (
+    <div aria-label="Medal key" style={{ display: "flex", alignItems: "center", gap: "6px 14px", flexWrap: "wrap", flexShrink: 0, fontSize: 12.5, color: "var(--text-muted)", background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 8, padding: "6px 12px" }}>
+      <span style={{ fontSize: 11, textTransform: "uppercase", letterSpacing: "0.04em", color: "var(--text-faint)" }}>All-MAC</span>
+      {[1, 2, 3].map((t) => (
+        <span key={t} style={{ display: "inline-flex", alignItems: "center", gap: 5, whiteSpace: "nowrap" }}>
+          <span style={{ fontSize: 15 }}>{MEDAL[t].emoji}</span> {["First", "Second", "Third"][t - 1]} team
+        </span>
+      ))}
+    </div>
+  );
+}
+
 function Medal({ tier }) {
   const m = MEDAL[tier];
   if (!m) return null;
@@ -512,6 +526,8 @@ export function StudyDetail({ studyId, canEdit, onBack, snapshot = null, shareTo
           </div>
         )}
       </div>
+
+      <MedalKey />
 
       {!study.ready ? (
         <div style={{ padding: 40, textAlign: "center", color: "var(--text-faint)", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
