@@ -555,8 +555,8 @@ function RosterTab({ college }) {
             {rows.map((r) => (
               <tr key={r.id}>
                 <td style={{ ...tdStyle, fontWeight: 600, color: "var(--text-primary)" }}>
-                  <span style={{ display: "inline-flex", alignItems: "center", gap: 10 }}>
-                    <HeadshotFace espnId={espnIdFromRow(r)} name={r.player} color={college.color} size={44} />
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: 14, fontSize: 15.5 }}>
+                    <HeadshotFace espnId={espnIdFromRow(r)} name={r.player} color={college.color} size={72} />
                     <span
                       className="player-name"
                       onClick={() => setSelected({ player: r.player, team: r.team, division: r.division, position: r.position, variants: r.variants })}
