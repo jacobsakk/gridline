@@ -8,6 +8,7 @@ import { confirmAction } from "./ConfirmDialog.jsx";
 import { control, LinkCell, StateCell, TextCell } from "./EditableCells.jsx";
 import TransferOutTracker from "./TransferOutTracker.jsx";
 import { ShareLinkButton } from "./StudyShare.jsx";
+import { useIsPhone } from "./usePhone.js";
 import { submitStudyRequest, useStudyRequests } from "./studyRequests.js";
 import { headshotUrls, initialsOf, teamTone, useStudyPhotos } from "./studyPhotos.js";
 
@@ -379,6 +380,7 @@ function PasteTableModal({ allowNewRows, onClose, onSubmit }) {
 export function StudyDetail({ studyId, canEdit, onBack, snapshot = null, shareToken = "", by = "" }) {
   const study = useStudy(studyId, snapshot);
   const photos = useStudyPhotos();
+  const phone = useIsPhone();
   const [initial] = useState(() => (snapshot ? [studyId, ...parseHash().slice(2)] : initialSubRoute()));
   const [group, setGroup] = useState(() => study.meta.groups.some((g) => g.key === initial[1]) ? initial[1] : study.meta.groups[0].key);
   const [season, setSeason] = useState(() => (/^\d{4}$/.test(initial[2]) ? Number(initial[2]) : null));
@@ -446,13 +448,20 @@ export function StudyDetail({ studyId, canEdit, onBack, snapshot = null, shareTo
   const td = { padding: "7px 10px", fontSize: 13.5, color: "var(--text-secondary)", borderTop: "1px solid var(--border-subtle)", whiteSpace: "nowrap" };
 
   return (
-    <div style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column", padding: "16px var(--gutter) var(--gutter)", gap: 12 }}>
-      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+    <div style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column", padding: phone ? "12px var(--gutter) 24px" : "16px var(--gutter) var(--gutter)", gap: 12, overflowY: phone ? "auto" : undefined }}>
+      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, flexWrap: "wrap", flexShrink: 0 }}>
         <div>
-          <h1 className="oswald" style={{ fontSize: 22, fontWeight: 700, margin: 0 }}>{study.meta.title}</h1>
-          <p style={{ margin: "4px 0 0", fontSize: 13, color: "var(--text-muted)", maxWidth: 720, lineHeight: 1.5 }}>{study.meta.description}</p>
+          <h1 className="oswald" style={{ fontSize: phone ? 19 : 22, fontWeight: 700, margin: 0 }}>{study.meta.title}</h1>
+          {phone ? (
+            <details style={{ marginTop: 4 }}>
+              <summary style={{ fontSize: 12.5, color: "var(--text-muted)", cursor: "pointer" }}>About this study</summary>
+              <p style={{ margin: "6px 0 0", fontSize: 12.5, color: "var(--text-muted)", lineHeight: 1.5 }}>{study.meta.description}</p>
+            </details>
+          ) : (
+            <p style={{ margin: "4px 0 0", fontSize: 13, color: "var(--text-muted)", maxWidth: 720, lineHeight: 1.5 }}>{study.meta.description}</p>
+          )}
         </div>
-        <div style={{ display: "flex", gap: 8 }}>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
           {canEdit && (
             <button onClick={addPlayer} style={ghostBtn}><Plus size={14} /> Add player</button>
           )}
@@ -464,8 +473,8 @@ export function StudyDetail({ studyId, canEdit, onBack, snapshot = null, shareTo
         </div>
       </div>
 
-      <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
-        <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap", flexShrink: 0 }}>
+        <div style={{ display: "flex", gap: 6, flexWrap: phone ? "nowrap" : "wrap", overflowX: phone ? "auto" : undefined, maxWidth: "100%", paddingBottom: phone ? 4 : 0 }}>
           {study.meta.groups.map((g) => {
             const isActive = g.key === group;
             const count = study.groups[g.key]?.[String(activeSeason)]?.length ?? 0;
@@ -474,7 +483,7 @@ export function StudyDetail({ studyId, canEdit, onBack, snapshot = null, shareTo
                 key={g.key}
                 onClick={() => openGroup(g)}
                 style={{
-                  display: "flex", alignItems: "center", gap: 7, borderRadius: 999, padding: "7px 14px", fontSize: 13, fontWeight: 700, fontFamily: "inherit", cursor: "pointer",
+                  display: "flex", alignItems: "center", gap: 7, borderRadius: 999, padding: "7px 14px", fontSize: 13, fontWeight: 700, fontFamily: "inherit", cursor: "pointer", flexShrink: 0, whiteSpace: "nowrap",
                   background: isActive ? "var(--accent-bg)" : "var(--bg-surface)", border: `1px solid ${isActive ? "var(--accent)" : "var(--border)"}`,
                   color: isActive ? "var(--accent)" : "var(--text-secondary)",
                 }}
@@ -507,6 +516,75 @@ export function StudyDetail({ studyId, canEdit, onBack, snapshot = null, shareTo
       {!study.ready ? (
         <div style={{ padding: 40, textAlign: "center", color: "var(--text-faint)", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
           <Loader2 size={16} className="spin" /> Loading…
+        </div>
+      ) : phone ? (
+        <div style={{ display: "grid", gap: 10 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <label htmlFor="study-sort" style={{ fontSize: 12, color: "var(--text-faint)", textTransform: "uppercase", letterSpacing: "0.03em" }}>Sort</label>
+            <select id="study-sort" value={sort.key} onChange={(e) => setSort({ key: e.target.value, dir: e.target.value === "player" || e.target.value === "team" ? "asc" : "desc" })} style={{ ...control, flex: 1 }}>
+              {columns.filter((c) => c.key !== "hudlLink" && c.key !== "pffLink").map((c) => <option key={c.key} value={c.key}>{c.label}</option>)}
+            </select>
+            <button onClick={() => setSort((x) => ({ ...x, dir: x.dir === "desc" ? "asc" : "desc" }))} style={ghostBtn} aria-label="Reverse the order">{sort.dir === "desc" ? "▼ High first" : "▲ Low first"}</button>
+          </div>
+          {sorted.length === 0 && (
+            <div style={{ textAlign: "center", color: "var(--text-faint)", padding: 28, fontSize: 13.5 }}>
+              {activeGroup.manual ? "No one added yet." : `Nobody qualified for this position in ${activeSeason}.`}
+            </div>
+          )}
+          {sorted.map((r) => {
+            const isManualRow = !!r.id;
+            return (
+              <div key={r.id || `${r.player}__${r.team}`} style={{ background: "var(--bg-panel)", border: "1px solid var(--border)", borderRadius: 12, padding: 14, display: "grid", gap: 12 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                  <PlayerFace photos={photos} name={r.player} team={r.team} />
+                  <div style={{ minWidth: 0, flex: 1 }}>
+                    <div style={{ fontWeight: 700, fontSize: 16.5, color: "var(--text-primary)", overflowWrap: "anywhere" }}>
+                      <Medal tier={r.allMac} />
+                      {isManualRow ? <TextCell row={r} field="player" placeholder="Player name" editable={canEdit} onSave={(v) => study.updateManualRow(r.id, { player: v })} /> : r.player}
+                    </div>
+                    <div style={{ fontSize: 13.5, display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                      <TeamName photos={photos} team={r.team}>
+                        {isManualRow ? <TextCell row={r} field="team" placeholder="Team" editable={canEdit} onSave={(v) => study.updateManualRow(r.id, { team: v })} /> : r.team}
+                      </TeamName>
+                      <StateCell row={r} editable={canEdit} onSave={(state) => (isManualRow ? study.updateManualRow(r.id, { state }) : study.saveField(group, r.player, { state }))} />
+                    </div>
+                  </div>
+                  {activeGroup.scoreFormula && (
+                    <button onClick={() => setExplainRow(r)} aria-label={`Why does ${r.player} have a score of ${r.score}?`} style={{ background: "var(--accent-bg)", border: "1px solid var(--accent)", color: "var(--accent)", borderRadius: 10, padding: "6px 10px", textAlign: "center", cursor: "pointer", fontFamily: "inherit", flexShrink: 0 }}>
+                      <div className="tabular" style={{ fontSize: 18, fontWeight: 800, lineHeight: 1.1 }}>{r.score}</div>
+                      <div style={{ fontSize: 9.5, textTransform: "uppercase", letterSpacing: "0.04em" }}>Score</div>
+                    </button>
+                  )}
+                </div>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(72px, 1fr))", gap: 8 }}>
+                  {activeGroup.stats.map((st) => (
+                    <div key={st.key} style={{ background: "var(--bg-surface)", borderRadius: 8, padding: "6px 8px" }}>
+                      <div style={{ fontSize: 10, color: "var(--text-faint)", textTransform: "uppercase", letterSpacing: "0.03em" }}>{st.label}</div>
+                      <div className="tabular" style={{ fontSize: 15, fontWeight: 700, color: st.key === "pffGrade" ? "var(--accent)" : "var(--text-primary)" }}>
+                        <StatCell
+                          value={r.totals[st.key] ?? 0}
+                          canEdit={canEdit}
+                          accent={st.key === "pffGrade"}
+                          onSave={(value) => (isManualRow ? study.updateManualRow(r.id, { [st.key]: value }) : study.saveStat(group, activeSeason, r.player, st.key, value))}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                {(canEdit || r.hudlLink || r.pffLink) && (
+                <div style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap", fontSize: 13.5 }}>
+                  <LinkCell row={r} field="hudlLink" label="Film" placeholder="Paste a Hudl link…" editable={canEdit} onSave={(url) => (isManualRow ? study.updateManualRow(r.id, { hudlLink: url }) : study.saveField(group, r.player, { hudlLink: url }))} />
+                  <LinkCell row={r} field="pffLink" label="PFF" placeholder="Paste a PFF link…" editable={canEdit} onSave={(url) => (isManualRow ? study.updateManualRow(r.id, { pffLink: url }) : study.saveField(group, r.player, { pffLink: url }))} />
+                  {canEdit && (
+                    <button onClick={() => removePlayer(r)} aria-label={`Remove ${r.player || "this player"}`} style={{ marginLeft: "auto", background: "none", border: "none", color: "var(--text-faint)", cursor: "pointer", lineHeight: 0 }}>
+                      <Trash2 size={16} />
+                    </button>
+                  )}
+                </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       ) : (
         <div style={{ flex: 1, minHeight: 0, overflow: "auto", border: "1px solid var(--border)", borderRadius: 8 }}>

@@ -6,6 +6,7 @@ import { parseTransferSheet, useTransferOutTracker } from "./transferOutData.js"
 import { findTransferStats, formatStatLine } from "./transferStats.js";
 import { useRealStatsReady } from "./statsData.js";
 import { ShareLinkButton } from "./StudyShare.jsx";
+import { useIsPhone } from "./usePhone.js";
 
 const ghostBtn = { ...control, cursor: "pointer", fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 7 };
 
@@ -151,12 +152,40 @@ function SharedTransfers({ meta, snapshot }) {
   const th = { textAlign: "left", padding: "9px 10px", fontSize: 11, color: "var(--text-faint)", textTransform: "uppercase", letterSpacing: "0.03em", whiteSpace: "nowrap", position: "sticky", top: 0, background: "var(--bg-surface)" };
   const td = { padding: "7px 10px", fontSize: 13.5, color: "var(--text-secondary)", borderTop: "1px solid var(--border-subtle)", verticalAlign: "top" };
   const players = snapshot.players || [];
+  const phone = useIsPhone();
   return (
-    <div style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column", padding: "16px var(--gutter) var(--gutter)", gap: 12 }}>
-      <div>
-        <h1 className="oswald" style={{ fontSize: 22, fontWeight: 700, margin: 0 }}>{meta.title}</h1>
-        <p style={{ margin: "4px 0 0", fontSize: 13, color: "var(--text-muted)", maxWidth: 720, lineHeight: 1.5 }}>{meta.description}</p>
+    <div style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column", padding: phone ? "12px var(--gutter) 24px" : "16px var(--gutter) var(--gutter)", gap: 12, overflowY: phone ? "auto" : undefined }}>
+      <div style={{ flexShrink: 0 }}>
+        <h1 className="oswald" style={{ fontSize: phone ? 19 : 22, fontWeight: 700, margin: 0 }}>{meta.title}</h1>
+        {phone ? (
+          <details style={{ marginTop: 4 }}>
+            <summary style={{ fontSize: 12.5, color: "var(--text-muted)", cursor: "pointer" }}>About this study</summary>
+            <p style={{ margin: "6px 0 0", fontSize: 12.5, color: "var(--text-muted)", lineHeight: 1.5 }}>{meta.description}</p>
+          </details>
+        ) : (
+          <p style={{ margin: "4px 0 0", fontSize: 13, color: "var(--text-muted)", maxWidth: 720, lineHeight: 1.5 }}>{meta.description}</p>
+        )}
       </div>
+      {phone ? (
+        <div style={{ display: "grid", gap: 10 }}>
+          {players.length === 0 && <div style={{ textAlign: "center", color: "var(--text-faint)", padding: 28, fontSize: 13.5 }}>No one added yet.</div>}
+          {players.map((p) => (
+            <div key={p.id} style={{ background: "var(--bg-panel)", border: "1px solid var(--border)", borderRadius: 12, padding: 14, display: "grid", gap: 8 }}>
+              <div style={{ fontWeight: 700, fontSize: 16.5, color: "var(--text-primary)" }}>{p.name || "—"}</div>
+              <div style={{ fontSize: 13.5, color: "var(--text-muted)" }}>{[p.position, p.college].filter(Boolean).join(" · ") || "—"}</div>
+              <div style={{ fontSize: 13.5, color: "var(--text-secondary)", display: "grid", gap: 2 }}>
+                {p.statLines?.length ? p.statLines.map((l) => <span key={l}>{l}</span>) : <span style={{ color: "var(--text-faint)" }}>Not found this season</span>}
+              </div>
+              {(p.pffSnaps || p.pffLink) && (
+                <div style={{ fontSize: 13, display: "flex", gap: 14, color: "var(--text-muted)" }}>
+                  {p.pffSnaps && <span>PFF snaps: <b style={{ color: "var(--text-primary)" }}>{p.pffSnaps}</b></span>}
+                  {p.pffLink && <a href={p.pffLink} target="_blank" rel="noreferrer" style={{ color: "var(--accent)" }}>PFF</a>}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      ) : (
       <div style={{ flex: 1, minHeight: 0, overflow: "auto", border: "1px solid var(--border)", borderRadius: 8 }}>
         <table style={{ width: "100%", borderCollapse: "collapse" }}>
           <thead>
@@ -181,6 +210,7 @@ function SharedTransfers({ meta, snapshot }) {
           </tbody>
         </table>
       </div>
+      )}
     </div>
   );
 }
@@ -188,6 +218,7 @@ function SharedTransfers({ meta, snapshot }) {
 function LiveTransfers({ canEdit, meta, by }) {
   const tracker = useTransferOutTracker();
   const statsReady = useRealStatsReady();
+  const phone = useIsPhone();
   const fileInput = useRef(null);
   const [importing, setImporting] = useState(false);
   const [importError, setImportError] = useState("");
@@ -244,13 +275,20 @@ function LiveTransfers({ canEdit, meta, by }) {
   }
 
   return (
-    <div style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column", padding: "16px var(--gutter) var(--gutter)", gap: 12 }}>
-      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+    <div style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column", padding: phone ? "12px var(--gutter) 24px" : "16px var(--gutter) var(--gutter)", gap: 12, overflowY: phone ? "auto" : undefined }}>
+      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, flexWrap: "wrap", flexShrink: 0 }}>
         <div>
-          <h1 className="oswald" style={{ fontSize: 22, fontWeight: 700, margin: 0 }}>{meta.title}</h1>
-          <p style={{ margin: "4px 0 0", fontSize: 13, color: "var(--text-muted)", maxWidth: 720, lineHeight: 1.5 }}>{meta.description}</p>
+          <h1 className="oswald" style={{ fontSize: phone ? 19 : 22, fontWeight: 700, margin: 0 }}>{meta.title}</h1>
+          {phone ? (
+            <details style={{ marginTop: 4 }}>
+              <summary style={{ fontSize: 12.5, color: "var(--text-muted)", cursor: "pointer" }}>About this study</summary>
+              <p style={{ margin: "6px 0 0", fontSize: 12.5, color: "var(--text-muted)", lineHeight: 1.5 }}>{meta.description}</p>
+            </details>
+          ) : (
+            <p style={{ margin: "4px 0 0", fontSize: 13, color: "var(--text-muted)", maxWidth: 720, lineHeight: 1.5 }}>{meta.description}</p>
+          )}
         </div>
-        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+        <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
           {canEdit && (
             <>
               <button onClick={() => tracker.addPlayer()} style={ghostBtn}><Plus size={14} /> Add player</button>
@@ -268,6 +306,38 @@ function LiveTransfers({ canEdit, meta, by }) {
 
       {!tracker.ready ? (
         <div style={{ padding: 40, textAlign: "center", color: "var(--text-faint)" }}>Loading…</div>
+      ) : phone ? (
+        <div style={{ display: "grid", gap: 10 }}>
+          {tracker.players.length === 0 && <div style={{ textAlign: "center", color: "var(--text-faint)", padding: 28, fontSize: 13.5 }}>No one added yet.</div>}
+          {tracker.players.map((p) => {
+            const matches = matchesByPlayer.get(p.id) || [];
+            return (
+              <div key={p.id} style={{ background: "var(--bg-panel)", border: "1px solid var(--border)", borderRadius: 12, padding: 14, display: "grid", gap: 8 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <div style={{ fontWeight: 700, fontSize: 16.5, color: "var(--text-primary)", flex: 1 }}>
+                    <NameCell p={p} matches={matches} editable={canEdit} onSave={(v) => tracker.updatePlayer(p.id, { name: v })} />
+                  </div>
+                  {canEdit && (
+                    <button onClick={() => removePlayer(p)} aria-label={`Remove ${p.name || "this player"}`} style={{ background: "none", border: "none", color: "var(--text-faint)", cursor: "pointer", lineHeight: 0 }}>
+                      <Trash2 size={16} />
+                    </button>
+                  )}
+                </div>
+                <div style={{ fontSize: 13.5, color: "var(--text-muted)", display: "flex", gap: 8, flexWrap: "wrap" }}>
+                  <TextCell row={p} field="position" placeholder="Pos" editable={canEdit} onSave={(v) => tracker.updatePlayer(p.id, { position: v })} />
+                  <TextCell row={p} field="college" placeholder="College" editable={canEdit} onSave={(v) => tracker.updatePlayer(p.id, { college: v })} />
+                </div>
+                <div style={{ fontSize: 13.5, color: "var(--text-secondary)" }}>
+                  <StatsCell matches={matches} statsReady={statsReady} />
+                </div>
+                <div style={{ fontSize: 13, display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap", color: "var(--text-muted)" }}>
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>PFF snaps <TextCell row={p} field="pffSnaps" placeholder="Snaps" editable={canEdit} onSave={(v) => tracker.updatePlayer(p.id, { pffSnaps: v })} /></span>
+                  <LinkCell row={p} field="pffLink" label="PFF" placeholder="Paste a PFF link…" editable={canEdit} onSave={(url) => tracker.updatePlayer(p.id, { pffLink: url })} />
+                </div>
+              </div>
+            );
+          })}
+        </div>
       ) : (
         <div style={{ flex: 1, minHeight: 0, overflow: "auto", border: "1px solid var(--border)", borderRadius: 8 }}>
           <table style={{ width: "100%", borderCollapse: "collapse" }}>
