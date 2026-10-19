@@ -1063,7 +1063,8 @@ function WatchListPanel({ watchlist, onClose, onHome, onSelectPlayer, portalStat
 // Shows every tracked stat line for one player across all categories they
 // appear in (a QB who also carries the ball shows both Passing and Rushing,
 // for example) -- opened by clicking a player's name in the main grid.
-export function PlayerDetailModal({ sel, onClose, watchlist, portalStatus }) {
+// `espn` adds the ESPN headshot and profile link to the header -- turned on by the Colleges section only.
+export function PlayerDetailModal({ sel, onClose, watchlist, portalStatus, espn = false }) {
   const rows = useMemo(
     () =>
       sel.variants
@@ -1149,7 +1150,7 @@ export function PlayerDetailModal({ sel, onClose, watchlist, portalStatus }) {
           }}
         >
           <div style={{ display: "flex", alignItems: "center", gap: 14, minWidth: 0 }}>
-          <HeadshotFace espnId={espnId} name={sel.player} color={colorForTeam(sel.team)} size={72} />
+          {espn && <HeadshotFace espnId={espnId} name={sel.player} color={colorForTeam(sel.team)} size={72} />}
           <div>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <h2 className="oswald" style={{ fontSize: 20, margin: 0, fontWeight: 700 }}>
@@ -1173,11 +1174,13 @@ export function PlayerDetailModal({ sel, onClose, watchlist, portalStatus }) {
               {canonicalSchool(sel.team)}
               {first ? ` · ${first.conference} · ${first.position} · ${DIVISION_LABEL[sel.division] || sel.division}${first.homeState ? ` · Home: ${first.homeState}` : ""}` : ""}
             </div>
-            <div style={{ fontSize: 12.5, marginTop: 4 }}>
-              <a href={espnId ? espnProfileUrl(espnId) : espnSearchUrl(sel.player)} target="_blank" rel="noreferrer" style={{ color: "var(--accent)" }}>
-                {espnId ? "ESPN profile" : "Find on ESPN"} ↗
-              </a>
-            </div>
+            {espn && (
+              <div style={{ fontSize: 12.5, marginTop: 4 }}>
+                <a href={espnId ? espnProfileUrl(espnId) : espnSearchUrl(sel.player)} target="_blank" rel="noreferrer" style={{ color: "var(--accent)" }}>
+                  {espnId ? "ESPN profile" : "Find on ESPN"} ↗
+                </a>
+              </div>
+            )}
           </div>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>

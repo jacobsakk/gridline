@@ -583,7 +583,7 @@ function RosterTab({ college }) {
           </tbody>
         </TableShell>
       )}
-      {selected && <PlayerDetailModal sel={selected} onClose={() => setSelected(null)} watchlist={watchlist} portalStatus={portalStatus} />}
+      {selected && <PlayerDetailModal espn sel={selected} onClose={() => setSelected(null)} watchlist={watchlist} portalStatus={portalStatus} />}
     </div>
   );
 }
@@ -832,7 +832,7 @@ function DepthChartTab({ college }) {
           }}
         />
       )}
-      {selected && <PlayerDetailModal sel={selected} onClose={() => setSelected(null)} watchlist={watchlist} portalStatus={portalStatus} />}
+      {selected && <PlayerDetailModal espn sel={selected} onClose={() => setSelected(null)} watchlist={watchlist} portalStatus={portalStatus} />}
     </div>
   );
 }
