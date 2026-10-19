@@ -61,6 +61,9 @@ function fromHsl(h, sat, l) {
 
 // A school's colour for light pages is pulled darker if it's pale, and for dark pages pulled lighter if it's
 // deep (navy, maroon), so the name reads on either ground while staying recognisably that school.
+// A school whose second colour reads better on a dark page than a lightened first one.
+const DARK_OVERRIDE = { centralmichigan: "#ffc82e", centralmich: "#ffc82e", cmichigan: "#ffc82e", cmich: "#ffc82e" };
+
 export function teamTone(data, team) {
   const base = data?.colors?.[letters(team)];
   if (!base) return null;
@@ -74,5 +77,5 @@ export function teamTone(data, team) {
     const [h, sat, lig] = toHsl(c);
     dark = fromHsl(h, Math.min(Math.max(sat, 0.5), 0.65), Math.max(lig, 0.62));
   }
-  return { "--tc-l": toHex(light), "--tc-d": toHex(dark) };
+  return { "--tc-l": toHex(light), "--tc-d": DARK_OVERRIDE[letters(team)] || toHex(dark) };
 }
