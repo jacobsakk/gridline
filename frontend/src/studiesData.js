@@ -10,7 +10,7 @@ export const STUDIES = [
   {
     id: "mac-best-by-position",
     title: "MAC's Most Productive, 2023-2026",
-    description: "The top 10 at each position in the MAC, kept separately for each season -- who had the best year in the league at that position, that year -- with career film.",
+    description: "The top 5 at each position in the MAC, kept separately for each season -- who had the best year in the league at that position, that year -- with career film.",
     file: () => import("./data/studies/mac-best-by-position.json"),
     // scoreFormula mirrors GROUPS' score lambdas in scraper/studies/mac_best_by_position.py exactly --
     // each term is one stat's coefficient in that lambda. Keep the two in sync by hand if the formula
@@ -31,7 +31,7 @@ export const STUDIES = [
       { key: "CB", label: "Cornerback", stats: [{ key: "games", label: "G" }, { key: "total", label: "Tackles" }, { key: "pbu", label: "PBU" }, { key: "int", label: "INT" }, { key: "pffGrade", label: "PFF Grade" }], scoreFormula: [{ key: "total", label: "tackle", coef: 1 }, { key: "int", label: "INT", coef: 8 }, { key: "pbu", label: "PBU", coef: 4 }] },
       { key: "SAF", label: "Safety", stats: [{ key: "games", label: "G" }, { key: "total", label: "Tackles" }, { key: "tfl", label: "TFL" }, { key: "pbu", label: "PBU" }, { key: "int", label: "INT" }, { key: "pffGrade", label: "PFF Grade" }], scoreFormula: [{ key: "total", label: "tackle", coef: 1 }, { key: "int", label: "INT", coef: 6 }, { key: "pbu", label: "PBU", coef: 3 }, { key: "tfl", label: "TFL", coef: 1.5 }] },
     ],
-    note: "Each season's top 10 is ranked separately -- the same player can show up in more than one year. 2026 is the current season in progress -- its numbers are season-to-date, not final, and will keep growing as the season goes on. Data comes from the NCAA's national leaderboards, which only carry a player who cracks roughly the national top 100-150 in a category that season, so a genuinely elite performer is covered but a solid-but-unranked one may be missing -- admins can add that player by hand on any position's tab. Offensive Line has no stat source at all, so that tab is entirely hand-entered. PFF Grade is hand-entered for every position (no source for it at all) -- click a column header to sort by it or by the computed Score. Hudl links are best-effort, found by hand; a blank one just hasn't been found yet -- paste one in directly.",
+    note: "Each season's top 5 is ranked separately -- the same player can show up in more than one year. 2026 is the current season in progress -- its numbers are season-to-date, not final, and will keep growing as the season goes on. Data comes from the NCAA's national leaderboards, which only carry a player who cracks roughly the national top 100-150 in a category that season, so a genuinely elite performer is covered but a solid-but-unranked one may be missing -- admins can add that player by hand on any position's tab. Offensive Line has no stat source at all, so that tab is entirely hand-entered. PFF Grade is hand-entered for every position (no source for it at all) -- click a column header to sort by it or by the computed Score. Hudl links are best-effort, found by hand; a blank one just hasn't been found yet -- paste one in directly.",
   },
 ];
 
