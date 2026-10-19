@@ -543,8 +543,8 @@ function WatchListRow({
         />
       </td>
       <td style={{ ...tdStyle, fontWeight: 600, color: "var(--text-primary)" }}>
-        <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
-          <HeadshotFace espnId={espnId} photo={p.photo} name={p.player} color={colorForTeam(p.team)} size={40} />
+        <span style={{ display: "inline-flex", alignItems: "center", gap: 14 }}>
+          <HeadshotFace espnId={espnId} photo={p.photo} name={p.player} color={colorForTeam(p.team)} size={64} />
           <span className="player-name" onClick={() => onSelect(p)} title="View full stats">
             {p.player}
           </span>
