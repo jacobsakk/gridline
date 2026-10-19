@@ -6,6 +6,7 @@ since there's no state code for it. Hand-fill the rest in the Studies page itsel
 found yet."""
 
 HOME_STATES = {
+    "MARCEL WILLIAMS": "FL",
     "BRADEN AWLS": "OH",
     "ANTHONY TORRES": "IN",
     "MITCHEL COLLIER": "IN",

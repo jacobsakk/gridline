@@ -20,15 +20,16 @@ export function useStudyPhotos() {
 const letters = (text) => String(text || "").toLowerCase().replace(/[^a-z]/g, "");
 const SUFFIX = /(jr|sr|ii|iii|iv|v)$/;
 
-// The ESPN picture for a player: by name, preferring the entry whose team matches when two people share one.
-export function headshotUrl(data, name, team) {
-  if (!data) return "";
+// Every ESPN picture that could be this player, best guess first: by name, with the entries whose team matches
+// ahead of the rest. ESPN sometimes has two athlete ids for one person and only one carries a picture, so the
+// face tries them in order until one loads.
+export function headshotUrls(data, name, team) {
+  if (!data) return [];
   const full = letters(name);
-  const entries = data.byName[full] || data.byName[full.length > 5 ? full.replace(SUFFIX, "") : full];
-  if (!entries?.length) return "";
+  const entries = data.byName[full] || data.byName[full.length > 5 ? full.replace(SUFFIX, "") : full] || [];
   const teamKey = letters(team);
-  const pick = entries.find(([, t]) => t === teamKey) || entries[0];
-  return `https://a.espncdn.com/i/headshots/college-football/players/full/${pick[0]}.png`;
+  const ordered = [...entries.filter(([, t]) => t === teamKey), ...entries.filter(([, t]) => t !== teamKey)];
+  return ordered.map(([id]) => `https://a.espncdn.com/i/headshots/college-football/players/full/${id}.png`);
 }
 
 export function initialsOf(name) {

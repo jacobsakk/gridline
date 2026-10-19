@@ -352,6 +352,8 @@ HUDL_LINKS.update({
 # Studies page (admins only) rather than bulk web-searched the way the Hudl links were.
 PFF_LINKS = {}
 HUDL_LINKS.update({
+    # Akron WR, Blanche Ely HS (Pompano Beach, FL) class of 2024 -- the Hudl athlete id comes off his highlight page.
+    "MARCEL WILLIAMS": "https://www.hudl.com/profile/16020160",
     "ANTHONY SIMPSON": "https://www.hudl.com/profile/8230503",
     "BROC LOWRY": "https://www.hudl.com/profile/12907414/Broc-Lowry/about",
     "GIDEON LAMPRON": "https://www.hudl.com/profile/11293236",

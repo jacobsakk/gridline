@@ -8,7 +8,7 @@ import { confirmAction } from "./ConfirmDialog.jsx";
 import { control, LinkCell, StateCell, TextCell } from "./EditableCells.jsx";
 import TransferOutTracker from "./TransferOutTracker.jsx";
 import { submitStudyRequest, useStudyRequests } from "./studyRequests.js";
-import { headshotUrl, initialsOf, teamTone, useStudyPhotos } from "./studyPhotos.js";
+import { headshotUrls, initialsOf, teamTone, useStudyPhotos } from "./studyPhotos.js";
 
 const ghostBtn = { ...control, cursor: "pointer", fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 7 };
 
@@ -18,12 +18,14 @@ const MEDAL = { 1: { emoji: "🥇", label: "First Team All-MAC" }, 2: { emoji: "
 // A round ESPN headshot ringed in the school's colour; initials in the same ring when there is no picture
 // (or it fails to load).
 function PlayerFace({ photos, name, team }) {
-  const url = headshotUrl(photos, name, team);
-  const [failed, setFailed] = useState(false);
-  useEffect(() => setFailed(false), [url]);
+  const urls = headshotUrls(photos, name, team);
+  const [tried, setTried] = useState(0); // how many of the candidate pictures have failed to load
+  const first = urls[0];
+  useEffect(() => setTried(0), [first]);
+  const url = urls[tried];
   return (
     <span className="study-face study-tc" style={{ ...(teamTone(photos, team) || {}) }} aria-hidden="true">
-      {url && !failed ? <img src={url} alt="" loading="lazy" onError={() => setFailed(true)} /> : <span>{initialsOf(name)}</span>}
+      {url ? <img key={url} src={url} alt="" loading="lazy" onError={() => setTried((n) => n + 1)} /> : <span>{initialsOf(name)}</span>}
     </span>
   );
 }
