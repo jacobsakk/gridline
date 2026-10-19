@@ -1068,7 +1068,7 @@ function WatchListPanel({ watchlist, onClose, onHome, onSelectPlayer, portalStat
 // Shows every tracked stat line for one player across all categories they
 // appear in (a QB who also carries the ball shows both Passing and Rushing,
 // for example) -- opened by clicking a player's name in the main grid.
-// `espn` adds the ESPN headshot and profile link to the header -- turned on by the Colleges section only.
+// `espn` adds the headshot and ESPN profile link to the header (and, for a player on the watch list, a way to add a photo by hand).
 export function PlayerDetailModal({ sel, onClose, watchlist, portalStatus, espn = false }) {
   const rows = useMemo(
     () =>
@@ -1585,7 +1585,6 @@ function GridlineMain({ onBack: toDashboard, initialSearch, onUploadStats }) {
     } else navigate(["tracker", division]);
   };
   const [selectedPlayer, setSelectedPlayer] = useState(null);
-  const [espnModal, setEspnModal] = useState(false); // opened from the watch list: shows the headshot, with a way to add one by hand
   const [theme, setTheme] = useTheme();
   const watchlist = useWatchlist();
   const portalStatus = usePortalStatus();
@@ -1801,13 +1800,12 @@ function GridlineMain({ onBack: toDashboard, initialSearch, onUploadStats }) {
           onHome={toDashboard}
           onSelectPlayer={(p) => {
             watchlist.markSeen(p.id, p.player, p.team);
-            setEspnModal(true);
             setSelectedPlayer({ player: p.player, team: p.team, division: p.division, position: p.position });
           }}
         />
       )}
       {selectedPlayer && (
-        <PlayerDetailModal espn={espnModal} sel={selectedPlayer} onClose={() => { setSelectedPlayer(null); setEspnModal(false); }} watchlist={watchlist} portalStatus={portalStatus} />
+        <PlayerDetailModal espn sel={selectedPlayer} onClose={() => setSelectedPlayer(null)} watchlist={watchlist} portalStatus={portalStatus} />
       )}
 
       {/* Division tabs -- frozen along with the header above; everything
