@@ -237,9 +237,9 @@ tbody tr:hover { background: var(--row-hover) !important; }
 .study-team { color: var(--tc-l); font-weight: 700; }
 .app-shell[data-theme="dark"] .study-team { color: var(--tc-d); }
 .study-face {
-  flex-shrink: 0; width: 38px; height: 38px; border-radius: 50%; overflow: hidden; display: inline-flex;
-  align-items: flex-end; justify-content: center; background: var(--bg-surface); border: 2px solid var(--tc-l);
-  font-size: 12px; font-weight: 800; letter-spacing: 0.02em; color: var(--tc-l);
+  flex-shrink: 0; width: 68px; height: 68px; border-radius: 50%; overflow: hidden; display: inline-flex;
+  align-items: flex-end; justify-content: center; background: var(--bg-surface); border: 3px solid var(--tc-l);
+  font-size: 20px; font-weight: 800; letter-spacing: 0.02em; color: var(--tc-l);
 }
 .app-shell[data-theme="dark"] .study-face { border-color: var(--tc-d); color: var(--tc-d); }
 .study-face img { width: 100%; height: 100%; object-fit: cover; object-position: center top; display: block; }

@@ -527,7 +527,7 @@ function StudyDetail({ studyId, canEdit, onBack }) {
                 return (
                 <tr key={r.id || `${r.player}__${r.team}`} style={{ background: i % 2 === 0 ? "var(--bg-panel)" : "var(--bg-page)" }}>
                   <td style={{ ...td, fontWeight: 700, color: "var(--text-primary)" }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 14, fontSize: 15 }}>
                       <PlayerFace photos={photos} name={r.player} team={r.team} />
                       <span>
                         <Medal tier={r.allMac} />
