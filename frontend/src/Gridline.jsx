@@ -11,6 +11,8 @@ import { initialSubRoute, navigate, parseHash, setSubRoute, useBack, useRoute } 
 import StatsUploadModal from "./StatsUploadModal.jsx";
 import { loadUploads } from "./statsUpload.js";
 import { canonicalSchool } from "./schoolNames.js";
+import HeadshotFace from "./HeadshotFace.jsx";
+import { colorForTeam, espnIdFromRow, espnProfileUrl, espnSearchUrl } from "./espnPlayer.js";
 
 const WATCH_PAGE = "watch-list";
 let watchOpenedFromTracker = false; // true once the page was opened from the tracker, so Back can pop the history entry
@@ -1070,6 +1072,7 @@ export function PlayerDetailModal({ sel, onClose, watchlist, portalStatus }) {
     [sel.player, sel.team, sel.division, sel.variants]
   );
   const first = rows[0];
+  const espnId = useMemo(() => rows.map(espnIdFromRow).find(Boolean) || "", [rows]);
   const watched = watchlist.players.find((p) => p.player === sel.player && p.team === sel.team);
 
   // Local echo of the free-text fields, same as WatchListRow -- commit
@@ -1145,6 +1148,8 @@ export function PlayerDetailModal({ sel, onClose, watchlist, portalStatus }) {
             background: "var(--bg-panel)",
           }}
         >
+          <div style={{ display: "flex", alignItems: "center", gap: 14, minWidth: 0 }}>
+          <HeadshotFace espnId={espnId} name={sel.player} color={colorForTeam(sel.team)} size={72} />
           <div>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <h2 className="oswald" style={{ fontSize: 20, margin: 0, fontWeight: 700 }}>
@@ -1168,6 +1173,12 @@ export function PlayerDetailModal({ sel, onClose, watchlist, portalStatus }) {
               {canonicalSchool(sel.team)}
               {first ? ` · ${first.conference} · ${first.position} · ${DIVISION_LABEL[sel.division] || sel.division}${first.homeState ? ` · Home: ${first.homeState}` : ""}` : ""}
             </div>
+            <div style={{ fontSize: 12.5, marginTop: 4 }}>
+              <a href={espnId ? espnProfileUrl(espnId) : espnSearchUrl(sel.player)} target="_blank" rel="noreferrer" style={{ color: "var(--accent)" }}>
+                {espnId ? "ESPN profile" : "Find on ESPN"} ↗
+              </a>
+            </div>
+          </div>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 7 }}>

@@ -66,8 +66,16 @@ function fromHsl(h, sat, l) {
 const DARK_OVERRIDE = { centralmichigan: "#ffc82e", centralmich: "#ffc82e", cmichigan: "#ffc82e", cmich: "#ffc82e" };
 
 export function teamTone(data, team) {
-  const base = data?.colors?.[letters(team)];
-  if (!base) return null;
+  const tone = toneFromHex(data?.colors?.[letters(team)]);
+  if (tone && DARK_OVERRIDE[letters(team)]) tone["--tc-d"] = DARK_OVERRIDE[letters(team)];
+  return tone;
+}
+
+// The same two shades from a bare hex colour ("154734" or "#154734").
+export function toneFromHex(hex) {
+  if (!hex) return null;
+  const base = `#${String(hex).replace("#", "").toLowerCase()}`;
+  if (!/^#[0-9a-f]{6}$/.test(base)) return null;
   const c = rgb(base);
   let light = c;
   for (let i = 0; i < 8 && luma(light) > 0.42; i++) light = mix(light, [0, 0, 0], 0.15);
@@ -78,5 +86,5 @@ export function teamTone(data, team) {
     const [h, sat, lig] = toHsl(c);
     dark = fromHsl(h, Math.min(Math.max(sat, 0.5), 0.65), Math.max(lig, 0.62));
   }
-  return { "--tc-l": toHex(light), "--tc-d": DARK_OVERRIDE[letters(team)] || toHex(dark) };
+  return { "--tc-l": toHex(light), "--tc-d": toHex(dark) };
 }

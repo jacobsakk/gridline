@@ -1,3 +1,5 @@
+import HeadshotFace from "./HeadshotFace.jsx";
+import { espnIdFromRow } from "./espnPlayer.js";
 import { useRealStatsReady } from "./statsData.js";
 import { initialSubRoute, setSubRoute } from "./route.js";
 import { useContext, useEffect, useMemo, useState } from "react";
@@ -553,11 +555,14 @@ function RosterTab({ college }) {
             {rows.map((r) => (
               <tr key={r.id}>
                 <td style={{ ...tdStyle, fontWeight: 600, color: "var(--text-primary)" }}>
-                  <span
-                    className="player-name"
-                    onClick={() => setSelected({ player: r.player, team: r.team, division: r.division, position: r.position, variants: r.variants })}
-                  >
-                    {r.player}
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: 10 }}>
+                    <HeadshotFace espnId={espnIdFromRow(r)} name={r.player} color={college.color} size={44} />
+                    <span
+                      className="player-name"
+                      onClick={() => setSelected({ player: r.player, team: r.team, division: r.division, position: r.position, variants: r.variants })}
+                    >
+                      {r.player}
+                    </span>
                   </span>
                 </td>
                 <td style={{ ...tdStyle, color: "var(--accent)", fontWeight: 700 }}>{r.position || "—"}</td>
