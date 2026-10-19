@@ -83,6 +83,12 @@ jobs:
         working-directory: scraper
         run: python3 studies/mac_best_by_position.py
 
+      - name: Refresh the study headshots and school colours
+        if: steps.fresh.outputs.skip != 'true'
+        continue-on-error: true   # a pictures hiccup must never cost the week's stats
+        working-directory: scraper
+        run: python3 studies/headshots.py
+
       - name: Commit, push and redeploy
         if: steps.fresh.outputs.skip != 'true'
         env:
@@ -90,7 +96,7 @@ jobs:
         run: |
           git config user.name "gridline-bot"
           git config user.email "actions@users.noreply.github.com"
-          git add frontend/src/data/real-stats.json scraper/snapshots/ frontend/src/data/studies/mac-best-by-position.json
+          git add frontend/src/data/real-stats.json scraper/snapshots/ frontend/src/data/studies/mac-best-by-position.json frontend/src/data/studies/headshots.json scraper/studies/_headshot_cache.json frontend/src/data/studies/headshots.json scraper/studies/_headshot_cache.json
           if git diff --cached --quiet; then
             echo "No data changes this run -- nothing to commit."
           else

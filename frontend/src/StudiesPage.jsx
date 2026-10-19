@@ -8,12 +8,30 @@ import { confirmAction } from "./ConfirmDialog.jsx";
 import { control, LinkCell, StateCell, TextCell } from "./EditableCells.jsx";
 import TransferOutTracker from "./TransferOutTracker.jsx";
 import { submitStudyRequest, useStudyRequests } from "./studyRequests.js";
+import { headshotUrl, initialsOf, teamTone, useStudyPhotos } from "./studyPhotos.js";
 
 const ghostBtn = { ...control, cursor: "pointer", fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 7 };
 
 // Gold/silver/bronze for a real, official All-MAC First/Second/Third Team honor that season (see
 // scraper/studies/_all_mac.py) -- purely informational, next to the name, never affects the ranking.
 const MEDAL = { 1: { emoji: "🥇", label: "First Team All-MAC" }, 2: { emoji: "🥈", label: "Second Team All-MAC" }, 3: { emoji: "🥉", label: "Third Team All-MAC" } };
+// A round ESPN headshot ringed in the school's colour; initials in the same ring when there is no picture
+// (or it fails to load).
+function PlayerFace({ photos, name, team }) {
+  const url = headshotUrl(photos, name, team);
+  const [failed, setFailed] = useState(false);
+  useEffect(() => setFailed(false), [url]);
+  return (
+    <span className="study-face study-tc" style={{ ...(teamTone(photos, team) || {}) }} aria-hidden="true">
+      {url && !failed ? <img src={url} alt="" loading="lazy" onError={() => setFailed(true)} /> : <span>{initialsOf(name)}</span>}
+    </span>
+  );
+}
+
+function TeamName({ photos, team, children }) {
+  return <span className="study-tc study-team" style={teamTone(photos, team) || undefined}>{children}</span>;
+}
+
 function Medal({ tier }) {
   const m = MEDAL[tier];
   if (!m) return null;
@@ -355,6 +373,7 @@ function PasteTableModal({ allowNewRows, onClose, onSubmit }) {
 
 function StudyDetail({ studyId, canEdit, onBack }) {
   const study = useStudy(studyId);
+  const photos = useStudyPhotos();
   const [initial] = useState(initialSubRoute);
   const [group, setGroup] = useState(() => study.meta.groups.some((g) => g.key === initial[1]) ? initial[1] : study.meta.groups[0].key);
   const [season, setSeason] = useState(() => (/^\d{4}$/.test(initial[2]) ? Number(initial[2]) : null));
@@ -508,11 +527,18 @@ function StudyDetail({ studyId, canEdit, onBack }) {
                 return (
                 <tr key={r.id || `${r.player}__${r.team}`} style={{ background: i % 2 === 0 ? "var(--bg-panel)" : "var(--bg-page)" }}>
                   <td style={{ ...td, fontWeight: 700, color: "var(--text-primary)" }}>
-                    <Medal tier={r.allMac} />
-                    {isManualRow ? <TextCell row={r} field="player" placeholder="Player name" editable={canEdit} onSave={(v) => study.updateManualRow(r.id, { player: v })} /> : r.player}
+                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                      <PlayerFace photos={photos} name={r.player} team={r.team} />
+                      <span>
+                        <Medal tier={r.allMac} />
+                        {isManualRow ? <TextCell row={r} field="player" placeholder="Player name" editable={canEdit} onSave={(v) => study.updateManualRow(r.id, { player: v })} /> : r.player}
+                      </span>
+                    </div>
                   </td>
                   <td style={td}>
-                    {isManualRow ? <TextCell row={r} field="team" placeholder="Team" editable={canEdit} onSave={(v) => study.updateManualRow(r.id, { team: v })} /> : r.team}
+                    <TeamName photos={photos} team={r.team}>
+                      {isManualRow ? <TextCell row={r} field="team" placeholder="Team" editable={canEdit} onSave={(v) => study.updateManualRow(r.id, { team: v })} /> : r.team}
+                    </TeamName>
                   </td>
                   <td style={td}>
                     <StateCell row={r} editable={canEdit} onSave={(state) => (isManualRow ? study.updateManualRow(r.id, { state }) : study.saveField(group, r.player, { state }))} />

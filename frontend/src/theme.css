@@ -230,3 +230,17 @@ tbody tr:hover { background: var(--row-hover) !important; }
   .bb-themed .offer-cell-input { border-color: transparent !important; background: transparent !important; appearance: none; font-size: 8pt !important; padding: 0 3px !important; }
   .bb-themed tr { break-inside: avoid; }
 }
+
+/* Studies: a player's headshot ringed in his school's colour, and the school name in that colour. The colour
+   comes in as --tc-l / --tc-d (studyPhotos.js) -- a version for light pages and a lighter one for dark. */
+.study-tc { --tc-l: var(--text-muted); --tc-d: var(--text-muted); }
+.study-team { color: var(--tc-l); font-weight: 700; }
+.app-shell[data-theme="dark"] .study-team { color: var(--tc-d); }
+.study-face {
+  flex-shrink: 0; width: 38px; height: 38px; border-radius: 50%; overflow: hidden; display: inline-flex;
+  align-items: flex-end; justify-content: center; background: var(--bg-surface); border: 2px solid var(--tc-l);
+  font-size: 12px; font-weight: 800; letter-spacing: 0.02em; color: var(--tc-l);
+}
+.app-shell[data-theme="dark"] .study-face { border-color: var(--tc-d); color: var(--tc-d); }
+.study-face img { width: 100%; height: 100%; object-fit: cover; object-position: center top; display: block; }
+.study-face > span { align-self: center; }
