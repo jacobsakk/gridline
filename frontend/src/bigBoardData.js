@@ -329,6 +329,40 @@ export function buildCreditList(boards, saved = []) {
   return { committed: list.filter((r) => r.status === "committed"), offered: list.filter((r) => r.status === "offered") };
 }
 
+// The JUCO credit evaluation: everyone on the board (not only the committed and offered), grouped by card colour.
+// Height, wingspan, GPA and the transcript tick live on the player's own card, so this table and the card's edit
+// window are two views of the same thing -- a change in either shows in the other.
+export function buildJucoCreditList(boards) {
+  const seen = new Map();
+  const ordered = [];
+  boards.filter(Boolean).forEach((b) => b.columns.forEach((c) => ordered.push({ c, flex: /^flex/i.test(c.label) })));
+  ordered.sort((a, b) => Number(a.flex) - Number(b.flex));
+  ordered.forEach(({ c }) =>
+    c.players.forEach((p) => {
+      const key = nameKey(p.name);
+      if (!key || seen.has(key)) return;
+      const parts = p.name.trim().split(/\s+/);
+      seen.set(key, {
+        key,
+        status: p.status || "recruit",
+        first: parts[0] || "",
+        last: parts.slice(1).join(" "),
+        pos: p.pos || POS_FROM_COLUMN[c.label] || positionAbbreviation(p.positionTitle) || "ATH",
+        school: p.school || "",
+        verfHeight: p.verfHeight || "",
+        verfWing: p.verfWing || "",
+        gpa: p.gpa || "",
+        gpaLabel: p.gpaLabel || "",
+        transcriptEval: !!p.transcriptEval,
+      });
+    })
+  );
+  const rank = (r) => (CREDIT_POS_ORDER.indexOf(r.pos) < 0 ? 99 : CREDIT_POS_ORDER.indexOf(r.pos));
+  const all = [...seen.values()].sort((a, b) => rank(a) - rank(b) || a.last.localeCompare(b.last));
+  const groups = STATUSES.map((s) => ({ key: s.key, title: s.label, color: s.color, rows: all.filter((r) => r.status === s.key) })).filter((g) => g.rows.length);
+  return { groups, total: all.length };
+}
+
 export const blankPlayer = (tier = 1) => ({
   id: newId(),
   name: "",

@@ -7,7 +7,7 @@ import { initialSubRoute, setSubRoute, useBack } from "./route.js";
 import { matchPhotoFiles, mondayOf, photoFromFile, toIso } from "./hsData.js";
 import {
   FLAGS, RATING_KEYS, STATUSES, STATUS_BY_KEY, TRENDS, VISITS, blankPlayer, boardTitle, buildCreditList, classYearFromTitle,
-  commitCounts, creditKey, diffBoards, handChange, nameKey, parseBoardSheet, parseCreditSheet, readWorkbook, useBigBoards,
+  buildJucoCreditList, commitCounts, creditKey, diffBoards, handChange, nameKey, parseBoardSheet, parseCreditSheet, readWorkbook, useBigBoards,
 } from "./bigBoardData.js";
 
 const VIEWS = [
@@ -277,6 +277,22 @@ export function PlayerModal({ board, classYear, colKey, player, isNew, photo, on
             </div>
           </div>
 
+          {classYear === "JUCO" && (
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr auto", gap: 10, alignItems: "end" }}>
+              <div>
+                <label style={label} htmlFor="bb-vh">Verified height</label>
+                <input id="bb-vh" value={draft.verfHeight || ""} onChange={(e) => set({ verfHeight: e.target.value })} placeholder={`6'3"v`} style={{ ...ctl, width: "100%" }} />
+              </div>
+              <div>
+                <label style={label} htmlFor="bb-vw">Verified wingspan</label>
+                <input id="bb-vw" value={draft.verfWing || ""} onChange={(e) => set({ verfWing: e.target.value })} placeholder={`6'5.5"`} style={{ ...ctl, width: "100%" }} />
+              </div>
+              <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, fontWeight: 600, padding: "8px 0" }}>
+                <input type="checkbox" checked={!!draft.transcriptEval} onChange={(e) => set({ transcriptEval: e.target.checked })} /> Transcript evaluated
+              </label>
+            </div>
+          )}
+
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
             <div>
               <label style={label} htmlFor="bb-status">Status (card colour)</label>
@@ -429,7 +445,7 @@ export function CreditSheet({ list, onEdit, classYear }) {
                 {g.rows.map((r) => (
                   <tr key={r.key}>
                     {cols.map((c, ci) => (
-                      <td key={c.key} style={{ ...tableCell, padding: EDITABLE_CREDIT.has(c.key) ? "3px 4px" : "6px 10px", boxShadow: ci === 0 ? `inset 3px 0 0 ${g.color}` : undefined, fontWeight: c.key === "first" || c.key === "last" ? 700 : undefined, color: c.key === "first" || c.key === "last" ? "var(--text-primary)" : undefined }}>
+                      <td key={c.key} style={{ ...tableCell, padding: EDITABLE_CREDIT.has(c.key) ? "3px 4px" : "6px 10px", boxShadow: ci === 0 ? `inset 3px 0 0 ${g.color}` : undefined, fontWeight: c.key === "first" || c.key === "last" ? 700 : undefined, ...(c.key === "first" || c.key === "last" ? { color: "var(--text-primary)" } : null) }}>
                         {c.select ? (
                           <select className="offer-cell-input" value={r.qualifier} onChange={(e) => onEdit(r, { qualifier: e.target.value })} style={{ ...input, cursor: "pointer" }}>
                             {r.qualifier && !QUALIFIERS.includes(r.qualifier) && <option value={r.qualifier}>{r.qualifier}</option>}
@@ -460,6 +476,78 @@ export function CreditSheet({ list, onEdit, classYear }) {
       </div>
       <p className="hs-no-print" style={{ margin: "10px 0 0", fontSize: 12.5, color: "var(--text-faint)", lineHeight: 1.5 }}>
         Built from the board: committed and offered only. Name, position, school and state come from the card; the coach, transcript date, NCAA qualifier, GPA and credits are typed here and kept with the person.
+      </p>
+    </div>
+  );
+}
+
+// The JUCO credit table: everyone on the board, with the verified height and wingspan, the JUCO GPA and whether the
+// transcript has been evaluated. All four are the card's own fields, so they match what the card's edit window shows.
+const JUCO_COLS = [
+  { key: "first", label: "First name", w: 96 },
+  { key: "last", label: "Last name", w: 110 },
+  { key: "pos", label: "Pos", w: 56 },
+  { key: "school", label: "School", w: 230 },
+  { key: "verfHeight", label: "Verf height", w: 100, edit: true },
+  { key: "verfWing", label: "Verf wing", w: 100, edit: true },
+  { key: "gpa", label: "JUCO GPA", w: 90, edit: true },
+  { key: "transcriptEval", label: "Transcript eval", w: 110, box: true },
+];
+
+export function JucoCreditSheet({ list, onEdit, classYear }) {
+  const input = { width: "100%", color: "var(--text-primary)", fontFamily: "inherit", fontSize: 13.5, padding: "4px 7px", minWidth: 0, textAlign: "center" };
+  return (
+    <div className="bb-themed">
+      <SheetHeading title="Credit evaluation" classYear={classYear}>
+        {list.groups.map((g) => countPill(g.color, g.title, g.rows.length))}
+      </SheetHeading>
+      <div style={{ border: "1px solid var(--border)", borderRadius: 8, overflow: "auto", background: "var(--bg-panel)" }}>
+        <table style={{ width: "100%", borderCollapse: "collapse" }}>
+          <thead>
+            <tr>{JUCO_COLS.map((c) => <th key={c.key} style={{ ...tableHead, minWidth: c.w, textAlign: c.edit || c.box ? "center" : "left" }}>{c.label}</th>)}</tr>
+          </thead>
+          <tbody>
+            {list.total === 0 && (
+              <tr><td colSpan={JUCO_COLS.length} style={{ ...tableCell, textAlign: "center", padding: 28, color: "var(--text-faint)", whiteSpace: "normal" }}>No one is on this class's boards yet. This list fills itself in from the board.</td></tr>
+            )}
+            {list.groups.map((g) => (
+              <Fragment key={g.key}>
+                <tr>
+                  <td colSpan={JUCO_COLS.length} style={{ ...tableCell, background: "var(--bg-surface)", fontWeight: 800, fontSize: 12, letterSpacing: "0.04em", textTransform: "uppercase", color: "var(--text-primary)" }}>
+                    <span style={{ display: "inline-block", width: 9, height: 9, borderRadius: "50%", background: g.color, marginRight: 8 }} />
+                    {g.title} <span className="tabular" style={{ color: "var(--text-faint)", fontWeight: 600 }}>· {g.rows.length}</span>
+                  </td>
+                </tr>
+                {g.rows.map((r) => (
+                  <tr key={r.key}>
+                    {JUCO_COLS.map((c, ci) => (
+                      <td key={c.key} style={{ ...tableCell, padding: c.edit || c.box ? "3px 4px" : "6px 10px", textAlign: c.box ? "center" : undefined, boxShadow: ci === 0 ? `inset 3px 0 0 ${g.color}` : undefined, fontWeight: c.key === "first" || c.key === "last" ? 700 : 400, ...(c.key === "first" || c.key === "last" ? { color: "var(--text-primary)" } : null) }}>
+                        {c.box ? (
+                          <input type="checkbox" checked={r.transcriptEval} onChange={(e) => onEdit(r, { transcriptEval: e.target.checked })} aria-label={`Transcript evaluated for ${r.first} ${r.last}`} style={{ width: 18, height: 18, cursor: "pointer", accentColor: "var(--success)" }} />
+                        ) : c.edit ? (
+                          <input
+                            className="offer-cell-input"
+                            key={r[c.key]}
+                            defaultValue={r[c.key]}
+                            placeholder="—"
+                            aria-label={`${c.label} for ${r.first} ${r.last}`}
+                            onBlur={(e) => e.target.value.trim() !== r[c.key] && onEdit(r, c.key === "gpa" ? { gpa: e.target.value.trim(), gpaLabel: r.gpaLabel || "GPA" } : { [c.key]: e.target.value.trim() })}
+                            style={input}
+                          />
+                        ) : (
+                          r[c.key]
+                        )}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </Fragment>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p className="hs-no-print" style={{ margin: "10px 0 0", fontSize: 12.5, color: "var(--text-faint)", lineHeight: 1.5 }}>
+        Everyone on the JUCO boards. Name, position and school come from the card. Verified height, wingspan, GPA and the transcript tick are the card's own fields, so they match what you see when you click the card, whichever one you edit.
       </p>
     </div>
   );
@@ -811,6 +899,8 @@ export default function BigBoard({ onBack: toDashboard }) {
   const defBoard = bb.board(classYear, "def");
   const creditList = useMemo(() => buildCreditList([offBoard, defBoard], credit?.rows || []), [offBoard, defBoard, credit]);
 
+  const jucoCredit = useMemo(() => buildJucoCreditList([offBoard, defBoard]), [offBoard, defBoard]);
+
   async function editCredit(row, patch) {
     const saved = credit?.rows || [];
     const at = saved.findIndex((r) => (r.key || creditKey(r.first, r.last)) === row.key);
@@ -819,10 +909,29 @@ export default function BigBoard({ onBack: toDashboard }) {
     await bb.saveCredit(classYear, at >= 0 ? saved.map((r, i) => (i === at ? merged : r)) : [...saved, merged]);
   }
 
+  // The same person can be on both boards (a flex player): what the JUCO credit table keeps for him is carried to
+  // every card of his, on either board, so the two stay one record.
+  const JUCO_FIELDS = ["verfHeight", "verfWing", "gpa", "gpaLabel", "transcriptEval"];
+  async function patchPerson(name, patch, sides = ["off", "def"]) {
+    const key = nameKey(name);
+    for (const side of sides) {
+      const b = bb.board(classYear, side);
+      if (!b) continue;
+      let hit = false;
+      const next = { ...b, columns: b.columns.map((c) => ({ ...c, players: c.players.map((p) => (nameKey(p.name) === key ? ((hit = true), { ...p, ...patch }) : p)) })) };
+      if (hit) await bb.saveBoard(classYear, side, next);
+    }
+  }
+  const editJuco = (row, patch) => patchPerson(`${row.first} ${row.last}`, patch);
+
   async function savePlayer(colKey, draft) {
     const player = { ...draft, name: draft.name.trim() };
     const next = upsertPlayer(board, colKey, player);
     await persist(next);
+    if (classYear === "JUCO" && player.name) {
+      const other = view === "off" ? "def" : "off";
+      await patchPerson(player.name, Object.fromEntries(JUCO_FIELDS.map((f) => [f, player[f] ?? (f === "transcriptEval" ? false : "")])), [other]);
+    }
     if (editing?.isNew) {
       const label = board.columns.find((c) => c.key === colKey)?.label || colKey;
       const change = handChange("added", view, player, label);
@@ -947,7 +1056,11 @@ export default function BigBoard({ onBack: toDashboard }) {
         {!bb.ready ? (
           <div style={{ padding: 40, textAlign: "center", color: "var(--text-faint)" }}>Loading…</div>
         ) : view === "credit" ? (
-          <CreditSheet list={creditList} classYear={classYear} onEdit={editCredit} />
+          classYear === "JUCO" ? (
+            <JucoCreditSheet list={jucoCredit} classYear={classYear} onEdit={editJuco} />
+          ) : (
+            <CreditSheet list={creditList} classYear={classYear} onEdit={editCredit} />
+          )
         ) : view === "activity" ? (
           <ActivitySheet rows={bb.activity} classYear={classYear} />
         ) : board ? (
@@ -997,7 +1110,7 @@ function carryOver(next, previous) {
       ...c,
       players: c.players.map((p) => {
         const old = before.get(nameKey(p.name));
-        return old ? { ...p, gpa: old.gpa ?? p.gpa, gpaLabel: old.gpaLabel ?? p.gpaLabel, visits: old.visits ?? p.visits, flags: old.flags ?? p.flags, rating: old.rating ?? p.rating } : p;
+        return old ? { ...p, gpa: old.gpa ?? p.gpa, gpaLabel: old.gpaLabel ?? p.gpaLabel, visits: old.visits ?? p.visits, flags: old.flags ?? p.flags, rating: old.rating ?? p.rating, verfHeight: old.verfHeight ?? p.verfHeight, verfWing: old.verfWing ?? p.verfWing, transcriptEval: old.transcriptEval ?? p.transcriptEval } : p;
       }),
     })),
   };
