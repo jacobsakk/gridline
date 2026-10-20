@@ -280,7 +280,12 @@ export default function ReportsPage({ onBack: toDashboard, session }) {
                           <input className="rp-done-box" type="checkbox" checked={!!r.complete} onChange={(e) => editRow(r.i, { complete: e.target.checked })} aria-label={`${r.name} completed`} style={{ cursor: "pointer" }} />
                           <span className="rp-print-only">{r.complete ? "✓" : ""}</span>
                         </td>
-                        <td className="hs-no-print" style={{ ...td, textAlign: "right" }}>
+                        <td className="hs-no-print" style={{ ...td, textAlign: "right", whiteSpace: "nowrap" }}>
+                          {r.flags?.length > 0 && (
+                            <button onClick={() => editRow(r.i, Object.fromEntries(r.flags.map((f) => [f, r[f]])))} title="It's right as it is -- stop highlighting this one" style={{ background: "none", border: "1px solid #e0a030", color: "#e0a030", borderRadius: 4, fontSize: 11.5, padding: "2px 7px", marginRight: 6, cursor: "pointer", fontFamily: "inherit" }}>
+                              Looks right
+                            </button>
+                          )}
                           <button onClick={() => removeRow(r.i)} aria-label={`Remove ${r.name}`} style={{ background: "none", border: "none", color: "var(--text-faint)", cursor: "pointer", lineHeight: 0 }}><Trash2 size={14} /></button>
                         </td>
                       </tr>

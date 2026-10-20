@@ -200,6 +200,22 @@ async function readCell(worker, cell, { psm = "6", whitelist = "" } = {}) {
 }
 
 const DATE_CHARS = "0123456789/:APMapm ";
+// What a name is made of: letters, and the comma, quote marks, hyphen, apostrophe and full stop around them.
+const NAME_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz,.'’\"“”- ";
+
+// The lines of text in a prospect's cell: name first, then the school, then the class/position line.
+export async function readProspectCell(worker, canvas, x0, x1, y0, y1) {
+  // A name that wraps onto a second line is where its words get mixed into the school's; there the orange of the
+  // name tells where it ends. A name on one line reads fine as part of the whole cell.
+  const zone = nameZone(canvas, x0, x1, y0 + 2, y1 - 2);
+  const cut = zone && zone.wraps ? zone.bottom : null;
+  if (cut && cut > y0 + 6 && cut < y1 - 8) {
+    const nameLines = await readCell(worker, cellCanvas(canvas, x0, x1, y0, cut + 2, { inset: 1, minHeight: 150 }), { whitelist: NAME_CHARS });
+    const restLines = await readCell(worker, cellCanvas(canvas, x0, x1, cut + 1, y1, { inset: 1, minHeight: 150 }));
+    if (nameLines.length) return [nameLines.join(" "), ...restLines];
+  }
+  return readCell(worker, cellCanvas(canvas, x0, x1, y0, y1));
+}
 
 async function readGrid(worker, canvas, grid, onStatus) {
   const { ys, xs, w } = grid;
@@ -241,21 +257,7 @@ async function readGrid(worker, canvas, grid, onStatus) {
   for (let n = 0; n < body.length; n++) {
     const [y0, y1] = body[n];
     onStatus(`Reading prospect ${n + 1} of ${body.length}…`);
-    let prospectLines;
-    let nameText = "";
-    // A name that wraps onto a second line is where its words get mixed into the school's; there the orange of the
-    // name tells where it ends. A name on one line reads fine as part of the whole cell.
-    const zone = nameZone(canvas, col.prospect[0], col.prospect[1], y0 + 2, y1 - 2);
-    const cut = zone && zone.wraps ? zone.bottom : null;
-    if (cut && cut > y0 + 6 && cut < y1 - 8) {
-      const nameLines = await readCell(worker, cellCanvas(canvas, col.prospect[0], col.prospect[1], y0, cut + 2, { inset: 1, minHeight: 150 }));
-      const restLines = await readCell(worker, cellCanvas(canvas, col.prospect[0], col.prospect[1], cut + 1, y1, { inset: 1, minHeight: 150 }));
-      if (nameLines.length) {
-        nameText = nameLines.join(" ");
-        prospectLines = [nameText, ...restLines];
-      }
-    }
-    if (!prospectLines) prospectLines = await readCell(worker, cellCanvas(canvas, col.prospect[0], col.prospect[1], y0, y1));
+    const prospectLines = await readProspectCell(worker, canvas, col.prospect[0], col.prospect[1], y0, y1);
     if (!prospectLines.length) continue;
     const assignedLines = await readCell(worker, cellCanvas(canvas, col.assigned[0], col.assigned[1], y0, y1), { whitelist: DATE_CHARS });
     const completedLines = await readCell(worker, cellCanvas(canvas, col.completed[0], col.completed[1], y0, y1), { whitelist: DATE_CHARS });
@@ -359,7 +361,8 @@ export function checkRow(row) {
     const [y, m, d] = iso.split("-").map(Number);
     return y >= year - 2 && y <= year + 1 && m >= 1 && m <= 12 && d >= 1 && d <= 31;
   };
-  if (!/^[A-Za-z][A-Za-z'’.\- ]*,\s*\S/.test(row.name || "")) flags.push("name");
+  const name = row.name || "";
+  if (!/^[A-Za-z][A-Za-z'’.\- ]*,\s*\S/.test(name) || /[®©™|\[\]{}*_]/.test(name) || (name.match(/"/g) || []).length % 2 === 1) flags.push("name");
   if (!POSITIONS.includes(row.position)) flags.push("position");
   if (!row.school || /,\s*$/.test(row.school)) flags.push("school");
   if (!okDate(row.assigned)) flags.push("assigned");
