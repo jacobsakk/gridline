@@ -131,8 +131,7 @@ const COLUMN_ORDER = ["check", "prospect", "status", "eval", "assigned", "comple
 const KEYWORDS = { prospect: /prospect/i, status: /status/i, eval: /eval/i, assigned: /assign/i, completed: /complet/i, coach: /coach/i, action: /action/i };
 
 // A cell cropped out of the page and enlarged so small print is big enough to read.
-function cellCanvas(canvas, x0, x1, y0, y1, { invert = false, minHeight = 150 } = {}) {
-  const inset = 3;
+function cellCanvas(canvas, x0, x1, y0, y1, { invert = false, minHeight = 150, inset = 3 } = {}) {
   const sx = Math.round(x0 + inset);
   const sy = Math.round(y0 + inset);
   const sw = Math.max(4, Math.round(x1 - x0 - inset * 2));
@@ -156,6 +155,33 @@ function cellCanvas(canvas, x0, x1, y0, y1, { invert = false, minHeight = 150 } 
     cx.putImageData(im, 0, 0);
   }
   return out;
+}
+
+// A name is a link, drawn in orange; the school and the class/position line under it are dark. So where the orange
+// ends is where the name ends, however many lines a long name wraps onto ("Beveridge," / "Christopher "Chris"").
+function nameZone(canvas, x0, x1, y0, y1) {
+  const sx = Math.round(x0);
+  const sy = Math.round(y0);
+  const sw = Math.max(1, Math.round(x1 - x0));
+  const sh = Math.max(1, Math.round(y1 - y0));
+  const px = canvas.getContext("2d").getImageData(sx, sy, sw, sh).data;
+  const orange = [];
+  for (let y = 0; y < sh; y++) {
+    let n = 0;
+    for (let x = 0; x < sw; x++) {
+      const i = (y * sw + x) * 4;
+      if (px[i] > 140 && px[i] - px[i + 2] > 70 && px[i] - px[i + 1] > 35) n++;
+    }
+    orange.push(n >= 2);
+  }
+  const top = orange.indexOf(true);
+  if (top < 0) return null;
+  const bottom = orange.lastIndexOf(true);
+  let end = top;
+  while (end + 1 < sh && orange[end + 1]) end++;
+  // lines: how many text lines the orange covers, judged against the first line's height
+  const lineH = end - top + 1;
+  return { bottom: sy + bottom + 1, wraps: bottom - top + 1 > lineH * 1.7 };
 }
 
 // Does the cell hold a solid green pill (the "Complete" tag)?
@@ -215,7 +241,21 @@ async function readGrid(worker, canvas, grid, onStatus) {
   for (let n = 0; n < body.length; n++) {
     const [y0, y1] = body[n];
     onStatus(`Reading prospect ${n + 1} of ${body.length}…`);
-    const prospectLines = await readCell(worker, cellCanvas(canvas, col.prospect[0], col.prospect[1], y0, y1));
+    let prospectLines;
+    let nameText = "";
+    // A name that wraps onto a second line is where its words get mixed into the school's; there the orange of the
+    // name tells where it ends. A name on one line reads fine as part of the whole cell.
+    const zone = nameZone(canvas, col.prospect[0], col.prospect[1], y0 + 2, y1 - 2);
+    const cut = zone && zone.wraps ? zone.bottom : null;
+    if (cut && cut > y0 + 6 && cut < y1 - 8) {
+      const nameLines = await readCell(worker, cellCanvas(canvas, col.prospect[0], col.prospect[1], y0, cut + 2, { inset: 1, minHeight: 150 }));
+      const restLines = await readCell(worker, cellCanvas(canvas, col.prospect[0], col.prospect[1], cut + 1, y1, { inset: 1, minHeight: 150 }));
+      if (nameLines.length) {
+        nameText = nameLines.join(" ");
+        prospectLines = [nameText, ...restLines];
+      }
+    }
+    if (!prospectLines) prospectLines = await readCell(worker, cellCanvas(canvas, col.prospect[0], col.prospect[1], y0, y1));
     if (!prospectLines.length) continue;
     const assignedLines = await readCell(worker, cellCanvas(canvas, col.assigned[0], col.assigned[1], y0, y1), { whitelist: DATE_CHARS });
     const completedLines = await readCell(worker, cellCanvas(canvas, col.completed[0], col.completed[1], y0, y1), { whitelist: DATE_CHARS });
@@ -269,7 +309,7 @@ const fixLetters = (t) => String(t).replace(/[0-9]/g, (d) => LETTERISH[d] || d);
 function cleanName(text) {
   return String(text || "")
     .replace(/^[^A-Za-z]+/, "")
-    .replace(/[“”*]/g, '"')
+    .replace(/[“”„‟″❝❞«»*]|''/g, '"')
     .replace(/(^|[\s,"])l(?=[a-z])/g, "$1I")
     .replace(/\s+/g, " ")
     .trim();
@@ -296,9 +336,14 @@ function parseProspect(lines) {
     }
   }
   const info = infoIdx > 0 ? INFO_LINE.exec(lines[infoIdx]) : null;
+  // A long name wraps: "Beveridge," then "Christopher "Chris"", or a nickname on a line of its own. The first
+  // line takes a following line while it ends in a comma, and any line that opens with a quote mark.
+  let nameEnd = 1;
+  if (/,\s*$/.test(lines[0]) && lines[1] && nameEnd < (infoIdx > 0 ? infoIdx : lines.length)) nameEnd = 2;
+  while (lines[nameEnd] && /^[“”"*]/.test(lines[nameEnd]) && nameEnd < (infoIdx > 0 ? infoIdx : lines.length) - 1) nameEnd++;
   return {
-    name: cleanName(lines[0]),
-    school: cleanSchool(lines.slice(1, infoIdx > 0 ? infoIdx : undefined).join(" ")),
+    name: cleanName(lines.slice(0, nameEnd).join(" ")),
+    school: cleanSchool(lines.slice(nameEnd, infoIdx > 0 ? infoIdx : undefined).join(" ")),
     classYear: info ? info[1] : "",
     position: info ? positionFrom(fixLetters(info[2])) : "",
   };
