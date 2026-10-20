@@ -480,7 +480,7 @@ export function CreditSheet({ list, onEdit, classYear }) {
 const JUCO_COLS = [
   { key: "first", label: "First name", w: 96 },
   { key: "last", label: "Last name", w: 110 },
-  { key: "pos", label: "Pos", w: 56 },
+  { key: "pos", label: "Pos", w: 96 },
   { key: "school", label: "School", w: 230 },
   { key: "measurables", label: "Measurables", w: 190, edit: true },
   { key: "gpa", label: "JUCO GPA", w: 90, edit: true },

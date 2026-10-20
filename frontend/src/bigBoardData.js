@@ -347,7 +347,8 @@ export function buildJucoCreditList(boards) {
         status: p.status || "recruit",
         first: parts[0] || "",
         last: parts.slice(1).join(" "),
-        pos: p.pos || POS_FROM_COLUMN[c.label] || positionAbbreviation(p.positionTitle) || "ATH",
+        // The column he is in on the board, named the way the board names it (OT, OG/OC, DE, DT, SAF, FLEX BIG...).
+        pos: c.label,
         school: p.school || "",
         measurables: p.measurables || "",
         gpa: p.gpa || "",
@@ -356,7 +357,8 @@ export function buildJucoCreditList(boards) {
       });
     })
   );
-  const rank = (r) => (CREDIT_POS_ORDER.indexOf(r.pos) < 0 ? 99 : CREDIT_POS_ORDER.indexOf(r.pos));
+  const BOARD_ORDER = ["QB", "RB", "WR", "TE", "OT", "OG/OC", "FLEX BIG", "FLEX SKILL", "DE", "DT", "LB", "CB", "SAF", "LS", "K", "P"];
+  const rank = (r) => (BOARD_ORDER.indexOf(r.pos) < 0 ? 99 : BOARD_ORDER.indexOf(r.pos));
   const all = [...seen.values()].sort((a, b) => rank(a) - rank(b) || a.last.localeCompare(b.last));
   const groups = STATUSES.map((s) => ({ key: s.key, title: s.label, color: s.color, rows: all.filter((r) => r.status === s.key) })).filter((g) => g.rows.length);
   return { groups, total: all.length };
