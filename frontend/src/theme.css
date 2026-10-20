@@ -285,3 +285,10 @@ tbody tr:hover { background: var(--row-hover) !important; }
 /* A column nobody is in yet (defense board): slim, so its heading wraps and shrinks. */
 .bb-col.bb-empty .bb-colhead { flex-wrap: wrap; font-size: 10.5px; padding: 4px 5px; }
 .bb-col.bb-empty .bb-tier { font-size: 9.5px; padding: 3px 4px; }
+
+/* Printing a big board prints both: the board on screen, and the other one (hidden on screen) on its own page. */
+.bb-print-only { display: none; }
+@media print {
+  .bb-print-only { display: block !important; }
+  .bb-print-page + .bb-print-page { break-before: page; page-break-before: always; }
+}

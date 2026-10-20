@@ -834,6 +834,8 @@ export default function BigBoard({ onBack: toDashboard }) {
     const PAGE_W = 990; // 10.4in of printable width, in CSS pixels, with a little to spare
     const PAGE_H = 735; // 7.9in of printable height
     const fit = () => {
+      // The board kept out of sight on screen has to be measured too, so it is shown for the moment.
+      document.querySelectorAll(".bb-print-only").forEach((w) => (w.style.display = "block"));
       document.querySelectorAll(".bb-board").forEach((el) => {
         el.style.zoom = "";
         el.style.minHeight = "0px";
@@ -859,6 +861,7 @@ export default function BigBoard({ onBack: toDashboard }) {
       });
     };
     const reset = () => {
+      document.querySelectorAll(".bb-print-only").forEach((w) => (w.style.display = ""));
       document.querySelectorAll(".bb-board").forEach((el) => {
         el.style.zoom = "";
         el.style.width = "";
@@ -1057,14 +1060,27 @@ export default function BigBoard({ onBack: toDashboard }) {
         ) : view === "activity" ? (
           <ActivitySheet rows={bb.activity} classYear={classYear} />
         ) : board ? (
-          <BoardSheet
-            board={board}
-            side={view}
-            classYear={classYear}
-            photos={bb.photos}
-            onOpen={(colKey, player) => setEditing({ colKey, player, isNew: false })}
-            onAdd={(colKey, tier) => setEditing({ colKey, player: blankPlayer(tier), isNew: true })}
-          />
+          // Both boards are on the page's print job: the one you're looking at, and the other kept out of sight on screen
+          // (offense first, then defense), each shrunk to its own landscape page with its key.
+          <>
+            {["off", "def"].map((side) => {
+              const active = side === view;
+              const b = active ? board : bb.board(classYear, side);
+              if (!b) return null;
+              return (
+                <div key={side} className={active ? "bb-print-page" : "bb-print-page bb-print-only"}>
+                  <BoardSheet
+                    board={b}
+                    side={side}
+                    classYear={classYear}
+                    photos={bb.photos}
+                    onOpen={active ? (colKey, player) => setEditing({ colKey, player, isNew: false }) : () => {}}
+                    onAdd={active ? (colKey, tier) => setEditing({ colKey, player: blankPlayer(tier), isNew: true }) : () => {}}
+                  />
+                </div>
+              );
+            })}
+          </>
         ) : (
           <Empty what={view === "off" ? "offensive board" : "defensive board"} year={classYear} onUpload={() => setPdfUpload(true)} uploadLabel="Upload board PDF" />
         )}
