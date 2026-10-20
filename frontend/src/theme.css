@@ -281,3 +281,7 @@ tbody tr:hover { background: var(--row-hover) !important; }
   .rp-print .rp-input, .rp-print .rp-done-box { display: none !important; }
   .rp-print .rp-print-only { display: inline; }
 }
+
+/* A column nobody is in yet (defense board): slim, so its heading wraps and shrinks. */
+.bb-col.bb-empty .bb-colhead { flex-wrap: wrap; font-size: 10.5px; padding: 4px 5px; }
+.bb-col.bb-empty .bb-tier { font-size: 9.5px; padding: 3px 4px; }

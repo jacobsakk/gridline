@@ -102,11 +102,13 @@ export function BoardSheet({ board, side, classYear, photos, onOpen, onAdd }) {
   return (
     <div className="bb-sheet bb-board">
       <div className="bb-title">{title}</div>
-      <div className="bb-cols" style={{ gridTemplateColumns: `repeat(${board.columns.length}, minmax(0, 1fr))` }}>
+      {/* The defense board has ten columns, so its busy ones would be squeezed; a column nobody is in yet is kept
+          slim until a player is added, which gives the others the width the offense board's columns have. */}
+      <div className="bb-cols" style={{ gridTemplateColumns: side === "def" ? board.columns.map((c) => (c.players.length ? "minmax(0, 1fr)" : "minmax(80px, 0.5fr)")).join(" ") : `repeat(${board.columns.length}, minmax(0, 1fr))` }}>
         {board.columns.map((col) => {
           const committed = col.players.filter((p) => p.status === "committed").length;
           return (
-            <div key={col.key} className="bb-col">
+            <div key={col.key} className={col.players.length || side !== "def" ? "bb-col" : "bb-col bb-empty"}>
               <div className="bb-colhead">
                 <span>{col.label}</span>
                 <span style={{ color: "#B3261E" }}>({committed})</span>
