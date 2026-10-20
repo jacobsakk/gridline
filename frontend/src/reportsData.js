@@ -95,12 +95,17 @@ function positionFrom(token) {
 }
 
 const DATE = /(\d{1,2})\/(\d{1,2})\/(\d{4})/;
-const TIME = /(\d{1,2}):(\d{2})\s*([AP]M)/i;
+// A date read off the picture, kept as day only (2026-10-20); the time of day isn't wanted.
 const stamp = (text) => {
   const d = DATE.exec(text);
-  if (!d) return "";
-  const t = TIME.exec(text);
-  return `${d[0]}${t ? ` ${t[1]}:${t[2]}${t[3].toUpperCase()}` : ""}`;
+  return d ? `${d[3]}-${d[1].padStart(2, "0")}-${d[2].padStart(2, "0")}` : "";
+};
+// Any date as it may be stored (2026-10-20, or an older "10/20/2026 8:11AM") -> 2026-10-20, for the date picker.
+export const isoDate = (text) => (/^\d{4}-\d{2}-\d{2}$/.test(text || "") ? text : stamp(text || ""));
+// 2026-10-20 -> 10/20/2026, for reading and printing.
+export const shortDate = (text) => {
+  const iso = isoDate(text);
+  return iso ? `${Number(iso.slice(5, 7))}/${Number(iso.slice(8, 10))}/${iso.slice(0, 4)}` : "";
 };
 
 // Column edges from the header words (Prospect, Status, Eval, Assigned, Completed, Coach); a picture cropped

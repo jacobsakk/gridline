@@ -5,7 +5,7 @@ import { ThemeSwitcher, useTheme } from "./theme.jsx";
 import { confirmAction } from "./ConfirmDialog.jsx";
 import { initialSubRoute, setSubRoute, useBack } from "./route.js";
 import { control } from "./EditableCells.jsx";
-import { readEvaluationPicture, rowKey, summarize, useReports } from "./reportsData.js";
+import { isoDate, readEvaluationPicture, rowKey, shortDate, summarize, useReports } from "./reportsData.js";
 
 const ghostBtn = { ...control, cursor: "pointer", fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 7, whiteSpace: "nowrap" };
 const primaryBtn = { ...ghostBtn, background: "var(--accent-bg)", border: "1px solid var(--accent)", color: "var(--accent)", fontWeight: 700 };
@@ -27,6 +27,22 @@ function Cell({ value, onSave, width, align, upper }) {
       onKeyDown={(e) => e.key === "Enter" && e.currentTarget.blur()}
       style={{ ...control, width: width || "100%", minWidth: 0, padding: "4px 6px", fontSize: 12.5, textAlign: align }}
     />
+    </>
+  );
+}
+
+// A date you pick from a calendar box; on paper it reads as plain M/D/YYYY.
+function DateCell({ value, onSave }) {
+  return (
+    <>
+      <span className="rp-print-only">{shortDate(value)}</span>
+      <input
+        className="rp-input"
+        type="date"
+        value={isoDate(value)}
+        onChange={(e) => onSave(e.target.value)}
+        style={{ ...control, width: "100%", minWidth: 128, padding: "4px 6px", fontSize: 12.5 }}
+      />
     </>
   );
 }
@@ -215,10 +231,10 @@ export default function ReportsPage({ onBack: toDashboard, session }) {
                 <button className="hs-no-print" onClick={addRow} style={ghostBtn}><Plus size={14} /> Add a prospect</button>
               </div>
               <div style={{ border: "1px solid var(--border)", borderRadius: 10, overflow: "auto" }}>
-                <table style={{ width: "100%", minWidth: 980, borderCollapse: "collapse" }}>
+                <table style={{ width: "100%", minWidth: 860, borderCollapse: "collapse" }}>
                   <thead>
                     <tr>
-                      {["Prospect", "School", "Class", "Pos", "Evaluation", "Assigned", "Completed", "Coach", "Done", ""].map((h, k) => <th key={k} className={k === 9 ? "hs-no-print" : undefined} style={th}>{h}</th>)}
+                      {["Prospect", "School", "Class", "Pos", "Assigned", "Completed", "Coach", "Done", ""].map((h, k) => <th key={k} className={k === 8 ? "hs-no-print" : undefined} style={th}>{h}</th>)}
                     </tr>
                   </thead>
                   <tbody>
@@ -228,9 +244,8 @@ export default function ReportsPage({ onBack: toDashboard, session }) {
                         <td style={{ ...td, minWidth: 170 }}><Cell value={r.school} onSave={(v) => editRow(r.i, { school: v })} /></td>
                         <td style={{ ...td, width: 62 }}><Cell value={r.classYear} onSave={(v) => editRow(r.i, { classYear: v })} /></td>
                         <td style={{ ...td, width: 62 }}><Cell value={r.position} upper onSave={(v) => editRow(r.i, { position: v })} /></td>
-                        <td style={{ ...td, minWidth: 130 }}><Cell value={r.evalType} onSave={(v) => editRow(r.i, { evalType: v })} /></td>
-                        <td style={{ ...td, minWidth: 140 }}><Cell value={r.assigned} onSave={(v) => editRow(r.i, { assigned: v })} /></td>
-                        <td style={{ ...td, minWidth: 140 }}><Cell value={r.completed} onSave={(v) => editRow(r.i, { completed: v, complete: !!v || r.complete })} /></td>
+                        <td style={{ ...td, minWidth: 140 }}><DateCell value={r.assigned} onSave={(v) => editRow(r.i, { assigned: v })} /></td>
+                        <td style={{ ...td, minWidth: 140 }}><DateCell value={r.completed} onSave={(v) => editRow(r.i, { completed: v, complete: !!v })} /></td>
                         <td style={{ ...td, minWidth: 130 }}><Cell value={r.coach} onSave={(v) => editRow(r.i, { coach: v })} /></td>
                         <td style={{ ...td, textAlign: "center" }}>
                           <input className="rp-done-box" type="checkbox" checked={!!r.complete} onChange={(e) => editRow(r.i, { complete: e.target.checked })} aria-label={`${r.name} completed`} style={{ cursor: "pointer" }} />
