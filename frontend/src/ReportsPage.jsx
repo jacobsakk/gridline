@@ -56,6 +56,7 @@ export default function ReportsPage({ onBack: toDashboard, session }) {
   const [status, setStatus] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [printList, setPrintList] = useState(false); // the prospect list only goes on paper when this is ticked
   const fileInput = useRef(null);
   const target = useRef(""); // the report the next picture goes to
   const by = session?.profile?.email || "";
@@ -165,6 +166,11 @@ export default function ReportsPage({ onBack: toDashboard, session }) {
           <button onClick={newReport} disabled={busy} style={primaryBtn}><FilePlus2 size={15} /> New report from a picture</button>
           {report && <button onClick={() => pickPicture(report.id)} disabled={busy} style={ghostBtn}><ImagePlus size={15} /> Add another picture</button>}
           {report && <button onClick={() => window.print()} style={ghostBtn}><Printer size={15} /> Print</button>}
+          {report && (
+            <label style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 13, color: "var(--text-muted)", cursor: "pointer" }}>
+              <input type="checkbox" checked={printList} onChange={(e) => setPrintList(e.target.checked)} /> Include the prospect list when printing
+            </label>
+          )}
           {report && <button onClick={deleteReport} style={{ ...ghostBtn, color: "var(--danger, #c0392b)" }}><Trash2 size={15} /> Delete</button>}
         </div>
         {busy && <div className="hs-no-print" style={{ display: "flex", alignItems: "center", gap: 8, color: "var(--text-muted)", fontSize: 13, marginBottom: 12 }}><Loader2 size={15} className="spin" /> {status}</div>}
@@ -225,16 +231,16 @@ export default function ReportsPage({ onBack: toDashboard, session }) {
               </table>
             </div>
 
-            <div>
+            <div className={printList ? undefined : "hs-no-print"}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
                 <div className="oswald" style={{ fontSize: 16, fontWeight: 700 }}>The prospects ({shown.length})</div>
                 <button className="hs-no-print" onClick={addRow} style={ghostBtn}><Plus size={14} /> Add a prospect</button>
               </div>
               <div style={{ border: "1px solid var(--border)", borderRadius: 10, overflow: "auto" }}>
-                <table style={{ width: "100%", minWidth: 740, borderCollapse: "collapse" }}>
+                <table style={{ width: "100%", minWidth: 860, borderCollapse: "collapse" }}>
                   <thead>
                     <tr>
-                      {["Prospect", "School", "Class", "Pos", "Completed", "Coach", "Done", ""].map((h, k) => <th key={k} className={k === 7 ? "hs-no-print" : undefined} style={th}>{h}</th>)}
+                      {["Prospect", "School", "Class", "Pos", "Assigned", "Completed", "Coach", "Done", ""].map((h, k) => <th key={k} className={k === 8 ? "hs-no-print" : undefined} style={th}>{h}</th>)}
                     </tr>
                   </thead>
                   <tbody>
@@ -244,6 +250,7 @@ export default function ReportsPage({ onBack: toDashboard, session }) {
                         <td style={{ ...td, minWidth: 170 }}><Cell value={r.school} onSave={(v) => editRow(r.i, { school: v })} /></td>
                         <td style={{ ...td, width: 62 }}><Cell value={r.classYear} onSave={(v) => editRow(r.i, { classYear: v })} /></td>
                         <td style={{ ...td, width: 62 }}><Cell value={r.position} upper onSave={(v) => editRow(r.i, { position: v })} /></td>
+                        <td style={{ ...td, minWidth: 140 }}><DateCell value={r.assigned} onSave={(v) => editRow(r.i, { assigned: v })} /></td>
                         <td style={{ ...td, minWidth: 140 }}><DateCell value={r.completed} onSave={(v) => editRow(r.i, { completed: v, complete: !!v })} /></td>
                         <td style={{ ...td, minWidth: 130 }}><Cell value={r.coach} onSave={(v) => editRow(r.i, { coach: v })} /></td>
                         <td style={{ ...td, textAlign: "center" }}>
