@@ -6,7 +6,7 @@ import { confirmAction } from "./ConfirmDialog.jsx";
 import { initialSubRoute, setSubRoute, useBack } from "./route.js";
 import { matchPhotoFiles, mondayOf, photoFromFile, toIso } from "./hsData.js";
 import {
-  FLAGS, STATUSES, STATUS_BY_KEY, VISITS, blankPlayer, boardTitle, buildCreditList, classYearFromTitle,
+  FLAGS, RATING_KEYS, STATUSES, STATUS_BY_KEY, TRENDS, VISITS, blankPlayer, boardTitle, buildCreditList, classYearFromTitle,
   commitCounts, creditKey, diffBoards, handChange, nameKey, parseBoardSheet, parseCreditSheet, readWorkbook, useBigBoards,
 } from "./bigBoardData.js";
 
@@ -26,6 +26,7 @@ const ctl = {
 const ghostBtn = { ...ctl, display: "inline-flex", alignItems: "center", gap: 6, cursor: "pointer", fontWeight: 600 };
 const primaryBtn = { ...ghostBtn, background: "var(--accent-bg)", border: "1px solid var(--accent)", color: "var(--accent)", fontWeight: 700 };
 
+const trendEmoji = (key) => TRENDS.find((t) => t.key === key)?.emoji || "";
 
 // ------------------------------------------------------------------ board edits (pure)
 
@@ -77,9 +78,9 @@ function nudge(board, id, dir) {
 
 const markersFor = (p) => [p.flags?.snap ? "($)" : "", p.flags?.punt ? "(#)" : "", p.flags?.noMidYear ? "🚫" : "", p.flags?.injured ? "⛑️" : ""].filter(Boolean).join(" ");
 
-// A card shows no rating (neither ARMs' "2 - ALL MAC PLAYER" nor the A/P/C/R trend marks), and the JUCO board
-// shows no area coach either. The data stays on the card; it's just not displayed.
-function PlayerCard({ p, showCoach, photo, onOpen }) {
+// A card shows the A / P / C / R trend marks (🔥 🌤️ 🌨️ 🧊) but not ARMs' rating line ("2 - ALL MAC PLAYER"), and
+// the JUCO board shows no area coach. The rating text stays on the card's data; it's just not displayed.
+function PlayerCard({ p, showCoach, hasRating, photo, onOpen }) {
   const status = STATUS_BY_KEY[p.status] || STATUS_BY_KEY.recruit;
   const marks = markersFor(p);
   return (
@@ -92,6 +93,13 @@ function PlayerCard({ p, showCoach, photo, onOpen }) {
         {(p.gpa || p.visits) && <div>{p.gpa ? `${p.gpaLabel || "cGPA"}: ${p.gpa}` : ""} {p.visits}</div>}
         {showCoach && p.coach && <div className="bb-extra">{p.coach}</div>}
       </div>
+      {hasRating && RATING_KEYS.some((k) => p.rating?.[k]) && (
+        <div className="bb-rating">
+          {RATING_KEYS.map((k) => (
+            <div key={k}>{k}:{trendEmoji(p.rating?.[k]) || "–"}</div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -126,7 +134,7 @@ export function BoardSheet({ board, side, classYear, photos, onOpen, onAdd }) {
                       </button>
                     </div>
                     {inTier.map((p) => (
-                      <PlayerCard key={p.id} p={p} showCoach={classYear !== "JUCO"} photo={photos[nameKey(p.name)]} onOpen={() => onOpen(col.key, p)} />
+                      <PlayerCard key={p.id} p={p} showCoach={classYear !== "JUCO"} hasRating={col.hasRating} photo={photos[nameKey(p.name)]} onOpen={() => onOpen(col.key, p)} />
                     ))}
                   </Fragment>
                 );
@@ -152,6 +160,9 @@ function BoardFooter({ counts, side }) {
       <div className="bb-emojis">
         <div className="bb-footh">EMOJIS</div>
         <div className="bb-emoji-grid">
+          {TRENDS.map((t) => (
+            <div key={t.key}><span>{t.emoji}</span> {t.label}</div>
+          ))}
           {FLAGS.map((f) => (
             <div key={f.key}><span>{f.marker === "$" ? "($)" : f.marker === "#" ? "(#)" : f.marker}</span> {f.label}</div>
           ))}
@@ -180,6 +191,7 @@ export function PlayerModal({ board, classYear, colKey, player, isNew, photo, on
   const [col, setCol] = useState(colKey);
   const fileInput = useRef(null);
   const [photoError, setPhotoError] = useState("");
+  const column = board.columns.find((c) => c.key === col);
   const set = (patch) => setDraft((d) => ({ ...d, ...patch }));
   const label = { fontSize: 11, color: "var(--text-faint)", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: 4, display: "block" };
   const addVisit = (marker) => set({ visits: `${draft.visits || ""}${marker}` });
@@ -284,6 +296,23 @@ export function PlayerModal({ board, classYear, colKey, player, isNew, photo, on
               </div>
             </div>
           </div>
+
+          {column?.hasRating !== false && (
+            <div>
+              <label style={label}>Trend marks</label>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8 }}>
+                {RATING_KEYS.map((k) => (
+                  <label key={k} style={{ display: "flex", alignItems: "center", gap: 6, fontWeight: 700 }}>
+                    {k}:
+                    <select value={draft.rating?.[k] || ""} onChange={(e) => set({ rating: { ...draft.rating, [k]: e.target.value } })} style={{ ...ctl, flex: 1, padding: "6px 4px" }}>
+                      <option value="">–</option>
+                      {TRENDS.map((t) => <option key={t.key} value={t.key}>{t.emoji}</option>)}
+                    </select>
+                  </label>
+                ))}
+              </div>
+            </div>
+          )}
 
           <div style={{ display: "grid", gridTemplateColumns: "1fr 100px", gap: 10 }}>
             <div>
