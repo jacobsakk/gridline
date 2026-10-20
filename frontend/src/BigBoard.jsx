@@ -80,7 +80,7 @@ const markersFor = (p) => [p.flags?.snap ? "($)" : "", p.flags?.punt ? "(#)" : "
 
 // A card shows the A / P / C / R trend marks (🔥 🌤️ 🌨️ 🧊) but not ARMs' rating line ("2 - ALL MAC PLAYER"), and
 // the JUCO board shows no area coach. The rating text stays on the card's data; it's just not displayed.
-function PlayerCard({ p, showCoach, hasRating, photo, onOpen }) {
+function PlayerCard({ p, showCoach, hasRating, photo, onOpen, juco }) {
   const status = STATUS_BY_KEY[p.status] || STATUS_BY_KEY.recruit;
   const marks = markersFor(p);
   return (
@@ -90,7 +90,7 @@ function PlayerCard({ p, showCoach, hasRating, photo, onOpen }) {
         <div className="bb-name">{p.name || "New player"}{marks && <span style={{ fontWeight: 500 }}> {marks}</span>}</div>
         {(p.school || p.state) && <div>{p.school}{p.state ? ` (${p.state})` : ""}</div>}
         {p.measurables && <div>{p.measurables}</div>}
-        {(p.gpa || p.visits) && <div>{p.gpa ? `${p.gpaLabel || "cGPA"}: ${p.gpa}` : ""} {p.visits}</div>}
+        {(p.gpa || p.visits) && <div>{p.gpa ? `${juco ? (p.transcriptEval ? "cGPA" : "GPA") : p.gpaLabel || "cGPA"}: ${p.gpa}` : ""} {p.visits}</div>}
         {showCoach && p.coach && <div className="bb-extra">{p.coach}</div>}
       </div>
       {hasRating && RATING_KEYS.some((k) => p.rating?.[k]) && (
@@ -134,7 +134,7 @@ export function BoardSheet({ board, side, classYear, photos, onOpen, onAdd }) {
                       </button>
                     </div>
                     {inTier.map((p) => (
-                      <PlayerCard key={p.id} p={p} showCoach={classYear !== "JUCO"} hasRating={col.hasRating} photo={photos[nameKey(p.name)]} onOpen={() => onOpen(col.key, p)} />
+                      <PlayerCard key={p.id} p={p} juco={classYear === "JUCO"} showCoach={classYear !== "JUCO"} hasRating={col.hasRating} photo={photos[nameKey(p.name)]} onOpen={() => onOpen(col.key, p)} />
                     ))}
                   </Fragment>
                 );
@@ -262,10 +262,14 @@ export function PlayerModal({ board, classYear, colKey, player, isNew, photo, on
           <div style={{ display: "grid", gridTemplateColumns: "110px 100px 1fr", gap: 10, alignItems: "end" }}>
             <div>
               <label style={label} htmlFor="bb-gl">GPA</label>
-              <select id="bb-gl" value={draft.gpaLabel} onChange={(e) => set({ gpaLabel: e.target.value })} style={{ ...ctl, width: "100%" }}>
-                <option value="cGPA">cGPA (core)</option>
-                <option value="GPA">GPA</option>
-              </select>
+              {classYear === "JUCO" ? (
+                <div title="Ticking Transcript evaluated below makes this cGPA" style={{ ...ctl, width: "100%", color: "var(--text-muted)" }}>{draft.transcriptEval ? "cGPA" : "GPA"}</div>
+              ) : (
+                <select id="bb-gl" value={draft.gpaLabel} onChange={(e) => set({ gpaLabel: e.target.value })} style={{ ...ctl, width: "100%" }}>
+                  <option value="cGPA">cGPA (core)</option>
+                  <option value="GPA">GPA</option>
+                </select>
+              )}
             </div>
             <input aria-label="GPA value" value={draft.gpa} onChange={(e) => set({ gpa: e.target.value })} style={ctl} />
             <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
@@ -279,7 +283,7 @@ export function PlayerModal({ board, classYear, colKey, player, isNew, photo, on
 
           {classYear === "JUCO" && (
             <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, fontWeight: 600 }}>
-              <input type="checkbox" checked={!!draft.transcriptEval} onChange={(e) => set({ transcriptEval: e.target.checked })} /> Transcript evaluated (shows on the credit evaluation)
+              <input type="checkbox" checked={!!draft.transcriptEval} onChange={(e) => set({ transcriptEval: e.target.checked, gpaLabel: e.target.checked ? "cGPA" : "GPA" })} /> Transcript evaluated (the GPA becomes a cGPA)
             </label>
           )}
 
@@ -512,7 +516,7 @@ export function JucoCreditSheet({ list, onEdit, classYear }) {
                     {JUCO_COLS.map((c, ci) => (
                       <td key={c.key} style={{ ...tableCell, padding: c.edit || c.box ? "3px 4px" : "6px 10px", textAlign: c.box ? "center" : undefined, boxShadow: ci === 0 ? `inset 3px 0 0 ${g.color}` : undefined, fontWeight: c.key === "first" || c.key === "last" ? 700 : 400, ...(c.key === "first" || c.key === "last" ? { color: "var(--text-primary)" } : null) }}>
                         {c.box ? (
-                          <input type="checkbox" checked={r.transcriptEval} onChange={(e) => onEdit(r, { transcriptEval: e.target.checked })} aria-label={`Transcript evaluated for ${r.first} ${r.last}`} style={{ width: 18, height: 18, cursor: "pointer", accentColor: "var(--success)" }} />
+                          <input type="checkbox" checked={r.transcriptEval} onChange={(e) => onEdit(r, { transcriptEval: e.target.checked, gpaLabel: e.target.checked ? "cGPA" : "GPA" })} aria-label={`Transcript evaluated for ${r.first} ${r.last}`} style={{ width: 18, height: 18, cursor: "pointer", accentColor: "var(--success)" }} />
                         ) : c.edit ? (
                           <input
                             className="offer-cell-input"
@@ -520,7 +524,7 @@ export function JucoCreditSheet({ list, onEdit, classYear }) {
                             defaultValue={r[c.key]}
                             placeholder="—"
                             aria-label={`${c.label} for ${r.first} ${r.last}`}
-                            onBlur={(e) => e.target.value.trim() !== r[c.key] && onEdit(r, c.key === "gpa" ? { gpa: e.target.value.trim(), gpaLabel: r.gpaLabel || "GPA" } : { [c.key]: e.target.value.trim() })}
+                            onBlur={(e) => e.target.value.trim() !== r[c.key] && onEdit(r, { [c.key]: e.target.value.trim() })}
                             style={input}
                           />
                         ) : (
