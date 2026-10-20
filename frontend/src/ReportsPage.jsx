@@ -237,10 +237,10 @@ export default function ReportsPage({ onBack: toDashboard, session }) {
                 <button className="hs-no-print" onClick={addRow} style={ghostBtn}><Plus size={14} /> Add a prospect</button>
               </div>
               <div style={{ border: "1px solid var(--border)", borderRadius: 10, overflow: "auto" }}>
-                <table style={{ width: "100%", minWidth: 860, borderCollapse: "collapse" }}>
+                <table style={{ width: "100%", minWidth: 740, borderCollapse: "collapse" }}>
                   <thead>
                     <tr>
-                      {["Prospect", "School", "Class", "Pos", "Assigned", "Completed", "Coach", "Done", ""].map((h, k) => <th key={k} className={k === 8 ? "hs-no-print" : undefined} style={th}>{h}</th>)}
+                      {["Prospect", "School", "Class", "Pos", "Assigned", "Completed", "Done", ""].map((h, k) => <th key={k} className={k === 7 ? "hs-no-print" : undefined} style={th}>{h}</th>)}
                     </tr>
                   </thead>
                   <tbody>
@@ -252,7 +252,6 @@ export default function ReportsPage({ onBack: toDashboard, session }) {
                         <td style={{ ...td, width: 62 }}><Cell value={r.position} upper onSave={(v) => editRow(r.i, { position: v })} /></td>
                         <td style={{ ...td, minWidth: 140 }}><DateCell value={r.assigned} onSave={(v) => editRow(r.i, { assigned: v })} /></td>
                         <td style={{ ...td, minWidth: 140 }}><DateCell value={r.completed} onSave={(v) => editRow(r.i, { completed: v, complete: !!v })} /></td>
-                        <td style={{ ...td, minWidth: 130 }}><Cell value={r.coach} onSave={(v) => editRow(r.i, { coach: v })} /></td>
                         <td style={{ ...td, textAlign: "center" }}>
                           <input className="rp-done-box" type="checkbox" checked={!!r.complete} onChange={(e) => editRow(r.i, { complete: e.target.checked })} aria-label={`${r.name} completed`} style={{ cursor: "pointer" }} />
                           <span className="rp-print-only">{r.complete ? "✓" : ""}</span>
