@@ -9,6 +9,7 @@ import HsGameUpdate from "./HsGameUpdate.jsx";
 import RosterPage from "./RosterPage.jsx";
 import StudiesPage from "./StudiesPage.jsx";
 import BigBoard from "./BigBoard.jsx";
+import ReportsPage from "./ReportsPage.jsx";
 import { ConfirmHost } from "./ConfirmDialog.jsx";
 import CardTransition from "./CardTransition.jsx";
 import LoginGate from "./LoginGate.jsx";
@@ -30,7 +31,7 @@ export default function App() {
   );
 }
 
-const SCREENS = new Set(["tracker", "offers", "colleges", "hs", "roster", "studies", "bigboard", "settings"]);
+const SCREENS = new Set(["tracker", "offers", "colleges", "hs", "roster", "studies", "bigboard", "reports", "settings"]);
 
 function prefersReducedMotion() {
   return typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
@@ -63,6 +64,7 @@ function Screens({ session }) {
   else if (view.name === "roster") screen = <RosterPage onBack={toDashboard} session={session} />;
   else if (view.name === "studies") screen = <StudiesPage onBack={toDashboard} session={session} />;
   else if (view.name === "bigboard") screen = <BigBoard onBack={toDashboard} />;
+  else if (view.name === "reports") screen = <ReportsPage onBack={toDashboard} session={session} />;
   else if (view.name === "settings") screen = <SettingsPage onBack={toDashboard} session={session} />;
   else {
     screen = (

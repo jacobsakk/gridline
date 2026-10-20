@@ -255,3 +255,29 @@ tbody tr:hover { background: var(--row-hover) !important; }
   .compact-header button { padding: 4px 8px !important; font-size: 12px !important; }
   .compact-header [role="radiogroup"] button { padding: 3px 6px !important; }
 }
+
+/* Reports: on paper the cells you type into read as plain text, and the page is black on white. */
+@media print {
+  .rp-input { border-color: transparent !important; background: transparent !important; padding-left: 0 !important; }
+  .rp-bar { border-color: #999 !important; background: #eee !important; }
+}
+.rp-print-title { display: none; }
+@media print { .rp-print-title { display: block; color: #111; } }
+
+/* A printed report is black on white whichever theme is on screen. */
+@media print {
+  .rp-print {
+    --bg-page: #fff; --bg-panel: #fff; --bg-surface: #f1f1f1; --border: #bbb; --border-subtle: #ddd;
+    --text-primary: #111; --text-secondary: #222; --text-muted: #444; --text-faint: #555;
+    --accent: #510F1D; --accent-bg: #f5e7ea; --success: #1f6b2c; --danger: #a23b3b;
+    color: #111 !important;
+  }
+  .rp-print .rp-input { color: #111 !important; font-size: 10pt !important; }
+  .rp-print th, .rp-print td { font-size: 10pt !important; }
+  .rp-print tr { break-inside: avoid; }
+}
+.rp-print-only { display: none; }
+@media print {
+  .rp-print .rp-input, .rp-print .rp-done-box { display: none !important; }
+  .rp-print .rp-print-only { display: inline; }
+}

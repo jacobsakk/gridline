@@ -1,4 +1,4 @@
-import { ClipboardList, FileSpreadsheet, FlaskConical, GraduationCap, LayoutGrid, Trophy, Users } from "lucide-react";
+import { ClipboardList, ClipboardCheck, FileSpreadsheet, FlaskConical, GraduationCap, LayoutGrid, Trophy, Users } from "lucide-react";
 
 // The main hub -- everything else is a card here rather than its own standalone page. This is the default
 // order; each coach can rearrange it from Settings (see dashboardOrder.js).
@@ -44,5 +44,11 @@ export const CARDS = [
     label: "Big Board",
     description: "Upload the staff's big board by class year (JUCO too) as a clean, editable, printable board, plus the credit evaluation",
     icon: LayoutGrid,
+  },
+  {
+    key: "reports",
+    label: "Reports",
+    description: "Upload a picture of the evaluation list and see how many were assigned and completed by position, ready to print",
+    icon: ClipboardCheck,
   },
 ];

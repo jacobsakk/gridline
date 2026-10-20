@@ -179,6 +179,12 @@ service cloud.firestore {
       allow list, create, update, delete: if invited();
     }
 
+    // Reports: a saved evaluation report (the rows read off a screenshot of the evaluation list). Any invited coach
+    // can make, edit, print and delete them.
+    match /reports/{docId} {
+      allow read, write: if invited();
+    }
+
     match /{document=**} {
       allow read, write: if false;
     }
