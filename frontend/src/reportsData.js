@@ -218,13 +218,14 @@ export async function readProspectCell(worker, canvas, x0, x1, y0, y1) {
 }
 
 async function readGrid(worker, canvas, grid, onStatus) {
-  const { ys, xs, w } = grid;
+  const { ys, xs, w, h } = grid;
   const edges = [0, ...xs, w];
   const intervals = edges.slice(0, -1).map((e, i) => [e, edges[i + 1]]);
   // Which column is which: from the heading words if the picture includes them (the column holding "Prospect"
   // is where the order starts), else the usual layout with a tick-box column ahead of the prospect.
   let first = 1;
   let bodyStart = 0;
+  let headerFound = false;
   const avgRow = (ys[ys.length - 1] - ys[0]) / (ys.length - 1);
   if (ys.length > 2 && ys[1] - ys[0] < avgRow * 1.3) {
     const headCell = cellCanvas(canvas, 0, w, ys[0], ys[1], { minHeight: 90 });
@@ -236,11 +237,37 @@ async function readGrid(worker, canvas, grid, onStatus) {
         for (const l of p.lines || [])
           for (const wd of l.words || []) heads.push({ t: wd.text, cx: ((wd.bbox.x0 + wd.bbox.x1) / 2 - 8) * (w / (headCell.width - 16)) });
     if (heads.some((x) => /prospect|status|assigned|completed/i.test(x.t))) {
+      headerFound = true;
       bodyStart = 1;
       const p = heads.find((x) => /prospect/i.test(x.t));
       const at = p ? intervals.findIndex(([a0, a1]) => p.cx >= a0 && p.cx < a1) : -1;
       if (at >= 0) first = at;
     }
+  }
+  const rows = [];
+  const bands = [];
+  for (let i = bodyStart; i + 1 < ys.length; i++) bands.push([ys[i], ys[i + 1]]);
+  const heights = bands.map((b) => b[1] - b[0]).sort((a, b) => a - b);
+  const median = heights[Math.floor(heights.length / 2)] || 1;
+  // A picture cut through a row at the top or the bottom still shows most of that row; read it too (it's
+  // highlighted if it came out wrong).
+  if (!headerFound && ys[0] > median * 0.45) bands.unshift([0, ys[0]]);
+  if (h - ys[ys.length - 1] > median * 0.45) bands.push([ys[ys.length - 1], h]);
+  const body = bands.filter((b) => b[1] - b[0] > median * 0.45);
+  // No heading row (a picture cropped below it), and possibly cropped on the left too: find the columns by their
+  // content. The assigned and completed columns are the ones full of dates; the prospect is three columns before.
+  if (!headerFound) {
+    const votes = new Array(intervals.length).fill(0);
+    for (const [by0, by1] of body.slice(0, 3)) {
+      for (let i = 0; i < intervals.length; i++) {
+        if (intervals[i][1] - intervals[i][0] < 40) continue;
+        const text = (await readCell(worker, cellCanvas(canvas, intervals[i][0], intervals[i][1], by0, by1, { minHeight: 90 }), { whitelist: DATE_CHARS })).join(" ");
+        if (DATE.test(text)) votes[i]++;
+      }
+    }
+    const at = votes.findIndex((v) => v > 0);
+    if (at >= 3) first = at - 3;
+    else return [];
   }
   const col = {};
   COLUMN_ORDER.slice(1).forEach((k, i) => {
@@ -248,12 +275,6 @@ async function readGrid(worker, canvas, grid, onStatus) {
   });
   if (!col.prospect || !col.assigned || !col.completed) return [];
 
-  const rows = [];
-  const bands = [];
-  for (let i = bodyStart; i + 1 < ys.length; i++) bands.push([ys[i], ys[i + 1]]);
-  const heights = bands.map((b) => b[1] - b[0]).sort((a, b) => a - b);
-  const median = heights[Math.floor(heights.length / 2)] || 1;
-  const body = bands.filter((b) => b[1] - b[0] > median * 0.45);
   for (let n = 0; n < body.length; n++) {
     const [y0, y1] = body[n];
     onStatus(`Reading prospect ${n + 1} of ${body.length}…`);
