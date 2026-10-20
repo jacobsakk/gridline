@@ -330,7 +330,7 @@ export function buildCreditList(boards, saved = []) {
 }
 
 // The JUCO credit evaluation: everyone on the board (not only the committed and offered), grouped by card colour.
-// Height, wingspan, GPA and the transcript tick live on the player's own card, so this table and the card's edit
+// Measurables, GPA and the transcript tick live on the player's own card, so this table and the card's edit
 // window are two views of the same thing -- a change in either shows in the other.
 export function buildJucoCreditList(boards) {
   const seen = new Map();
@@ -349,8 +349,7 @@ export function buildJucoCreditList(boards) {
         last: parts.slice(1).join(" "),
         pos: p.pos || POS_FROM_COLUMN[c.label] || positionAbbreviation(p.positionTitle) || "ATH",
         school: p.school || "",
-        verfHeight: p.verfHeight || "",
-        verfWing: p.verfWing || "",
+        measurables: p.measurables || "",
         gpa: p.gpa || "",
         gpaLabel: p.gpaLabel || "",
         transcriptEval: !!p.transcriptEval,

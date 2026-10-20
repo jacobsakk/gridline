@@ -278,19 +278,9 @@ export function PlayerModal({ board, classYear, colKey, player, isNew, photo, on
           </div>
 
           {classYear === "JUCO" && (
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr auto", gap: 10, alignItems: "end" }}>
-              <div>
-                <label style={label} htmlFor="bb-vh">Verified height</label>
-                <input id="bb-vh" value={draft.verfHeight || ""} onChange={(e) => set({ verfHeight: e.target.value })} placeholder={`6'3"v`} style={{ ...ctl, width: "100%" }} />
-              </div>
-              <div>
-                <label style={label} htmlFor="bb-vw">Verified wingspan</label>
-                <input id="bb-vw" value={draft.verfWing || ""} onChange={(e) => set({ verfWing: e.target.value })} placeholder={`6'5.5"`} style={{ ...ctl, width: "100%" }} />
-              </div>
-              <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, fontWeight: 600, padding: "8px 0" }}>
-                <input type="checkbox" checked={!!draft.transcriptEval} onChange={(e) => set({ transcriptEval: e.target.checked })} /> Transcript evaluated
-              </label>
-            </div>
+            <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, fontWeight: 600 }}>
+              <input type="checkbox" checked={!!draft.transcriptEval} onChange={(e) => set({ transcriptEval: e.target.checked })} /> Transcript evaluated (shows on the credit evaluation)
+            </label>
           )}
 
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
@@ -481,15 +471,14 @@ export function CreditSheet({ list, onEdit, classYear }) {
   );
 }
 
-// The JUCO credit table: everyone on the board, with the verified height and wingspan, the JUCO GPA and whether the
-// transcript has been evaluated. All four are the card's own fields, so they match what the card's edit window shows.
+// The JUCO credit table: everyone on the board, with the measurables, the JUCO GPA and whether the transcript has
+// been evaluated. All three are the card's own fields, so they match what the card's edit window shows.
 const JUCO_COLS = [
   { key: "first", label: "First name", w: 96 },
   { key: "last", label: "Last name", w: 110 },
   { key: "pos", label: "Pos", w: 56 },
   { key: "school", label: "School", w: 230 },
-  { key: "verfHeight", label: "Verf height", w: 100, edit: true },
-  { key: "verfWing", label: "Verf wing", w: 100, edit: true },
+  { key: "measurables", label: "Measurables", w: 190, edit: true },
   { key: "gpa", label: "JUCO GPA", w: 90, edit: true },
   { key: "transcriptEval", label: "Transcript eval", w: 110, box: true },
 ];
@@ -547,7 +536,7 @@ export function JucoCreditSheet({ list, onEdit, classYear }) {
         </table>
       </div>
       <p className="hs-no-print" style={{ margin: "10px 0 0", fontSize: 12.5, color: "var(--text-faint)", lineHeight: 1.5 }}>
-        Everyone on the JUCO boards. Name, position and school come from the card. Verified height, wingspan, GPA and the transcript tick are the card's own fields, so they match what you see when you click the card, whichever one you edit.
+        Everyone on the JUCO boards. Name, position and school come from the card. Measurables, GPA and the transcript tick are the card's own fields, so they match what you see when you click the card, whichever one you edit.
       </p>
     </div>
   );
@@ -911,7 +900,7 @@ export default function BigBoard({ onBack: toDashboard }) {
 
   // The same person can be on both boards (a flex player): what the JUCO credit table keeps for him is carried to
   // every card of his, on either board, so the two stay one record.
-  const JUCO_FIELDS = ["verfHeight", "verfWing", "gpa", "gpaLabel", "transcriptEval"];
+  const JUCO_FIELDS = ["measurables", "gpa", "gpaLabel", "transcriptEval"];
   async function patchPerson(name, patch, sides = ["off", "def"]) {
     const key = nameKey(name);
     for (const side of sides) {
@@ -1110,7 +1099,7 @@ function carryOver(next, previous) {
       ...c,
       players: c.players.map((p) => {
         const old = before.get(nameKey(p.name));
-        return old ? { ...p, gpa: old.gpa ?? p.gpa, gpaLabel: old.gpaLabel ?? p.gpaLabel, visits: old.visits ?? p.visits, flags: old.flags ?? p.flags, rating: old.rating ?? p.rating, verfHeight: old.verfHeight ?? p.verfHeight, verfWing: old.verfWing ?? p.verfWing, transcriptEval: old.transcriptEval ?? p.transcriptEval } : p;
+        return old ? { ...p, gpa: old.gpa ?? p.gpa, gpaLabel: old.gpaLabel ?? p.gpaLabel, visits: old.visits ?? p.visits, flags: old.flags ?? p.flags, rating: old.rating ?? p.rating, transcriptEval: old.transcriptEval ?? p.transcriptEval } : p;
       }),
     })),
   };
