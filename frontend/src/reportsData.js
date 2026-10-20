@@ -271,6 +271,14 @@ async function readGrid(worker, canvas, grid, onStatus) {
     const coachLines = col.coach ? await readCell(worker, cellCanvas(canvas, col.coach[0], col.coach[1], y0, y1)) : [];
 
     const row = parseProspect(prospectLines);
+    if (!row.school || /,\s*$/.test(row.school)) {
+      // No school (or a cut-off one): read the cell as a whole once more and take its school, name and position
+      // wherever the first read came up short.
+      const whole = parseProspect(await readCell(worker, cellCanvas(canvas, col.prospect[0], col.prospect[1], y0, y1)));
+      if (whole.school && !/,\s*$/.test(whole.school)) row.school = whole.school;
+      if (!row.classYear && whole.classYear) row.classYear = whole.classYear;
+      if (!POSITIONS.includes(row.position) && POSITIONS.includes(whole.position)) row.position = whole.position;
+    }
     if (!POSITIONS.includes(row.position) || row.position === "C") {
       // The position is the one thing the totals depend on: read just the bottom line of the cell, on its own.
       const strip = cellCanvas(canvas, col.prospect[0], col.prospect[1], y1 - (y1 - y0) * 0.36, y1, { minHeight: 90 });
