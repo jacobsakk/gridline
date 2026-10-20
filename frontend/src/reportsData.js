@@ -33,7 +33,7 @@ async function pictureCanvas(file) {
     ctx.fillStyle = "#fff";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-    return canvas;
+    return { canvas, scale, small: img.naturalWidth < 1000 };
   } finally {
     URL.revokeObjectURL(url);
   }
@@ -41,45 +41,286 @@ async function pictureCanvas(file) {
 
 // -> the rows found in one screenshot
 export async function readEvaluationPicture(file, onStatus = () => {}) {
-  const canvas = await pictureCanvas(file);
+  const { canvas, scale, small } = await pictureCanvas(file);
   onStatus("Reading the picture…");
   const createWorker = await loadTesseract();
   const worker = await createWorker("eng");
   try {
-    await worker.setParameters({ tessedit_pageseg_mode: "11" });
+    const grid = findGrid(canvas, scale);
+    if (grid) {
+      const rows = await readGrid(worker, canvas, grid, onStatus);
+      if (rows.length) {
+        rows.small = small;
+        return rows;
+      }
+    }
+    // No table lines to follow (a cropped or restyled picture): read the whole page and group the words.
+    await worker.setParameters({ tessedit_pageseg_mode: "11", tessedit_char_whitelist: "" });
     const result = await worker.recognize(canvas, {}, { blocks: true });
     const words = [];
     for (const b of result.data.blocks || [])
       for (const p of b.paragraphs || [])
         for (const l of p.lines || [])
           for (const w of l.words || []) words.push({ t: w.text, x0: w.bbox.x0, y0: w.bbox.y0, x1: w.bbox.x1, y1: w.bbox.y1 });
-    const rows = parseEvaluationWords(words, canvas.width);
-    // Second look at each prospect's own cell, cropped and enlarged: the small print under a name (school, class
-    // year, position) reads far more reliably on its own than as part of the whole page.
-    await worker.setParameters({ tessedit_pageseg_mode: "6" });
-    for (let n = 0; n < rows.length; n++) {
-      onStatus(`Checking prospect ${n + 1} of ${rows.length}…`);
-      try {
-        const b = rows[n]._box;
-        const crop = document.createElement("canvas");
-        const k = 2;
-        crop.width = Math.round((b.x1 - b.x0) * k);
-        crop.height = Math.round((b.y1 - b.y0) * k);
-        const cx = crop.getContext("2d");
-        cx.fillStyle = "#fff";
-        cx.fillRect(0, 0, crop.width, crop.height);
-        cx.imageSmoothingQuality = "high";
-        cx.drawImage(canvas, b.x0, b.y0, b.x1 - b.x0, b.y1 - b.y0, 0, 0, crop.width, crop.height);
-        const text = (await worker.recognize(crop)).data.text;
-        rows[n] = mergeCell(rows[n], text);
-      } catch {
-        /* keep what the page-wide read found */
-      }
-    }
-    return rows.map(({ _box, ...row }) => row);
+    return parseEvaluationWords(words, canvas.width).map(({ _box, ...row }) => checkRow({ ...row, uid: newUid() }));
   } finally {
     await worker.terminate();
   }
+}
+
+const newUid = () => Math.random().toString(36).slice(2, 10);
+
+// ---------------------------------------------------------------- following the table's own lines
+//
+// The evaluation list is a grid, and its lines are the most reliable thing in the picture: every row sits between
+// two horizontal lines and every column between two vertical ones. Finding those first means each cell (name,
+// dates, status, coach) can be cropped, enlarged and read on its own, instead of reading the whole page at once
+// and guessing which word belongs where.
+
+function grayOf(canvas) {
+  const { width: w, height: h } = canvas;
+  const px = canvas.getContext("2d").getImageData(0, 0, w, h).data;
+  const g = new Uint8Array(w * h);
+  for (let i = 0, j = 0; i < g.length; i++, j += 4) g[i] = (px[j] * 299 + px[j + 1] * 587 + px[j + 2] * 114) / 1000;
+  return { g, w, h };
+}
+
+// Centres of the runs of positions whose line-share is high.
+function peaks(share, min, gap) {
+  const out = [];
+  let run = [];
+  share.forEach((v, i) => {
+    if (v >= min) run.push(i);
+    else if (run.length && i - run[run.length - 1] > gap) {
+      out.push(Math.round(run.reduce((a, b) => a + b, 0) / run.length));
+      run = [];
+    }
+  });
+  if (run.length) out.push(Math.round(run.reduce((a, b) => a + b, 0) / run.length));
+  return out;
+}
+
+function findGrid(canvas, scale) {
+  const { g, w, h } = grayOf(canvas);
+  const d = Math.max(2, Math.round(1.5 * scale));
+  const darker = (i, step) => g[i] < g[i - step] - 5 && g[i] < g[i + step] - 5;
+  const x0 = Math.round(w * 0.04);
+  const x1 = Math.round(w * 0.96);
+  const hShare = new Array(h).fill(0);
+  for (let y = d; y < h - d; y++) {
+    let n = 0;
+    for (let x = x0; x < x1; x++) if (darker(y * w + x, d * w)) n++;
+    hShare[y] = n / (x1 - x0);
+  }
+  const ys = peaks(hShare, 0.5, d * 2);
+  if (ys.length < 3) return null;
+  const top = ys[0];
+  const bottom = ys[ys.length - 1];
+  const vShare = new Array(w).fill(0);
+  for (let x = d; x < w - d; x++) {
+    let n = 0;
+    for (let y = top + d; y < bottom - d; y++) if (darker(y * w + x, d)) n++;
+    vShare[x] = n / (bottom - top - 2 * d);
+  }
+  const xs = peaks(vShare, 0.5, d * 2);
+  if (xs.length < 4) return null;
+  return { ys, xs, w, h };
+}
+
+const COLUMN_ORDER = ["check", "prospect", "status", "eval", "assigned", "completed", "coach", "action"];
+const KEYWORDS = { prospect: /prospect/i, status: /status/i, eval: /eval/i, assigned: /assign/i, completed: /complet/i, coach: /coach/i, action: /action/i };
+
+// A cell cropped out of the page and enlarged so small print is big enough to read.
+function cellCanvas(canvas, x0, x1, y0, y1, { invert = false, minHeight = 150 } = {}) {
+  const inset = 3;
+  const sx = Math.round(x0 + inset);
+  const sy = Math.round(y0 + inset);
+  const sw = Math.max(4, Math.round(x1 - x0 - inset * 2));
+  const sh = Math.max(4, Math.round(y1 - y0 - inset * 2));
+  const k = Math.min(4, Math.max(1, minHeight / sh));
+  const out = document.createElement("canvas");
+  out.width = Math.round(sw * k) + 16;
+  out.height = Math.round(sh * k) + 16;
+  const cx = out.getContext("2d");
+  cx.fillStyle = "#fff";
+  cx.fillRect(0, 0, out.width, out.height);
+  cx.imageSmoothingQuality = "high";
+  cx.drawImage(canvas, sx, sy, sw, sh, 8, 8, out.width - 16, out.height - 16);
+  if (invert) {
+    const im = cx.getImageData(0, 0, out.width, out.height);
+    for (let i = 0; i < im.data.length; i += 4) {
+      im.data[i] = 255 - im.data[i];
+      im.data[i + 1] = 255 - im.data[i + 1];
+      im.data[i + 2] = 255 - im.data[i + 2];
+    }
+    cx.putImageData(im, 0, 0);
+  }
+  return out;
+}
+
+// Does the cell hold a solid green pill (the "Complete" tag)?
+function hasGreenPill(canvas, x0, x1, y0, y1) {
+  const sw = Math.max(1, Math.round(x1 - x0));
+  const sh = Math.max(1, Math.round(y1 - y0));
+  const px = canvas.getContext("2d").getImageData(Math.round(x0), Math.round(y0), sw, sh).data;
+  let green = 0;
+  for (let i = 0; i < px.length; i += 4) if (px[i + 1] > px[i] + 50 && px[i + 1] > px[i + 2] + 50 && px[i + 1] > 90) green++;
+  return green / (px.length / 4) > 0.02;
+}
+
+async function readCell(worker, cell, { psm = "6", whitelist = "" } = {}) {
+  await worker.setParameters({ tessedit_pageseg_mode: psm, tessedit_char_whitelist: whitelist });
+  return ((await worker.recognize(cell)).data.text || "").split("\n").map((l) => l.replace(/\s+/g, " ").trim()).filter(Boolean);
+}
+
+const DATE_CHARS = "0123456789/:APMapm ";
+
+async function readGrid(worker, canvas, grid, onStatus) {
+  const { ys, xs, w } = grid;
+  const edges = [0, ...xs, w];
+  const intervals = edges.slice(0, -1).map((e, i) => [e, edges[i + 1]]);
+  // Which column is which: from the heading words if the picture includes them (the column holding "Prospect"
+  // is where the order starts), else the usual layout with a tick-box column ahead of the prospect.
+  let first = 1;
+  let bodyStart = 0;
+  const avgRow = (ys[ys.length - 1] - ys[0]) / (ys.length - 1);
+  if (ys.length > 2 && ys[1] - ys[0] < avgRow * 1.3) {
+    const headCell = cellCanvas(canvas, 0, w, ys[0], ys[1], { minHeight: 90 });
+    await worker.setParameters({ tessedit_pageseg_mode: "11", tessedit_char_whitelist: "" });
+    const result = await worker.recognize(headCell, {}, { blocks: true });
+    const heads = [];
+    for (const b of result.data.blocks || [])
+      for (const p of b.paragraphs || [])
+        for (const l of p.lines || [])
+          for (const wd of l.words || []) heads.push({ t: wd.text, cx: ((wd.bbox.x0 + wd.bbox.x1) / 2 - 8) * (w / (headCell.width - 16)) });
+    if (heads.some((x) => /prospect|status|assigned|completed/i.test(x.t))) {
+      bodyStart = 1;
+      const p = heads.find((x) => /prospect/i.test(x.t));
+      const at = p ? intervals.findIndex(([a0, a1]) => p.cx >= a0 && p.cx < a1) : -1;
+      if (at >= 0) first = at;
+    }
+  }
+  const col = {};
+  COLUMN_ORDER.slice(1).forEach((k, i) => {
+    if (intervals[first + i]) col[k] = intervals[first + i];
+  });
+  if (!col.prospect || !col.assigned || !col.completed) return [];
+
+  const rows = [];
+  const bands = [];
+  for (let i = bodyStart; i + 1 < ys.length; i++) bands.push([ys[i], ys[i + 1]]);
+  const heights = bands.map((b) => b[1] - b[0]).sort((a, b) => a - b);
+  const median = heights[Math.floor(heights.length / 2)] || 1;
+  const body = bands.filter((b) => b[1] - b[0] > median * 0.45);
+  for (let n = 0; n < body.length; n++) {
+    const [y0, y1] = body[n];
+    onStatus(`Reading prospect ${n + 1} of ${body.length}…`);
+    const prospectLines = await readCell(worker, cellCanvas(canvas, col.prospect[0], col.prospect[1], y0, y1));
+    if (!prospectLines.length) continue;
+    const assignedLines = await readCell(worker, cellCanvas(canvas, col.assigned[0], col.assigned[1], y0, y1), { whitelist: DATE_CHARS });
+    const completedLines = await readCell(worker, cellCanvas(canvas, col.completed[0], col.completed[1], y0, y1), { whitelist: DATE_CHARS });
+    let statusText = "";
+    let pill = false;
+    if (col.status) {
+      statusText = (await readCell(worker, cellCanvas(canvas, col.status[0], col.status[1], y0, y1))).join(" ");
+      statusText += " " + (await readCell(worker, cellCanvas(canvas, col.status[0], col.status[1], y0, y1, { invert: true }))).join(" ");
+      pill = hasGreenPill(canvas, col.status[0], col.status[1], y0, y1);
+    }
+    const coachLines = col.coach ? await readCell(worker, cellCanvas(canvas, col.coach[0], col.coach[1], y0, y1)) : [];
+
+    const row = parseProspect(prospectLines);
+    if (!POSITIONS.includes(row.position) || row.position === "C") {
+      // The position is the one thing the totals depend on: read just the bottom line of the cell, on its own.
+      const strip = cellCanvas(canvas, col.prospect[0], col.prospect[1], y1 - (y1 - y0) * 0.36, y1, { minHeight: 90 });
+      const again = await readCell(worker, strip, { psm: "7", whitelist: "0123456789 ABCDEFGHIJKLMNOPQRSTUVWXYZ/'\".-" });
+      const info = INFO_LINE.exec(again.join(" "));
+      const retry = info ? positionFrom(fixLetters(info[2])) : "";
+      if (POSITIONS.includes(retry) && !(retry === "C" && row.position === "C")) {
+        row.position = retry;
+        row.classYear = row.classYear || info[1];
+        if (row.school && INFO_LINE.test(row.school)) row.school = row.school.replace(INFO_LINE, "").trim();
+      }
+    }
+    const assigned = stamp(assignedLines.join(" "));
+    const completed = stamp(completedLines.join(" "));
+    const evalType = /(\d)\s*[-–]\s*([A-Za-z ]+?)(?:\s+complete\b|$)/i.exec(statusText);
+    const thumb = cellCanvas(canvas, col.prospect[0], col.prospect[1], y0, y1, { minHeight: 90 });
+    rows.push(
+      checkRow({
+        uid: newUid(),
+        ...row,
+        evalType: evalType ? `${evalType[1]} - ${evalType[2].trim()}` : "",
+        assigned,
+        completed,
+        complete: !!completed || pill || /complet/i.test(statusText),
+        coach: (coachLines[0] || "").replace(/\s+/g, " ").trim(),
+        thumb: thumb.toDataURL("image/jpeg", 0.7),
+      })
+    );
+  }
+  return rows;
+}
+
+// Look-alike characters the reader mixes up, put right where only letters make sense.
+const LETTERISH = { 0: "O", 1: "I", 5: "S", 8: "B", 6: "G" };
+const fixLetters = (t) => String(t).replace(/[0-9]/g, (d) => LETTERISH[d] || d);
+
+// "Clark, lvin" -> "Clark, Ivin"; stray marks around a nickname made straight quotes.
+function cleanName(text) {
+  return String(text || "")
+    .replace(/^[^A-Za-z]+/, "")
+    .replace(/[“”*]/g, '"')
+    .replace(/(^|[\s,"])l(?=[a-z])/g, "$1I")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+// A school line: "lowa Central Community College, 1A" -> "Iowa Central Community College, IA".
+function cleanSchool(text) {
+  return String(text || "")
+    .replace(/\s+/g, " ")
+    .replace(/^lowa\b/, "Iowa")
+    .replace(/,\s*([A-Z0-9]{2})\s*$/, (m, st) => `, ${fixLetters(st)}`)
+    .trim();
+}
+
+const INFO_LINE = /^\W*(20\d\d)\s*([A-Za-z0-9/]{1,5})/;
+
+// A prospect's cell: the name, then the school, then the "2027 CB 5' 11" / 190" line.
+function parseProspect(lines) {
+  let infoIdx = -1;
+  for (let i = lines.length - 1; i > 0; i--) {
+    if (/^\W*20\d\d/.test(lines[i])) {
+      infoIdx = i;
+      break;
+    }
+  }
+  const info = infoIdx > 0 ? INFO_LINE.exec(lines[infoIdx]) : null;
+  return {
+    name: cleanName(lines[0]),
+    school: cleanSchool(lines.slice(1, infoIdx > 0 ? infoIdx : undefined).join(" ")),
+    classYear: info ? info[1] : "",
+    position: info ? positionFrom(fixLetters(info[2])) : "",
+  };
+}
+
+// What looks wrong in a row, so the page can point at it: a position that isn't one, a date that isn't a date
+// (or that is implausible), a name that doesn't read like "Last, First".
+export function checkRow(row) {
+  const flags = [];
+  const year = new Date().getFullYear();
+  const okDate = (iso) => {
+    if (!iso) return false;
+    const [y, m, d] = iso.split("-").map(Number);
+    return y >= year - 2 && y <= year + 1 && m >= 1 && m <= 12 && d >= 1 && d <= 31;
+  };
+  if (!/^[A-Za-z][A-Za-z'’.\- ]*,\s*\S/.test(row.name || "")) flags.push("name");
+  if (!POSITIONS.includes(row.position)) flags.push("position");
+  if (!row.school || /,\s*$/.test(row.school)) flags.push("school");
+  if (!okDate(row.assigned)) flags.push("assigned");
+  if (row.complete && !okDate(row.completed)) flags.push("completed");
+  if (okDate(row.assigned) && okDate(row.completed) && row.completed < row.assigned) flags.push("completed");
+  return { ...row, flags };
 }
 
 // ---------------------------------------------------------------- turning words into rows
@@ -96,7 +337,7 @@ function positionFrom(token) {
 
 const DATE = /(\d{1,2})\/(\d{1,2})\/(\d{4})/;
 // A date read off the picture, kept as day only (2026-10-20); the time of day isn't wanted.
-const stamp = (text) => {
+export const stamp = (text) => {
   const d = DATE.exec(text);
   return d ? `${d[3]}-${d[1].padStart(2, "0")}-${d[2].padStart(2, "0")}` : "";
 };

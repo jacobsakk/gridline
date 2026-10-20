@@ -10,10 +10,13 @@ import { isoDate, readEvaluationPicture, rowKey, shortDate, summarize, useReport
 const ghostBtn = { ...control, cursor: "pointer", fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 7, whiteSpace: "nowrap" };
 const primaryBtn = { ...ghostBtn, background: "var(--accent-bg)", border: "1px solid var(--accent)", color: "var(--accent)", fontWeight: 700 };
 
+// A cell the reader wasn't sure of: outlined until it has been edited.
+const FLAGGED = { border: "1.5px solid #e0a030", background: "rgba(224,160,48,0.14)" };
+
 const todayTitle = () => `Evaluations — ${new Date().toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}`;
 
 // A cell you type into; it saves when you click away.
-function Cell({ value, onSave, width, align, upper }) {
+function Cell({ value, onSave, width, align, upper, flag }) {
   const [text, setText] = useState(value ?? "");
   useEffect(() => setText(value ?? ""), [value]);
   return (
@@ -25,14 +28,14 @@ function Cell({ value, onSave, width, align, upper }) {
       onChange={(e) => setText(upper ? e.target.value.toUpperCase() : e.target.value)}
       onBlur={() => text !== (value ?? "") && onSave(text.trim())}
       onKeyDown={(e) => e.key === "Enter" && e.currentTarget.blur()}
-      style={{ ...control, width: width || "100%", minWidth: 0, padding: "4px 6px", fontSize: 12.5, textAlign: align }}
+      style={{ ...control, width: width || "100%", minWidth: 0, padding: "6px 8px", fontSize: 13.5, textAlign: align, ...(flag ? FLAGGED : null) }}
     />
     </>
   );
 }
 
 // A date you pick from a calendar box; on paper it reads as plain M/D/YYYY.
-function DateCell({ value, onSave }) {
+function DateCell({ value, onSave, flag }) {
   return (
     <>
       <span className="rp-print-only">{shortDate(value)}</span>
@@ -41,7 +44,7 @@ function DateCell({ value, onSave }) {
         type="date"
         value={isoDate(value)}
         onChange={(e) => onSave(e.target.value)}
-        style={{ ...control, width: "100%", minWidth: 128, padding: "4px 6px", fontSize: 12.5 }}
+        style={{ ...control, width: "100%", minWidth: 136, padding: "6px 8px", fontSize: 13.5, ...(flag ? FLAGGED : null) }}
       />
     </>
   );
@@ -56,6 +59,9 @@ export default function ReportsPage({ onBack: toDashboard, session }) {
   const [status, setStatus] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [thumbs, setThumbs] = useState({}); // what each flagged prospect looked like in the picture (this visit only)
+  const [onlyCheck, setOnlyCheck] = useState(false);
+  const [smallPicture, setSmallPicture] = useState(false);
   const [printList, setPrintList] = useState(false); // the prospect list only goes on paper when this is ticked
   const fileInput = useRef(null);
   const target = useRef(""); // the report the next picture goes to
@@ -70,7 +76,8 @@ export default function ReportsPage({ onBack: toDashboard, session }) {
   const coaches = useMemo(() => ["All", ...new Set(rows.map((r) => r.coach).filter(Boolean))], [rows]);
   const shown = useMemo(() => rows.map((r, i) => ({ ...r, i })).filter((r) => coach === "All" || r.coach === coach), [rows, coach]);
   const totals = useMemo(() => summarize(shown), [shown]);
-  const detail = useMemo(() => [...shown].sort((a, b) => (a.position || "").localeCompare(b.position || "") || a.name.localeCompare(b.name)), [shown]);
+  const toCheck = useMemo(() => shown.filter((r) => r.flags?.length).length, [shown]);
+  const detail = useMemo(() => [...shown].filter((r) => !onlyCheck || r.flags?.length).sort((a, b) => (a.position || "").localeCompare(b.position || "") || a.name.localeCompare(b.name)), [shown, onlyCheck]);
 
   function pickPicture(forId) {
     target.current = forId;
@@ -100,18 +107,23 @@ export default function ReportsPage({ onBack: toDashboard, session }) {
       let merged = (store.reports.find((r) => r.id === id)?.rows || []).slice();
       let added = 0;
       let found = 0;
+      setSmallPicture(false);
       for (let n = 0; n < files.length; n++) {
         setStatus(`Reading picture ${n + 1} of ${files.length}… (the first time takes a little longer)`);
         const read = await readEvaluationPicture(files[n], (s) => setStatus(s));
+        if (read.small) setSmallPicture(true);
         found += read.length;
         const have = new Set(merged.map(rowKey));
-        read.forEach((r) => {
+        const pics = {};
+        read.forEach(({ thumb, ...r }) => {
           if (!have.has(rowKey(r))) {
             merged.push(r);
             have.add(rowKey(r));
+            if (thumb) pics[r.uid] = thumb;
             added += 1;
           }
         });
+        setThumbs((t) => ({ ...t, ...pics }));
       }
       await store.save(id, { rows: merged });
       setOpenId(id);
@@ -126,7 +138,8 @@ export default function ReportsPage({ onBack: toDashboard, session }) {
   }
 
   const saveRows = (next) => store.save(report.id, { rows: next });
-  const editRow = (i, patch) => saveRows(rows.map((r, k) => (k === i ? { ...r, ...patch } : r)));
+  const editRow = (i, patch) =>
+    saveRows(rows.map((r, k) => (k === i ? { ...r, ...patch, flags: (r.flags || []).filter((f) => !(f in patch) && !(f === "completed" && "complete" in patch)) } : r)));
   const removeRow = (i) => saveRows(rows.filter((_, k) => k !== i));
   const addRow = () => saveRows([...rows, { name: "New prospect", school: "", classYear: "", position: "", evalType: "", assigned: "", completed: "", complete: false, coach: coach === "All" ? "" : coach }]);
 
@@ -175,6 +188,7 @@ export default function ReportsPage({ onBack: toDashboard, session }) {
         </div>
         {busy && <div className="hs-no-print" style={{ display: "flex", alignItems: "center", gap: 8, color: "var(--text-muted)", fontSize: 13, marginBottom: 12 }}><Loader2 size={15} className="spin" /> {status}</div>}
         {!busy && status && <div className="hs-no-print" style={{ color: "var(--success)", fontSize: 13, marginBottom: 12 }}>{status}</div>}
+        {smallPicture && <div className="hs-no-print" style={{ color: "#e0a030", fontSize: 13, marginBottom: 12 }}>That picture is small, so print may be misread. A larger screenshot (zoom the page in, or capture the full-size window) reads much better.</div>}
         {error && <div className="hs-no-print" style={{ color: "var(--danger, #c0392b)", fontSize: 13, marginBottom: 12 }}>{error}</div>}
 
         {!store.ready ? (
@@ -234,10 +248,15 @@ export default function ReportsPage({ onBack: toDashboard, session }) {
             <div className={printList ? undefined : "hs-no-print"}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
                 <div className="oswald" style={{ fontSize: 16, fontWeight: 700 }}>The prospects ({shown.length})</div>
+                {toCheck > 0 && (
+                  <button className="hs-no-print" onClick={() => setOnlyCheck((v) => !v)} style={{ ...ghostBtn, borderColor: "#e0a030", color: "#e0a030" }}>
+                    {toCheck} to check · {onlyCheck ? "show everyone" : "show only these"}
+                  </button>
+                )}
                 <button className="hs-no-print" onClick={addRow} style={ghostBtn}><Plus size={14} /> Add a prospect</button>
               </div>
               <div style={{ border: "1px solid var(--border)", borderRadius: 10, overflow: "auto" }}>
-                <table style={{ width: "100%", minWidth: 740, borderCollapse: "collapse" }}>
+                <table style={{ width: "100%", minWidth: 940, borderCollapse: "collapse" }}>
                   <thead>
                     <tr>
                       {["Prospect", "School", "Class", "Pos", "Assigned", "Completed", "Done", ""].map((h, k) => <th key={k} className={k === 7 ? "hs-no-print" : undefined} style={th}>{h}</th>)}
@@ -246,12 +265,17 @@ export default function ReportsPage({ onBack: toDashboard, session }) {
                   <tbody>
                     {detail.map((r) => (
                       <tr key={`${r.i}-${r.name}`}>
-                        <td style={{ ...td, minWidth: 170 }}><Cell value={r.name} onSave={(v) => editRow(r.i, { name: v })} /></td>
-                        <td style={{ ...td, minWidth: 170 }}><Cell value={r.school} onSave={(v) => editRow(r.i, { school: v })} /></td>
-                        <td style={{ ...td, width: 62 }}><Cell value={r.classYear} onSave={(v) => editRow(r.i, { classYear: v })} /></td>
-                        <td style={{ ...td, width: 62 }}><Cell value={r.position} upper onSave={(v) => editRow(r.i, { position: v })} /></td>
-                        <td style={{ ...td, minWidth: 140 }}><DateCell value={r.assigned} onSave={(v) => editRow(r.i, { assigned: v })} /></td>
-                        <td style={{ ...td, minWidth: 140 }}><DateCell value={r.completed} onSave={(v) => editRow(r.i, { completed: v, complete: !!v })} /></td>
+                        <td style={{ ...td, minWidth: 230 }}>
+                          <Cell value={r.name} flag={r.flags?.includes("name")} onSave={(v) => editRow(r.i, { name: v })} />
+                          {r.flags?.length > 0 && thumbs[r.uid] && (
+                            <img className="hs-no-print" src={thumbs[r.uid]} alt="How this prospect looked in the picture" title="As it looked in the picture" style={{ display: "block", marginTop: 6, maxWidth: 230, borderRadius: 4, border: "1px solid var(--border)", background: "#fff" }} />
+                          )}
+                        </td>
+                        <td style={{ ...td, minWidth: 250 }}><Cell value={r.school} flag={r.flags?.includes("school")} onSave={(v) => editRow(r.i, { school: v })} /></td>
+                        <td style={{ ...td, width: 76 }}><Cell value={r.classYear} onSave={(v) => editRow(r.i, { classYear: v })} /></td>
+                        <td style={{ ...td, width: 76 }}><Cell value={r.position} upper flag={r.flags?.includes("position")} onSave={(v) => editRow(r.i, { position: v })} /></td>
+                        <td style={{ ...td, minWidth: 150 }}><DateCell value={r.assigned} flag={r.flags?.includes("assigned")} onSave={(v) => editRow(r.i, { assigned: v })} /></td>
+                        <td style={{ ...td, minWidth: 150 }}><DateCell value={r.completed} flag={r.flags?.includes("completed")} onSave={(v) => editRow(r.i, { completed: v, complete: !!v })} /></td>
                         <td style={{ ...td, textAlign: "center" }}>
                           <input className="rp-done-box" type="checkbox" checked={!!r.complete} onChange={(e) => editRow(r.i, { complete: e.target.checked })} aria-label={`${r.name} completed`} style={{ cursor: "pointer" }} />
                           <span className="rp-print-only">{r.complete ? "✓" : ""}</span>
