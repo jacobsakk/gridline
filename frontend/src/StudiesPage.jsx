@@ -391,6 +391,9 @@ function PasteTableModal({ allowNewRows, onClose, onSubmit }) {
 
 // `snapshot` is a shared copy ({ seasons, groups }) opened from a share link: the same page, read-only, with no
 // live data behind it, and its position in the address kept under #/shared/<code>/... instead of #/studies/....
+// The previous team shown for a row: one typed in by hand if there is one, else what ESPN's log says.
+const prevTeamOf = (photos, r, season) => (r.previousTeam !== undefined ? r.previousTeam : previousTeamFor(photos, r.player, r.team, season));
+
 export function StudyDetail({ studyId, canEdit, onBack, snapshot = null, shareToken = "", by = "" }) {
   const study = useStudy(studyId, snapshot);
   const photos = useStudyPhotos();
@@ -414,7 +417,7 @@ export function StudyDetail({ studyId, canEdit, onBack, snapshot = null, shareTo
   // What a share link holds for this study: the rows exactly as shown here (edits and hand-added rows included).
   const shareData = useMemo(() => (study.ready && !snapshot ? { seasons: study.seasons, groups: study.groups } : null), [study.ready, study.seasons, study.groups, snapshot]);
   const sorted = useMemo(() => {
-    const get = (r) => (sort.key === "prevTeam" ? previousTeamFor(photos, r.player, r.team, activeSeason) : sort.key === "player" || sort.key === "team" || sort.key === "state" ? String(r[sort.key] ?? "") : sort.key === "score" ? r.score : r.totals[sort.key] ?? 0);
+    const get = (r) => (sort.key === "prevTeam" ? prevTeamOf(photos, r, activeSeason) : sort.key === "player" || sort.key === "team" || sort.key === "state" ? String(r[sort.key] ?? "") : sort.key === "score" ? r.score : r.totals[sort.key] ?? 0);
     return [...rows].sort((a, b) => {
       const av = get(a);
       const bv = get(b);
@@ -427,7 +430,7 @@ export function StudyDetail({ studyId, canEdit, onBack, snapshot = null, shareTo
     () => [
       { key: "player", label: "Player", get: (r) => r.player },
       { key: "team", label: "Team", get: (r) => r.team },
-      { key: "prevTeam", label: "Previous team", get: (r) => previousTeamFor(photos, r.player, r.team, activeSeason) },
+      { key: "prevTeam", label: "Previous team", get: (r) => prevTeamOf(photos, r, activeSeason) },
       { key: "state", label: "State", get: (r) => r.state || "" },
       ...activeGroup.stats.map((s) => ({ key: s.key, label: s.label, get: (r) => r.totals[s.key] ?? 0 })),
       // No Score column for a manual group (OL) -- there's no formula that makes sense for it; sorting
@@ -565,8 +568,18 @@ export function StudyDetail({ studyId, canEdit, onBack, snapshot = null, shareTo
                       </TeamName>
                       <StateCell row={r} editable={canEdit} onSave={(state) => (isManualRow ? study.updateManualRow(r.id, { state }) : study.saveField(group, r.player, { state }))} />
                     </div>
-                    {previousTeamFor(photos, r.player, r.team, activeSeason) && (
-                      <div style={{ fontSize: 12.5, color: "var(--text-muted)", marginTop: 2 }}>Previously {previousTeamFor(photos, r.player, r.team, activeSeason)}</div>
+                    {(prevTeamOf(photos, r, activeSeason) || canEdit) && (
+                      <div style={{ fontSize: 12.5, color: "var(--text-muted)", marginTop: 2, display: "flex", gap: 5, alignItems: "center" }}>
+                        Previously
+                        <TextCell
+                          key={prevTeamOf(photos, r, activeSeason)}
+                          row={{ previousTeam: prevTeamOf(photos, r, activeSeason) }}
+                          field="previousTeam"
+                          placeholder="Previous team"
+                          editable={canEdit}
+                          onSave={(v) => (isManualRow ? study.updateManualRow(r.id, { previousTeam: v }) : study.savePreviousTeam(group, activeSeason, r.player, v))}
+                        />
+                      </div>
                     )}
                   </div>
                   {activeGroup.scoreFormula && (
@@ -648,7 +661,16 @@ export function StudyDetail({ studyId, canEdit, onBack, snapshot = null, shareTo
                       {isManualRow ? <TextCell row={r} field="team" placeholder="Team" editable={canEdit} onSave={(v) => study.updateManualRow(r.id, { team: v })} /> : r.team}
                     </TeamName>
                   </td>
-                  <td style={{ ...td, color: "var(--text-muted)" }}>{previousTeamFor(photos, r.player, r.team, activeSeason) || "—"}</td>
+                  <td style={{ ...td, color: "var(--text-muted)" }}>
+                    <TextCell
+                      key={prevTeamOf(photos, r, activeSeason)}
+                      row={{ previousTeam: prevTeamOf(photos, r, activeSeason) }}
+                      field="previousTeam"
+                      placeholder="Previous team"
+                      editable={canEdit}
+                      onSave={(v) => (isManualRow ? study.updateManualRow(r.id, { previousTeam: v }) : study.savePreviousTeam(group, activeSeason, r.player, v))}
+                    />
+                  </td>
                   <td style={td}>
                     <StateCell row={r} editable={canEdit} onSave={(state) => (isManualRow ? study.updateManualRow(r.id, { state }) : study.saveField(group, r.player, { state }))} />
                   </td>
