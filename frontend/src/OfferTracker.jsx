@@ -1,3 +1,4 @@
+import RenameButton from "./RenameButton.jsx";
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { BackButton, HomeButton } from "./HomeButton.jsx";
 import { initialSubRoute, setSubRoute, useBack } from "./route.js";
@@ -491,7 +492,7 @@ function JucoStatsSection({ player, school, sectionLabel }) {
   );
 }
 
-export function PlayerProfileModal({ player, classYear, tracker, onClose }) {
+export function PlayerProfileModal({ player, classYear, tracker, onClose, onRenamed }) {
   const theme = useContext(ThemeContext);
   const rows = useMemo(() => tracker.rowsForPlayer(classYear, player), [tracker, classYear, player]);
   const first = rows[0];
@@ -534,7 +535,7 @@ export function PlayerProfileModal({ player, classYear, tracker, onClose }) {
       >
         <div style={{ padding: "18px 22px", borderBottom: "1px solid var(--border)", display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
           <div>
-            <h2 className="oswald" style={{ fontSize: 20, margin: 0, fontWeight: 700 }}>{toTitleCase(first.player)}</h2>
+            <h2 className="oswald" style={{ fontSize: 20, margin: 0, fontWeight: 700 }}>{toTitleCase(first.player)}<RenameButton name={first.player} classYear={classYear} onRenamed={onRenamed} size={15} /></h2>
             <div style={{ fontSize: 13, color: "var(--text-muted)", marginTop: 4 }}>
               {toTitleCase(first.highSchool) || "—"} · {first.state || "—"} · <span style={{ color: "var(--accent)", fontWeight: 700 }}>{first.position}</span>
             </div>
@@ -1810,6 +1811,7 @@ export default function OfferTracker({ onBack: toDashboard }) {
           classYear={activeClassYear}
           tracker={tracker}
           onClose={() => setProfilePlayer(null)}
+          onRenamed={(name) => setProfilePlayer(name)}
         />
       )}
 

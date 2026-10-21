@@ -1,3 +1,4 @@
+import RenameButton from "./RenameButton.jsx";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { BackButton, HomeButton } from "./HomeButton.jsx";
 import { AlertTriangle, ArrowDown, Camera, Download, GripVertical, ArrowUp, ChevronLeft, ChevronRight, Eye, EyeOff, FileText, Loader2, Pencil, Plus, Printer, Search, Trash2, Upload, X } from "lucide-react";
@@ -567,6 +568,7 @@ function MasterTab({ players, weeks, currentWeek, cmuByWeek, statusOf, statusWhy
                     <StatusName player={p} status={statusOf(p)} why={statusWhy(p)}>{p.name}</StatusName>
                   </PlayerLink>
                   {p.injured && <span style={{ marginLeft: 6, fontSize: 11, color: "var(--danger-text)" }}>Injured</span>}
+                  <RenameButton name={p.name} classYear={p.classYear} />
                   <button className="hs-no-print" onClick={() => onOpenPlayer(p.id)} title="Open face sheet" aria-label={`Face sheet for ${p.name}`} style={{ marginLeft: 6, background: "none", border: "none", color: "var(--text-faint)", cursor: "pointer", lineHeight: 0, verticalAlign: "middle" }}>
                     <FileText size={13} />
                   </button>
@@ -775,6 +777,7 @@ function WeeklyTab({ players, week, statusOf, autoStatusOf, updatePlayer, onGame
                       <div style={{ fontWeight: 700, color: "var(--text-primary)" }}>
                         <PlayerLink player={p} linked={hasProfile(p)} onProfile={onProfile}>{p.name}</PlayerLink>
                         {p.injured && <span style={{ marginLeft: 6, fontSize: 10.5, color: "var(--danger-text)" }}>INJURED</span>}
+                        <RenameButton name={p.name} classYear={p.classYear} />
                         <button className="hs-no-print" onClick={() => onOpenPlayer(p.id)} title="Open face sheet" aria-label={`Face sheet for ${p.name}`} style={{ marginLeft: 6, background: "none", border: "none", color: "var(--text-faint)", cursor: "pointer", lineHeight: 0, verticalAlign: "middle" }}>
                           <FileText size={13} />
                         </button>
@@ -915,6 +918,7 @@ function FaceBlock({ player, week, status, why, onGame, onAddGame, updatePlayer,
         <PlayerLink player={player} linked={hasProfile(player)} onProfile={onProfile}>
           {player.name} ({player.position || "—"}){player.injured && " (Injured)"}
         </PlayerLink>
+        <RenameButton name={player.name} classYear={player.classYear} size={11} />
       </div>
       <div style={{ ...valueCell, gridColumn: 1, gridRow: 6, background: SHEET.grey, fontWeight: 700, ...fit(player.highSchool) }}>
         {player.highSchool}{player.state && !/\(\w{2}\)\s*$/.test(player.highSchool || "") ? ` (${player.state})` : ""}
@@ -1934,7 +1938,7 @@ export default function HsGameUpdate({ onBack: toDashboard }) {
 
       {profile && (hasProfile(profile) ? (
         <ThemeContext.Provider value={theme}>
-          <PlayerProfileModal player={matchRows(profile)[0].player} classYear={profile.classYear} tracker={offers} onClose={() => setProfile(null)} />
+          <PlayerProfileModal player={matchRows(profile)[0].player} classYear={profile.classYear} tracker={offers} onClose={() => setProfile(null)} onRenamed={() => setProfile(null)} />
         </ThemeContext.Provider>
       ) : (
         <div onClick={() => setProfile(null)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20, zIndex: 70 }}>
