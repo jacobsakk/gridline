@@ -10,7 +10,7 @@ import TransferOutTracker from "./TransferOutTracker.jsx";
 import { ShareLinkButton } from "./StudyShare.jsx";
 import { useIsPhone } from "./usePhone.js";
 import { submitStudyRequest, useStudyRequests } from "./studyRequests.js";
-import { headshotUrls, initialsOf, teamTone, useStudyPhotos } from "./studyPhotos.js";
+import { headshotUrls, initialsOf, previousTeamFor, teamTone, useStudyPhotos } from "./studyPhotos.js";
 
 const ghostBtn = { ...control, cursor: "pointer", fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 7, flexShrink: 0, whiteSpace: "nowrap" };
 
@@ -414,19 +414,20 @@ export function StudyDetail({ studyId, canEdit, onBack, snapshot = null, shareTo
   // What a share link holds for this study: the rows exactly as shown here (edits and hand-added rows included).
   const shareData = useMemo(() => (study.ready && !snapshot ? { seasons: study.seasons, groups: study.groups } : null), [study.ready, study.seasons, study.groups, snapshot]);
   const sorted = useMemo(() => {
-    const get = (r) => (sort.key === "player" || sort.key === "team" || sort.key === "state" ? String(r[sort.key] ?? "") : sort.key === "score" ? r.score : r.totals[sort.key] ?? 0);
+    const get = (r) => (sort.key === "prevTeam" ? previousTeamFor(photos, r.player, r.team, activeSeason) : sort.key === "player" || sort.key === "team" || sort.key === "state" ? String(r[sort.key] ?? "") : sort.key === "score" ? r.score : r.totals[sort.key] ?? 0);
     return [...rows].sort((a, b) => {
       const av = get(a);
       const bv = get(b);
       const cmp = typeof av === "string" ? av.localeCompare(bv) : av - bv;
       return sort.dir === "desc" ? -cmp : cmp;
     });
-  }, [rows, sort]);
+  }, [rows, sort, photos, activeSeason]);
 
   const columns = useMemo(
     () => [
       { key: "player", label: "Player", get: (r) => r.player },
       { key: "team", label: "Team", get: (r) => r.team },
+      { key: "prevTeam", label: "Previous team", get: (r) => previousTeamFor(photos, r.player, r.team, activeSeason) },
       { key: "state", label: "State", get: (r) => r.state || "" },
       ...activeGroup.stats.map((s) => ({ key: s.key, label: s.label, get: (r) => r.totals[s.key] ?? 0 })),
       // No Score column for a manual group (OL) -- there's no formula that makes sense for it; sorting
@@ -435,7 +436,7 @@ export function StudyDetail({ studyId, canEdit, onBack, snapshot = null, shareTo
       { key: "hudlLink", label: "Hudl", get: (r) => r.hudlLink || "" },
       { key: "pffLink", label: "PFF", get: (r) => r.pffLink || "" },
     ],
-    [activeGroup]
+    [activeGroup, photos, activeSeason]
   );
 
   function sortBy(key) {
@@ -564,6 +565,9 @@ export function StudyDetail({ studyId, canEdit, onBack, snapshot = null, shareTo
                       </TeamName>
                       <StateCell row={r} editable={canEdit} onSave={(state) => (isManualRow ? study.updateManualRow(r.id, { state }) : study.saveField(group, r.player, { state }))} />
                     </div>
+                    {previousTeamFor(photos, r.player, r.team, activeSeason) && (
+                      <div style={{ fontSize: 12.5, color: "var(--text-muted)", marginTop: 2 }}>Previously {previousTeamFor(photos, r.player, r.team, activeSeason)}</div>
+                    )}
                   </div>
                   {activeGroup.scoreFormula && (
                     <button onClick={() => setExplainRow(r)} aria-label={`Why does ${r.player} have a score of ${r.score}?`} style={{ background: "var(--accent-bg)", border: "1px solid var(--accent)", color: "var(--accent)", borderRadius: 10, padding: "6px 10px", textAlign: "center", cursor: "pointer", fontFamily: "inherit", flexShrink: 0 }}>
@@ -644,6 +648,7 @@ export function StudyDetail({ studyId, canEdit, onBack, snapshot = null, shareTo
                       {isManualRow ? <TextCell row={r} field="team" placeholder="Team" editable={canEdit} onSave={(v) => study.updateManualRow(r.id, { team: v })} /> : r.team}
                     </TeamName>
                   </td>
+                  <td style={{ ...td, color: "var(--text-muted)" }}>{previousTeamFor(photos, r.player, r.team, activeSeason) || "—"}</td>
                   <td style={td}>
                     <StateCell row={r} editable={canEdit} onSave={(state) => (isManualRow ? study.updateManualRow(r.id, { state }) : study.saveField(group, r.player, { state }))} />
                   </td>

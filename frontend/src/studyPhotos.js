@@ -8,7 +8,7 @@ export function useStudyPhotos() {
   const [data, setData] = useState(null);
   useEffect(() => {
     let live = true;
-    loading ||= import("./data/studies/headshots.json").then((m) => m.default);
+    loading ||= Promise.all([import("./data/studies/headshots.json"), import("./data/studies/previous-teams.json")]).then(([h, p]) => ({ ...h.default, prev: p.default }));
     loading.then((d) => live && setData(d)).catch(() => {});
     return () => {
       live = false;
@@ -30,6 +30,34 @@ export function headshotUrls(data, name, team) {
   const teamKey = letters(team);
   const ordered = [...entries.filter(([, t]) => t === teamKey), ...entries.filter(([, t]) => t !== teamKey)];
   return ordered.map(([id]) => `https://a.espncdn.com/i/headshots/college-football/players/full/${id}.png`);
+}
+
+// The team a player was with before the one this row shows: the latest earlier season he spent on a different team
+// (from ESPN's season log -- see scraper/studies/previous_teams.py). Blank for a player with one team on record.
+const TEAM_ALIAS = { umass: "massachusetts" };
+const teamLetters = (t) => {
+  const k = letters(t);
+  return TEAM_ALIAS[k] || k;
+};
+const sameTeam = (a, b) => {
+  const x = teamLetters(a);
+  const y = teamLetters(b);
+  return !!x && !!y && (x === y || x.startsWith(y) || y.startsWith(x));
+};
+
+export function previousTeamFor(data, name, team, season) {
+  if (!data?.prev) return "";
+  const full = letters(name);
+  const entries = data.byName[full] || data.byName[full.length > 5 ? full.replace(SUFFIX, "") : full] || [];
+  const teamKey = letters(team);
+  const ordered = [...entries.filter(([, t]) => t === teamKey), ...entries.filter(([, t]) => t !== teamKey)];
+  for (const [id] of ordered) {
+    const history = data.prev[id];
+    if (!history) continue;
+    const before = history.find(([y, t]) => y < Number(season) && !sameTeam(t, team));
+    if (before) return before[1];
+  }
+  return "";
 }
 
 export function initialsOf(name) {
