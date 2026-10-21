@@ -131,7 +131,25 @@ def all_mac_by_name():
     return out
 
 
+def _freeze(ranked, old_rows):
+    """The 2026 list keeps exactly the players already on it: each gets his latest stats from this run's data
+    (matched by name and team), and anyone this run can't find keeps his last row. Nobody new is added."""
+    by_key = {(_name_key(r["player"]), r["team"]): r for r in ranked}
+    by_name = {}
+    for r in ranked:
+        by_name.setdefault(_name_key(r["player"]), r)
+    out = [by_key.get((_name_key(o["player"]), o["team"])) or by_name.get(_name_key(o["player"])) or o for o in old_rows]
+    out.sort(key=lambda r: -r["score"])
+    return out
+
+
 def build():
+    # Who is on the current season's list now: it stays that group of people from here on (see _freeze).
+    try:
+        with open(OUT_PATH) as f:
+            previous = json.load(f).get("groups", {})
+    except (OSError, ValueError):
+        previous = {}
     by_season = {}
     for season in SEASONS:
         print(f"Fetching {season} MAC stats from {'real-stats.json' if season == REAL_STATS_SEASON else 'the NCAA API'}...")
@@ -225,8 +243,12 @@ def build():
             # The top N by score, plus any All-MAC honoree who ranks below that cut -- the list is "the
             # best at each position", and a player the conference itself named to its all-conference
             # team belongs on it even if his stat line alone doesn't crack the top N.
-            study[group_key][season] = ranked[:TOP_N] + [r for r in ranked[TOP_N:] if r["allMac"]]
-            print(f"  {group_key} {season}: {len(rows)} leaderboard candidates, {len(ranked)} in the final list")
+            frozen = previous.get(group_key, {}).get(season) if season == REAL_STATS_SEASON else None
+            if frozen:
+                study[group_key][season] = _freeze(ranked, frozen)
+            else:
+                study[group_key][season] = ranked[:TOP_N] + [r for r in ranked[TOP_N:] if r["allMac"]]
+            print(f"  {group_key} {season}: {len(rows)} leaderboard candidates, {len(study[group_key][season])} in the final list")
 
     os.makedirs(os.path.dirname(OUT_PATH), exist_ok=True)
     with open(OUT_PATH, "w") as f:
