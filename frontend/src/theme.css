@@ -292,3 +292,9 @@ tbody tr:hover { background: var(--row-hover) !important; }
   .bb-print-only { display: block !important; }
   .bb-print-page + .bb-print-page { break-before: page; page-break-before: always; }
 }
+
+/* While a board is being fitted to the page nothing on it wraps: a school or measurables line runs on one line and the
+   column is made wide enough for it instead. */
+.bb-nowrap .bb-card-text, .bb-nowrap .bb-card-text > div { white-space: nowrap; overflow-wrap: normal; }
+.bb-nowrap .bb-colhead span, .bb-nowrap .bb-tier span { white-space: nowrap; }
+.bb-nowrap .bb-colhead { flex-wrap: nowrap; gap: 10px; }
