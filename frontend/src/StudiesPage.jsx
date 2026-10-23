@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { ChevronRight, ClipboardPaste, Download, Loader2, Paperclip, Plus, Trash2, X } from "lucide-react";
+import { ChevronRight, ClipboardPaste, Download, Loader2, Paperclip, Plus, Printer, Trash2, X } from "lucide-react";
 import { BackButton, HomeButton } from "./HomeButton.jsx";
 import { ThemeSwitcher, useTheme } from "./theme.jsx";
 import { useBack, initialSubRoute, parseHash, setSubRoute } from "./route.js";
@@ -19,7 +19,7 @@ const ghostBtn = { ...control, cursor: "pointer", fontWeight: 600, display: "inl
 const MEDAL = { 1: { emoji: "🥇", label: "First Team All-MAC" }, 2: { emoji: "🥈", label: "Second Team All-MAC" }, 3: { emoji: "🥉", label: "Third Team All-MAC" } };
 // A round ESPN headshot ringed in the school's colour; initials in the same ring when there is no picture
 // (or it fails to load).
-function PlayerFace({ photos, name, team }) {
+function PlayerFace({ photos, name, team, eager = false }) {
   const urls = headshotUrls(photos, name, team);
   const [tried, setTried] = useState(0); // how many of the candidate pictures have failed to load
   const first = urls[0];
@@ -27,7 +27,7 @@ function PlayerFace({ photos, name, team }) {
   const url = urls[tried];
   return (
     <span className="study-face study-tc" style={{ ...(teamTone(photos, team) || {}) }} aria-hidden="true">
-      {url ? <img key={url} src={url} alt="" loading="lazy" onError={() => setTried((n) => n + 1)} /> : <span>{initialsOf(name)}</span>}
+      {url ? <img key={url} src={url} alt="" loading={eager ? "eager" : "lazy"} onError={() => setTried((n) => n + 1)} /> : <span>{initialsOf(name)}</span>}
     </span>
   );
 }
@@ -391,6 +391,63 @@ function PasteTableModal({ allowNewRows, onClose, onSubmit }) {
 
 // `snapshot` is a shared copy ({ seasons, groups }) opened from a share link: the same page, read-only, with no
 // live data behind it, and its position in the address kept under #/shared/<code>/... instead of #/studies/....
+// What comes out of the printer for a study: one clean page per position (the one on screen, or all of them for the
+// season) -- the player's picture, his name with any All-MAC medal, team, previous team, the position's stats, the
+// PFF grade and the score, black on white. Links and buttons stay on the screen. Hidden until printing.
+function PrintSheet({ study, groups, season, photos, rowsFor }) {
+  const th = { textAlign: "left", padding: "6px 8px", fontSize: "8.5pt", textTransform: "uppercase", letterSpacing: "0.03em", borderBottom: "1.5px solid #111", whiteSpace: "nowrap" };
+  const td = { padding: "5px 8px", fontSize: "10pt", borderBottom: "1px solid #ccc", verticalAlign: "middle", whiteSpace: "nowrap" };
+  return (
+    <div className="study-print-only">
+      {groups.map((g) => {
+        const rows = rowsFor(g);
+        return (
+          <section key={g.key} className="study-print-page">
+            <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 6 }}>
+              <h2 className="oswald" style={{ margin: 0, fontSize: "17pt" }}>{g.label} — {season}</h2>
+              <span style={{ fontSize: "9pt", color: "#444" }}>{study.meta.title}</span>
+            </div>
+            <table style={{ width: "100%", borderCollapse: "collapse" }}>
+              <thead>
+                <tr>
+                  <th style={th}>Player</th>
+                  <th style={th}>Team</th>
+                  <th style={th}>Previous team</th>
+                  <th style={th}>State</th>
+                  {g.stats.map((st) => <th key={st.key} style={{ ...th, textAlign: "right" }}>{st.label}</th>)}
+                  {g.scoreFormula && <th style={{ ...th, textAlign: "right" }}>Score</th>}
+                </tr>
+              </thead>
+              <tbody>
+                {rows.length === 0 && <tr><td colSpan={5 + g.stats.length} style={{ ...td, textAlign: "center", color: "#555" }}>No one on this list.</td></tr>}
+                {rows.map((r) => (
+                  <tr key={r.id || `${r.player}__${r.team}`}>
+                    <td style={{ ...td, fontWeight: 700 }}>
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: 10 }}>
+                        <PlayerFace photos={photos} name={r.player} team={r.team} eager />
+                        <span><Medal tier={r.allMac} />{r.player}</span>
+                      </span>
+                    </td>
+                    <td style={td}><TeamName photos={photos} team={r.team}>{r.team}</TeamName></td>
+                    <td style={td}>{prevTeamOf(photos, r, season) || "—"}</td>
+                    <td style={td}>{r.state || "—"}</td>
+                    {g.stats.map((st) => {
+                      const v = r.totals?.[st.key];
+                      return <td key={st.key} className="tabular" style={{ ...td, textAlign: "right", fontWeight: st.key === "pffGrade" ? 700 : 400 }}>{st.key === "pffGrade" && !v ? "—" : v ?? 0}</td>;
+                    })}
+                    {g.scoreFormula && <td className="tabular" style={{ ...td, textAlign: "right", fontWeight: 800 }}>{r.score}</td>}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <div style={{ marginTop: 8, fontSize: "8.5pt", color: "#444" }}>All-MAC: 🥇 First team · 🥈 Second team · 🥉 Third team</div>
+          </section>
+        );
+      })}
+    </div>
+  );
+}
+
 // The previous team shown for a row: one typed in by hand if there is one, else what ESPN's log says.
 const prevTeamOf = (photos, r, season) => (r.previousTeam !== undefined ? r.previousTeam : previousTeamFor(photos, r.player, r.team, season));
 
@@ -404,6 +461,36 @@ export function StudyDetail({ studyId, canEdit, onBack, snapshot = null, shareTo
   const [sort, setSort] = useState({ key: "score", dir: "desc" });
   const [explainRow, setExplainRow] = useState(null);
   const [pasting, setPasting] = useState(false);
+  const [printMode, setPrintMode] = useState(null); // "one" (this position) or "all" (every position this season)
+  useEffect(() => {
+    if (!printMode) return undefined;
+    const done = () => setPrintMode(null);
+    window.addEventListener("afterprint", done);
+    // Print once the sheet has drawn and its pictures have arrived (they load only now, not with the page).
+    const waitForPictures = () =>
+      new Promise((resolve) => {
+        const pending = [...document.querySelectorAll(".study-print-only img")].filter((img) => !img.complete);
+        if (!pending.length) return resolve();
+        const timer = setTimeout(resolve, 5000);
+        let left = pending.length;
+        const one = () => {
+          left -= 1;
+          if (left <= 0) {
+            clearTimeout(timer);
+            resolve();
+          }
+        };
+        pending.forEach((img) => {
+          img.addEventListener("load", one, { once: true });
+          img.addEventListener("error", one, { once: true });
+        });
+      });
+    const frame = requestAnimationFrame(() => setTimeout(() => waitForPictures().then(() => window.print()), 50));
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener("afterprint", done);
+    };
+  }, [printMode]);
 
   const activeGroup = study.meta.groups.find((g) => g.key === group);
   const seasons = study.seasons;
@@ -466,7 +553,8 @@ export function StudyDetail({ studyId, canEdit, onBack, snapshot = null, shareTo
   const td = { padding: "7px 10px", fontSize: 13.5, color: "var(--text-secondary)", borderTop: "1px solid var(--border-subtle)", whiteSpace: "nowrap" };
 
   return (
-    <div style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column", padding: phone ? "12px var(--gutter) 24px" : "16px var(--gutter) var(--gutter)", gap: 12, overflowY: phone ? "auto" : undefined }}>
+    <>
+    <div className="hs-no-print" style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column", padding: phone ? "12px var(--gutter) 24px" : "16px var(--gutter) var(--gutter)", gap: 12, overflowY: phone ? "auto" : undefined }}>
       <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, flexWrap: "wrap", flexShrink: 0 }}>
         <div>
           <h1 className="oswald" style={{ fontSize: phone ? 19 : 22, fontWeight: 700, margin: 0 }}>{study.meta.title}</h1>
@@ -487,6 +575,8 @@ export function StudyDetail({ studyId, canEdit, onBack, snapshot = null, shareTo
             <button onClick={() => setPasting(true)} style={ghostBtn}><ClipboardPaste size={14} /> Paste table</button>
           )}
           {canEdit && !snapshot && <ShareLinkButton studyId={studyId} title={study.meta.title} data={shareData} by={by} />}
+          <button onClick={() => setPrintMode("one")} style={ghostBtn} title={`Print ${activeGroup.label}, ${activeSeason}`}><Printer size={14} /> Print</button>
+          <button onClick={() => setPrintMode("all")} style={ghostBtn} title={`Print every position for ${activeSeason}, one page each`}><Printer size={14} /> Print all positions</button>
           <button onClick={() => downloadCsv(sorted, columns, `${study.meta.id}-${group}-${activeSeason}.csv`)} style={ghostBtn}><Download size={14} /> Download</button>
         </div>
       </div>
@@ -720,6 +810,16 @@ export function StudyDetail({ studyId, canEdit, onBack, snapshot = null, shareTo
       {explainRow && <ScoreExplainer row={explainRow} group={activeGroup} onClose={() => setExplainRow(null)} />}
       {pasting && <PasteTableModal allowNewRows={!!activeGroup.manual} onClose={() => setPasting(false)} onSubmit={(text) => study.pasteTable(group, activeSeason, text)} />}
     </div>
+    {printMode && (
+      <PrintSheet
+        study={study}
+        groups={printMode === "all" ? study.meta.groups : [activeGroup]}
+        season={activeSeason}
+        photos={photos}
+        rowsFor={(g) => (g.key === group ? sorted : [...(study.groups[g.key]?.[String(activeSeason)] || [])].sort((a, b) => (g.scoreFormula ? (b.score ?? 0) - (a.score ?? 0) : (b.totals?.pffGrade ?? 0) - (a.totals?.pffGrade ?? 0))))}
+      />
+    )}
+    </>
   );
 }
 
@@ -750,7 +850,7 @@ export default function StudiesPage({ onBack: toDashboard, session }) {
 
   return (
     <div className="app-shell hs-shell" data-theme={theme} style={{ display: "flex", flexDirection: "column", overflow: "hidden", background: "var(--bg-page)", color: "var(--text-primary)", fontFamily: "'Century Gothic', 'Jost', 'Helvetica Neue', Arial, sans-serif" }}>
-      <div className="app-header compact-header" style={{ flexShrink: 0, position: "relative", padding: "20px var(--gutter) 16px" }}>
+      <div className="app-header compact-header hs-no-print" style={{ flexShrink: 0, position: "relative", padding: "20px var(--gutter) 16px" }}>
         <div style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: 3, background: "linear-gradient(90deg, var(--gold), var(--maroon))" }} />
         <div className="compact-row" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 14, flexWrap: "wrap" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 14 }}>

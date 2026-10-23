@@ -298,3 +298,16 @@ tbody tr:hover { background: var(--row-hover) !important; }
 .bb-nowrap .bb-card-text, .bb-nowrap .bb-card-text > div { white-space: nowrap; overflow-wrap: normal; }
 .bb-nowrap .bb-colhead span, .bb-nowrap .bb-tier span { white-space: nowrap; }
 .bb-nowrap .bb-colhead { flex-wrap: nowrap; gap: 10px; }
+
+/* Studies: the printed sheet -- one landscape page per position, black on white, links and buttons left on screen. */
+.study-print-only { display: none; }
+@page studyprint { size: letter landscape; margin: 0.4in; }
+@media print {
+  .study-print-only { display: block !important; page: studyprint; color: #111; background: #fff; }
+  .study-print-page { break-after: page; page-break-after: always; }
+  .study-print-page:last-child { break-after: auto; page-break-after: auto; }
+  .study-print-only * { color-scheme: light; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .study-print-only .study-face { width: 46px !important; height: 46px !important; border-width: 2px; font-size: 13px; background: #f1f1f1; border-color: var(--tc-l) !important; color: var(--tc-l) !important; }
+  .study-print-only .study-team { color: var(--tc-l) !important; }
+  .study-print-only tr { break-inside: avoid; }
+}
