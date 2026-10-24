@@ -350,8 +350,11 @@ export function overlayScraped(games, teamDoc) {
     };
   });
   const scheduleIsFresh = teamDoc.fetched?.maxpreps;
-  // A game typed in by hand is kept even without a score -- it's not a scraper placeholder to drop.
-  const leftovers = games.filter((g) => !claimed.has(g) && (g.manual || g.result || !scheduleIsFresh || !g.date));
+  // A game typed in by hand is kept even without a score -- it's not a scraper placeholder to drop. Neither is one
+  // carrying a hand-written summary: that text is somebody's work, and a game that gets rescheduled or renamed on
+  // the school's site must not take it with it.
+  const written = (g) => !!String(g.summary || "").trim();
+  const leftovers = games.filter((g) => !claimed.has(g) && (g.manual || g.result || written(g) || !scheduleIsFresh || !g.date));
   return [...merged.filter(Boolean), ...leftovers].sort((a, b) => (a.date || "").localeCompare(b.date || ""));
 }
 
@@ -438,7 +441,7 @@ export function dedupeGames(games) {
 export function cleanSchedule(games, today = toIso(new Date())) {
   const merged = dedupeGames(games);
   return merged.filter(
-    (g) => g.manual || g.result || !g.date || g.date >= today || !merged.some((o) => o !== g && o.result && o.date && daysApart(o.date, g.date) <= 1)
+    (g) => g.manual || g.result || String(g.summary || "").trim() || !g.date || g.date >= today || !merged.some((o) => o !== g && o.result && o.date && daysApart(o.date, g.date) <= 1)
   );
 }
 
