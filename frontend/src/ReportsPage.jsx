@@ -61,6 +61,7 @@ export default function ReportsPage({ onBack: toDashboard, session }) {
   const [busy, setBusy] = useState(false);
   const [thumbs, setThumbs] = useState({}); // what each flagged prospect looked like in the picture (this visit only)
   const [onlyCheck, setOnlyCheck] = useState(false);
+  const [sort, setSort] = useState(null); // { key, dir } -- null is the usual order (by position, then name)
   const [smallPicture, setSmallPicture] = useState(false);
   const [printList, setPrintList] = useState(false); // the prospect list only goes on paper when this is ticked
   const fileInput = useRef(null);
@@ -77,7 +78,21 @@ export default function ReportsPage({ onBack: toDashboard, session }) {
   const shown = useMemo(() => rows.map((r, i) => ({ ...r, i })).filter((r) => coach === "All" || r.coach === coach), [rows, coach]);
   const totals = useMemo(() => summarize(shown), [shown]);
   const toCheck = useMemo(() => shown.filter((r) => r.flags?.length).length, [shown]);
-  const detail = useMemo(() => [...shown].filter((r) => !onlyCheck || r.flags?.length).sort((a, b) => (a.position || "").localeCompare(b.position || "") || a.name.localeCompare(b.name)), [shown, onlyCheck]);
+  const detail = useMemo(() => {
+    const list = [...shown].filter((r) => !onlyCheck || r.flags?.length);
+    const usual = (x, y) => (x.position || "").localeCompare(y.position || "") || x.name.localeCompare(y.name);
+    if (!sort) return list.sort(usual);
+    const value = (r) =>
+      sort.key === "assigned" || sort.key === "completed" ? isoDate(r[sort.key]) : sort.key === "complete" ? (r.complete ? 1 : 0) : String(r[sort.key] ?? "").toLowerCase();
+    const dir = sort.dir === "asc" ? 1 : -1;
+    return list.sort((x, y) => {
+      const a = value(x);
+      const b = value(y);
+      // Rows with no date sort last whichever way the dates run.
+      if ((a === "" || a == null) !== (b === "" || b == null)) return a === "" || a == null ? 1 : -1;
+      return (a < b ? -1 : a > b ? 1 : 0) * dir || usual(x, y);
+    });
+  }, [shown, onlyCheck, sort]);
 
   function pickPicture(forId) {
     target.current = forId;
@@ -259,7 +274,18 @@ export default function ReportsPage({ onBack: toDashboard, session }) {
                 <table style={{ width: "100%", minWidth: 940, borderCollapse: "collapse" }}>
                   <thead>
                     <tr>
-                      {["Prospect", "School", "Class", "Pos", "Assigned", "Completed", "Done", ""].map((h, k) => <th key={k} className={k === 7 ? "hs-no-print" : undefined} style={th}>{h}</th>)}
+                      {[["Prospect", "name"], ["School", "school"], ["Class", "classYear"], ["Pos", "position"], ["Assigned", "assigned"], ["Completed", "completed"], ["Done", "complete"], ["", null]].map(([h, key], k) => (
+                        <th
+                          key={k}
+                          className={k === 7 ? "hs-no-print" : undefined}
+                          aria-sort={key && sort?.key === key ? (sort.dir === "asc" ? "ascending" : "descending") : undefined}
+                          onClick={key ? () => setSort((cur) => (cur?.key === key ? (cur.dir === "asc" ? { key, dir: "desc" } : null) : { key, dir: key === "assigned" || key === "completed" ? "desc" : "asc" })) : undefined}
+                          title={key ? "Click to sort, again to reverse, a third time for the usual order" : undefined}
+                          style={{ ...th, cursor: key ? "pointer" : undefined, userSelect: "none" }}
+                        >
+                          {h}{key && sort?.key === key ? (sort.dir === "asc" ? " ▲" : " ▼") : ""}
+                        </th>
+                      ))}
                     </tr>
                   </thead>
                   <tbody>
