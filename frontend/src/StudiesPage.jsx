@@ -394,7 +394,7 @@ function PasteTableModal({ allowNewRows, onClose, onSubmit }) {
 // What comes out of the printer for a study: one clean page per position (the one on screen, or all of them for the
 // season) -- the player's picture, his name with any All-MAC medal, team, previous team, the position's stats, the
 // PFF grade and the score, black on white. Links and buttons stay on the screen. Hidden until printing.
-function PrintSheet({ study, groups, season, photos, rowsFor }) {
+function PrintSheet({ study, groups, season, photos, rowsFor, view }) {
   const th = { textAlign: "left", padding: "6px 8px", fontSize: "8.5pt", textTransform: "uppercase", letterSpacing: "0.03em", borderBottom: "1.5px solid #111", whiteSpace: "nowrap" };
   const td = { padding: "5px 8px", fontSize: "10pt", borderBottom: "1px solid #ccc", verticalAlign: "middle", whiteSpace: "nowrap" };
   return (
@@ -404,7 +404,7 @@ function PrintSheet({ study, groups, season, photos, rowsFor }) {
         return (
           <section key={g.key} className="study-print-page">
             <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 6 }}>
-              <h2 className="oswald" style={{ margin: 0, fontSize: "17pt" }}>{g.label} — {season}</h2>
+              <h2 className="oswald" style={{ margin: 0, fontSize: "17pt" }}>{g.label} — {season}{view === "transfers" ? " transfers" : ""}</h2>
               <span style={{ fontSize: "9pt", color: "#444" }}>{study.meta.title}</span>
             </div>
             <table style={{ width: "100%", borderCollapse: "collapse" }}>
@@ -492,10 +492,15 @@ export function StudyDetail({ studyId, canEdit, onBack, snapshot = null, shareTo
     };
   }, [printMode]);
 
+  // "All players" is the study as it always was; "Transfers" is the same lists for the current season, kept to the
+  // players who played somewhere else before (the Previous team column has something in it).
+  const [view, setView] = useState("all");
   const activeGroup = study.meta.groups.find((g) => g.key === group);
   const seasons = study.seasons;
-  const activeSeason = seasons.includes(season) ? season : seasons[seasons.length - 1];
-  const rows = study.groups[group]?.[String(activeSeason)] || [];
+  const latestSeason = seasons[seasons.length - 1];
+  const activeSeason = view === "transfers" ? latestSeason : seasons.includes(season) ? season : latestSeason;
+  const keep = (list) => (view === "transfers" ? list.filter((r) => prevTeamOf(photos, r, activeSeason)) : list);
+  const rows = keep(study.groups[group]?.[String(activeSeason)] || []);
   useEffect(() => {
     if (activeSeason == null) return;
     if (snapshot) setSubRoute("shared", [shareToken, group, activeSeason]);
@@ -581,11 +586,26 @@ export function StudyDetail({ studyId, canEdit, onBack, snapshot = null, shareTo
         </div>
       </div>
 
+      <div style={{ display: "flex", gap: 4, background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 8, padding: 3, alignSelf: "flex-start", flexShrink: 0 }}>
+        {[["all", "All players"], ["transfers", `${latestSeason ?? ""} transfers`]].map(([key, label]) => (
+          <button
+            key={key}
+            onClick={() => setView(key)}
+            style={{
+              border: "none", borderRadius: 6, padding: "7px 16px", fontSize: 13, fontWeight: 700, fontFamily: "inherit", cursor: "pointer",
+              background: view === key ? "var(--accent)" : "transparent", color: view === key ? "var(--bg-page)" : "var(--text-muted)",
+            }}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+
       <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap", flexShrink: 0 }}>
         <div style={{ display: "flex", gap: 6, flexWrap: phone ? "nowrap" : "wrap", overflowX: phone ? "auto" : undefined, maxWidth: "100%", paddingBottom: phone ? 4 : 0 }}>
           {study.meta.groups.map((g) => {
             const isActive = g.key === group;
-            const count = study.groups[g.key]?.[String(activeSeason)]?.length ?? 0;
+            const count = keep(study.groups[g.key]?.[String(activeSeason)] || []).length;
             return (
               <button
                 key={g.key}
@@ -602,7 +622,7 @@ export function StudyDetail({ studyId, canEdit, onBack, snapshot = null, shareTo
             );
           })}
         </div>
-        {seasons.length > 0 && (
+        {seasons.length > 0 && view === "all" && (
           <div style={{ display: "flex", gap: 4, background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 8, padding: 3 }}>
             {seasons.map((y) => (
               <button
@@ -638,7 +658,7 @@ export function StudyDetail({ studyId, canEdit, onBack, snapshot = null, shareTo
           </div>
           {sorted.length === 0 && (
             <div style={{ textAlign: "center", color: "var(--text-faint)", padding: 28, fontSize: 13.5 }}>
-              {activeGroup.manual ? "No one added yet." : `Nobody qualified for this position in ${activeSeason}.`}
+              {view === "transfers" ? `No transfers on this list for ${activeSeason}${photos ? "." : " yet -- still loading previous teams."}` : activeGroup.manual ? "No one added yet." : `Nobody qualified for this position in ${activeSeason}.`}
             </div>
           )}
           {sorted.map((r) => {
@@ -726,7 +746,7 @@ export function StudyDetail({ studyId, canEdit, onBack, snapshot = null, shareTo
               {sorted.length === 0 && (
                 <tr>
                   <td colSpan={columns.length + (canEdit ? 1 : 0)} style={{ ...td, textAlign: "center", color: "var(--text-faint)", padding: 32 }}>
-                    {activeGroup.manual ? "No one added yet." : `Nobody qualified for this position in ${activeSeason}.`}
+                    {view === "transfers" ? `No transfers on this list for ${activeSeason}${photos ? "." : " yet -- still loading previous teams."}` : activeGroup.manual ? "No one added yet." : `Nobody qualified for this position in ${activeSeason}.`}
                   </td>
                 </tr>
               )}
@@ -813,10 +833,11 @@ export function StudyDetail({ studyId, canEdit, onBack, snapshot = null, shareTo
     {printMode && (
       <PrintSheet
         study={study}
+        view={view}
         groups={printMode === "all" ? study.meta.groups : [activeGroup]}
         season={activeSeason}
         photos={photos}
-        rowsFor={(g) => (g.key === group ? sorted : [...(study.groups[g.key]?.[String(activeSeason)] || [])].sort((a, b) => (g.scoreFormula ? (b.score ?? 0) - (a.score ?? 0) : (b.totals?.pffGrade ?? 0) - (a.totals?.pffGrade ?? 0))))}
+        rowsFor={(g) => (g.key === group ? sorted : keep([...(study.groups[g.key]?.[String(activeSeason)] || [])]).sort((a, b) => (g.scoreFormula ? (b.score ?? 0) - (a.score ?? 0) : (b.totals?.pffGrade ?? 0) - (a.totals?.pffGrade ?? 0))))}
       />
     )}
     </>
