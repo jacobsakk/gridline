@@ -86,6 +86,7 @@ GROUPS = {
     "SAF": {"category": "tackling", "position": "SAF", "score": lambda s: s["total"] + 6 * s["int"] + 3 * s["pbu"] + 1.5 * s["tfl"], "stats": ["games", "total", "tfl", "pbu", "int"]},
 }
 TOP_N = 10
+TRANSFER_POOL = 40  # extra current-season players kept per position for the Transfers tab (see below)
 MIN_GAMES = 4  # a game or two (missed the leaderboard cutoff most of the time) isn't "one of the best"
 
 
@@ -245,7 +246,13 @@ def build():
             # team belongs on it even if his stat line alone doesn't crack the top N.
             frozen = previous.get(group_key, {}).get(season) if season == REAL_STATS_SEASON else None
             if frozen:
-                study[group_key][season] = _freeze(ranked, frozen)
+                # The list itself (the people already on it, with fresh stats), then a pool of the next-best MAC
+                # players this season, marked `pool`: not shown on the study's main lists, but there for the
+                # Transfers tab to draw from when the list holds fewer than five transfers at a position.
+                kept = _freeze(ranked, [r for r in frozen if not r.get("pool")])
+                on_list = {(_name_key(r["player"]), r["team"]) for r in kept}
+                pool = [dict(r, pool=True) for r in ranked if (_name_key(r["player"]), r["team"]) not in on_list][:TRANSFER_POOL]
+                study[group_key][season] = kept + pool
             else:
                 study[group_key][season] = ranked[:TOP_N] + [r for r in ranked[TOP_N:] if r["allMac"]]
             print(f"  {group_key} {season}: {len(rows)} leaderboard candidates, {len(study[group_key][season])} in the final list")

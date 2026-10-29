@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-25T14:48:54.282378Z",
+  "generatedAt": "2026-10-29T15:10:12.753890Z",
   "seasons": [
     2023,
     2024,
@@ -814,6 +814,279 @@
           "pffLink": "",
           "state": "AZ",
           "allMac": null
+        },
+        {
+          "player": "Brayden Roggow",
+          "team": "Akron",
+          "position": "QB",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "att": 190.0,
+            "yards": 1343.0,
+            "td": 7.0,
+            "int": 9.0,
+            "rushYards": -63.0,
+            "rushTd": 1.0
+          },
+          "score": 1330.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "OH",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Jackson Sharman",
+          "team": "Sacramento St.",
+          "position": "QB",
+          "season": 2026,
+          "totals": {
+            "games": 7.0,
+            "att": 218.0,
+            "yards": 1257.0,
+            "td": 8.0,
+            "int": 6.0,
+            "rushYards": -50.0,
+            "rushTd": 0.0
+          },
+          "score": 1317.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "CA",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Jason Wright",
+          "team": "Buffalo",
+          "position": "QB",
+          "season": 2026,
+          "totals": {
+            "games": 7.0,
+            "att": 185.0,
+            "yards": 987.0,
+            "td": 7.0,
+            "int": 4.0,
+            "rushYards": 152.0,
+            "rushTd": 2.0
+          },
+          "score": 1274.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Nick Poulos",
+          "team": "Ohio",
+          "position": "QB",
+          "season": 2026,
+          "totals": {
+            "games": 5.0,
+            "att": 97.0,
+            "yards": 769.0,
+            "td": 6.0,
+            "int": 0.0,
+            "rushYards": 203.0,
+            "rushTd": 2.0
+          },
+          "score": 1142.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "CA",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Caleb Heavner",
+          "team": "Miami (OH)",
+          "position": "QB",
+          "season": 2026,
+          "totals": {
+            "games": 7.0,
+            "att": 102.0,
+            "yards": 615.0,
+            "td": 3.0,
+            "int": 4.0,
+            "rushYards": 217.0,
+            "rushTd": 2.0
+          },
+          "score": 867.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "TX",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Matt Vezza",
+          "team": "Ohio",
+          "position": "QB",
+          "season": 2026,
+          "totals": {
+            "games": 6.0,
+            "att": 62.0,
+            "yards": 445.0,
+            "td": 4.0,
+            "int": 3.0,
+            "rushYards": 182.0,
+            "rushTd": 3.0
+          },
+          "score": 712.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "IL",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Jadyn Glasser",
+          "team": "Central Mich.",
+          "position": "QB",
+          "season": 2026,
+          "totals": {
+            "games": 7.0,
+            "att": 74.0,
+            "yards": 463.0,
+            "td": 2.0,
+            "int": 3.0,
+            "rushYards": 7.0,
+            "rushTd": 1.0
+          },
+          "score": 485.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "FL",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Logan Inagawa",
+          "team": "Massachusetts",
+          "position": "QB",
+          "season": 2026,
+          "totals": {
+            "games": 5.0,
+            "att": 37.0,
+            "yards": 296.0,
+            "td": 1.0,
+            "int": 1.0,
+            "rushYards": 75.0,
+            "rushTd": 1.0
+          },
+          "score": 391.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "GA",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Levi Davis",
+          "team": "Ohio",
+          "position": "QB",
+          "season": 2026,
+          "totals": {
+            "games": 6.0,
+            "att": 27.0,
+            "yards": 203.0,
+            "td": 2.0,
+            "int": 0.0,
+            "rushYards": 94.0,
+            "rushTd": 1.0
+          },
+          "score": 357.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "OH",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Tyler Mizzell",
+          "team": "Ball St.",
+          "position": "QB",
+          "season": 2026,
+          "totals": {
+            "games": 7.0,
+            "att": 38.0,
+            "yards": 260.0,
+            "td": 1.0,
+            "int": 0.0,
+            "rushYards": 29.0,
+            "rushTd": 0.0
+          },
+          "score": 314.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "NC",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Brian Salazar Jr.",
+          "team": "Sacramento St.",
+          "position": "QB",
+          "season": 2026,
+          "totals": {
+            "games": 4.0,
+            "att": 10.0,
+            "yards": 99.0,
+            "td": 1.0,
+            "int": 0.0,
+            "rushYards": -5.0,
+            "rushTd": 0.0
+          },
+          "score": 119.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "CA",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Nolan Good",
+          "team": "Kent St.",
+          "position": "QB",
+          "season": 2026,
+          "totals": {
+            "games": 4.0,
+            "att": 9.0,
+            "yards": 5.0,
+            "td": 0.0,
+            "int": 1.0,
+            "rushYards": 64.0,
+            "rushTd": 0.0
+          },
+          "score": 54.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "OH",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Semaj Beals",
+          "team": "Akron",
+          "position": "QB",
+          "season": 2026,
+          "totals": {
+            "games": 4.0,
+            "att": 1.0,
+            "yards": 0.0,
+            "td": 0.0,
+            "int": 0.0,
+            "rushYards": 0.0,
+            "rushTd": 0.0
+          },
+          "score": 0.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "PA",
+          "allMac": null,
+          "pool": true
         }
       ]
     },
@@ -1504,6 +1777,726 @@
           "pffLink": "",
           "state": "PA",
           "allMac": null
+        },
+        {
+          "player": "Amareon Blue",
+          "team": "Eastern Mich.",
+          "position": "RB",
+          "season": 2026,
+          "totals": {
+            "games": 9.0,
+            "att": 79.0,
+            "yards": 405.0,
+            "td": 3.0
+          },
+          "score": 435.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "NC",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Duncan Brune",
+          "team": "Ohio",
+          "position": "RB",
+          "season": 2026,
+          "totals": {
+            "games": 7.0,
+            "att": 81.0,
+            "yards": 352.0,
+            "td": 3.0
+          },
+          "score": 382.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Autavius Ison",
+          "team": "Toledo",
+          "position": "RB",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "att": 67.0,
+            "yards": 323.0,
+            "td": 3.0
+          },
+          "score": 353.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "GA",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Curtis Kimmons IV",
+          "team": "Massachusetts",
+          "position": "RB",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "att": 55.0,
+            "yards": 308.0,
+            "td": 4.0
+          },
+          "score": 348.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "FL",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Isaiah Ene",
+          "team": "Sacramento St.",
+          "position": "RB",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "att": 58.0,
+            "yards": 303.0,
+            "td": 1.0
+          },
+          "score": 313.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "CA",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Braydon Bennett",
+          "team": "Eastern Mich.",
+          "position": "RB",
+          "season": 2026,
+          "totals": {
+            "games": 9.0,
+            "att": 63.0,
+            "yards": 280.0,
+            "td": 2.0
+          },
+          "score": 300.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "SC",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Jayden Clerveaux",
+          "team": "Central Mich.",
+          "position": "RB",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "att": 50.0,
+            "yards": 271.0,
+            "td": 2.0
+          },
+          "score": 291.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "MA",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Joey Mattord",
+          "team": "Eastern Mich.",
+          "position": "RB",
+          "season": 2026,
+          "totals": {
+            "games": 9.0,
+            "att": 60.0,
+            "yards": 265.0,
+            "td": 1.0
+          },
+          "score": 275.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "MI",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Jalen Bonds",
+          "team": "Ball St.",
+          "position": "RB",
+          "season": 2026,
+          "totals": {
+            "games": 6.0,
+            "att": 47.0,
+            "yards": 224.0,
+            "td": 2.0
+          },
+          "score": 244.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "IN",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Lolo Mataele",
+          "team": "Western Mich.",
+          "position": "RB",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "att": 53.0,
+            "yards": 231.0,
+            "td": 1.0
+          },
+          "score": 241.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "CA",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Brandon White",
+          "team": "Kent St.",
+          "position": "RB",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "att": 68.0,
+            "yards": 235.0,
+            "td": 0.0
+          },
+          "score": 235.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Daniel Swinney",
+          "team": "Sacramento St.",
+          "position": "RB",
+          "season": 2026,
+          "totals": {
+            "games": 7.0,
+            "att": 44.0,
+            "yards": 222.0,
+            "td": 1.0
+          },
+          "score": 232.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "KY",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Irving Brown",
+          "team": "Ohio",
+          "position": "RB",
+          "season": 2026,
+          "totals": {
+            "games": 7.0,
+            "att": 23.0,
+            "yards": 219.0,
+            "td": 1.0
+          },
+          "score": 229.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "NC",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Sean Patrick",
+          "team": "Akron",
+          "position": "RB",
+          "season": 2026,
+          "totals": {
+            "games": 7.0,
+            "att": 42.0,
+            "yards": 225.0,
+            "td": 0.0
+          },
+          "score": 225.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "OH",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Nino Hill",
+          "team": "Buffalo",
+          "position": "RB",
+          "season": 2026,
+          "totals": {
+            "games": 6.0,
+            "att": 63.0,
+            "yards": 202.0,
+            "td": 2.0
+          },
+          "score": 222.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "OH",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Mason King",
+          "team": "Kent St.",
+          "position": "RB",
+          "season": 2026,
+          "totals": {
+            "games": 6.0,
+            "att": 52.0,
+            "yards": 202.0,
+            "td": 1.0
+          },
+          "score": 212.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "IL",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "D'Shawntae Jones",
+          "team": "Miami (OH)",
+          "position": "RB",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "att": 55.0,
+            "yards": 173.0,
+            "td": 3.0
+          },
+          "score": 203.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "OH",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Nakai Amachree",
+          "team": "Bowling Green",
+          "position": "RB",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "att": 54.0,
+            "yards": 198.0,
+            "td": 0.0
+          },
+          "score": 198.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "MI",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Vaughn Blue",
+          "team": "Central Mich.",
+          "position": "RB",
+          "season": 2026,
+          "totals": {
+            "games": 7.0,
+            "att": 43.0,
+            "yards": 187.0,
+            "td": 1.0
+          },
+          "score": 197.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "SC",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Cincere Rhaney",
+          "team": "Sacramento St.",
+          "position": "RB",
+          "season": 2026,
+          "totals": {
+            "games": 7.0,
+            "att": 36.0,
+            "yards": 174.0,
+            "td": 0.0
+          },
+          "score": 174.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "CA",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Nick Woodford",
+          "team": "Central Mich.",
+          "position": "RB",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "att": 25.0,
+            "yards": 135.0,
+            "td": 3.0
+          },
+          "score": 165.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Lazaro Rogers",
+          "team": "Miami (OH)",
+          "position": "RB",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "att": 27.0,
+            "yards": 129.0,
+            "td": 1.0
+          },
+          "score": 139.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "FL",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "James McNeil Jr.",
+          "team": "Buffalo",
+          "position": "RB",
+          "season": 2026,
+          "totals": {
+            "games": 5.0,
+            "att": 27.0,
+            "yards": 120.0,
+            "td": 1.0
+          },
+          "score": 130.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "NY",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Jamar Curtis",
+          "team": "Sacramento St.",
+          "position": "RB",
+          "season": 2026,
+          "totals": {
+            "games": 7.0,
+            "att": 33.0,
+            "yards": 99.0,
+            "td": 1.0
+          },
+          "score": 109.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "MD",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Marquese Williams",
+          "team": "Akron",
+          "position": "RB",
+          "season": 2026,
+          "totals": {
+            "games": 7.0,
+            "att": 18.0,
+            "yards": 91.0,
+            "td": 1.0
+          },
+          "score": 101.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Brock Townsend",
+          "team": "Central Mich.",
+          "position": "RB",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "att": 15.0,
+            "yards": 81.0,
+            "td": 2.0
+          },
+          "score": 101.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "MI",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Jakorion Caffey",
+          "team": "Kent St.",
+          "position": "RB",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "att": 35.0,
+            "yards": 86.0,
+            "td": 1.0
+          },
+          "score": 96.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "OH",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Johnny Thompson Jr.",
+          "team": "Ball St.",
+          "position": "RB",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "att": 35.0,
+            "yards": 86.0,
+            "td": 0.0
+          },
+          "score": 86.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Mike Taylor Jr.",
+          "team": "Ohio",
+          "position": "RB",
+          "season": 2026,
+          "totals": {
+            "games": 5.0,
+            "att": 21.0,
+            "yards": 79.0,
+            "td": 0.0
+          },
+          "score": 79.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "OH",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Ke'Marion Baldwin",
+          "team": "Bowling Green",
+          "position": "RB",
+          "season": 2026,
+          "totals": {
+            "games": 6.0,
+            "att": 14.0,
+            "yards": 58.0,
+            "td": 0.0
+          },
+          "score": 58.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "NC",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Leo Kemp",
+          "team": "Bowling Green",
+          "position": "RB",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "att": 9.0,
+            "yards": 42.0,
+            "td": 1.0
+          },
+          "score": 52.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "CA",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Justin Williams-Thomas",
+          "team": "Massachusetts",
+          "position": "RB",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "att": 9.0,
+            "yards": 35.0,
+            "td": 1.0
+          },
+          "score": 45.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Noah Sanders",
+          "team": "Toledo",
+          "position": "RB",
+          "season": 2026,
+          "totals": {
+            "games": 4.0,
+            "att": 10.0,
+            "yards": 42.0,
+            "td": 0.0
+          },
+          "score": 42.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "MI",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Elijah Jackson",
+          "team": "Ball St.",
+          "position": "RB",
+          "season": 2026,
+          "totals": {
+            "games": 5.0,
+            "att": 8.0,
+            "yards": 34.0,
+            "td": 0.0
+          },
+          "score": 34.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "IN",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Decorie Johnson",
+          "team": "Eastern Mich.",
+          "position": "RB",
+          "season": 2026,
+          "totals": {
+            "games": 4.0,
+            "att": 9.0,
+            "yards": 34.0,
+            "td": 0.0
+          },
+          "score": 34.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "FL",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Elias Brown",
+          "team": "Sacramento St.",
+          "position": "RB",
+          "season": 2026,
+          "totals": {
+            "games": 5.0,
+            "att": 8.0,
+            "yards": 34.0,
+            "td": 0.0
+          },
+          "score": 34.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "CA",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Taven Curry",
+          "team": "Akron",
+          "position": "RB",
+          "season": 2026,
+          "totals": {
+            "games": 4.0,
+            "att": 6.0,
+            "yards": 31.0,
+            "td": 0.0
+          },
+          "score": 31.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "AL",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Cole Cabana",
+          "team": "Western Mich.",
+          "position": "RB",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "att": 12.0,
+            "yards": 20.0,
+            "td": 1.0
+          },
+          "score": 30.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "MI",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Cade Yacamelli",
+          "team": "Miami (OH)",
+          "position": "RB",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "att": 8.0,
+            "yards": 26.0,
+            "td": 0.0
+          },
+          "score": 26.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Donovan Delaney Jr.",
+          "team": "Kent St.",
+          "position": "RB",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "att": 11.0,
+            "yards": 20.0,
+            "td": 0.0
+          },
+          "score": 20.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "DE",
+          "allMac": null,
+          "pool": true
         }
       ]
     },
@@ -2398,6 +3391,726 @@
           "pffLink": "",
           "state": "MA",
           "allMac": null
+        },
+        {
+          "player": "Aveion Chenault",
+          "team": "Western Mich.",
+          "position": "WR",
+          "season": 2026,
+          "totals": {
+            "games": 7.0,
+            "rec": 28.0,
+            "yards": 431.0,
+            "td": 2.0
+          },
+          "score": 451.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "KY",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Maleek Huggins",
+          "team": "Miami (OH)",
+          "position": "WR",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "rec": 24.0,
+            "yards": 431.0,
+            "td": 1.0
+          },
+          "score": 441.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "FL",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Langston Lewis",
+          "team": "Central Mich.",
+          "position": "WR",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "rec": 24.0,
+            "yards": 379.0,
+            "td": 2.0
+          },
+          "score": 399.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "GA",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Damarion Witten",
+          "team": "Miami (OH)",
+          "position": "WR",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "rec": 17.0,
+            "yards": 346.0,
+            "td": 4.0
+          },
+          "score": 386.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Damarion Witten",
+          "team": "Miami (FL)",
+          "position": "WR",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "rec": 17.0,
+            "yards": 346.0,
+            "td": 4.0
+          },
+          "score": 386.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Dom Dorwart",
+          "team": "Ohio",
+          "position": "WR",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "rec": 18.0,
+            "yards": 339.0,
+            "td": 4.0
+          },
+          "score": 379.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "MD",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Onterrio Smith Jr.",
+          "team": "Sacramento St.",
+          "position": "WR",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "rec": 33.0,
+            "yards": 350.0,
+            "td": 1.0
+          },
+          "score": 360.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "CA",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Kyan Mason",
+          "team": "Akron",
+          "position": "WR",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "rec": 25.0,
+            "yards": 334.0,
+            "td": 0.0
+          },
+          "score": 334.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "OH",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Donovan Hamilton",
+          "team": "Ball St.",
+          "position": "WR",
+          "season": 2026,
+          "totals": {
+            "games": 7.0,
+            "rec": 25.0,
+            "yards": 310.0,
+            "td": 1.0
+          },
+          "score": 320.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "IN",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Winn Sharp",
+          "team": "Bowling Green",
+          "position": "WR",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "rec": 25.0,
+            "yards": 305.0,
+            "td": 1.0
+          },
+          "score": 315.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "OH",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Lynel Billups-Williams",
+          "team": "Miami (OH)",
+          "position": "WR",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "rec": 23.0,
+            "yards": 286.0,
+            "td": 2.0
+          },
+          "score": 306.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "IL",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Lynel Billups-Williams",
+          "team": "Miami (FL)",
+          "position": "WR",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "rec": 23.0,
+            "yards": 286.0,
+            "td": 2.0
+          },
+          "score": 306.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Da'Realyst Clark",
+          "team": "Kent St.",
+          "position": "WR",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "rec": 23.0,
+            "yards": 278.0,
+            "td": 1.0
+          },
+          "score": 288.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "OH",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Jamarion McDougle",
+          "team": "Ball St.",
+          "position": "WR",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "rec": 23.0,
+            "yards": 264.0,
+            "td": 2.0
+          },
+          "score": 284.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "FL",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Jabari Lewis",
+          "team": "Massachusetts",
+          "position": "WR",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "rec": 20.0,
+            "yards": 284.0,
+            "td": 0.0
+          },
+          "score": 284.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "FL",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Brennan Ridley",
+          "team": "Bowling Green",
+          "position": "WR",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "rec": 24.0,
+            "yards": 269.0,
+            "td": 1.0
+          },
+          "score": 279.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "VA",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Daryl Barnett Jr.",
+          "team": "Toledo",
+          "position": "WR",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "rec": 17.0,
+            "yards": 240.0,
+            "td": 3.0
+          },
+          "score": 270.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "OH",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Miles Burris",
+          "team": "Akron",
+          "position": "WR",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "rec": 21.0,
+            "yards": 241.0,
+            "td": 1.0
+          },
+          "score": 251.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "FL",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Baylin Brooks",
+          "team": "Western Mich.",
+          "position": "WR",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "rec": 19.0,
+            "yards": 206.0,
+            "td": 4.0
+          },
+          "score": 246.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "CA",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Jabari Smith",
+          "team": "Ball St.",
+          "position": "WR",
+          "season": 2026,
+          "totals": {
+            "games": 7.0,
+            "rec": 21.0,
+            "yards": 212.0,
+            "td": 2.0
+          },
+          "score": 232.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "FL",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Terrell Crosby Jr.",
+          "team": "Toledo",
+          "position": "WR",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "rec": 22.0,
+            "yards": 229.0,
+            "td": 0.0
+          },
+          "score": 229.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "FL",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Isaiah Thacker",
+          "team": "Ball St.",
+          "position": "WR",
+          "season": 2026,
+          "totals": {
+            "games": 6.0,
+            "rec": 16.0,
+            "yards": 217.0,
+            "td": 1.0
+          },
+          "score": 227.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "IN",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Ardell Banks",
+          "team": "Kent St.",
+          "position": "WR",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "rec": 12.0,
+            "yards": 224.0,
+            "td": 0.0
+          },
+          "score": 224.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "OH",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Joseph Griffin Jr.",
+          "team": "Massachusetts",
+          "position": "WR",
+          "season": 2026,
+          "totals": {
+            "games": 5.0,
+            "rec": 12.0,
+            "yards": 211.0,
+            "td": 1.0
+          },
+          "score": 221.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "MA",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Preston Bowman",
+          "team": "Ohio",
+          "position": "WR",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "rec": 16.0,
+            "yards": 198.0,
+            "td": 2.0
+          },
+          "score": 218.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "OH",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Rico Bond",
+          "team": "Toledo",
+          "position": "WR",
+          "season": 2026,
+          "totals": {
+            "games": 6.0,
+            "rec": 12.0,
+            "yards": 191.0,
+            "td": 1.0
+          },
+          "score": 201.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "MO",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Scoop Smith",
+          "team": "Miami (OH)",
+          "position": "WR",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "rec": 18.0,
+            "yards": 189.0,
+            "td": 1.0
+          },
+          "score": 199.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "PA",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Dwayne Early Jr.",
+          "team": "Buffalo",
+          "position": "WR",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "rec": 15.0,
+            "yards": 192.0,
+            "td": 0.0
+          },
+          "score": 192.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "MA",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Nick Devereaux",
+          "team": "Eastern Mich.",
+          "position": "WR",
+          "season": 2026,
+          "totals": {
+            "games": 5.0,
+            "rec": 19.0,
+            "yards": 171.0,
+            "td": 2.0
+          },
+          "score": 191.0,
+          "hudlLink": "https://www.hudl.com/profile/11433793",
+          "pffLink": "",
+          "state": "MI",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Raiden Brown",
+          "team": "Sacramento St.",
+          "position": "WR",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "rec": 20.0,
+            "yards": 182.0,
+            "td": 0.0
+          },
+          "score": 182.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "CA",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Braylon Isom",
+          "team": "Miami (OH)",
+          "position": "WR",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "rec": 12.0,
+            "yards": 162.0,
+            "td": 0.0
+          },
+          "score": 162.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "MI",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Jace Wilson",
+          "team": "Sacramento St.",
+          "position": "WR",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "rec": 7.0,
+            "yards": 141.0,
+            "td": 2.0
+          },
+          "score": 161.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Egypt Nelson",
+          "team": "Western Mich.",
+          "position": "WR",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "rec": 14.0,
+            "yards": 142.0,
+            "td": 1.0
+          },
+          "score": 152.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "VA",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Jaylen Andrews",
+          "team": "Buffalo",
+          "position": "WR",
+          "season": 2026,
+          "totals": {
+            "games": 7.0,
+            "rec": 17.0,
+            "yards": 147.0,
+            "td": 0.0
+          },
+          "score": 147.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "PA",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Brendyn Smith",
+          "team": "Kent St.",
+          "position": "WR",
+          "season": 2026,
+          "totals": {
+            "games": 7.0,
+            "rec": 8.0,
+            "yards": 136.0,
+            "td": 1.0
+          },
+          "score": 146.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "PA",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Kezion Dia-Johnson",
+          "team": "Massachusetts",
+          "position": "WR",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "rec": 13.0,
+            "yards": 140.0,
+            "td": 0.0
+          },
+          "score": 140.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "AZ",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Kozy Isaac",
+          "team": "Eastern Mich.",
+          "position": "WR",
+          "season": 2026,
+          "totals": {
+            "games": 5.0,
+            "rec": 7.0,
+            "yards": 105.0,
+            "td": 2.0
+          },
+          "score": 125.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "FL",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Patrick Clacks III",
+          "team": "Buffalo",
+          "position": "WR",
+          "season": 2026,
+          "totals": {
+            "games": 7.0,
+            "rec": 9.0,
+            "yards": 103.0,
+            "td": 1.0
+          },
+          "score": 113.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "IN",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Cooper Rusk",
+          "team": "Toledo",
+          "position": "WR",
+          "season": 2026,
+          "totals": {
+            "games": 4.0,
+            "rec": 3.0,
+            "yards": 90.0,
+            "td": 1.0
+          },
+          "score": 100.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "OH",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Braylen Naves",
+          "team": "Central Mich.",
+          "position": "WR",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "rec": 10.0,
+            "yards": 96.0,
+            "td": 0.0
+          },
+          "score": 96.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "MI",
+          "allMac": null,
+          "pool": true
         }
       ]
     },
@@ -3088,6 +4801,564 @@
           "pffLink": "",
           "state": "KS",
           "allMac": null
+        },
+        {
+          "player": "Reece Adkins",
+          "team": "Massachusetts",
+          "position": "TE",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "rec": 15.0,
+            "yards": 132.0,
+            "td": 0.0
+          },
+          "score": 132.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "FL",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Jake Furtney",
+          "team": "Ohio",
+          "position": "TE",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "rec": 13.0,
+            "yards": 128.0,
+            "td": 0.0
+          },
+          "score": 128.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "IL",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Brendan Loftus",
+          "team": "Miami (OH)",
+          "position": "TE",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "rec": 6.0,
+            "yards": 97.0,
+            "td": 1.0
+          },
+          "score": 107.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "IL",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Tanner Lemaster",
+          "team": "Eastern Mich.",
+          "position": "TE",
+          "season": 2026,
+          "totals": {
+            "games": 9.0,
+            "rec": 8.0,
+            "yards": 96.0,
+            "td": 0.0
+          },
+          "score": 96.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "OH",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Christian Ross",
+          "team": "Miami (OH)",
+          "position": "TE",
+          "season": 2026,
+          "totals": {
+            "games": 6.0,
+            "rec": 9.0,
+            "yards": 84.0,
+            "td": 1.0
+          },
+          "score": 94.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "AL",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Tate Hoover",
+          "team": "Ball St.",
+          "position": "TE",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "rec": 10.0,
+            "yards": 71.0,
+            "td": 1.0
+          },
+          "score": 81.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "KS",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Jaden Allen",
+          "team": "Central Mich.",
+          "position": "TE",
+          "season": 2026,
+          "totals": {
+            "games": 6.0,
+            "rec": 5.0,
+            "yards": 66.0,
+            "td": 1.0
+          },
+          "score": 76.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "NJ",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "AJ Miller",
+          "team": "Ohio",
+          "position": "TE",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "rec": 5.0,
+            "yards": 55.0,
+            "td": 1.0
+          },
+          "score": 65.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "OH",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Terik Mulder",
+          "team": "Kent St.",
+          "position": "TE",
+          "season": 2026,
+          "totals": {
+            "games": 5.0,
+            "rec": 6.0,
+            "yards": 61.0,
+            "td": 0.0
+          },
+          "score": 61.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "KY",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Riley Palmeter",
+          "team": "Ohio",
+          "position": "TE",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "rec": 5.0,
+            "yards": 61.0,
+            "td": 0.0
+          },
+          "score": 61.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "IN",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Conner Cravaack",
+          "team": "Akron",
+          "position": "TE",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "rec": 12.0,
+            "yards": 58.0,
+            "td": 0.0
+          },
+          "score": 58.0,
+          "hudlLink": "https://www.hudl.com/profile/11792396",
+          "pffLink": "",
+          "state": "OH",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Trevor Wilson",
+          "team": "Buffalo",
+          "position": "TE",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "rec": 5.0,
+            "yards": 52.0,
+            "td": 0.0
+          },
+          "score": 52.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Ryan Brotherton",
+          "team": "Western Mich.",
+          "position": "TE",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "rec": 3.0,
+            "yards": 40.0,
+            "td": 1.0
+          },
+          "score": 50.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "IN",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Jacob Newell",
+          "team": "Toledo",
+          "position": "TE",
+          "season": 2026,
+          "totals": {
+            "games": 7.0,
+            "rec": 4.0,
+            "yards": 36.0,
+            "td": 1.0
+          },
+          "score": 46.0,
+          "hudlLink": "https://www.hudl.com/profile/11510459",
+          "pffLink": "",
+          "state": "OR",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Alex Scherle",
+          "team": "Ball St.",
+          "position": "TE",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "rec": 3.0,
+            "yards": 36.0,
+            "td": 1.0
+          },
+          "score": 46.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "MI",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Kyle Koontz",
+          "team": "Sacramento St.",
+          "position": "TE",
+          "season": 2026,
+          "totals": {
+            "games": 6.0,
+            "rec": 6.0,
+            "yards": 40.0,
+            "td": 0.0
+          },
+          "score": 40.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "NV",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Andrew Metzger",
+          "team": "Ohio",
+          "position": "TE",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "rec": 4.0,
+            "yards": 30.0,
+            "td": 0.0
+          },
+          "score": 30.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "CO",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Peyton Strickland",
+          "team": "Toledo",
+          "position": "TE",
+          "season": 2026,
+          "totals": {
+            "games": 7.0,
+            "rec": 4.0,
+            "yards": 28.0,
+            "td": 0.0
+          },
+          "score": 28.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "NH",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Blane Cleaver",
+          "team": "Bowling Green",
+          "position": "TE",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "rec": 3.0,
+            "yards": 24.0,
+            "td": 0.0
+          },
+          "score": 24.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "PA",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Matt Ogunniyi",
+          "team": "Massachusetts",
+          "position": "TE",
+          "season": 2026,
+          "totals": {
+            "games": 5.0,
+            "rec": 1.0,
+            "yards": 20.0,
+            "td": 0.0
+          },
+          "score": 20.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "MD",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Wyatt Hook",
+          "team": "Akron",
+          "position": "TE",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "rec": 2.0,
+            "yards": 19.0,
+            "td": 0.0
+          },
+          "score": 19.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "CA",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Armaad Sharp",
+          "team": "Eastern Mich.",
+          "position": "TE",
+          "season": 2026,
+          "totals": {
+            "games": 7.0,
+            "rec": 3.0,
+            "yards": 19.0,
+            "td": 0.0
+          },
+          "score": 19.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "IL",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Myles Peters",
+          "team": "Central Mich.",
+          "position": "TE",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "rec": 4.0,
+            "yards": 18.0,
+            "td": 0.0
+          },
+          "score": 18.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "UT",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Michael Gelatko",
+          "team": "Buffalo",
+          "position": "TE",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "rec": 1.0,
+            "yards": 15.0,
+            "td": 0.0
+          },
+          "score": 15.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "PA",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Zy'aire Fletcher",
+          "team": "Kent St.",
+          "position": "TE",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "rec": 2.0,
+            "yards": 13.0,
+            "td": 0.0
+          },
+          "score": 13.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "OH",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Jax Markovich",
+          "team": "Massachusetts",
+          "position": "TE",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "rec": 2.0,
+            "yards": 12.0,
+            "td": 0.0
+          },
+          "score": 12.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "AZ",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Cedric Anton",
+          "team": "Sacramento St.",
+          "position": "TE",
+          "season": 2026,
+          "totals": {
+            "games": 5.0,
+            "rec": 1.0,
+            "yards": 11.0,
+            "td": 0.0
+          },
+          "score": 11.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Gavin Spillers",
+          "team": "Central Mich.",
+          "position": "TE",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "rec": 1.0,
+            "yards": 8.0,
+            "td": 0.0
+          },
+          "score": 8.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "GA",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Kentrell White",
+          "team": "Bowling Green",
+          "position": "TE",
+          "season": 2026,
+          "totals": {
+            "games": 7.0,
+            "rec": 1.0,
+            "yards": 3.0,
+            "td": 0.0
+          },
+          "score": 3.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Tommy Arnold",
+          "team": "Kent St.",
+          "position": "TE",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "rec": 1.0,
+            "yards": 3.0,
+            "td": 0.0
+          },
+          "score": 3.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "OH",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "TJ Sabatucci",
+          "team": "Buffalo",
+          "position": "TE",
+          "season": 2026,
+          "totals": {
+            "games": 6.0,
+            "rec": 1.0,
+            "yards": 3.0,
+            "td": 0.0
+          },
+          "score": 3.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "PA",
+          "allMac": null,
+          "pool": true
         }
       ]
     },
@@ -3955,6 +6226,726 @@
           "pffLink": "",
           "state": "TX",
           "allMac": null
+        },
+        {
+          "player": "Austin Alexander",
+          "team": "Western Mich.",
+          "position": "DL",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "total": 27.0,
+            "tfl": 4.0,
+            "sacks": 4.0
+          },
+          "score": 59.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "KY",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Jaihien Roy",
+          "team": "Kent St.",
+          "position": "DL",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "total": 18.0,
+            "tfl": 4.0,
+            "sacks": 4.0
+          },
+          "score": 50.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "MD",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Ronn Hardin",
+          "team": "Eastern Mich.",
+          "position": "DL",
+          "season": 2026,
+          "totals": {
+            "games": 9.0,
+            "total": 21.0,
+            "tfl": 4.0,
+            "sacks": 3.0
+          },
+          "score": 47.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "OH",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Ezra Odinjor",
+          "team": "Toledo",
+          "position": "DL",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "total": 12.0,
+            "tfl": 4.5,
+            "sacks": 3.5
+          },
+          "score": 42.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "GA",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Josue Cordoba",
+          "team": "Kent St.",
+          "position": "DL",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "total": 26.0,
+            "tfl": 2.0,
+            "sacks": 2.0
+          },
+          "score": 42.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "NJ",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Cyrus Durham",
+          "team": "Akron",
+          "position": "DL",
+          "season": 2026,
+          "totals": {
+            "games": 6.0,
+            "total": 20.0,
+            "tfl": 3.5,
+            "sacks": 2.5
+          },
+          "score": 42.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "CA",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "JJ Douglas",
+          "team": "Central Mich.",
+          "position": "DL",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "total": 32.0,
+            "tfl": 1.0,
+            "sacks": 1.0
+          },
+          "score": 40.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "WI",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Aubrey Melvin",
+          "team": "Massachusetts",
+          "position": "DL",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "total": 20.0,
+            "tfl": 2.5,
+            "sacks": 2.5
+          },
+          "score": 40.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "MD",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Lucas Lambert-Pipkin",
+          "team": "Toledo",
+          "position": "DL",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "total": 13.0,
+            "tfl": 4.0,
+            "sacks": 3.0
+          },
+          "score": 39.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "PA",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Nathan VanTimmeren",
+          "team": "Central Mich.",
+          "position": "DL",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "total": 19.0,
+            "tfl": 4.0,
+            "sacks": 2.0
+          },
+          "score": 39.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "MI",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Ameir Glenn",
+          "team": "Ball St.",
+          "position": "DL",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "total": 21.0,
+            "tfl": 3.0,
+            "sacks": 2.0
+          },
+          "score": 39.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "GA",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Logan Goodwin",
+          "team": "Buffalo",
+          "position": "DL",
+          "season": 2026,
+          "totals": {
+            "games": 7.0,
+            "total": 20.0,
+            "tfl": 3.0,
+            "sacks": 2.0
+          },
+          "score": 38.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "PA",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Kade Kostus",
+          "team": "Bowling Green",
+          "position": "DL",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "total": 20.0,
+            "tfl": 2.0,
+            "sacks": 2.0
+          },
+          "score": 36.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "MI",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "William DePaepe",
+          "team": "Massachusetts",
+          "position": "DL",
+          "season": 2026,
+          "totals": {
+            "games": 5.0,
+            "total": 11.0,
+            "tfl": 3.0,
+            "sacks": 3.0
+          },
+          "score": 35.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "IA",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Christopher Climes",
+          "team": "Buffalo",
+          "position": "DL",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "total": 23.0,
+            "tfl": 3.0,
+            "sacks": 1.0
+          },
+          "score": 35.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "PA",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Ahmed Tounkara",
+          "team": "Western Mich.",
+          "position": "DL",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "total": 26.0,
+            "tfl": 1.0,
+            "sacks": 1.0
+          },
+          "score": 34.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "OH",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Sedrick Vessah",
+          "team": "Buffalo",
+          "position": "DL",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "total": 14.0,
+            "tfl": 3.0,
+            "sacks": 2.0
+          },
+          "score": 32.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Selah Brown",
+          "team": "Bowling Green",
+          "position": "DL",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "total": 23.0,
+            "tfl": 1.0,
+            "sacks": 1.0
+          },
+          "score": 31.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "KY",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Tyler Gillison",
+          "team": "Ohio",
+          "position": "DL",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "total": 18.0,
+            "tfl": 3.0,
+            "sacks": 1.0
+          },
+          "score": 30.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "OH",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Romando Johnson",
+          "team": "Massachusetts",
+          "position": "DL",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "total": 18.0,
+            "tfl": 1.5,
+            "sacks": 1.5
+          },
+          "score": 30.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "FL",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Aiden Burgess",
+          "team": "Kent St.",
+          "position": "DL",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "total": 14.0,
+            "tfl": 2.0,
+            "sacks": 2.0
+          },
+          "score": 30.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "MD",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Ben Marsh",
+          "team": "Ball St.",
+          "position": "DL",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "total": 11.0,
+            "tfl": 3.0,
+            "sacks": 2.0
+          },
+          "score": 29.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "OH",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Will Clark",
+          "team": "Buffalo",
+          "position": "DL",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "total": 17.0,
+            "tfl": 1.5,
+            "sacks": 1.5
+          },
+          "score": 29.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "IN",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Justin Krueger",
+          "team": "Massachusetts",
+          "position": "DL",
+          "season": 2026,
+          "totals": {
+            "games": 6.0,
+            "total": 17.0,
+            "tfl": 1.5,
+            "sacks": 1.5
+          },
+          "score": 29.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "GA",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Joshua Nobles",
+          "team": "Massachusetts",
+          "position": "DL",
+          "season": 2026,
+          "totals": {
+            "games": 7.0,
+            "total": 16.0,
+            "tfl": 1.5,
+            "sacks": 1.5
+          },
+          "score": 28.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "NJ",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Korver Demma",
+          "team": "Central Mich.",
+          "position": "DL",
+          "season": 2026,
+          "totals": {
+            "games": 7.0,
+            "total": 17.0,
+            "tfl": 2.0,
+            "sacks": 1.0
+          },
+          "score": 27.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "NE",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Vann Kavals",
+          "team": "Akron",
+          "position": "DL",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "total": 21.0,
+            "tfl": 3.0,
+            "sacks": 0.0
+          },
+          "score": 27.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "PA",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Isaiah Street",
+          "team": "Ohio",
+          "position": "DL",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "total": 10.0,
+            "tfl": 2.0,
+            "sacks": 2.0
+          },
+          "score": 26.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "IN",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Hollis Dirstine",
+          "team": "Massachusetts",
+          "position": "DL",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "total": 13.0,
+            "tfl": 1.5,
+            "sacks": 1.5
+          },
+          "score": 25.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "MA",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Brach Rice",
+          "team": "Miami (OH)",
+          "position": "DL",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "total": 18.0,
+            "tfl": 1.5,
+            "sacks": 0.5
+          },
+          "score": 24.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "KY",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Cornell Evans",
+          "team": "Buffalo",
+          "position": "DL",
+          "season": 2026,
+          "totals": {
+            "games": 7.0,
+            "total": 14.0,
+            "tfl": 2.0,
+            "sacks": 1.0
+          },
+          "score": 24.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "MD",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Zavian Tibbs",
+          "team": "Western Mich.",
+          "position": "DL",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "total": 22.0,
+            "tfl": 1.0,
+            "sacks": 0.0
+          },
+          "score": 24.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "TX",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Rex Stinchcomb",
+          "team": "Buffalo",
+          "position": "DL",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "total": 16.0,
+            "tfl": 1.0,
+            "sacks": 1.0
+          },
+          "score": 24.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "VA",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Malachi Kindle",
+          "team": "Sacramento St.",
+          "position": "DL",
+          "season": 2026,
+          "totals": {
+            "games": 7.0,
+            "total": 14.0,
+            "tfl": 2.0,
+            "sacks": 1.0
+          },
+          "score": 24.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "CA",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "KJ Burley",
+          "team": "Western Mich.",
+          "position": "DL",
+          "season": 2026,
+          "totals": {
+            "games": 6.0,
+            "total": 8.0,
+            "tfl": 2.0,
+            "sacks": 2.0
+          },
+          "score": 24.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "FL",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Andrew DePaepe",
+          "team": "Massachusetts",
+          "position": "DL",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "total": 19.0,
+            "tfl": 0.5,
+            "sacks": 0.5
+          },
+          "score": 23.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "IA",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Joseph Oluwayemi",
+          "team": "Eastern Mich.",
+          "position": "DL",
+          "season": 2026,
+          "totals": {
+            "games": 9.0,
+            "total": 13.0,
+            "tfl": 2.0,
+            "sacks": 1.0
+          },
+          "score": 23.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "TX",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Zakar Morris",
+          "team": "Massachusetts",
+          "position": "DL",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "total": 17.0,
+            "tfl": 1.5,
+            "sacks": 0.5
+          },
+          "score": 23.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "NY",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Nathan Hale",
+          "team": "Ohio",
+          "position": "DL",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "total": 12.0,
+            "tfl": 2.0,
+            "sacks": 1.0
+          },
+          "score": 22.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "KS",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Tim Passmore Jr.",
+          "team": "Massachusetts",
+          "position": "DL",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "total": 21.0,
+            "tfl": 0.0,
+            "sacks": 0.0
+          },
+          "score": 21.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "FL",
+          "allMac": null,
+          "pool": true
         }
       ]
     },
@@ -4858,6 +7849,806 @@
           "pffLink": "",
           "state": "GA",
           "allMac": null
+        },
+        {
+          "player": "Hayden Dawahare",
+          "team": "Kent St.",
+          "position": "LB",
+          "season": 2026,
+          "totals": {
+            "games": 7.0,
+            "total": 43.0,
+            "tfl": 7.0,
+            "sacks": 4.0,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 81.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "KY",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Mayson Hitchens",
+          "team": "Central Mich.",
+          "position": "LB",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "total": 62.0,
+            "tfl": 1.0,
+            "sacks": 1.0,
+            "pbu": 0.0,
+            "int": 1.0
+          },
+          "score": 78.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "CA",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Jack Fries",
+          "team": "Ohio",
+          "position": "LB",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "total": 48.0,
+            "tfl": 2.5,
+            "sacks": 2.5,
+            "pbu": 2.0,
+            "int": 0.0
+          },
+          "score": 76.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "OH",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Brett McCalla",
+          "team": "Central Mich.",
+          "position": "LB",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "total": 56.0,
+            "tfl": 1.5,
+            "sacks": 1.5,
+            "pbu": 0.0,
+            "int": 1.0
+          },
+          "score": 76.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "CA",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Domanick Moon",
+          "team": "Western Mich.",
+          "position": "LB",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "total": 46.0,
+            "tfl": 2.0,
+            "sacks": 1.0,
+            "pbu": 3.0,
+            "int": 0.0
+          },
+          "score": 68.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "IN",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Blayne Myrick",
+          "team": "Miami (OH)",
+          "position": "LB",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "total": 46.0,
+            "tfl": 2.5,
+            "sacks": 0.5,
+            "pbu": 1.0,
+            "int": 1.0
+          },
+          "score": 66.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "AL",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Malcolm McCain",
+          "team": "Miami (OH)",
+          "position": "LB",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "total": 60.0,
+            "tfl": 1.0,
+            "sacks": 0.0,
+            "pbu": 1.0,
+            "int": 0.0
+          },
+          "score": 66.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "GA",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Rocco Nicholl",
+          "team": "Kent St.",
+          "position": "LB",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "total": 38.0,
+            "tfl": 4.0,
+            "sacks": 3.0,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 64.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "PA",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Justyce Betts",
+          "team": "Western Mich.",
+          "position": "LB",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "total": 58.0,
+            "tfl": 1.0,
+            "sacks": 0.0,
+            "pbu": 1.0,
+            "int": 0.0
+          },
+          "score": 64.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "KS",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Grant Lyons",
+          "team": "Miami (OH)",
+          "position": "LB",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "total": 24.0,
+            "tfl": 5.0,
+            "sacks": 4.0,
+            "pbu": 1.0,
+            "int": 0.0
+          },
+          "score": 62.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "OH",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Xavier White",
+          "team": "Central Mich.",
+          "position": "LB",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "total": 54.0,
+            "tfl": 0.5,
+            "sacks": 0.5,
+            "pbu": 1.0,
+            "int": 0.0
+          },
+          "score": 62.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Elgin McDuffey",
+          "team": "Eastern Mich.",
+          "position": "LB",
+          "season": 2026,
+          "totals": {
+            "games": 9.0,
+            "total": 44.0,
+            "tfl": 2.0,
+            "sacks": 1.0,
+            "pbu": 1.0,
+            "int": 0.0
+          },
+          "score": 58.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "MS",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Kaleb Stewart",
+          "team": "Ball St.",
+          "position": "LB",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "total": 37.0,
+            "tfl": 2.5,
+            "sacks": 2.5,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 57.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "FL",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Joshua Iseah",
+          "team": "Massachusetts",
+          "position": "LB",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "total": 36.0,
+            "tfl": 1.5,
+            "sacks": 1.5,
+            "pbu": 2.0,
+            "int": 0.0
+          },
+          "score": 56.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "NC",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Dwight Nunoo",
+          "team": "Akron",
+          "position": "LB",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "total": 50.0,
+            "tfl": 1.0,
+            "sacks": 0.0,
+            "pbu": 1.0,
+            "int": 0.0
+          },
+          "score": 56.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "TX",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Tyler Martin",
+          "team": "Massachusetts",
+          "position": "LB",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "total": 46.0,
+            "tfl": 1.5,
+            "sacks": 0.5,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 52.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "MA",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Gavin Forsha",
+          "team": "Ball St.",
+          "position": "LB",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "total": 36.0,
+            "tfl": 3.5,
+            "sacks": 1.5,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 52.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "TN",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Stevie Bracey",
+          "team": "Buffalo",
+          "position": "LB",
+          "season": 2026,
+          "totals": {
+            "games": 7.0,
+            "total": 33.0,
+            "tfl": 2.0,
+            "sacks": 1.0,
+            "pbu": 1.0,
+            "int": 0.0
+          },
+          "score": 47.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "GA",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Alex Rocha",
+          "team": "Sacramento St.",
+          "position": "LB",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "total": 31.0,
+            "tfl": 2.0,
+            "sacks": 1.0,
+            "pbu": 1.0,
+            "int": 0.0
+          },
+          "score": 45.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "CA",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "CJ Young",
+          "team": "Miami (OH)",
+          "position": "LB",
+          "season": 2026,
+          "totals": {
+            "games": 6.0,
+            "total": 32.0,
+            "tfl": 0.0,
+            "sacks": 0.0,
+            "pbu": 1.0,
+            "int": 1.0
+          },
+          "score": 44.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "OH",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Zach Bergmann",
+          "team": "Buffalo",
+          "position": "LB",
+          "season": 2026,
+          "totals": {
+            "games": 6.0,
+            "total": 28.0,
+            "tfl": 0.0,
+            "sacks": 0.0,
+            "pbu": 4.0,
+            "int": 0.0
+          },
+          "score": 44.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "MO",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Leki Holani",
+          "team": "Sacramento St.",
+          "position": "LB",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "total": 26.0,
+            "tfl": 1.0,
+            "sacks": 1.0,
+            "pbu": 2.0,
+            "int": 0.0
+          },
+          "score": 42.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "CA",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Layton Starks",
+          "team": "Ball St.",
+          "position": "LB",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "total": 19.0,
+            "tfl": 3.0,
+            "sacks": 2.0,
+            "pbu": 1.0,
+            "int": 0.0
+          },
+          "score": 41.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "KY",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Cincear Lewis",
+          "team": "Ball St.",
+          "position": "LB",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "total": 36.0,
+            "tfl": 0.0,
+            "sacks": 0.0,
+            "pbu": 1.0,
+            "int": 0.0
+          },
+          "score": 40.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "MI",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Fata Puloka",
+          "team": "Sacramento St.",
+          "position": "LB",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "total": 26.0,
+            "tfl": 1.5,
+            "sacks": 1.5,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 38.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "CA",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Brenden Anes",
+          "team": "Western Mich.",
+          "position": "LB",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "total": 35.0,
+            "tfl": 0.0,
+            "sacks": 0.0,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 35.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "TN",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Mikeah Webster",
+          "team": "Ball St.",
+          "position": "LB",
+          "season": 2026,
+          "totals": {
+            "games": 5.0,
+            "total": 26.0,
+            "tfl": 2.0,
+            "sacks": 0.0,
+            "pbu": 1.0,
+            "int": 0.0
+          },
+          "score": 34.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Bryce Eliuk",
+          "team": "Eastern Mich.",
+          "position": "LB",
+          "season": 2026,
+          "totals": {
+            "games": 9.0,
+            "total": 31.0,
+            "tfl": 1.0,
+            "sacks": 0.0,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 33.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "MI",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Jordan Owens",
+          "team": "Buffalo",
+          "position": "LB",
+          "season": 2026,
+          "totals": {
+            "games": 7.0,
+            "total": 25.0,
+            "tfl": 1.0,
+            "sacks": 0.0,
+            "pbu": 1.0,
+            "int": 0.0
+          },
+          "score": 31.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "NY",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Rafael Terrero Jr.",
+          "team": "Kent St.",
+          "position": "LB",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "total": 16.0,
+            "tfl": 3.0,
+            "sacks": 0.0,
+            "pbu": 0.0,
+            "int": 1.0
+          },
+          "score": 30.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Lucas Szymborski",
+          "team": "Ball St.",
+          "position": "LB",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "total": 24.0,
+            "tfl": 1.0,
+            "sacks": 0.0,
+            "pbu": 1.0,
+            "int": 0.0
+          },
+          "score": 30.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "IN",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Khari Bendolph",
+          "team": "Massachusetts",
+          "position": "LB",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "total": 26.0,
+            "tfl": 0.5,
+            "sacks": 0.5,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 30.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "FL",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Trey Rubinstein",
+          "team": "Kent St.",
+          "position": "LB",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "total": 21.0,
+            "tfl": 2.0,
+            "sacks": 0.0,
+            "pbu": 1.0,
+            "int": 0.0
+          },
+          "score": 29.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "OH",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Eli Coppess",
+          "team": "Miami (OH)",
+          "position": "LB",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "total": 16.0,
+            "tfl": 0.0,
+            "sacks": 0.0,
+            "pbu": 3.0,
+            "int": 0.0
+          },
+          "score": 28.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "OH",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Jermaine Minnis",
+          "team": "Ohio",
+          "position": "LB",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "total": 23.0,
+            "tfl": 2.0,
+            "sacks": 0.0,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 27.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "MD",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Tim Thomas",
+          "team": "Sacramento St.",
+          "position": "LB",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "total": 22.0,
+            "tfl": 0.5,
+            "sacks": 0.5,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 26.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Daunte Curtis",
+          "team": "Akron",
+          "position": "LB",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "total": 22.0,
+            "tfl": 0.0,
+            "sacks": 0.0,
+            "pbu": 1.0,
+            "int": 0.0
+          },
+          "score": 26.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "OH",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Isaac Prince",
+          "team": "Toledo",
+          "position": "LB",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "total": 20.0,
+            "tfl": 0.5,
+            "sacks": 0.5,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 24.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "GA",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Tyler Dikos",
+          "team": "Miami (OH)",
+          "position": "LB",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "total": 8.0,
+            "tfl": 2.0,
+            "sacks": 2.0,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 24.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "IN",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Gabe Welch",
+          "team": "Western Mich.",
+          "position": "LB",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "total": 15.0,
+            "tfl": 0.0,
+            "sacks": 0.0,
+            "pbu": 0.0,
+            "int": 1.0
+          },
+          "score": 23.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "KS",
+          "allMac": null,
+          "pool": true
         }
       ]
     },
@@ -5548,6 +9339,510 @@
           "pffLink": "",
           "state": "MD",
           "allMac": null
+        },
+        {
+          "player": "Barry Dillon",
+          "team": "Ohio",
+          "position": "CB",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "total": 23.0,
+            "pbu": 2.0,
+            "int": 1.0
+          },
+          "score": 39.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "MS",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Tyrell Russell",
+          "team": "Toledo",
+          "position": "CB",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "total": 11.0,
+            "pbu": 5.0,
+            "int": 0.0
+          },
+          "score": 31.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "OH",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Caleb Reese",
+          "team": "Sacramento St.",
+          "position": "CB",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "total": 29.0,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 29.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "CA",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Dionte Thornton",
+          "team": "Sacramento St.",
+          "position": "CB",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "total": 20.0,
+            "pbu": 2.0,
+            "int": 0.0
+          },
+          "score": 28.0,
+          "hudlLink": "https://www.hudl.com/profile/4436431/dionte-thornton",
+          "pffLink": "",
+          "state": "CA",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Cam Jones",
+          "team": "Toledo",
+          "position": "CB",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "total": 19.0,
+            "pbu": 2.0,
+            "int": 0.0
+          },
+          "score": 27.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "PA",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Cam'ron Barber",
+          "team": "Western Mich.",
+          "position": "CB",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "total": 12.0,
+            "pbu": 3.0,
+            "int": 0.0
+          },
+          "score": 24.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "GA",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Elias Mullican",
+          "team": "Sacramento St.",
+          "position": "CB",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "total": 17.0,
+            "pbu": 1.0,
+            "int": 0.0
+          },
+          "score": 21.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "CA",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Ronald Jackson Jr.",
+          "team": "Ohio",
+          "position": "CB",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "total": 20.0,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 20.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "MI",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Raheim Sexil",
+          "team": "Massachusetts",
+          "position": "CB",
+          "season": 2026,
+          "totals": {
+            "games": 7.0,
+            "total": 11.0,
+            "pbu": 2.0,
+            "int": 0.0
+          },
+          "score": 19.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "FL",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Keontez Bradley",
+          "team": "Buffalo",
+          "position": "CB",
+          "season": 2026,
+          "totals": {
+            "games": 6.0,
+            "total": 14.0,
+            "pbu": 1.0,
+            "int": 0.0
+          },
+          "score": 18.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "OH",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Jordon Thomas",
+          "team": "Western Mich.",
+          "position": "CB",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "total": 10.0,
+            "pbu": 2.0,
+            "int": 0.0
+          },
+          "score": 18.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "GA",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "JoJo Johnson",
+          "team": "Bowling Green",
+          "position": "CB",
+          "season": 2026,
+          "totals": {
+            "games": 4.0,
+            "total": 9.0,
+            "pbu": 0.0,
+            "int": 1.0
+          },
+          "score": 17.0,
+          "hudlLink": "https://www.hudl.com/profile/9454727",
+          "pffLink": "",
+          "state": "IN",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Malikai Nichols",
+          "team": "Sacramento St.",
+          "position": "CB",
+          "season": 2026,
+          "totals": {
+            "games": 6.0,
+            "total": 5.0,
+            "pbu": 3.0,
+            "int": 0.0
+          },
+          "score": 17.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "MD",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "KJ Thomas",
+          "team": "Toledo",
+          "position": "CB",
+          "season": 2026,
+          "totals": {
+            "games": 6.0,
+            "total": 7.0,
+            "pbu": 2.0,
+            "int": 0.0
+          },
+          "score": 15.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "GA",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Zach Hobson",
+          "team": "Akron",
+          "position": "CB",
+          "season": 2026,
+          "totals": {
+            "games": 4.0,
+            "total": 6.0,
+            "pbu": 2.0,
+            "int": 0.0
+          },
+          "score": 14.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "TX",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "JC Clark",
+          "team": "Massachusetts",
+          "position": "CB",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "total": 1.0,
+            "pbu": 1.0,
+            "int": 1.0
+          },
+          "score": 13.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "OH",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Dawayne Galloway Jr.",
+          "team": "Akron",
+          "position": "CB",
+          "season": 2026,
+          "totals": {
+            "games": 5.0,
+            "total": 4.0,
+            "pbu": 1.0,
+            "int": 0.0
+          },
+          "score": 8.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "OH",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Bobby Miller",
+          "team": "Ohio",
+          "position": "CB",
+          "season": 2026,
+          "totals": {
+            "games": 7.0,
+            "total": 6.0,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 6.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "FL",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Adam Taylor",
+          "team": "Sacramento St.",
+          "position": "CB",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "total": 5.0,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 5.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Oliver Bridges",
+          "team": "Buffalo",
+          "position": "CB",
+          "season": 2026,
+          "totals": {
+            "games": 6.0,
+            "total": 4.0,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 4.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "MD",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Hyajah Miller",
+          "team": "Toledo",
+          "position": "CB",
+          "season": 2026,
+          "totals": {
+            "games": 4.0,
+            "total": 4.0,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 4.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "FL",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "DJ Morton",
+          "team": "Ohio",
+          "position": "CB",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "total": 4.0,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 4.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "IN",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Chris Stanley",
+          "team": "Massachusetts",
+          "position": "CB",
+          "season": 2026,
+          "totals": {
+            "games": 7.0,
+            "total": 4.0,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 4.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "OH",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Tyson Long",
+          "team": "Ohio",
+          "position": "CB",
+          "season": 2026,
+          "totals": {
+            "games": 7.0,
+            "total": 3.0,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 3.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "OH",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Donovan Rodriguez",
+          "team": "Buffalo",
+          "position": "CB",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "total": 3.0,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 3.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "PA",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Willard Ferrell",
+          "team": "Western Mich.",
+          "position": "CB",
+          "season": 2026,
+          "totals": {
+            "games": 6.0,
+            "total": 2.0,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 2.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "FL",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Jay Brewer III",
+          "team": "Ohio",
+          "position": "CB",
+          "season": 2026,
+          "totals": {
+            "games": 6.0,
+            "total": 1.0,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 1.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "OH",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Kyle Gurganious",
+          "team": "Sacramento St.",
+          "position": "CB",
+          "season": 2026,
+          "totals": {
+            "games": 6.0,
+            "total": 1.0,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 1.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "CA",
+          "allMac": null,
+          "pool": true
         }
       ]
     },
@@ -6296,6 +10591,766 @@
           "pffLink": "",
           "state": "OH",
           "allMac": null
+        },
+        {
+          "player": "Jaion Jackson",
+          "team": "Central Mich.",
+          "position": "SAF",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "total": 32.0,
+            "tfl": 1.5,
+            "pbu": 8.0,
+            "int": 0.0
+          },
+          "score": 58.2,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "IL",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Amariyun Knighten",
+          "team": "Miami (OH)",
+          "position": "SAF",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "total": 21.0,
+            "tfl": 0.0,
+            "pbu": 10.0,
+            "int": 1.0
+          },
+          "score": 57.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "FL",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Drey Braxton",
+          "team": "Bowling Green",
+          "position": "SAF",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "total": 31.0,
+            "tfl": 0.0,
+            "pbu": 5.0,
+            "int": 1.0
+          },
+          "score": 52.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "VA",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "DJ Walker",
+          "team": "Ohio",
+          "position": "SAF",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "total": 39.0,
+            "tfl": 2.0,
+            "pbu": 3.0,
+            "int": 0.0
+          },
+          "score": 51.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "PA",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "John Keough",
+          "team": "Buffalo",
+          "position": "SAF",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "total": 40.0,
+            "tfl": 1.0,
+            "pbu": 3.0,
+            "int": 0.0
+          },
+          "score": 50.5,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "OH",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Kendall Bournes",
+          "team": "Massachusetts",
+          "position": "SAF",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "total": 50.0,
+            "tfl": 0.0,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 50.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "NJ",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Ronnell Davis",
+          "team": "Buffalo",
+          "position": "SAF",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "total": 40.0,
+            "tfl": 0.0,
+            "pbu": 3.0,
+            "int": 0.0
+          },
+          "score": 49.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "PA",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Anthony Pinnace",
+          "team": "Ball St.",
+          "position": "SAF",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "total": 31.0,
+            "tfl": 4.0,
+            "pbu": 4.0,
+            "int": 0.0
+          },
+          "score": 49.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "MI",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Joey Pope",
+          "team": "Western Mich.",
+          "position": "SAF",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "total": 39.0,
+            "tfl": 0.0,
+            "pbu": 3.0,
+            "int": 0.0
+          },
+          "score": 48.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "IL",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Caleb Dobbs",
+          "team": "Eastern Mich.",
+          "position": "SAF",
+          "season": 2026,
+          "totals": {
+            "games": 9.0,
+            "total": 15.0,
+            "tfl": 0.0,
+            "pbu": 7.0,
+            "int": 2.0
+          },
+          "score": 48.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "FL",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Darren James-Hamilton",
+          "team": "Ohio",
+          "position": "SAF",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "total": 29.0,
+            "tfl": 0.0,
+            "pbu": 4.0,
+            "int": 1.0
+          },
+          "score": 47.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "NC",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Rayquan Adkins",
+          "team": "Eastern Mich.",
+          "position": "SAF",
+          "season": 2026,
+          "totals": {
+            "games": 9.0,
+            "total": 36.0,
+            "tfl": 1.0,
+            "pbu": 1.0,
+            "int": 1.0
+          },
+          "score": 46.5,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "FL",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Jahmad Harmon",
+          "team": "Massachusetts",
+          "position": "SAF",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "total": 16.0,
+            "tfl": 0.0,
+            "pbu": 4.0,
+            "int": 3.0
+          },
+          "score": 46.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "IN",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Daeh McCullough",
+          "team": "Western Mich.",
+          "position": "SAF",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "total": 37.0,
+            "tfl": 0.0,
+            "pbu": 1.0,
+            "int": 1.0
+          },
+          "score": 46.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "OH",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Joshua Franklin",
+          "team": "Western Mich.",
+          "position": "SAF",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "total": 34.0,
+            "tfl": 1.0,
+            "pbu": 3.0,
+            "int": 0.0
+          },
+          "score": 44.5,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "IL",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Jason Marshall",
+          "team": "Eastern Mich.",
+          "position": "SAF",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "total": 34.0,
+            "tfl": 1.0,
+            "pbu": 1.0,
+            "int": 1.0
+          },
+          "score": 44.5,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "MI",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Nicholas Thompson",
+          "team": "Toledo",
+          "position": "SAF",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "total": 29.0,
+            "tfl": 2.0,
+            "pbu": 2.0,
+            "int": 1.0
+          },
+          "score": 44.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "IN",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Will Yates",
+          "team": "Ball St.",
+          "position": "SAF",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "total": 32.0,
+            "tfl": 0.0,
+            "pbu": 2.0,
+            "int": 1.0
+          },
+          "score": 44.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Amari Wallace",
+          "team": "Sacramento St.",
+          "position": "SAF",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "total": 38.0,
+            "tfl": 3.0,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 42.5,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Sterling Smith",
+          "team": "Ball St.",
+          "position": "SAF",
+          "season": 2026,
+          "totals": {
+            "games": 6.0,
+            "total": 37.0,
+            "tfl": 1.0,
+            "pbu": 1.0,
+            "int": 0.0
+          },
+          "score": 41.5,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "IN",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Dillon Tatum",
+          "team": "Miami (OH)",
+          "position": "SAF",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "total": 41.0,
+            "tfl": 0.0,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 41.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "A'tiq Muhammad",
+          "team": "Kent St.",
+          "position": "SAF",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "total": 29.0,
+            "tfl": 0.0,
+            "pbu": 4.0,
+            "int": 0.0
+          },
+          "score": 41.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "IL",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Rodrick Hunter",
+          "team": "Akron",
+          "position": "SAF",
+          "season": 2026,
+          "totals": {
+            "games": 7.0,
+            "total": 32.0,
+            "tfl": 0.0,
+            "pbu": 1.0,
+            "int": 1.0
+          },
+          "score": 41.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "GA",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Joel Cordoba",
+          "team": "Kent St.",
+          "position": "SAF",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "total": 36.0,
+            "tfl": 1.0,
+            "pbu": 1.0,
+            "int": 0.0
+          },
+          "score": 40.5,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "NJ",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Aamii Branch",
+          "team": "Akron",
+          "position": "SAF",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "total": 24.0,
+            "tfl": 1.0,
+            "pbu": 5.0,
+            "int": 0.0
+          },
+          "score": 40.5,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "TX",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Donmiel Rogers",
+          "team": "Eastern Mich.",
+          "position": "SAF",
+          "season": 2026,
+          "totals": {
+            "games": 9.0,
+            "total": 29.0,
+            "tfl": 1.5,
+            "pbu": 3.0,
+            "int": 0.0
+          },
+          "score": 40.2,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "OH",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "JT Haskins",
+          "team": "Ohio",
+          "position": "SAF",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "total": 37.0,
+            "tfl": 1.0,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 38.5,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "KY",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Mehki Flowers",
+          "team": "Akron",
+          "position": "SAF",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "total": 29.0,
+            "tfl": 0.0,
+            "pbu": 3.0,
+            "int": 0.0
+          },
+          "score": 38.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "PA",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Kaleb Martin",
+          "team": "Miami (OH)",
+          "position": "SAF",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "total": 19.0,
+            "tfl": 0.0,
+            "pbu": 4.0,
+            "int": 1.0
+          },
+          "score": 37.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "TN",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Donovan Watkins",
+          "team": "Toledo",
+          "position": "SAF",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "total": 28.0,
+            "tfl": 0.0,
+            "pbu": 3.0,
+            "int": 0.0
+          },
+          "score": 37.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Quentavius Scandrett",
+          "team": "Ball St.",
+          "position": "SAF",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "total": 32.0,
+            "tfl": 1.0,
+            "pbu": 1.0,
+            "int": 0.0
+          },
+          "score": 36.5,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "GA",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Norey Johnson",
+          "team": "Kent St.",
+          "position": "SAF",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "total": 20.0,
+            "tfl": 0.0,
+            "pbu": 1.0,
+            "int": 2.0
+          },
+          "score": 35.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "OH",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Ben Minich",
+          "team": "Miami (OH)",
+          "position": "SAF",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "total": 19.0,
+            "tfl": 1.0,
+            "pbu": 2.0,
+            "int": 1.0
+          },
+          "score": 32.5,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "OH",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Derrick Jackson III",
+          "team": "Kent St.",
+          "position": "SAF",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "total": 25.0,
+            "tfl": 3.0,
+            "pbu": 1.0,
+            "int": 0.0
+          },
+          "score": 32.5,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "MI",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Warren Smith Jr.",
+          "team": "Sacramento St.",
+          "position": "SAF",
+          "season": 2026,
+          "totals": {
+            "games": 7.0,
+            "total": 22.0,
+            "tfl": 0.0,
+            "pbu": 3.0,
+            "int": 0.0
+          },
+          "score": 31.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "CA",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Matthew McKenzie",
+          "team": "Central Mich.",
+          "position": "SAF",
+          "season": 2026,
+          "totals": {
+            "games": 7.0,
+            "total": 17.0,
+            "tfl": 1.0,
+            "pbu": 4.0,
+            "int": 0.0
+          },
+          "score": 30.5,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "FL",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Preston EstoEsta",
+          "team": "Bowling Green",
+          "position": "SAF",
+          "season": 2026,
+          "totals": {
+            "games": 5.0,
+            "total": 26.0,
+            "tfl": 1.0,
+            "pbu": 1.0,
+            "int": 0.0
+          },
+          "score": 30.5,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "OH",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Coen Ali",
+          "team": "Central Mich.",
+          "position": "SAF",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "total": 20.0,
+            "tfl": 1.0,
+            "pbu": 1.0,
+            "int": 1.0
+          },
+          "score": 30.5,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "CA",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Tylan Boykin",
+          "team": "Eastern Mich.",
+          "position": "SAF",
+          "season": 2026,
+          "totals": {
+            "games": 8.0,
+            "total": 24.0,
+            "tfl": 0.0,
+            "pbu": 2.0,
+            "int": 0.0
+          },
+          "score": 30.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "OH",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Mo Conteh",
+          "team": "Toledo",
+          "position": "SAF",
+          "season": 2026,
+          "totals": {
+            "games": 7.0,
+            "total": 29.0,
+            "tfl": 0.0,
+            "pbu": 0.0,
+            "int": 0.0
+          },
+          "score": 29.0,
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "OH",
+          "allMac": null,
+          "pool": true
         }
       ]
     }

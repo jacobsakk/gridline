@@ -499,7 +499,15 @@ export function StudyDetail({ studyId, canEdit, onBack, snapshot = null, shareTo
   const seasons = study.seasons;
   const latestSeason = seasons[seasons.length - 1];
   const activeSeason = view === "transfers" ? latestSeason : seasons.includes(season) ? season : latestSeason;
-  const keep = (list) => (view === "transfers" ? list.filter((r) => prevTeamOf(photos, r, activeSeason)) : list);
+  // The five best transfers at a position: everyone on the list or in the extra pool of next-best players who has a
+  // previous team, ranked by score (PFF grade where there is none), top five. The main lists never show the pool.
+  const keep = (list, g = activeGroup) =>
+    view === "transfers"
+      ? list
+          .filter((r) => prevTeamOf(photos, r, activeSeason))
+          .sort((a, b) => (g.scoreFormula ? (b.score ?? 0) - (a.score ?? 0) : (b.totals?.pffGrade ?? 0) - (a.totals?.pffGrade ?? 0)))
+          .slice(0, 5)
+      : list.filter((r) => !r.pool);
   const rows = keep(study.groups[group]?.[String(activeSeason)] || []);
   useEffect(() => {
     if (activeSeason == null) return;
@@ -605,7 +613,7 @@ export function StudyDetail({ studyId, canEdit, onBack, snapshot = null, shareTo
         <div style={{ display: "flex", gap: 6, flexWrap: phone ? "nowrap" : "wrap", overflowX: phone ? "auto" : undefined, maxWidth: "100%", paddingBottom: phone ? 4 : 0 }}>
           {study.meta.groups.map((g) => {
             const isActive = g.key === group;
-            const count = keep(study.groups[g.key]?.[String(activeSeason)] || []).length;
+            const count = keep(study.groups[g.key]?.[String(activeSeason)] || [], g).length;
             return (
               <button
                 key={g.key}
@@ -837,7 +845,7 @@ export function StudyDetail({ studyId, canEdit, onBack, snapshot = null, shareTo
         groups={printMode === "all" ? study.meta.groups : [activeGroup]}
         season={activeSeason}
         photos={photos}
-        rowsFor={(g) => (g.key === group ? sorted : keep([...(study.groups[g.key]?.[String(activeSeason)] || [])]).sort((a, b) => (g.scoreFormula ? (b.score ?? 0) - (a.score ?? 0) : (b.totals?.pffGrade ?? 0) - (a.totals?.pffGrade ?? 0))))}
+        rowsFor={(g) => (g.key === group ? sorted : keep([...(study.groups[g.key]?.[String(activeSeason)] || [])], g).sort((a, b) => (g.scoreFormula ? (b.score ?? 0) - (a.score ?? 0) : (b.totals?.pffGrade ?? 0) - (a.totals?.pffGrade ?? 0))))}
       />
     )}
     </>
