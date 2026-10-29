@@ -283,6 +283,15 @@ export function PlayerModal({ board, classYear, colKey, player, isNew, photo, on
 
           {classYear === "JUCO" && (
             <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, fontWeight: 600 }}>
+              Eligibility
+              <select value={draft.eligibility || ""} onChange={(e) => set({ eligibility: e.target.value })} style={{ ...ctl, padding: "5px 8px" }}>
+                <option value="">—</option>
+                {[1, 2, 3, 4, 5].map((n) => <option key={n} value={String(n)}>{n}</option>)}
+              </select>
+            </label>
+          )}
+          {classYear === "JUCO" && (
+            <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, fontWeight: 600 }}>
               <input type="checkbox" checked={!!draft.transcriptEval} onChange={(e) => set({ transcriptEval: e.target.checked, gpaLabel: e.target.checked ? "cGPA" : "GPA" })} /> Transcript evaluated (the GPA becomes a cGPA)
             </label>
           )}
@@ -484,6 +493,7 @@ const JUCO_COLS = [
   { key: "school", label: "School", w: 230 },
   { key: "measurables", label: "Measurables", w: 190, edit: true },
   { key: "gpa", label: "JUCO GPA", w: 90, edit: true },
+  { key: "eligibility", label: "Eligibility", w: 100, pick: true },
   { key: "transcriptEval", label: "Transcript eval", w: 110, box: true },
 ];
 
@@ -497,7 +507,7 @@ export function JucoCreditSheet({ list, onEdit, classYear }) {
       <div style={{ border: "1px solid var(--border)", borderRadius: 8, overflow: "auto", background: "var(--bg-panel)" }}>
         <table style={{ width: "100%", borderCollapse: "collapse" }}>
           <thead>
-            <tr>{JUCO_COLS.map((c) => <th key={c.key} style={{ ...tableHead, minWidth: c.w, textAlign: c.edit || c.box ? "center" : "left" }}>{c.label}</th>)}</tr>
+            <tr>{JUCO_COLS.map((c) => <th key={c.key} style={{ ...tableHead, minWidth: c.w, textAlign: c.edit || c.box || c.pick ? "center" : "left" }}>{c.label}</th>)}</tr>
           </thead>
           <tbody>
             {list.total === 0 && (
@@ -514,8 +524,19 @@ export function JucoCreditSheet({ list, onEdit, classYear }) {
                 {g.rows.map((r) => (
                   <tr key={r.key}>
                     {JUCO_COLS.map((c, ci) => (
-                      <td key={c.key} style={{ ...tableCell, padding: c.edit || c.box ? "3px 4px" : "6px 10px", textAlign: c.box ? "center" : undefined, boxShadow: ci === 0 ? `inset 3px 0 0 ${g.color}` : undefined, fontWeight: c.key === "first" || c.key === "last" ? 700 : 400, ...(c.key === "first" || c.key === "last" ? { color: "var(--text-primary)" } : null) }}>
-                        {c.box ? (
+                      <td key={c.key} style={{ ...tableCell, padding: c.edit || c.box || c.pick ? "3px 4px" : "6px 10px", textAlign: c.box ? "center" : undefined, boxShadow: ci === 0 ? `inset 3px 0 0 ${g.color}` : undefined, fontWeight: c.key === "first" || c.key === "last" ? 700 : 400, ...(c.key === "first" || c.key === "last" ? { color: "var(--text-primary)" } : null) }}>
+                        {c.pick ? (
+                          <select
+                            className="offer-cell-input"
+                            value={r.eligibility}
+                            onChange={(e) => onEdit(r, { eligibility: e.target.value })}
+                            aria-label={`Eligibility for ${r.first} ${r.last}`}
+                            style={{ ...input, cursor: "pointer", textAlignLast: "center" }}
+                          >
+                            <option value="">—</option>
+                            {[1, 2, 3, 4, 5].map((n) => <option key={n} value={String(n)}>{n}</option>)}
+                          </select>
+                        ) : c.box ? (
                           <input type="checkbox" checked={r.transcriptEval} onChange={(e) => onEdit(r, { transcriptEval: e.target.checked, gpaLabel: e.target.checked ? "cGPA" : "GPA" })} aria-label={`Transcript evaluated for ${r.first} ${r.last}`} style={{ width: 18, height: 18, cursor: "pointer", accentColor: "var(--success)" }} />
                         ) : c.edit ? (
                           <input
@@ -921,7 +942,7 @@ export default function BigBoard({ onBack: toDashboard }) {
 
   // The same person can be on both boards (a flex player): what the JUCO credit table keeps for him is carried to
   // every card of his, on either board, so the two stay one record.
-  const JUCO_FIELDS = ["measurables", "gpa", "gpaLabel", "transcriptEval"];
+  const JUCO_FIELDS = ["measurables", "gpa", "gpaLabel", "eligibility", "transcriptEval"];
   async function patchPerson(name, patch, sides = ["off", "def"]) {
     const key = nameKey(name);
     for (const side of sides) {
@@ -1133,7 +1154,7 @@ function carryOver(next, previous) {
       ...c,
       players: c.players.map((p) => {
         const old = before.get(nameKey(p.name));
-        return old ? { ...p, gpa: old.gpa ?? p.gpa, gpaLabel: old.gpaLabel ?? p.gpaLabel, visits: old.visits ?? p.visits, flags: old.flags ?? p.flags, rating: old.rating ?? p.rating, transcriptEval: old.transcriptEval ?? p.transcriptEval } : p;
+        return old ? { ...p, gpa: old.gpa ?? p.gpa, gpaLabel: old.gpaLabel ?? p.gpaLabel, visits: old.visits ?? p.visits, flags: old.flags ?? p.flags, rating: old.rating ?? p.rating, eligibility: old.eligibility ?? p.eligibility, transcriptEval: old.transcriptEval ?? p.transcriptEval } : p;
       }),
     })),
   };

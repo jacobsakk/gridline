@@ -353,6 +353,7 @@ export function buildJucoCreditList(boards) {
         measurables: p.measurables || "",
         gpa: p.gpa || "",
         gpaLabel: p.gpaLabel || "",
+        eligibility: p.eligibility || "",
         transcriptEval: !!p.transcriptEval,
       });
     })
