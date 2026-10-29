@@ -499,14 +499,14 @@ export function StudyDetail({ studyId, canEdit, onBack, snapshot = null, shareTo
   const seasons = study.seasons;
   const latestSeason = seasons[seasons.length - 1];
   const activeSeason = view === "transfers" ? latestSeason : seasons.includes(season) ? season : latestSeason;
-  // The five best transfers at a position: everyone on the list or in the extra pool of next-best players who has a
-  // previous team, ranked by score (PFF grade where there is none), top five. The main lists never show the pool.
+  // The ten best transfers at a position: everyone on the list or in the extra pool of next-best players who has a
+  // previous team, ranked by score (PFF grade where there is none), top ten. The main lists never show the pool.
   const keep = (list, g = activeGroup) =>
     view === "transfers"
       ? list
           .filter((r) => prevTeamOf(photos, r, activeSeason))
           .sort((a, b) => (g.scoreFormula ? (b.score ?? 0) - (a.score ?? 0) : (b.totals?.pffGrade ?? 0) - (a.totals?.pffGrade ?? 0)))
-          .slice(0, 5)
+          .slice(0, 10)
       : list.filter((r) => !r.pool);
   const rows = keep(study.groups[group]?.[String(activeSeason)] || []);
   useEffect(() => {
