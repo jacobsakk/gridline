@@ -308,6 +308,8 @@ def build_depth_charts():
     index_page = get(OURLADS_INDEX, as_json=False)
     # Each team block: logo alt text = school name, followed by its depth-chart link.
     blocks = re.findall(r"alt='([^']+)' class='nfl-dc-mm-logo'.*?depth-chart\.aspx\?s=([a-z0-9\-]+)&id=(\d+)'", index_page, re.S)
+    # Ourlads' newer index lists each school as a card: <img alt="Toledo" ... class='ncaa-tm-logo' ...> ... depth-chart.aspx?s=toledo&id=92085
+    blocks += re.findall(r"alt=[\"']([^\"']+)[\"'][^>]*class='ncaa-tm-logo'.*?depth-chart\.aspx\?s=([a-z0-9\-]+)&id=(\d+)'", index_page, re.S)
     result = {"updated": datetime.now(timezone.utc).isoformat(timespec="seconds"), "source": "ourlads.com", "teams": {}}
     unmatched = []
     seen = set()
@@ -329,6 +331,11 @@ def build_depth_charts():
             result["teams"][college["id"]] = {"name": college["name"], "ourladsUrl": OURLADS_CHART.format(slug=slug, oid=oid), "sections": sections}
         time.sleep(0.4)
     print(f"depth charts: {len(result['teams'])} teams; unmatched Ourlads names: {unmatched}")
+    # Never replace the saved depth charts with a (nearly) empty scrape: if Ourlads changes its page layout again the
+    # site should keep last week's charts, and the run should say so loudly, not quietly wipe them.
+    previous = load_json(DEPTH_PATH, {}).get("teams", {})
+    if len(result["teams"]) < max(10, len(previous) // 2):
+        raise SystemExit(f"Ourlads scrape found only {len(result['teams'])} teams (had {len(previous)}); keeping the saved depth charts.")
     write_json(DEPTH_PATH, result)
 
 
