@@ -9,6 +9,7 @@ import { control, LinkCell, StateCell, TextCell } from "./EditableCells.jsx";
 import TransferOutTracker from "./TransferOutTracker.jsx";
 import { ShareLinkButton } from "./StudyShare.jsx";
 import { useIsPhone } from "./usePhone.js";
+import TRANSFER_ADDITIONS from "./data/studies/transfer-additions.json";
 import { submitStudyRequest, useStudyRequests } from "./studyRequests.js";
 import { headshotUrls, initialsOf, previousTeamFor, teamTone, useStudyPhotos } from "./studyPhotos.js";
 
@@ -551,7 +552,7 @@ export function StudyDetail({ studyId, canEdit, onBack, snapshot = null, shareTo
     if (view !== "transfers") return list.filter((r) => !r.pool);
     const fixed = study.transferRoster;
     if (!fixed) return topTransfers([...list], g);
-    const members = new Set(fixed[g.key] || []);
+    const members = new Set([...(fixed[g.key] || []), ...(TRANSFER_ADDITIONS[g.key] || [])]);
     return list.filter((r) => members.has(memberKey(r)) || (r.id && prevTeamOf(photos, r, activeSeason))).sort(byRank(g));
   };
   useEffect(() => {
