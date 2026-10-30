@@ -1,4 +1,7 @@
 {
   "note": "Players put on a position's Transfers list by hand, in addition to the list that was fixed the first time the tab was opened. Keys are the player's name and team, letters only.",
-  "SAF": ["darrenjameshamilton|ohio"]
+  "SAF": [
+    "darrenjameshamilton|ohio",
+    "rayquanadkins|easternmich"
+  ]
 }

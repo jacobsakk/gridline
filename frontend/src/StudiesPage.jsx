@@ -392,45 +392,6 @@ function PasteTableModal({ allowNewRows, onClose, onSubmit }) {
 
 // `snapshot` is a shared copy ({ seasons, groups }) opened from a share link: the same page, read-only, with no
 // live data behind it, and its position in the address kept under #/shared/<code>/... instead of #/studies/....
-// Adds more players to one position's Transfers list: the next-best transfers not already on it, and anyone taken
-// off the list by mistake (shown as "removed" -- picking one puts him back on the study too).
-function AddTransfersModal({ label, season, candidates, onAdd, onClose }) {
-  const [picked, setPicked] = useState(() => new Set());
-  const [busy, setBusy] = useState(false);
-  const toggle = (k) => setPicked((cur) => { const next = new Set(cur); next.has(k) ? next.delete(k) : next.add(k); return next; });
-  async function add() {
-    setBusy(true);
-    try {
-      await onAdd(candidates.filter((c) => picked.has(c.key)));
-      onClose();
-    } finally {
-      setBusy(false);
-    }
-  }
-  return (
-    <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20, zIndex: 70 }}>
-      <div onClick={(e) => e.stopPropagation()} style={{ background: "var(--bg-panel)", border: "1px solid var(--border)", borderRadius: 10, width: 640, maxWidth: "100%", maxHeight: "88vh", overflow: "auto", padding: 20, display: "grid", gap: 12 }}>
-        <h2 className="oswald" style={{ margin: 0, fontSize: 19 }}>Add {label} transfers · {season}</h2>
-        <div style={{ fontSize: 13, color: "var(--text-muted)" }}>The next-best transfers at this position, and anyone you removed. Tick the ones to put on the list.</div>
-        {candidates.length === 0 && <div style={{ padding: 20, textAlign: "center", color: "var(--text-faint)" }}>No more transfers to add at this position.</div>}
-        {candidates.map((c) => (
-          <label key={c.key} style={{ display: "flex", alignItems: "center", gap: 10, padding: "6px 4px", borderTop: "1px solid var(--border-subtle)", cursor: "pointer", fontSize: 13.5 }}>
-            <input type="checkbox" checked={picked.has(c.key)} onChange={() => toggle(c.key)} />
-            <span style={{ fontWeight: 700, color: "var(--text-primary)" }}>{c.row.player}</span>
-            <span style={{ color: "var(--text-muted)" }}>{c.row.team} <span style={{ color: "var(--text-faint)" }}>(from {c.previous})</span></span>
-            {c.removed && <span style={{ fontSize: 11, color: "#e0a030", border: "1px solid #e0a030", borderRadius: 4, padding: "0 5px" }}>removed</span>}
-            <span className="tabular" style={{ marginLeft: "auto", color: "var(--text-faint)" }}>{c.score != null ? `score ${c.score}` : ""}</span>
-          </label>
-        ))}
-        <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
-          <button onClick={onClose} style={ghostBtn}>Cancel</button>
-          <button onClick={add} disabled={!picked.size || busy} style={{ ...ghostBtn, background: "var(--accent-bg)", borderColor: "var(--accent)", color: "var(--accent)", opacity: !picked.size || busy ? 0.5 : 1 }}>{busy ? "Adding…" : `Add ${picked.size || ""}`.trim()}</button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 // What comes out of the printer for a study: one clean page per position (the one on screen, or all of them for the
 // season) -- the player's picture, his name with any All-MAC medal, team, previous team, the position's stats, the
 // PFF grade and the score, black on white. Links and buttons stay on the screen. Hidden until printing.
@@ -501,7 +462,6 @@ export function StudyDetail({ studyId, canEdit, onBack, snapshot = null, shareTo
   const [sort, setSort] = useState({ key: "score", dir: "desc" });
   const [explainRow, setExplainRow] = useState(null);
   const [pasting, setPasting] = useState(false);
-  const [addingTransfers, setAddingTransfers] = useState(false);
   const [printMode, setPrintMode] = useState(null); // "one" (this position) or "all" (every position this season)
   useEffect(() => {
     if (!printMode) return undefined;
@@ -648,9 +608,6 @@ export function StudyDetail({ studyId, canEdit, onBack, snapshot = null, shareTo
             <button onClick={() => setPasting(true)} style={ghostBtn}><ClipboardPaste size={14} /> Paste table</button>
           )}
           {canEdit && !snapshot && <ShareLinkButton studyId={studyId} title={study.meta.title} data={shareData} by={by} />}
-          {canEdit && !snapshot && view === "transfers" && study.transferRoster && (
-            <button onClick={() => setAddingTransfers(true)} style={ghostBtn} title={`Add more ${activeGroup.label} transfers, or bring one back`}><Plus size={14} /> Add transfers</button>
-          )}
           <button onClick={() => setPrintMode("one")} style={ghostBtn} title={`Print ${activeGroup.label}, ${activeSeason}`}><Printer size={14} /> Print</button>
           <button onClick={() => setPrintMode("all")} style={ghostBtn} title={`Print every position for ${activeSeason}, one page each`}><Printer size={14} /> Print all positions</button>
           <button onClick={() => downloadCsv(sorted, columns, `${study.meta.id}-${group}-${activeSeason}.csv`)} style={ghostBtn}><Download size={14} /> Download</button>
@@ -915,27 +872,6 @@ export function StudyDetail({ studyId, canEdit, onBack, snapshot = null, shareTo
       {explainRow && <ScoreExplainer row={explainRow} group={activeGroup} onClose={() => setExplainRow(null)} />}
       {pasting && <PasteTableModal allowNewRows={!!activeGroup.manual} onClose={() => setPasting(false)} onSubmit={(text) => study.pasteTable(group, activeSeason, text)} />}
     </div>
-    {addingTransfers && (() => {
-      const season = latestSeason;
-      const onList = new Set((study.transferRoster?.[group] || []));
-      const shownNow = new Set(rows.map(memberKey));
-      const score = (r) => (activeGroup.scoreFormula ? r.score : r.totals?.pffGrade);
-      const live = (study.groups[group]?.[String(season)] || []).filter((r) => !shownNow.has(memberKey(r)) && !onList.has(memberKey(r))).map((r) => ({ key: memberKey(r), row: r, previous: prevTeamOf(photos, r, season), removed: false, score: score(r) }));
-      const gone = study.removedRows(group, season).map((r) => ({ key: memberKey(r), row: r, previous: prevTeamOf(photos, r, season), removed: true, score: score(r) }));
-      const candidates = [...gone, ...live].filter((c) => c.previous).sort((a, b) => (b.score ?? 0) - (a.score ?? 0)).slice(0, 30);
-      return (
-        <AddTransfersModal
-          label={activeGroup.label}
-          season={season}
-          candidates={candidates}
-          onClose={() => setAddingTransfers(false)}
-          onAdd={async (chosen) => {
-            await Promise.all(chosen.filter((c) => c.removed).map((c) => study.restorePlayer(group, season, c.row.player)));
-            await study.addTransfers(season, group, chosen.map((c) => c.key));
-          }}
-        />
-      );
-    })()}
     {printMode && (
       <PrintSheet
         study={study}
