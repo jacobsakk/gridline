@@ -1,4 +1,4 @@
-import { collection, deleteDoc, doc, onSnapshot, setDoc, writeBatch } from "firebase/firestore";
+import { arrayUnion, collection, deleteDoc, doc, onSnapshot, setDoc, writeBatch } from "firebase/firestore";
 import { useEffect, useMemo, useState } from "react";
 import { db } from "./firebase";
 
@@ -301,6 +301,23 @@ export function useStudy(studyId, snapshot = null) {
     // one season rather than deleting anything, since there's nothing to delete; see the filter above.
     async excludePlayer(group, season, player) {
       await setDoc(doc(db, "studyOverrides", statsOverrideKey(group, season, player)), { excluded: true }, { merge: true });
+    },
+    // The rows taken off one position's list for a season (still in the data, just hidden), so one removed by mistake
+    // can be brought back.
+    removedRows(group, season) {
+      return ((data?.groups || {})[group]?.[String(season)] || [])
+        .filter((p) => overrides[statsOverrideKey(group, season, p.player)]?.excluded)
+        .map((p) => {
+          const fix = overrides[statsOverrideKey(group, season, p.player)] || {};
+          return { ...p, ...(fix.previousTeam !== undefined ? { previousTeam: fix.previousTeam } : null) };
+        });
+    },
+    async restorePlayer(group, season, player) {
+      await setDoc(doc(db, "studyOverrides", statsOverrideKey(group, season, player)), { excluded: false }, { merge: true });
+    },
+    // Puts more players on one position's fixed Transfers list.
+    async addTransfers(season, group, keys) {
+      await setDoc(doc(db, "studyOverrides", `${studyId}__transfers__${season}`), { members: { [group]: arrayUnion(...keys) } }, { merge: true });
     },
     // Bulk-loads a pasted PFF table (see parsePffTable) into ANY group's rows for one season -- meant to
     // be re-run every time PFF's grades refresh, not just once. A pasted name is correlated against
