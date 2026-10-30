@@ -60,7 +60,30 @@ function Medal({ tier }) {
 // Studies that don't fit the generic position-group/season/stat shape StudyDetail renders (MAC's
 // Most Productive) -- each one of these gets its own detail component instead, picked by id below.
 // Still listed as an ordinary card on the landing page, same as STUDIES.
+// The MAC Transfers study: the Most Productive study's 2026 data and edits, shown as the transfers list on its own.
+function MacTransfers({ canEdit, meta, onBack, by, snapshot, shareToken }) {
+  return (
+    <StudyDetail
+      studyId="mac-best-by-position"
+      routeId={meta.id}
+      forceView="transfers"
+      heading={{ title: meta.title, description: meta.description }}
+      canEdit={canEdit}
+      onBack={onBack}
+      by={by}
+      snapshot={snapshot}
+      shareToken={shareToken}
+    />
+  );
+}
+
 const CUSTOM_STUDIES = [
+  {
+    id: "mac-transfers",
+    title: "MAC Transfers, 2026",
+    description: "The best transfers in the MAC at each position this season -- who they are, where they came from, their stats and their film from their earlier school.",
+    detail: MacTransfers,
+  },
   {
     id: "transfer-out-tracker",
     title: "Transfer Out Tracker",
@@ -395,7 +418,7 @@ function PasteTableModal({ allowNewRows, onClose, onSubmit }) {
 // What comes out of the printer for a study: one clean page per position (the one on screen, or all of them for the
 // season) -- the player's picture, his name with any All-MAC medal, team, previous team, the position's stats, the
 // PFF grade and the score, black on white. Links and buttons stay on the screen. Hidden until printing.
-function PrintSheet({ study, groups, season, photos, rowsFor, view }) {
+function PrintSheet({ study, groups, season, photos, rowsFor, view, title }) {
   const th = { textAlign: "left", padding: "6px 8px", fontSize: "8.5pt", textTransform: "uppercase", letterSpacing: "0.03em", borderBottom: "1.5px solid #111", whiteSpace: "nowrap" };
   const td = { padding: "5px 8px", fontSize: "10pt", borderBottom: "1px solid #ccc", verticalAlign: "middle", whiteSpace: "nowrap" };
   return (
@@ -406,7 +429,7 @@ function PrintSheet({ study, groups, season, photos, rowsFor, view }) {
           <section key={g.key} className="study-print-page">
             <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 6 }}>
               <h2 className="oswald" style={{ margin: 0, fontSize: "17pt" }}>{g.label} — {season}{view === "transfers" ? " transfers" : ""}</h2>
-              <span style={{ fontSize: "9pt", color: "#444" }}>{study.meta.title}</span>
+              <span style={{ fontSize: "9pt", color: "#444" }}>{title || study.meta.title}</span>
             </div>
             <table style={{ width: "100%", borderCollapse: "collapse" }}>
               <thead>
@@ -452,11 +475,15 @@ function PrintSheet({ study, groups, season, photos, rowsFor, view }) {
 // The previous team shown for a row: one typed in by hand if there is one, else what ESPN's log says.
 const prevTeamOf = (photos, r, season) => (r.previousTeam !== undefined ? r.previousTeam : previousTeamFor(photos, r.player, r.team, season));
 
-export function StudyDetail({ studyId, canEdit, onBack, snapshot = null, shareToken = "", by = "" }) {
+// `forceView="transfers"` makes this the separate MAC Transfers study: the same data and edits as the Most Productive
+// study (so nothing typed there is lost), shown as the transfers list only. `routeId` is the study's own address and
+// share-link id; `heading` replaces the title and description at the top.
+export function StudyDetail({ studyId, canEdit, onBack, snapshot = null, shareToken = "", by = "", forceView = "", routeId = "", heading = null }) {
+  const pageId = routeId || studyId;
   const study = useStudy(studyId, snapshot);
   const photos = useStudyPhotos();
   const phone = useIsPhone();
-  const [initial] = useState(() => (snapshot ? [studyId, ...parseHash().slice(2)] : initialSubRoute()));
+  const [initial] = useState(() => (snapshot ? [pageId, ...parseHash().slice(2)] : initialSubRoute()));
   const [group, setGroup] = useState(() => study.meta.groups.some((g) => g.key === initial[1]) ? initial[1] : study.meta.groups[0].key);
   const [season, setSeason] = useState(() => (/^\d{4}$/.test(initial[2]) ? Number(initial[2]) : null));
   const [sort, setSort] = useState({ key: "score", dir: "desc" });
@@ -495,7 +522,7 @@ export function StudyDetail({ studyId, canEdit, onBack, snapshot = null, shareTo
 
   // "All players" is the study as it always was; "Transfers" is the same lists for the current season, kept to the
   // players who played somewhere else before (the Previous team column has something in it).
-  const [view, setView] = useState("all");
+  const view = forceView || "all";
   const activeGroup = study.meta.groups.find((g) => g.key === group);
   const seasons = study.seasons;
   const latestSeason = seasons[seasons.length - 1];
@@ -535,8 +562,8 @@ export function StudyDetail({ studyId, canEdit, onBack, snapshot = null, shareTo
   useEffect(() => {
     if (activeSeason == null) return;
     if (snapshot) setSubRoute("shared", [shareToken, group, activeSeason]);
-    else setSubRoute("studies", [studyId, group, activeSeason]);
-  }, [studyId, group, activeSeason]); // eslint-disable-line react-hooks/exhaustive-deps
+    else setSubRoute("studies", [pageId, group, activeSeason]);
+  }, [pageId, group, activeSeason]); // eslint-disable-line react-hooks/exhaustive-deps
   // What a share link holds for this study: the rows exactly as shown here (edits and hand-added rows included).
   const shareData = useMemo(() => (study.ready && !snapshot ? { seasons: study.seasons, groups: study.groups, transferRoster: study.transferRoster } : null), [study.ready, study.seasons, study.groups, study.transferRoster, snapshot]);
   const sorted = useMemo(() => {
@@ -598,14 +625,14 @@ export function StudyDetail({ studyId, canEdit, onBack, snapshot = null, shareTo
     <div className="hs-no-print" style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column", padding: phone ? "12px var(--gutter) 24px" : "16px var(--gutter) var(--gutter)", gap: 12, overflowY: phone ? "auto" : undefined }}>
       <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, flexWrap: "wrap", flexShrink: 0 }}>
         <div>
-          <h1 className="oswald" style={{ fontSize: phone ? 19 : 22, fontWeight: 700, margin: 0 }}>{study.meta.title}</h1>
+          <h1 className="oswald" style={{ fontSize: phone ? 19 : 22, fontWeight: 700, margin: 0 }}>{heading?.title || study.meta.title}</h1>
           {phone ? (
             <details style={{ marginTop: 4 }}>
               <summary style={{ fontSize: 12.5, color: "var(--text-muted)", cursor: "pointer" }}>About this study</summary>
-              <p style={{ margin: "6px 0 0", fontSize: 12.5, color: "var(--text-muted)", lineHeight: 1.5 }}>{study.meta.description}</p>
+              <p style={{ margin: "6px 0 0", fontSize: 12.5, color: "var(--text-muted)", lineHeight: 1.5 }}>{heading?.description || study.meta.description}</p>
             </details>
           ) : (
-            <p style={{ margin: "4px 0 0", fontSize: 13, color: "var(--text-muted)", maxWidth: 720, lineHeight: 1.5 }}>{study.meta.description}</p>
+            <p style={{ margin: "4px 0 0", fontSize: 13, color: "var(--text-muted)", maxWidth: 720, lineHeight: 1.5 }}>{heading?.description || study.meta.description}</p>
           )}
         </div>
         <div style={{ display: "flex", gap: 8, flexWrap: phone ? "nowrap" : "wrap", overflowX: phone ? "auto" : undefined, maxWidth: "100%", paddingBottom: phone ? 2 : 0 }}>
@@ -615,26 +642,11 @@ export function StudyDetail({ studyId, canEdit, onBack, snapshot = null, shareTo
           {canEdit && (
             <button onClick={() => setPasting(true)} style={ghostBtn}><ClipboardPaste size={14} /> Paste table</button>
           )}
-          {canEdit && !snapshot && <ShareLinkButton studyId={studyId} title={study.meta.title} data={shareData} by={by} />}
+          {canEdit && !snapshot && <ShareLinkButton studyId={pageId} title={heading?.title || study.meta.title} data={shareData} by={by} />}
           <button onClick={() => setPrintMode("one")} style={ghostBtn} title={`Print ${activeGroup.label}, ${activeSeason}`}><Printer size={14} /> Print</button>
           <button onClick={() => setPrintMode("all")} style={ghostBtn} title={`Print every position for ${activeSeason}, one page each`}><Printer size={14} /> Print all positions</button>
           <button onClick={() => downloadCsv(sorted, columns, `${study.meta.id}-${group}-${activeSeason}.csv`)} style={ghostBtn}><Download size={14} /> Download</button>
         </div>
-      </div>
-
-      <div style={{ display: "flex", gap: 4, background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 8, padding: 3, alignSelf: "flex-start", flexShrink: 0 }}>
-        {[["all", "All players"], ["transfers", `${latestSeason ?? ""} transfers`]].map(([key, label]) => (
-          <button
-            key={key}
-            onClick={() => setView(key)}
-            style={{
-              border: "none", borderRadius: 6, padding: "7px 16px", fontSize: 13, fontWeight: 700, fontFamily: "inherit", cursor: "pointer",
-              background: view === key ? "var(--accent)" : "transparent", color: view === key ? "var(--bg-page)" : "var(--text-muted)",
-            }}
-          >
-            {label}
-          </button>
-        ))}
       </div>
 
       <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap", flexShrink: 0 }}>
@@ -876,7 +888,7 @@ export function StudyDetail({ studyId, canEdit, onBack, snapshot = null, shareTo
           </table>
         </div>
       )}
-      {study.meta.note && <p style={{ margin: 0, fontSize: 12, color: "var(--text-faint)", lineHeight: 1.5 }}>{study.meta.note}</p>}
+      {!forceView && study.meta.note && <p style={{ margin: 0, fontSize: 12, color: "var(--text-faint)", lineHeight: 1.5 }}>{study.meta.note}</p>}
       {explainRow && <ScoreExplainer row={explainRow} group={activeGroup} onClose={() => setExplainRow(null)} />}
       {pasting && <PasteTableModal allowNewRows={!!activeGroup.manual} onClose={() => setPasting(false)} onSubmit={(text) => study.pasteTable(group, activeSeason, text)} />}
     </div>
@@ -884,6 +896,7 @@ export function StudyDetail({ studyId, canEdit, onBack, snapshot = null, shareTo
       <PrintSheet
         study={study}
         view={view}
+        title={heading?.title}
         groups={printMode === "all" ? study.meta.groups : [activeGroup]}
         season={activeSeason}
         photos={photos}

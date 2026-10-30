@@ -51,7 +51,7 @@ export default function SharedStudyPage({ token }) {
       ) : !share || !meta ? (
         <div style={{ padding: 40, textAlign: "center", color: "var(--text-muted)", fontSize: 14 }}>This link isn't active. Ask whoever sent it for a new one.</div>
       ) : meta.detail ? (
-        <meta.detail canEdit={false} meta={meta} snapshot={share.data} />
+        <meta.detail canEdit={false} meta={meta} snapshot={share.data} shareToken={token} />
       ) : (
         <StudyDetail studyId={share.studyId} canEdit={false} snapshot={share.data} shareToken={token} />
       )}
