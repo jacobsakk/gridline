@@ -252,6 +252,14 @@ def build():
                 kept = _freeze(ranked, [r for r in frozen if not r.get("pool")])
                 on_list = {(_name_key(r["player"]), r["team"]) for r in kept}
                 pool = [dict(r, pool=True) for r in ranked if (_name_key(r["player"]), r["team"]) not in on_list][:TRANSFER_POOL]
+                # Anyone already in the pool stays in it (with fresh stats when this run finds him), so a player who
+                # was fixed onto the Transfers tab never drops out of the data just because others passed him.
+                in_pool = {(_name_key(r["player"]), r["team"]) for r in pool}
+                fresh = {(_name_key(r["player"]), r["team"]): r for r in ranked}
+                for old in frozen:
+                    key = (_name_key(old["player"]), old["team"])
+                    if old.get("pool") and key not in in_pool and key not in on_list:
+                        pool.append(dict(fresh.get(key, old), pool=True))
                 study[group_key][season] = kept + pool
             else:
                 study[group_key][season] = ranked[:TOP_N] + [r for r in ranked[TOP_N:] if r["allMac"]]

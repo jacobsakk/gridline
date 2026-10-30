@@ -247,6 +247,13 @@ export function useStudy(studyId, snapshot = null) {
     generatedAt: data?.generatedAt || "",
     seasons: snapshot ? snapshot.seasons : data?.seasons || [],
     groups: snapshot ? snapshot.groups : groups,
+    // Who is on the Transfers tab, once it has been fixed (see freezeTransfers): { QB: ["noahkim|easternmich", ...], ... }
+    transferRoster: snapshot ? snapshot.transferRoster || null : (data?.seasons?.length ? overrides[`${studyId}__transfers__${data.seasons[data.seasons.length - 1]}`]?.members : null) || null,
+    // The first time the Transfers tab is opened its ten per position are written down, and from then on that is the
+    // list: someone you remove isn't replaced by the next player in line, and nobody new is added by the weekly refresh.
+    async freezeTransfers(season, members) {
+      await setDoc(doc(db, "studyOverrides", `${studyId}__transfers__${season}`), { members, createdAt: new Date().toISOString() });
+    },
     async saveField(group, player, fields) {
       await setDoc(doc(db, "studyOverrides", overrideKey(group, player)), fields, { merge: true });
     },

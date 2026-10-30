@@ -499,15 +499,30 @@ export function StudyDetail({ studyId, canEdit, onBack, snapshot = null, shareTo
   const seasons = study.seasons;
   const latestSeason = seasons[seasons.length - 1];
   const activeSeason = view === "transfers" ? latestSeason : seasons.includes(season) ? season : latestSeason;
-  // The ten best transfers at a position: everyone on the list or in the extra pool of next-best players who has a
-  // previous team, ranked by score (PFF grade where there is none), top ten. The main lists never show the pool.
-  const keep = (list, g = activeGroup) =>
-    view === "transfers"
-      ? list
-          .filter((r) => prevTeamOf(photos, r, activeSeason))
-          .sort((a, b) => (g.scoreFormula ? (b.score ?? 0) - (a.score ?? 0) : (b.totals?.pffGrade ?? 0) - (a.totals?.pffGrade ?? 0)))
-          .slice(0, 10)
-      : list.filter((r) => !r.pool);
+  // The transfers tab: the ten best transfers at a position -- everyone on the list or in the extra pool of next-best
+  // players who has a previous team, ranked by score (PFF grade where there is none). The first time it is opened the
+  // ten are written down (freezeTransfers), and from then on that fixed group is the list: removing someone doesn't
+  // bring in the next player, and a new transfer never appears by itself. A player you add yourself with a previous
+  // team does show. The main lists never show the pool.
+  const memberKey = (r) => `${String(r.player || "").toLowerCase().replace(/[^a-z]/g, "")}|${String(r.team || "").toLowerCase().replace(/[^a-z]/g, "")}`;
+  const byRank = (g) => (a, b) => (g.scoreFormula ? (b.score ?? 0) - (a.score ?? 0) : (b.totals?.pffGrade ?? 0) - (a.totals?.pffGrade ?? 0));
+  const topTransfers = (list, g) => list.filter((r) => prevTeamOf(photos, r, activeSeason)).sort(byRank(g)).slice(0, 10);
+  const keep = (list, g = activeGroup) => {
+    if (view !== "transfers") return list.filter((r) => !r.pool);
+    const fixed = study.transferRoster;
+    if (!fixed) return topTransfers([...list], g);
+    const members = new Set(fixed[g.key] || []);
+    return list.filter((r) => members.has(memberKey(r)) || (r.id && prevTeamOf(photos, r, activeSeason))).sort(byRank(g));
+  };
+  useEffect(() => {
+    // Fix the list the first time a coach opens the tab (not on a shared copy, and not before previous teams have loaded).
+    if (view !== "transfers" || snapshot || !canEdit || study.transferRoster || !study.ready || !photos) return;
+    const members = {};
+    study.meta.groups.forEach((g) => {
+      members[g.key] = topTransfers([...(study.groups[g.key]?.[String(latestSeason)] || [])], g).map(memberKey);
+    });
+    study.freezeTransfers(latestSeason, members).catch(() => {});
+  }, [view, study.ready, study.transferRoster, photos]); // eslint-disable-line react-hooks/exhaustive-deps
   const rows = keep(study.groups[group]?.[String(activeSeason)] || []);
   useEffect(() => {
     if (activeSeason == null) return;
@@ -515,7 +530,7 @@ export function StudyDetail({ studyId, canEdit, onBack, snapshot = null, shareTo
     else setSubRoute("studies", [studyId, group, activeSeason]);
   }, [studyId, group, activeSeason]); // eslint-disable-line react-hooks/exhaustive-deps
   // What a share link holds for this study: the rows exactly as shown here (edits and hand-added rows included).
-  const shareData = useMemo(() => (study.ready && !snapshot ? { seasons: study.seasons, groups: study.groups } : null), [study.ready, study.seasons, study.groups, snapshot]);
+  const shareData = useMemo(() => (study.ready && !snapshot ? { seasons: study.seasons, groups: study.groups, transferRoster: study.transferRoster } : null), [study.ready, study.seasons, study.groups, study.transferRoster, snapshot]);
   const sorted = useMemo(() => {
     const get = (r) => (sort.key === "prevTeam" ? prevTeamOf(photos, r, activeSeason) : sort.key === "player" || sort.key === "team" || sort.key === "state" ? String(r[sort.key] ?? "") : sort.key === "score" ? r.score : r.totals[sort.key] ?? 0);
     return [...rows].sort((a, b) => {
