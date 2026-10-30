@@ -507,13 +507,16 @@ export function StudyDetail({ studyId, canEdit, onBack, snapshot = null, shareTo
   // team does show. The main lists never show the pool.
   const memberKey = (r) => `${String(r.player || "").toLowerCase().replace(/[^a-z]/g, "")}|${String(r.team || "").toLowerCase().replace(/[^a-z]/g, "")}`;
   const byRank = (g) => (a, b) => (g.scoreFormula ? (b.score ?? 0) - (a.score ?? 0) : (b.totals?.pffGrade ?? 0) - (a.totals?.pffGrade ?? 0));
+  // One row per player: a hand-added row and a data row for the same person count once, the hand-added one first.
+  const unique = (list) => [...list].sort((a, b) => Number(!!b.id) - Number(!!a.id)).filter((r, i, all) => all.findIndex((o) => memberKey(o) === memberKey(r)) === i);
   const topTransfers = (list, g) => list.filter((r) => prevTeamOf(photos, r, activeSeason)).sort(byRank(g)).slice(0, 10);
   const keep = (list, g = activeGroup) => {
     if (view !== "transfers") return list.filter((r) => !r.pool);
     const fixed = study.transferRoster;
-    if (!fixed) return topTransfers([...list], g);
-    const members = new Set([...(fixed[g.key] || []), ...(TRANSFER_ADDITIONS[g.key] || [])]);
-    return list.filter((r) => members.has(memberKey(r)) || (r.id && prevTeamOf(photos, r, activeSeason))).sort(byRank(g));
+    const added = TRANSFER_ADDITIONS[g.key] || [];
+    if (!fixed) return unique([...list.filter((r) => added.includes(memberKey(r))), ...topTransfers([...list], g)]).sort(byRank(g));
+    const members = new Set([...(fixed[g.key] || []), ...added]);
+    return unique(list.filter((r) => members.has(memberKey(r)) || (r.id && prevTeamOf(photos, r, activeSeason)))).sort(byRank(g));
   };
   useEffect(() => {
     // Fix the list the first time a coach opens the tab (not on a shared copy, and not before previous teams have loaded).

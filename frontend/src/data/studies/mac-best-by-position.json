@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-30T15:35:39.435743Z",
+  "generatedAt": "2026-10-30T20:52:21.346408Z",
   "seasons": [
     2023,
     2024,
@@ -11349,6 +11349,810 @@
           "hudlLink": "",
           "pffLink": "",
           "state": "OH",
+          "allMac": null,
+          "pool": true
+        }
+      ]
+    },
+    "OL": {
+      "2026": [
+        {
+          "player": "Matt Hofer",
+          "team": "Toledo",
+          "position": "OL",
+          "season": 2026,
+          "totals": {
+            "games": 0,
+            "snaps": 572,
+            "pffGrade": 82.5
+          },
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Grant Haworth",
+          "team": "Ball St.",
+          "position": "OL",
+          "season": 2026,
+          "totals": {
+            "games": 0,
+            "snaps": 532,
+            "pffGrade": 81.8
+          },
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Vincent Giordano",
+          "team": "Bowling Green",
+          "position": "OL",
+          "season": 2026,
+          "totals": {
+            "games": 0,
+            "snaps": 10,
+            "pffGrade": 81.4
+          },
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Andrew Lowry",
+          "team": "Miami (OH)",
+          "position": "OL",
+          "season": 2026,
+          "totals": {
+            "games": 0,
+            "snaps": 38,
+            "pffGrade": 79.4
+          },
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Mitchell Butler",
+          "team": "Miami (OH)",
+          "position": "OL",
+          "season": 2026,
+          "totals": {
+            "games": 0,
+            "snaps": 91,
+            "pffGrade": 76.9
+          },
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Eric Smith",
+          "team": "Miami (OH)",
+          "position": "OL",
+          "season": 2026,
+          "totals": {
+            "games": 0,
+            "snaps": 397,
+            "pffGrade": 76.9
+          },
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Tanner Burlingame",
+          "team": "Massachusetts",
+          "position": "OL",
+          "season": 2026,
+          "totals": {
+            "games": 0,
+            "snaps": 20,
+            "pffGrade": 75.7
+          },
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Tigana Cisse",
+          "team": "Ohio",
+          "position": "OL",
+          "season": 2026,
+          "totals": {
+            "games": 0,
+            "snaps": 342,
+            "pffGrade": 75.1
+          },
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Devontae Armstrong",
+          "team": "Miami (OH)",
+          "position": "OL",
+          "season": 2026,
+          "totals": {
+            "games": 0,
+            "snaps": 32,
+            "pffGrade": 73.7
+          },
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Ahmad Carwise",
+          "team": "Toledo",
+          "position": "OL",
+          "season": 2026,
+          "totals": {
+            "games": 0,
+            "snaps": 496,
+            "pffGrade": 72.1
+          },
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Jarian Shelby",
+          "team": "Ohio",
+          "position": "OL",
+          "season": 2026,
+          "totals": {
+            "games": 0,
+            "snaps": 478,
+            "pffGrade": 71.4
+          },
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Bryce Parson",
+          "team": "Ohio",
+          "position": "OL",
+          "season": 2026,
+          "totals": {
+            "games": 0,
+            "snaps": 457,
+            "pffGrade": 71.2
+          },
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Josh Waite",
+          "team": "Ohio",
+          "position": "OL",
+          "season": 2026,
+          "totals": {
+            "games": 0,
+            "snaps": 64,
+            "pffGrade": 71.0
+          },
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Job Mavrick",
+          "team": "Ohio",
+          "position": "OL",
+          "season": 2026,
+          "totals": {
+            "games": 0,
+            "snaps": 182,
+            "pffGrade": 70.8
+          },
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Jason Hoskins",
+          "team": "Akron",
+          "position": "OL",
+          "season": 2026,
+          "totals": {
+            "games": 0,
+            "snaps": 15,
+            "pffGrade": 70.6
+          },
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Brian Beidatsch",
+          "team": "Miami (OH)",
+          "position": "OL",
+          "season": 2026,
+          "totals": {
+            "games": 0,
+            "snaps": 170,
+            "pffGrade": 70.5
+          },
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Sandro Malicevic",
+          "team": "Ohio",
+          "position": "OL",
+          "season": 2026,
+          "totals": {
+            "games": 0,
+            "snaps": 38,
+            "pffGrade": 69.9
+          },
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Dylan Spencer",
+          "team": "Sacramento St.",
+          "position": "OL",
+          "season": 2026,
+          "totals": {
+            "games": 0,
+            "snaps": 5,
+            "pffGrade": 69.3
+          },
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Colin Lyons",
+          "team": "Akron",
+          "position": "OL",
+          "season": 2026,
+          "totals": {
+            "games": 0,
+            "snaps": 514,
+            "pffGrade": 69.1
+          },
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Grant Zimmerly",
+          "team": "Toledo",
+          "position": "OL",
+          "season": 2026,
+          "totals": {
+            "games": 0,
+            "snaps": 165,
+            "pffGrade": 68.6
+          },
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Trumain Lawson",
+          "team": "Ohio",
+          "position": "OL",
+          "season": 2026,
+          "totals": {
+            "games": 0,
+            "snaps": 437,
+            "pffGrade": 68.3
+          },
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Max Mobley",
+          "team": "Akron",
+          "position": "OL",
+          "season": 2026,
+          "totals": {
+            "games": 0,
+            "snaps": 37,
+            "pffGrade": 67.8
+          },
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Tyler McMillan",
+          "team": "Eastern Mich.",
+          "position": "OL",
+          "season": 2026,
+          "totals": {
+            "games": 0,
+            "snaps": 247,
+            "pffGrade": 67.4
+          },
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Lance Blakely Jr.",
+          "team": "Ohio",
+          "position": "OL",
+          "season": 2026,
+          "totals": {
+            "games": 0,
+            "snaps": 37,
+            "pffGrade": 67.0
+          },
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Alex Fox",
+          "team": "Akron",
+          "position": "OL",
+          "season": 2026,
+          "totals": {
+            "games": 0,
+            "snaps": 3,
+            "pffGrade": 66.8
+          },
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Brandon Smith",
+          "team": "Akron",
+          "position": "OL",
+          "season": 2026,
+          "totals": {
+            "games": 0,
+            "snaps": 469,
+            "pffGrade": 66.8
+          },
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Nino Francavilla",
+          "team": "Buffalo",
+          "position": "OL",
+          "season": 2026,
+          "totals": {
+            "games": 0,
+            "snaps": 553,
+            "pffGrade": 66.5
+          },
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Trevor Swan",
+          "team": "Central Mich.",
+          "position": "OL",
+          "season": 2026,
+          "totals": {
+            "games": 0,
+            "snaps": 15,
+            "pffGrade": 66.2
+          },
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Nic DiSanto",
+          "team": "Central Mich.",
+          "position": "OL",
+          "season": 2026,
+          "totals": {
+            "games": 0,
+            "snaps": 15,
+            "pffGrade": 65.7
+          },
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Ibrahim Traore",
+          "team": "Toledo",
+          "position": "OL",
+          "season": 2026,
+          "totals": {
+            "games": 0,
+            "snaps": 344,
+            "pffGrade": 65.2
+          },
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Masyn Zahursky",
+          "team": "Bowling Green",
+          "position": "OL",
+          "season": 2026,
+          "totals": {
+            "games": 0,
+            "snaps": 12,
+            "pffGrade": 65.1
+          },
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Jacob Kropchak",
+          "team": "Toledo",
+          "position": "OL",
+          "season": 2026,
+          "totals": {
+            "games": 0,
+            "snaps": 113,
+            "pffGrade": 65.1
+          },
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Kris Manu",
+          "team": "Miami (OH)",
+          "position": "OL",
+          "season": 2026,
+          "totals": {
+            "games": 0,
+            "snaps": 455,
+            "pffGrade": 65.1
+          },
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Dylan Senda",
+          "team": "Toledo",
+          "position": "OL",
+          "season": 2026,
+          "totals": {
+            "games": 0,
+            "snaps": 340,
+            "pffGrade": 65.0
+          },
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Brandon Lawhorn",
+          "team": "Miami (OH)",
+          "position": "OL",
+          "season": 2026,
+          "totals": {
+            "games": 0,
+            "snaps": 42,
+            "pffGrade": 64.8
+          },
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Luke Rector",
+          "team": "Toledo",
+          "position": "OL",
+          "season": 2026,
+          "totals": {
+            "games": 0,
+            "snaps": 351,
+            "pffGrade": 64.5
+          },
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Jackson Bellamy",
+          "team": "Buffalo",
+          "position": "OL",
+          "season": 2026,
+          "totals": {
+            "games": 0,
+            "snaps": 349,
+            "pffGrade": 64.4
+          },
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Cole Mosier",
+          "team": "Ball St.",
+          "position": "OL",
+          "season": 2026,
+          "totals": {
+            "games": 0,
+            "snaps": 289,
+            "pffGrade": 64.4
+          },
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Chris Hood",
+          "team": "Ball St.",
+          "position": "OL",
+          "season": 2026,
+          "totals": {
+            "games": 0,
+            "snaps": 527,
+            "pffGrade": 64.2
+          },
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Ben Roebuck",
+          "team": "Western Mich.",
+          "position": "OL",
+          "season": 2026,
+          "totals": {
+            "games": 0,
+            "snaps": 491,
+            "pffGrade": 63.9
+          },
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "James Thomas Jr.",
+          "team": "Bowling Green",
+          "position": "OL",
+          "season": 2026,
+          "totals": {
+            "games": 0,
+            "snaps": 331,
+            "pffGrade": 63.9
+          },
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Dominic Johnson",
+          "team": "Toledo",
+          "position": "OL",
+          "season": 2026,
+          "totals": {
+            "games": 0,
+            "snaps": 246,
+            "pffGrade": 63.7
+          },
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Evan Downer",
+          "team": "Ball St.",
+          "position": "OL",
+          "season": 2026,
+          "totals": {
+            "games": 0,
+            "snaps": 23,
+            "pffGrade": 63.5
+          },
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Jacob Wilk",
+          "team": "Western Mich.",
+          "position": "OL",
+          "season": 2026,
+          "totals": {
+            "games": 0,
+            "snaps": 18,
+            "pffGrade": 63.4
+          },
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Jacob Schorsch",
+          "team": "Miami (OH)",
+          "position": "OL",
+          "season": 2026,
+          "totals": {
+            "games": 0,
+            "snaps": 456,
+            "pffGrade": 63.3
+          },
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Misael Sandoval",
+          "team": "Ball St.",
+          "position": "OL",
+          "season": 2026,
+          "totals": {
+            "games": 0,
+            "snaps": 532,
+            "pffGrade": 63.3
+          },
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Cassius Hulbert",
+          "team": "Ohio",
+          "position": "OL",
+          "season": 2026,
+          "totals": {
+            "games": 0,
+            "snaps": 29,
+            "pffGrade": 63.1
+          },
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "DeAnthony Sheffield",
+          "team": "Sacramento St.",
+          "position": "OL",
+          "season": 2026,
+          "totals": {
+            "games": 0,
+            "snaps": 106,
+            "pffGrade": 63.1
+          },
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Val Kondratenko",
+          "team": "Buffalo",
+          "position": "OL",
+          "season": 2026,
+          "totals": {
+            "games": 0,
+            "snaps": 265,
+            "pffGrade": 62.8
+          },
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "",
+          "allMac": null,
+          "pool": true
+        },
+        {
+          "player": "Mofe Adewole",
+          "team": "Kent St.",
+          "position": "OL",
+          "season": 2026,
+          "totals": {
+            "games": 0,
+            "snaps": 477,
+            "pffGrade": 62.7
+          },
+          "hudlLink": "",
+          "pffLink": "",
+          "state": "",
           "allMac": null,
           "pool": true
         }

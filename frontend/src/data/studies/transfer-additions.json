@@ -1,7 +1,44 @@
 {
-  "note": "Players put on a position's Transfers list by hand, in addition to the list that was fixed the first time the tab was opened. Keys are the player's name and team, letters only.",
+  "note": "Players put on a position's Transfers list by hand, in addition to the list fixed the first time the tab was opened (keys are name and team, letters only). Anyone listed here whose removal on the study dates from before asOf is brought back; a removal made after asOf is respected.",
+  "asOf": "2026-10-31T00:00:00.000Z",
   "SAF": [
     "darrenjameshamilton|ohio",
     "rayquanadkins|easternmich"
+  ],
+  "WR": [
+    "adjataydabbs|toledo",
+    "mattcoleman|sacramentost",
+    "maleekhuggins|miamioh",
+    "damarionwitten|miamioh",
+    "bensonprosper|easternmich",
+    "donovanhamilton|ballst",
+    "darealystclark|kentst",
+    "jamarionmcdougle|ballst",
+    "brennanridley|bowlinggreen",
+    "milesburris|akron"
+  ],
+  "DL": [
+    "andrewzock|toledo",
+    "eriqgeorge|bowlinggreen",
+    "scoopgardnerjr|westernmich",
+    "austinalexander|westernmich",
+    "zachjohnson|toledo",
+    "jaxoncherry|centralmich",
+    "zhaiylenscott|miamioh",
+    "ronnhardin|easternmich",
+    "ezraodinjor|toledo",
+    "lucaslambertpipkin|toledo"
+  ],
+  "OL": [
+    "mitchellbutler|miamioh",
+    "tiganacisse|ohio",
+    "ahmadcarwise|toledo",
+    "brianbeidatsch|miamioh",
+    "tylermcmillan|easternmich",
+    "ibrahimtraore|toledo",
+    "dylansenda|toledo",
+    "lukerector|toledo",
+    "dominicjohnson|toledo",
+    "misaelsandoval|ballst"
   ]
 }

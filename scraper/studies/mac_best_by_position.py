@@ -40,6 +40,7 @@ from studies._hudl_links import (
 from studies._stat_overrides import STAT_OVERRIDES
 from studies._home_states import HOME_STATES
 from studies._all_mac import ALL_MAC, all_mac_tier
+from studies._ol_pff import OL_PFF_2026
 
 # Every group but TE (which fully replaces its leaderboard pull when a supplement exists for that
 # season -- see below) tops up additively: the real leaderboard candidates for that season stay, these
@@ -264,6 +265,20 @@ def build():
             else:
                 study[group_key][season] = ranked[:TOP_N] + [r for r in ranked[TOP_N:] if r["allMac"]]
             print(f"  {group_key} {season}: {len(rows)} leaderboard candidates, {len(study[group_key][season])} in the final list")
+
+    # Offensive line has no stat source; the PFF grades typed into _ol_pff.py go in as hidden pool rows so the
+    # Transfers tab can rank the line's transfers.
+    study["OL"] = {
+        REAL_STATS_SEASON: [
+            {
+                "player": name, "team": team, "position": "OL", "season": int(REAL_STATS_SEASON),
+                "totals": {"games": 0, "snaps": snaps, "pffGrade": grade}, "hudlLink": HUDL_LINKS.get(name.upper(), ""),
+                "pffLink": PFF_LINKS.get(name.upper(), ""), "state": HOME_STATES.get(name.upper(), ""),
+                "allMac": all_mac_tier("OL", REAL_STATS_SEASON, name), "pool": True,
+            }
+            for name, team, snaps, grade in OL_PFF_2026
+        ]
+    }
 
     os.makedirs(os.path.dirname(OUT_PATH), exist_ok=True)
     with open(OUT_PATH, "w") as f:
