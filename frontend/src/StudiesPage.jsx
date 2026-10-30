@@ -511,7 +511,11 @@ export function StudyDetail({ studyId, canEdit, onBack, snapshot = null, shareTo
   const unique = (list) => [...list].sort((a, b) => Number(!!b.id) - Number(!!a.id)).filter((r, i, all) => all.findIndex((o) => memberKey(o) === memberKey(r)) === i);
   const topTransfers = (list, g) => list.filter((r) => prevTeamOf(photos, r, activeSeason)).sort(byRank(g)).slice(0, 10);
   const keep = (list, g = activeGroup) => {
-    if (view !== "transfers") return list.filter((r) => !r.pool);
+    if (view !== "transfers") return list.filter((r) => !r.pool && !r.excluded);
+    // Off the Transfers tab: removed from it, or taken off the whole study -- unless he was put back by hand after that
+    // (transfer-additions.json), which only applies to a removal made before that was done.
+    const back = (r) => (TRANSFER_ADDITIONS[g.key] || []).includes(memberKey(r)) && (!r.excludedAt || r.excludedAt < TRANSFER_ADDITIONS.asOf);
+    list = list.filter((r) => !r.transferRemoved && (!r.excluded || back(r)));
     const fixed = study.transferRoster;
     const added = TRANSFER_ADDITIONS[g.key] || [];
     if (!fixed) return unique([...list.filter((r) => added.includes(memberKey(r))), ...topTransfers([...list], g)]).sort(byRank(g));
@@ -579,9 +583,10 @@ export function StudyDetail({ studyId, canEdit, onBack, snapshot = null, shareTo
   }
   async function removePlayer(r) {
     const isManualRow = !!r.id;
-    const ok = await confirmAction({ title: `Remove ${r.player || "this player"}?`, message: `This takes them off ${activeGroup.label}'s list for ${activeSeason}.` });
+    const ok = await confirmAction({ title: `Remove ${r.player || "this player"}?`, message: view === "transfers" ? `This takes them off the ${activeGroup.label} transfers list. They stay on the All players list.` : `This takes them off ${activeGroup.label}'s list for ${activeSeason}.` });
     if (!ok) return;
     if (isManualRow) study.removeManualRow(r.id);
+    else if (view === "transfers") study.removeFromTransfers(group, activeSeason, r.player);
     else study.excludePlayer(group, activeSeason, r.player);
   }
   const arrow = (key) => (sort.key === key ? (sort.dir === "desc" ? " ▼" : " ▲") : "");

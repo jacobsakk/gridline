@@ -1,7 +1,6 @@
 import { arrayUnion, collection, deleteDoc, doc, onSnapshot, setDoc, writeBatch } from "firebase/firestore";
 import { useEffect, useMemo, useState } from "react";
 import { db } from "./firebase";
-import TRANSFER_ADDITIONS from "./data/studies/transfer-additions.json";
 
 // A "study" is a one-off, hand-requested data pull (not part of the regular weekly scraper) that lands as
 // a static JSON file plus, optionally, a few fields an admin can edit afterward (a Hudl link the study
@@ -180,17 +179,16 @@ export function useStudy(studyId, snapshot = null) {
           // "removing" one just means marking it excluded in the same per-season override doc a stat
           // correction already lives in (see excludePlayer below). Unlike a stat fix, this doesn't pull
           // in whoever's 11th -- the JSON only ever carries the already-sliced top 10.
-          .filter((p) => {
-            const gone = overrides[statsOverrideKey(group, season, p.player)];
-            if (!gone?.excluded) return true;
-            // A player put back on the Transfers list by hand (transfer-additions.json) comes back if he was removed
-            // before that was done; removing him again afterwards (which stamps the time) sticks.
-            const key = `${String(p.player).toLowerCase().replace(/[^a-z]/g, "")}|${String(p.team).toLowerCase().replace(/[^a-z]/g, "")}`;
-            return (TRANSFER_ADDITIONS[group] || []).includes(key) && String(season) === String(data.seasons[data.seasons.length - 1]) && (!gone.excludedAt || gone.excludedAt < TRANSFER_ADDITIONS.asOf);
-          })
           .map((p) => {
             const merged = { ...p, ...overrides[overrideKey(group, p.player)] };
             const statFix = overrides[statsOverrideKey(group, season, p.player)];
+            // Taken off the study (hidden from All players) and/or off the Transfers tab only. The page decides what to
+            // show; the row stays in the data so a removal never loses anything.
+            if (statFix?.excluded) {
+              merged.excluded = true;
+              merged.excludedAt = statFix.excludedAt || "";
+            }
+            if (statFix?.transferRemoved) merged.transferRemoved = true;
             // A previous team typed in by hand wins over the one ESPN's log gives (an empty one means "none").
             if (statFix && "previousTeam" in statFix) merged.previousTeam = statFix.previousTeam;
             // The film of him at his earlier school, for the Transfers tab (per season, like the previous team).
@@ -307,6 +305,10 @@ export function useStudy(studyId, snapshot = null) {
     },
     // Removing a computed row (one with no manual doc of its own) -- hides it from this one position's
     // one season rather than deleting anything, since there's nothing to delete; see the filter above.
+    // Off the Transfers tab only (he stays on the All players list).
+    async removeFromTransfers(group, season, player) {
+      await setDoc(doc(db, "studyOverrides", statsOverrideKey(group, season, player)), { transferRemoved: true, transferRemovedAt: new Date().toISOString() }, { merge: true });
+    },
     async excludePlayer(group, season, player) {
       await setDoc(doc(db, "studyOverrides", statsOverrideKey(group, season, player)), { excluded: true, excludedAt: new Date().toISOString() }, { merge: true });
     },

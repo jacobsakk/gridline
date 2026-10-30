@@ -1,6 +1,6 @@
 {
-  "note": "Players put on a position's Transfers list by hand, in addition to the list fixed the first time the tab was opened (keys are name and team, letters only). Anyone listed here whose removal on the study dates from before asOf is brought back; a removal made after asOf is respected.",
-  "asOf": "2026-10-31T00:00:00.000Z",
+  "note": "Players put on a position's Transfers list by hand, in addition to the list fixed the first time the tab was opened (keys are name and team, letters only). Anyone listed here who was taken off the study before asOf shows on the Transfers tab again (not on All players); a removal made after asOf is respected.",
+  "asOf": "2026-10-30T20:55:00.000Z",
   "SAF": [
     "darrenjameshamilton|ohio",
     "rayquanadkins|easternmich",
