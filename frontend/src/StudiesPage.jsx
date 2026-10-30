@@ -536,10 +536,14 @@ export function StudyDetail({ studyId, canEdit, onBack, snapshot = null, shareTo
       // No Score column for a manual group (OL) -- there's no formula that makes sense for it; sorting
       // by PFF Grade (or anything else) directly via the column header already works without one.
       ...(activeGroup.scoreFormula ? [{ key: "score", label: "Score", get: (r) => r.score }] : []),
-      { key: "hudlLink", label: "Hudl", get: (r) => r.hudlLink || "" },
-      { key: "pffLink", label: "PFF", get: (r) => r.pffLink || "" },
+      ...(view === "transfers"
+        ? [{ key: "transferFilm", label: "Transfer film", get: (r) => r.transferFilm || "" }]
+        : [
+            { key: "hudlLink", label: "Hudl", get: (r) => r.hudlLink || "" },
+            { key: "pffLink", label: "PFF", get: (r) => r.pffLink || "" },
+          ]),
     ],
-    [activeGroup, photos, activeSeason]
+    [activeGroup, photos, activeSeason, view]
   );
 
   function sortBy(key) {
@@ -660,7 +664,7 @@ export function StudyDetail({ studyId, canEdit, onBack, snapshot = null, shareTo
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <label htmlFor="study-sort" style={{ fontSize: 12, color: "var(--text-faint)", textTransform: "uppercase", letterSpacing: "0.03em" }}>Sort</label>
             <select id="study-sort" value={sort.key} onChange={(e) => setSort({ key: e.target.value, dir: e.target.value === "player" || e.target.value === "team" ? "asc" : "desc" })} style={{ ...control, flex: 1 }}>
-              {columns.filter((c) => c.key !== "hudlLink" && c.key !== "pffLink").map((c) => <option key={c.key} value={c.key}>{c.label}</option>)}
+              {columns.filter((c) => c.key !== "hudlLink" && c.key !== "pffLink" && c.key !== "transferFilm").map((c) => <option key={c.key} value={c.key}>{c.label}</option>)}
             </select>
             <button onClick={() => setSort((x) => ({ ...x, dir: x.dir === "desc" ? "asc" : "desc" }))} style={ghostBtn} aria-label="Reverse the order">{sort.dir === "desc" ? "▼ High first" : "▲ Low first"}</button>
           </div>
@@ -722,10 +726,16 @@ export function StudyDetail({ studyId, canEdit, onBack, snapshot = null, shareTo
                     </div>
                   ))}
                 </div>
-                {(canEdit || r.hudlLink || r.pffLink) && (
+                {(canEdit || (view === "transfers" ? r.transferFilm : r.hudlLink || r.pffLink)) && (
                 <div style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap", fontSize: 13.5 }}>
+                  {view === "transfers" ? (
+                    <><LinkCell row={r} field="transferFilm" label="Transfer film" placeholder="Paste the transfer film link…" editable={canEdit} onSave={(url) => (isManualRow ? study.updateManualRow(r.id, { transferFilm: url }) : study.saveTransferFilm(group, activeSeason, r.player, url))} /></>
+                  ) : (
+                    <>
                   <LinkCell row={r} field="hudlLink" label="Film" placeholder="Paste a Hudl link…" editable={canEdit} onSave={(url) => (isManualRow ? study.updateManualRow(r.id, { hudlLink: url }) : study.saveField(group, r.player, { hudlLink: url }))} />
                   <LinkCell row={r} field="pffLink" label="PFF" placeholder="Paste a PFF link…" editable={canEdit} onSave={(url) => (isManualRow ? study.updateManualRow(r.id, { pffLink: url }) : study.saveField(group, r.player, { pffLink: url }))} />
+                    </>
+                  )}
                   {canEdit && (
                     <button onClick={() => removePlayer(r)} aria-label={`Remove ${r.player || "this player"}`} style={{ marginLeft: "auto", background: "none", border: "none", color: "var(--text-faint)", cursor: "pointer", lineHeight: 0 }}>
                       <Trash2 size={16} />
@@ -743,8 +753,8 @@ export function StudyDetail({ studyId, canEdit, onBack, snapshot = null, shareTo
             <thead>
               <tr>
                 {columns.map((c) => (
-                  <th key={c.key} style={th} onClick={() => sortBy(c.key === "hudlLink" || c.key === "pffLink" ? "player" : c.key)}>
-                    {c.label}{c.key !== "hudlLink" && c.key !== "pffLink" ? arrow(c.key) : ""}
+                  <th key={c.key} style={th} onClick={() => sortBy(c.key === "hudlLink" || c.key === "pffLink" || c.key === "transferFilm" ? "player" : c.key)}>
+                    {c.label}{c.key !== "hudlLink" && c.key !== "pffLink" && c.key !== "transferFilm" ? arrow(c.key) : ""}
                   </th>
                 ))}
                 {canEdit && <th style={th}> </th>}
@@ -814,12 +824,20 @@ export function StudyDetail({ studyId, canEdit, onBack, snapshot = null, shareTo
                       </button>
                     </td>
                   )}
+                  {view === "transfers" ? (
+                    <td style={td}>
+                      <LinkCell row={r} field="transferFilm" label="Transfer film" placeholder="Paste the transfer film link…" editable={canEdit} onSave={(url) => (isManualRow ? study.updateManualRow(r.id, { transferFilm: url }) : study.saveTransferFilm(group, activeSeason, r.player, url))} />
+                    </td>
+                  ) : (
+                    <>
                   <td style={td}>
                     <LinkCell row={r} field="hudlLink" label="Film" placeholder="Paste a Hudl link…" editable={canEdit} onSave={(url) => (isManualRow ? study.updateManualRow(r.id, { hudlLink: url }) : study.saveField(group, r.player, { hudlLink: url }))} />
                   </td>
                   <td style={td}>
                     <LinkCell row={r} field="pffLink" label="PFF" placeholder="Paste a PFF link…" editable={canEdit} onSave={(url) => (isManualRow ? study.updateManualRow(r.id, { pffLink: url }) : study.saveField(group, r.player, { pffLink: url }))} />
                   </td>
+                    </>
+                  )}
                   {canEdit && (
                     <td style={{ ...td, textAlign: "right" }}>
                       <button onClick={() => removePlayer(r)} title={`Remove ${r.player || "this player"}`} aria-label={`Remove ${r.player || "this player"}`} style={{ background: "none", border: "none", color: "var(--text-faint)", cursor: "pointer", padding: 2, lineHeight: 0 }}>

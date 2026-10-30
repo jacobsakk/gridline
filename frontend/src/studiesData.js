@@ -185,6 +185,8 @@ export function useStudy(studyId, snapshot = null) {
             const statFix = overrides[statsOverrideKey(group, season, p.player)];
             // A previous team typed in by hand wins over the one ESPN's log gives (an empty one means "none").
             if (statFix && "previousTeam" in statFix) merged.previousTeam = statFix.previousTeam;
+            // The film of him at his earlier school, for the Transfers tab (per season, like the previous team).
+            if (statFix && statFix.transferFilm) merged.transferFilm = statFix.transferFilm;
             if (statFix?.totals) {
               merged.totals = { ...merged.totals, ...statFix.totals };
               // Re-derive the score from the corrected totals using the same linear formula
@@ -227,7 +229,7 @@ export function useStudy(studyId, snapshot = null) {
             (g.stats || []).forEach((s) => {
               totals[s.key] = r[s.key] ?? 0;
             });
-            const row = { id: r.id, ...(r.previousTeam !== undefined ? { previousTeam: r.previousTeam } : null), player: r.player || "", team: r.team || "", state: r.state || "", hudlLink: r.hudlLink || "", pffLink: r.pffLink || "", totals, allMac: allMacTier(g.key, seasonKey, r.player) };
+            const row = { id: r.id, ...(r.previousTeam !== undefined ? { previousTeam: r.previousTeam } : null), transferFilm: r.transferFilm || "", player: r.player || "", team: r.team || "", state: r.state || "", hudlLink: r.hudlLink || "", pffLink: r.pffLink || "", totals, allMac: allMacTier(g.key, seasonKey, r.player) };
             if (g.scoreFormula) row.score = Math.round(g.scoreFormula.reduce((sum, t) => sum + (totals[t.key] ?? 0) * t.coef, 0) * 10) / 10;
             return row;
           });
@@ -252,6 +254,9 @@ export function useStudy(studyId, snapshot = null) {
     // season -- see mac_best_by_position.py). Merges onto any other stat already fixed for this same
     // player/season/group, rather than replacing the whole totals override outright.
     // The team he was with before this one, for this season's row -- typed in when ESPN's log missed it.
+    async saveTransferFilm(group, season, player, url) {
+      await setDoc(doc(db, "studyOverrides", statsOverrideKey(group, season, player)), { transferFilm: url }, { merge: true });
+    },
     async savePreviousTeam(group, season, player, value) {
       await setDoc(doc(db, "studyOverrides", statsOverrideKey(group, season, player)), { previousTeam: value }, { merge: true });
     },

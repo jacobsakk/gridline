@@ -8,7 +8,7 @@ export function useStudyPhotos() {
   const [data, setData] = useState(null);
   useEffect(() => {
     let live = true;
-    loading ||= Promise.all([import("./data/studies/headshots.json"), import("./data/studies/previous-teams.json")]).then(([h, p]) => ({ ...h.default, prev: p.default }));
+    loading ||= Promise.all([import("./data/studies/headshots.json"), import("./data/studies/previous-teams.json"), import("./data/studies/roster-previous.json")]).then(([h, p, r]) => ({ ...h.default, prev: p.default, roster: indexRoster(r.default) }));
     loading.then((d) => live && setData(d)).catch(() => {});
     return () => {
       live = false;
@@ -45,7 +45,25 @@ const sameTeam = (a, b) => {
   return !!x && !!y && (x === y || x.startsWith(y) || y.startsWith(x));
 };
 
+// The schools' own roster pages say where each current player came from (see roster_previous_schools.py) -- including
+// junior colleges, which ESPN's season log doesn't know. Indexed by player name, each with the team it was found on.
+function indexRoster(file) {
+  const byName = new Map();
+  Object.entries(file?.byPlayer || {}).forEach(([key, school]) => {
+    const [n, t] = key.split("|");
+    if (!byName.has(n)) byName.set(n, []);
+    byName.get(n).push([t, school]);
+  });
+  return { season: file?.season, byName };
+}
+
 export function previousTeamFor(data, name, team, season) {
+  if (data?.roster && Number(season) === data.roster.season) {
+    const full = letters(name);
+    const hits = data.roster.byName.get(full) || data.roster.byName.get(full.length > 5 ? full.replace(SUFFIX, "") : full) || [];
+    const mine = hits.find(([t]) => sameTeam(t, team));
+    if (mine) return mine[1];
+  }
   if (!data?.prev) return "";
   const full = letters(name);
   const entries = data.byName[full] || data.byName[full.length > 5 ? full.replace(SUFFIX, "") : full] || [];
