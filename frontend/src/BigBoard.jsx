@@ -6,7 +6,7 @@ import { confirmAction } from "./ConfirmDialog.jsx";
 import { initialSubRoute, setSubRoute, useBack } from "./route.js";
 import { matchPhotoFiles, mondayOf, photoFromFile, toIso } from "./hsData.js";
 import {
-  FLAGS, RATING_KEYS, STATUSES, STATUS_BY_KEY, TRENDS, VISITS, blankPlayer, boardTitle, buildCreditList, classYearFromTitle,
+  FLAGS, RATING_KEYS, STATUSES, STATUS_BY_KEY, TRENDS, VISIT_READY, VISITS, blankPlayer, boardTitle, buildCreditList, classYearFromTitle,
   buildJucoCreditList, commitCounts, creditKey, diffBoards, handChange, nameKey, parseBoardSheet, parseCreditSheet, readWorkbook, useBigBoards,
 } from "./bigBoardData.js";
 
@@ -76,7 +76,7 @@ function nudge(board, id, dir) {
 
 // ------------------------------------------------------------------ the sheet
 
-const markersFor = (p) => [p.flags?.snap ? "($)" : "", p.flags?.punt ? "(#)" : "", p.flags?.noMidYear ? "🚫" : "", p.flags?.injured ? "⛑️" : ""].filter(Boolean).join(" ");
+const markersFor = (p) => [p.flags?.snap ? "($)" : "", p.flags?.punt ? "(#)" : "", p.flags?.noMidYear ? "🚫" : "", p.flags?.injured ? "⛑️" : "", p.flags?.visitReady ? "✅" : ""].filter(Boolean).join(" ");
 
 // A card shows the A / P / C / R trend marks (🔥 🌤️ 🌨️ 🧊) but not ARMs' rating line ("2 - ALL MAC PLAYER"), and
 // the JUCO board shows no area coach. The rating text stays on the card's data; it's just not displayed.
@@ -143,12 +143,12 @@ export function BoardSheet({ board, side, classYear, photos, onOpen, onAdd }) {
           );
         })}
       </div>
-      <BoardFooter counts={counts} side={side} />
+      <BoardFooter counts={counts} side={side} classYear={classYear} />
     </div>
   );
 }
 
-function BoardFooter({ counts, side }) {
+function BoardFooter({ counts, side, classYear }) {
   return (
     <div className="bb-footer">
       <div className="bb-key">
@@ -163,7 +163,7 @@ function BoardFooter({ counts, side }) {
           {TRENDS.map((t) => (
             <div key={t.key}><span>{t.emoji}</span> {t.label}</div>
           ))}
-          {FLAGS.map((f) => (
+          {[...FLAGS, ...(classYear === "JUCO" ? [VISIT_READY] : [])].map((f) => (
             <div key={f.key}><span>{f.marker === "$" ? "($)" : f.marker === "#" ? "(#)" : f.marker}</span> {f.label}</div>
           ))}
           {VISITS.map((v) => (
@@ -306,7 +306,7 @@ export function PlayerModal({ board, classYear, colKey, player, isNew, photo, on
             <div>
               <label style={label}>Marks after the name</label>
               <div style={{ display: "flex", flexWrap: "wrap", gap: "4px 12px" }}>
-                {FLAGS.map((f) => (
+                {[...FLAGS, ...(classYear === "JUCO" ? [VISIT_READY] : [])].map((f) => (
                   <label key={f.key} title={f.label} style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 13, cursor: "pointer" }}>
                     <input type="checkbox" checked={!!draft.flags?.[f.key]} onChange={(e) => set({ flags: { ...draft.flags, [f.key]: e.target.checked } })} />
                     {f.marker === "$" ? "($)" : f.marker === "#" ? "(#)" : f.marker}
