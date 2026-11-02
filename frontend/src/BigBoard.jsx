@@ -84,17 +84,17 @@ function PlayerCard({ p, showCoach, hasRating, photo, onOpen, juco }) {
   const status = STATUS_BY_KEY[p.status] || STATUS_BY_KEY.recruit;
   const marks = markersFor(p);
   return (
-    <div className="bb-card" style={{ background: status.color }} onClick={onOpen} role="button" tabIndex={0} onKeyDown={(e) => e.key === "Enter" && onOpen()} title="Click to edit">
+    <div className={`bb-card${juco && p.eligibility ? " bb-has-elig" : ""}`} style={{ background: status.color }} onClick={onOpen} role="button" tabIndex={0} onKeyDown={(e) => e.key === "Enter" && onOpen()} title="Click to edit">
       {photo && <img className="bb-photo" src={photo} alt="" />}
+      {juco && p.eligibility && <span className="bb-elig" title={`Years of eligibility: ${p.eligibility}`}>ELIG {p.eligibility}</span>}
       <div className="bb-card-text">
         <div className="bb-name">{p.name || "New player"}{marks && <span style={{ fontWeight: 500 }}> {marks}</span>}</div>
         {(p.school || p.state) && <div>{p.school}{p.state ? ` (${p.state})` : ""}</div>}
         {p.measurables && <div>{p.measurables}</div>}
-        {(p.gpa || p.visits || (juco && p.eligibility)) && (
+        {(p.gpa || p.visits) && (
           <div>
             {p.gpa ? `${juco ? (p.transcriptEval ? "cGPA" : "GPA") : p.gpaLabel || "cGPA"}: ${p.gpa}` : ""}
             {juco && p.gpa && p.transcriptEval && <span className="bb-cgpa-check" title="Transcript evaluated: this is the core GPA"> ✓</span>}
-            {juco && p.eligibility && <span className="bb-elig" title={`Years of eligibility: ${p.eligibility}`}>ELIG {p.eligibility}</span>}
             {" "}{p.visits}
           </div>
         )}
