@@ -90,7 +90,13 @@ function PlayerCard({ p, showCoach, hasRating, photo, onOpen, juco }) {
         <div className="bb-name">{p.name || "New player"}{marks && <span style={{ fontWeight: 500 }}> {marks}</span>}</div>
         {(p.school || p.state) && <div>{p.school}{p.state ? ` (${p.state})` : ""}</div>}
         {p.measurables && <div>{p.measurables}</div>}
-        {(p.gpa || p.visits) && <div>{p.gpa ? `${juco ? (p.transcriptEval ? "cGPA" : "GPA") : p.gpaLabel || "cGPA"}: ${p.gpa}` : ""} {p.visits}</div>}
+        {(p.gpa || p.visits) && (
+          <div>
+            {p.gpa ? `${juco ? (p.transcriptEval ? "cGPA" : "GPA") : p.gpaLabel || "cGPA"}: ${p.gpa}` : ""}
+            {juco && p.gpa && p.transcriptEval && <span className="bb-cgpa-check" title="Transcript evaluated: this is the core GPA"> ✓</span>}
+            {" "}{p.visits}
+          </div>
+        )}
         {showCoach && p.coach && <div className="bb-extra">{p.coach}</div>}
       </div>
       {hasRating && RATING_KEYS.some((k) => p.rating?.[k]) && (
@@ -169,6 +175,7 @@ function BoardFooter({ counts, side, classYear }) {
           {VISITS.map((v) => (
             <div key={v.marker}><span>{v.marker}</span> {v.label}</div>
           ))}
+          {classYear === "JUCO" && <div><span className="bb-cgpa-check">✓</span> cGPA (transcript evaluated)</div>}
         </div>
       </div>
       <div className="bb-counts">
