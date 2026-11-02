@@ -1,10 +1,10 @@
 """NJCAA football schedule/scores for the HS Game Update tab's Weekly Tracker.
 
-Writes straight into the hsTeams collection -- the same one scraper/hs_games.py's MaxPreps/ScoreStream
+Writes straight into the hsTeams collection -- the same one scraper/hs_games.py's MaxPreps
 pipeline writes to -- using the njcaa-prefixed doc ids njcaa.build_schedule_docs() generates, so it can
 never collide with that pipeline's mp_/ss_-prefixed ones. The frontend (useHsTracker in
 frontend/src/hsData.js) matches a JUCO player to their team by school name, since they have no
-MaxPreps/ScoreStream link to derive the usual doc id from.
+MaxPreps link to derive the usual doc id from.
 
 Covers NJCAA programs only -- the ~50 schools njcaa.org's own API carries. California's community
 colleges (CCCAA) are a separate body not in this feed; until that has its own source, those games are

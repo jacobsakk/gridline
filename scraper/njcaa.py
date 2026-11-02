@@ -233,11 +233,11 @@ def _team_perspective_games(games):
 
 def build_schedule_docs(sport="fball"):
     """{hsTeams doc id -> doc} for every team the schedule feed has games for -- written straight into
-    the same collection hs_games.py's MaxPreps/ScoreStream pipeline writes to, in a shape overlayScraped()
+    the same collection hs_games.py's MaxPreps pipeline writes to, in a shape overlayScraped()
     (frontend/src/hsData.js) already knows how to read. Doc id is njcaa-prefixed so it can never collide
     with that pipeline's mp_/ss_-prefixed ids; the school's own name is stored on the doc (unlike the HS
     docs, which don't need it -- their id is already derived from the matching player's own source URL)
-    so a player with no MaxPreps/ScoreStream link at all -- true for every JUCO player -- can still be
+    so a player with no MaxPreps link at all -- true for every JUCO player -- can still be
     matched to their team by name. See the fallback lookup in useHsTracker()."""
     now = dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds")
     docs = {}

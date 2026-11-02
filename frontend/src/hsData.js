@@ -147,7 +147,7 @@ function parseMaster(rows) {
   const idx = {
     coach: col("recruiting coach", "area coach"), name: col("name"), position: col("position"), rating: col("rating"), year: col("year"),
     cell: col("cell"), twitter: col("twitter"), state: col("state"), school: col("high school"), record: col("record"),
-    src1: col("source"), src2: col("source 2"), src3: col("source 3"), profile: col("player profile"),
+    src1: col("source"), src3: col("source 3"), profile: col("player profile"),
   };
   const weekCols = header.map((h, i) => (/^\d{1,2}\/\d{1,2}\s*-\s*\d{1,2}\/\d{1,2}$/.test(h) ? i : -1)).filter((i) => i >= 0);
   const players = [];
@@ -161,7 +161,7 @@ function parseMaster(rows) {
       ...splitSchool(r[idx.school], idx.state >= 0 ? r[idx.state] : ""),
       rating: idx.rating >= 0 ? clean(r[idx.rating]) : "", cell: idx.cell >= 0 ? clean(r[idx.cell]) : "", twitter: idx.twitter >= 0 ? clean(r[idx.twitter]) : "",
       recordText: idx.record >= 0 ? clean(r[idx.record]) : "",
-      sources: { maxpreps: clean(r[idx.src1]), scorestream: clean(r[idx.src2]), other: clean(r[idx.src3]), profile: clean(r[idx.profile]) },
+      sources: { maxpreps: clean(r[idx.src1]), other: clean(r[idx.src3]), profile: clean(r[idx.profile]) },
       games,
     });
   }
@@ -180,7 +180,7 @@ function parseWeekly(rows) {
     state: col("state"), school: col("high school"), cell: col("cell"), twitter: col("twitter"), rating: col("rating"),
     opp: col("opponent"), ha: col("h/a"), result: col("result"), stats: col("stats", "stats/game summary"), date: col("game date"),
     record: col("record"), nextOpp: col("next opponent", "next week opponent"), nextHa: col("next h/a"), nextDate: col("next date", "next week date"),
-    src1: col("source"), src2: col("source 2"), src3: col("source 3"), profile: col("player profile"),
+    src1: col("source"), src3: col("source 3"), profile: col("player profile"),
   };
   const players = [];
   for (const r of rows.slice(headerAt + 1)) {
@@ -202,7 +202,7 @@ function parseWeekly(rows) {
       name, classYear: clean(r[idx.year]).replace(/\.0$/, ""), position: clean(r[idx.position]).toUpperCase(), coach: idx.coach >= 0 ? clean(r[idx.coach]) : "",
       ...splitSchool(r[idx.school], idx.state >= 0 ? r[idx.state] : ""), rating: idx.rating >= 0 ? clean(r[idx.rating]) : "", cell: idx.cell >= 0 ? clean(r[idx.cell]) : "",
       twitter: idx.twitter >= 0 ? clean(r[idx.twitter]) : "", recordText: idx.record >= 0 ? clean(r[idx.record]) : "",
-      sources: { maxpreps: idx.src1 >= 0 ? clean(r[idx.src1]) : "", scorestream: idx.src2 >= 0 ? clean(r[idx.src2]) : "", other: idx.src3 >= 0 ? clean(r[idx.src3]) : "", profile: idx.profile >= 0 ? clean(r[idx.profile]) : "" },
+      sources: { maxpreps: idx.src1 >= 0 ? clean(r[idx.src1]) : "", other: idx.src3 >= 0 ? clean(r[idx.src3]) : "", profile: idx.profile >= 0 ? clean(r[idx.profile]) : "" },
       games: games.filter((g) => g.date),
     });
   }
@@ -269,9 +269,7 @@ const gameKey = (g) => g.date || `${g.opponent}`;
 // scraper/hs_games.py -- the scraper writes hsTeams/{id}, the app reads it.
 export function teamDocId(sources) {
   const mp = /maxpreps\.com\/([a-z]{2})\/([^/]+)\/([^/]+)\//.exec(sources?.maxpreps || "");
-  if (mp) return `mp_${mp[1]}_${mp[2]}_${mp[3]}`;
-  const ss = /scorestream\.com\/team\/([^/?#]+)/.exec(sources?.scorestream || "");
-  return ss ? `ss_${ss[1]}` : "";
+  return mp ? `mp_${mp[1]}_${mp[2]}_${mp[3]}` : "";
 }
 
 // A JUCO's name is typed in freehand (there's no scraped source to autofill it from -- see
@@ -314,7 +312,9 @@ const daysApart = (a, b) => Math.abs((fromIso(a) - fromIso(b)) / 86400000);
 // is what a rescheduled game looks like.
 export function overlayScraped(games, teamDoc) {
   // The same game can be listed more than once (MaxPreps keeps stale copies): one game before anything is matched.
-  const teamGames = teamDoc?.games?.length ? dedupeGames(teamDoc.games) : teamDoc?.games;
+  // Games only ScoreStream ever reported are ignored (it is no longer a source; the scraper also purges them).
+  const fromMaxPreps = (teamDoc?.games || []).filter((g) => !(g.source?.length && g.source.every((x) => x === "scorestream")));
+  const teamGames = fromMaxPreps.length ? dedupeGames(fromMaxPreps) : fromMaxPreps;
   if (!teamGames?.length) return games;
   const deleted = games.filter((g) => g.removed && g.date);
   // A game edited by hand (opponent / date / home-away changed) remembers the scraped game it replaced
@@ -342,11 +342,11 @@ export function overlayScraped(games, teamDoc) {
       homeAway: mine?.edited ? mine.homeAway || t.homeAway || "" : t.homeAway || mine?.homeAway || "",
       ...(t.result && !locked ? { result: t.result, ours: t.ours, theirs: t.theirs } : {}),
       // What the sources say, kept for reference when the score on the sheet was set by hand.
-      ...(locked && t.result ? { sourceReported: { result: t.result, ours: t.ours, theirs: t.theirs, conflict: t.conflict || null } } : {}),
+      ...(locked && t.result ? { sourceReported: { result: t.result, ours: t.ours, theirs: t.theirs } } : {}),
       scraped: true,
-      verifiedBy: t.source || [],
-      ...(t.links ? { links: t.links } : {}),
-      ...(t.conflict && !locked ? { conflict: t.conflict } : {}),
+      // ScoreStream is no longer used; anything it left in an older stored result is ignored.
+      verifiedBy: (t.source || []).filter((x) => x !== "scorestream"),
+      ...(t.links ? { links: Object.fromEntries(Object.entries(t.links).filter(([k]) => k !== "scorestream")) } : {}),
     };
   });
   const scheduleIsFresh = teamDoc.fetched?.maxpreps;
@@ -476,11 +476,11 @@ export function useHsTracker() {
     };
   }, []);
 
-  // Teams with no MaxPreps/ScoreStream-derived doc id at all -- every JUCO team written by
+  // Teams with no MaxPreps-derived doc id at all -- every JUCO team written by
   // scraper/njcaa.py, which has no such link to derive one from and stores its own school name on the
   // doc instead (see build_schedule_docs there). Matched by name (same fuzzy sameSchool() already used
   // everywhere else here) only when the usual id lookup below finds nothing, so it never second-guesses
-  // a real MaxPreps/ScoreStream match.
+  // a real MaxPreps match.
   const namedTeams = useMemo(() => Object.values(teams).filter((t) => t?.school), [teams]);
 
   const players = useMemo(
@@ -606,25 +606,25 @@ export function useHsTracker() {
     await updatePlayer(player.id, { games });
   }
 
-  // Changing a player's school (a transfer) or fixing a bad MaxPreps/ScoreStream link the scraper found on
+  // Changing a player's school (a transfer) or fixing a bad MaxPreps link the scraper found on
   // its own. Leaving a link blank clears it and clears sourcesTriedAt too, so the scraper searches again on
   // its next run instead of waiting out its usual few-day cooldown on a search that already "succeeded"
   // (even if what it found was wrong).
-  async function editSchool(id, { highSchool, state, maxpreps = "", scorestream = "" }) {
+  async function editSchool(id, { highSchool, state, maxpreps = "" }) {
     await updateDoc(doc(db, "hsPlayers", id), {
       highSchool: highSchool.trim(),
       state: toStateCode(state),
-      sources: { maxpreps: maxpreps.trim(), scorestream: scorestream.trim() },
+      sources: { maxpreps: maxpreps.trim() },
       sourcesTriedAt: deleteField(),
       updatedAt: new Date().toISOString(),
     });
   }
 
-  async function addPlayer({ name, classYear, position, highSchool, state, coach, maxpreps = "", scorestream = "" }) {
+  async function addPlayer({ name, classYear, position, highSchool, state, coach, maxpreps = "" }) {
     const id = playerId(classYear, name);
     await setDoc(doc(db, "hsPlayers", id), {
       name: name.trim(), classYear: classYear.trim(), position: position.trim().toUpperCase(), highSchool: highSchool.trim(), state: toStateCode(state), coach: coach.trim(),
-      status: "", injured: false, games: [], sources: { maxpreps: maxpreps.trim(), scorestream: scorestream.trim() }, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
+      status: "", injured: false, games: [], sources: { maxpreps: maxpreps.trim() }, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
     });
   }
 

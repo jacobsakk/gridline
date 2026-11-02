@@ -1,10 +1,10 @@
 name: HS new player catch-up
 
 # Keeps a newly added player from waiting for the big Friday-night run. Every half hour it
-# checks the database for players whose school has no MaxPreps / ScoreStream links yet, or a
-# school with no results stored yet. If there's nothing, it stops in seconds without installing
-# a browser. If there is, it looks up the missing links (borrowing them from another player at
-# the same school, else searching both sites), scrapes just those schools, and stores the
+# checks the database for players whose school has no MaxPreps link yet, or a
+# school with no results stored yet. If there's nothing, it stops in seconds.
+# If there is, it looks up the missing link (borrowing it from another player at
+# the same school, else searching MaxPreps), scrapes just those schools, and stores the
 # results -- so the player's games and scores fill in on their own within about half an hour.
 #
 # Uses the same FIREBASE_SERVICE_ACCOUNT secret as "HS game results refresh".
@@ -40,12 +40,6 @@ jobs:
         run: |
           pip install -q google-cloud-firestore
           python3 hs_games.py --plan
-
-      - name: Install browser
-        if: steps.plan.outputs.work == 'true'
-        run: |
-          pip install -q -r scraper/requirements-hs.txt
-          python -m playwright install --with-deps chromium
 
       - name: Look up links and scrape the new schools
         if: steps.plan.outputs.work == 'true'

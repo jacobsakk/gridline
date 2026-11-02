@@ -137,17 +137,7 @@ function ResultChip({ game, big }) {
   if (!game?.result) return null;
   const win = game.result === "W";
   const loss = game.result === "L";
-  const alt = game.conflict?.scorestream;
-  const verified = (game.verifiedBy || []).length > 1 && !alt;
-  const title = game.resolved
-    ? "Score set by hand"
-    : alt
-    ? `Sources disagree: MaxPreps ${game.ours}-${game.theirs}, ScoreStream ${alt.ours}-${alt.theirs}. Showing MaxPreps.`
-    : verified
-      ? "Confirmed by MaxPreps and ScoreStream"
-      : game.scraped
-        ? `From ${(game.verifiedBy || ["a source"]).map((v) => (v === "maxpreps" ? "MaxPreps" : "ScoreStream")).join(" and ")} only`
-        : undefined;
+  const title = game.resolved ? "Score set by hand" : game.scraped ? "From MaxPreps" : undefined;
   return (
     <span
       className="tabular"
@@ -155,11 +145,9 @@ function ResultChip({ game, big }) {
       style={{
         display: "inline-flex", alignItems: "center", gap: 5, borderRadius: 999, padding: big ? "5px 13px" : "2px 8px", fontSize: big ? 13.5 : 11.5, fontWeight: 800, whiteSpace: "nowrap",
         background: win ? "#3CB371" : loss ? "#D9483B" : "var(--bg-surface)", color: win || loss ? "#fff" : "var(--text-primary)",
-        outline: alt ? "2px solid #FFC82E" : "none",
       }}
     >
       {game.result} {game.ours}-{game.theirs}
-      {alt && <AlertTriangle size={big ? 14 : 12} strokeWidth={2.6} aria-label="Sources disagree" />}
     </span>
   );
 }
@@ -300,22 +288,22 @@ function UploadModal({ onClose, onImport }) {
 }
 
 function AddPlayerModal({ onClose, onAdd, coaches, players }) {
-  const [f, setF] = useState({ name: "", classYear: "2027", position: "", highSchool: "", state: "", coach: "", maxpreps: "", scorestream: "" });
+  const [f, setF] = useState({ name: "", classYear: "2027", position: "", highSchool: "", state: "", coach: "", maxpreps: "" });
   const [error, setError] = useState("");
   const [borrowed, setBorrowed] = useState("");
   const schools = useMemo(() => [...new Set(players.map((p) => p.highSchool).filter(Boolean))].sort(), [players]);
   const set = (k) => (e) => setF((p) => ({ ...p, [k]: e.target.value }));
-  // Picking a school that's already on the tracker brings its state and its MaxPreps / ScoreStream
-  // links along, so the player's games fill in without pasting anything.
+  // Picking a school that's already on the tracker brings its state and its MaxPreps
+  // link along, so the player's games fill in without pasting anything.
   function setSchool(e) {
     const value = e.target.value;
-    const known = players.find((p) => (p.highSchool || "").toLowerCase() === value.trim().toLowerCase() && (p.sources?.maxpreps || p.sources?.scorestream));
+    const known = players.find((p) => (p.highSchool || "").toLowerCase() === value.trim().toLowerCase() && p.sources?.maxpreps);
     setF((prev) => ({
       ...prev,
       highSchool: value,
-      ...(known ? { state: prev.state || known.state || "", maxpreps: prev.maxpreps || known.sources?.maxpreps || "", scorestream: prev.scorestream || known.sources?.scorestream || "" } : {}),
+      ...(known ? { state: prev.state || known.state || "", maxpreps: prev.maxpreps || known.sources?.maxpreps || "" } : {}),
     }));
-    setBorrowed(known ? `Using the links already on file for ${known.highSchool}.` : "");
+    setBorrowed(known ? `Using the link already on file for ${known.highSchool}.` : "");
   }
   async function submit(e) {
     e.preventDefault();
@@ -349,7 +337,6 @@ function AddPlayerModal({ onClose, onAdd, coaches, players }) {
           <datalist id="hs-coaches">{coaches.map((c) => <option key={c} value={c} />)}</datalist>
         </div>
         <input id="hs-maxpreps" placeholder="MaxPreps schedule link (optional: found automatically if blank)" value={f.maxpreps} onChange={set("maxpreps")} style={field} />
-        <input id="hs-scorestream" placeholder="ScoreStream team link (optional)" value={f.scorestream} onChange={set("scorestream")} style={field} />
         {error && <div role="alert" style={{ fontSize: 13, color: "var(--danger-text)" }}>{error}</div>}
         <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
           <button type="button" onClick={onClose} style={{ ...controlStyle, cursor: "pointer" }}>Cancel</button>
@@ -406,11 +393,11 @@ function CoachCell({ player, coaches, updatePlayer }) {
 }
 
 // A transfer, or a school the scraper matched to the wrong page -- both fixed the same way: change the
-// school/state, or hand it a correct MaxPreps/ScoreStream link directly. Leaving a link blank has the
+// school/state, or hand it a correct MaxPreps link directly. Leaving a link blank has the
 // scraper search for it again on its next run rather than reusing whatever it found (or failed to find)
 // before.
 function EditSchoolModal({ player, editSchool, onClose }) {
-  const [f, setF] = useState({ highSchool: player.highSchool || "", state: player.state || "", maxpreps: player.sources?.maxpreps || "", scorestream: player.sources?.scorestream || "" });
+  const [f, setF] = useState({ highSchool: player.highSchool || "", state: player.state || "", maxpreps: player.sources?.maxpreps || "" });
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const set = (k) => (e) => setF((p) => ({ ...p, [k]: e.target.value }));
@@ -435,9 +422,8 @@ function EditSchoolModal({ player, editSchool, onClose }) {
           <input placeholder="School (high school or JUCO)" value={f.highSchool} onChange={set("highSchool")} style={field} autoFocus />
           <input placeholder="State" value={f.state} onChange={set("state")} style={field} />
         </div>
-        <label style={{ fontSize: 11.5, color: "var(--text-faint)", marginTop: 4 }}>MaxPreps / ScoreStream links (leave blank to have these searched for again)</label>
+        <label style={{ fontSize: 11.5, color: "var(--text-faint)", marginTop: 4 }}>MaxPreps link (leave blank to have it searched for again)</label>
         <input placeholder="MaxPreps schedule link" value={f.maxpreps} onChange={set("maxpreps")} style={field} />
-        <input placeholder="ScoreStream team link" value={f.scorestream} onChange={set("scorestream")} style={field} />
         {error && <div role="alert" style={{ fontSize: 13, color: "var(--danger-text)" }}>{error}</div>}
         <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
           <button type="button" onClick={onClose} style={{ ...controlStyle, cursor: "pointer" }}>Cancel</button>
@@ -454,7 +440,7 @@ function SchoolCell({ player, editSchool }) {
     <>
       <button
         onClick={() => setEditing(true)}
-        title="Edit school, or a MaxPreps/ScoreStream link the scraper got wrong"
+        title="Edit school, or a MaxPreps link the scraper got wrong"
         aria-label={`Edit school for ${player.name}`}
         style={{ background: "none", border: "none", padding: 0, cursor: "pointer", color: "inherit", font: "inherit", display: "inline-flex", alignItems: "center", gap: 5, textAlign: "left" }}
       >
@@ -953,9 +939,7 @@ function FaceBlock({ player, week, status, why, onGame, onAddGame, updatePlayer,
       <div style={{ ...headCell, gridColumn: 2, gridRow: 5 }}>SCORE</div>
       <div style={{ ...valueCell, gridColumn: 2, gridRow: 6, cursor: game ? "pointer" : "default" }} className="tabular" onClick={game ? () => onGame(player, game) : undefined} title={game ? "Click for this game's sources" : undefined}>
         {game?.result ? (
-          <span title={game.conflict ? `Sources disagree: MaxPreps ${game.ours}-${game.theirs}, ScoreStream ${game.conflict.scorestream?.ours}-${game.conflict.scorestream?.theirs}` : undefined}>
-            {game.result} {game.ours}-{game.theirs}{game.conflict && <span className="hs-no-print" style={{ color: "#B3261E", fontWeight: 800 }}> ⚠</span>}
-          </span>
+          <span>{game.result} {game.ours}-{game.theirs}</span>
         ) : "—"}
       </div>
 
@@ -1231,11 +1215,9 @@ function FaceSheetTab(props) {
   );
 }
 
-// Everything a person needs to settle: games whose two sources disagree, and past games no source has
-// a score for. Either way the score entered here is final for that game -- the flag stops, and the
-// scraper can't change it (a game's box has "Use the sources again" to hand it back).
-function ReviewModal({ conflicts, missing, updateGame, onOpenGame, onDeleteGame, onClose }) {
-  const [tab, setTab] = useState(conflicts.length || !missing.length ? "conflicts" : "missing");
+// Past games no source has a score for. The score entered here is final for that game -- the flag
+// stops, and the scraper can't change it (a game's box has "Use the sources again" to hand it back).
+function ReviewModal({ missing, updateGame, onOpenGame, onDeleteGame, onClose }) {
   const [draft, setDraft] = useState({});
   const [saving, setSaving] = useState("");
   const key = (r) => `${r.player.id}|${r.game.date}|${r.game.opponent}`;
@@ -1246,15 +1228,7 @@ function ReviewModal({ conflicts, missing, updateGame, onOpenGame, onDeleteGame,
     setSaving("");
   }
   const num = { ...controlStyle, width: 58, padding: "6px 8px", textAlign: "center" };
-  const rows = tab === "conflicts" ? conflicts : missing;
-  const tabBtn = (id, label, n) => (
-    <button
-      onClick={() => setTab(id)}
-      style={{ border: "none", borderRadius: 6, padding: "7px 14px", fontSize: 13, fontWeight: 700, fontFamily: "inherit", cursor: "pointer", background: tab === id ? "var(--accent)" : "transparent", color: tab === id ? "var(--bg-page)" : "var(--text-muted)" }}
-    >
-      {label} ({n})
-    </button>
-  );
+  const rows = missing;
   return (
     <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20, zIndex: 70 }}>
       <div onClick={(e) => e.stopPropagation()} style={{ background: "var(--bg-panel)", border: "1px solid var(--border)", borderRadius: 10, width: 1240, maxWidth: "100%", maxHeight: "88vh", display: "flex", flexDirection: "column", padding: 20 }}>
@@ -1262,20 +1236,13 @@ function ReviewModal({ conflicts, missing, updateGame, onOpenGame, onDeleteGame,
           <h2 className="oswald" style={{ margin: 0, fontSize: 19 }}>Needs review</h2>
           <button onClick={onClose} aria-label="Close" style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer", lineHeight: 0 }}><X size={18} /></button>
         </div>
-        <div style={{ display: "flex", gap: 4, background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 8, padding: 3, alignSelf: "flex-start", marginBottom: 10 }}>
-          {tabBtn("conflicts", "Conflicts", conflicts.length)}
-          {tabBtn("missing", "Missing scores", missing.length)}
-        </div>
         <p style={{ margin: "0 0 12px", fontSize: 13, color: "var(--text-muted)", lineHeight: 1.5 }}>
-          {tab === "conflicts"
-            ? "MaxPreps and ScoreStream report different scores for these games. Pick the right one (or type a score) and the flag stops for that game; the scraper won't change it after that."
-            : "No source has a score for these past games. Some were scrimmages or games never played. Enter a score to fill one in (our team first); it's final for that game."}
+          No source has a score for these past games. Some were scrimmages or games never played. Enter a score to fill one in (our team first); it's final for that game.
         </p>
         <div className="hs-scroll" style={{ overflow: "auto", border: "1px solid var(--border)", borderRadius: 8, minHeight: 0 }}>
-          {rows.length === 0 && <div style={{ padding: 24, textAlign: "center", color: "var(--text-faint)" }}>{tab === "conflicts" ? "No score conflicts." : "Every past game has a score."}</div>}
+          {rows.length === 0 && <div style={{ padding: 24, textAlign: "center", color: "var(--text-faint)" }}>Every past game has a score.</div>}
           {rows.map((r) => {
             const d = { result: "W", ours: "", theirs: "", ...draft[key(r)] };
-            const alt = r.game.conflict?.scorestream;
             const busy = saving === key(r);
             return (
               <div key={key(r)} style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", padding: "8px 12px", borderBottom: "1px solid var(--border-subtle)", whiteSpace: "nowrap" }}>
@@ -1286,17 +1253,6 @@ function ReviewModal({ conflicts, missing, updateGame, onOpenGame, onDeleteGame,
                     <button onClick={() => onOpenGame(r.player, r.game)} style={{ background: "none", border: "none", padding: 0, color: "var(--accent)", cursor: "pointer", fontSize: 12.5, textDecoration: "underline" }}>sources</button>
                   </div>
                 </div>
-                {tab === "conflicts" && alt && (
-                  <>
-                    <button disabled={busy} onClick={() => settle(r, { result: r.game.result, ours: r.game.ours, theirs: r.game.theirs })} style={{ ...controlStyle, padding: "6px 10px", cursor: "pointer", fontWeight: 700 }} className="tabular">
-                      MaxPreps {r.game.result} {r.game.ours}-{r.game.theirs}
-                    </button>
-                    <button disabled={busy} onClick={() => settle(r, { result: alt.result, ours: alt.ours, theirs: alt.theirs })} style={{ ...controlStyle, padding: "6px 10px", cursor: "pointer", fontWeight: 700 }} className="tabular">
-                      ScoreStream {alt.result} {alt.ours}-{alt.theirs}
-                    </button>
-                    <span style={{ color: "var(--text-faint)", fontSize: 12 }}>or</span>
-                  </>
-                )}
                 <select aria-label="Result" value={d.result} onChange={(e) => set(r, { result: e.target.value })} style={{ ...controlStyle, padding: "6px 8px" }}>
                   <option value="W">W</option><option value="L">L</option><option value="T">T</option>
                 </select>
@@ -1329,16 +1285,13 @@ function ReviewModal({ conflicts, missing, updateGame, onOpenGame, onDeleteGame,
 function GameSourcesModal({ player, game, updateGame, onDelete, onClose }) {
   const sources = [
     { key: "maxpreps", label: "MaxPreps" },
-    { key: "scorestream", label: "ScoreStream" },
   ];
   const reported = game.verifiedBy || [];
   // When the score was set by hand, the sources' own numbers are kept aside for reference.
   const fromSources = game.resolved ? game.sourceReported : game;
-  const alt = fromSources?.conflict?.scorestream;
   const scoreFrom = (key) => {
     if (!reported.includes(key) || !fromSources?.result) return "";
-    const s = key === "scorestream" && alt ? alt : fromSources;
-    return `${s.result} ${s.ours}-${s.theirs}`;
+    return `${fromSources.result} ${fromSources.ours}-${fromSources.theirs}`;
   };
   const [edit, setEdit] = useState({ result: game.result || "W", ours: game.ours ?? "", theirs: game.theirs ?? "" });
   const [busy, setBusy] = useState(false);
@@ -1401,7 +1354,6 @@ function GameSourcesModal({ player, game, updateGame, onDelete, onClose }) {
             );
           })}
         </div>
-        {alt && !game.resolved && <p style={{ margin: "10px 0 0", fontSize: 12.5, color: "var(--danger-text)" }}>The two sources disagree on the score. The sheet shows MaxPreps; open both to check, then set the right score below.</p>}
         <div style={{ marginTop: 14, paddingTop: 12, borderTop: "1px solid var(--border-subtle)" }}>
           <div style={{ fontSize: 11, letterSpacing: "0.06em", textTransform: "uppercase", color: "var(--text-faint)", marginBottom: 6 }}>
             Score on the sheet{game.resolved ? " — set by hand" : ""}
@@ -1755,13 +1707,6 @@ export default function HsGameUpdate({ onBack: toDashboard }) {
     return out.sort((a, b) => a.game.date.localeCompare(b.game.date) || a.player.name.localeCompare(b.player.name));
   }, [players]);
 
-  // Games whose two sources disagree and nobody has settled.
-  const conflictScores = useMemo(() => {
-    const out = [];
-    players.forEach((p) => p.games.forEach((g) => g.conflict && !g.resolved && out.push({ player: p, game: g })));
-    return out.sort((a, b) => a.game.date.localeCompare(b.game.date) || a.player.name.localeCompare(b.player.name));
-  }, [players]);
-
   const hasProfile = (p) => matchRows(p).length > 0;
 
   const openPlayer = (id) => {
@@ -1848,9 +1793,9 @@ export default function HsGameUpdate({ onBack: toDashboard }) {
           </select>
           <span style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 8 }}>
             <span className="tabular" style={{ fontSize: 12.5, color: "var(--text-faint)" }}>{filtered.length} of {players.length}</span>
-            {missingScores.length + conflictScores.length > 0 && (
-              <button onClick={() => setReviewOpen(true)} title="Score conflicts and past games no source has a score for" style={{ ...controlStyle, display: "flex", alignItems: "center", gap: 6, cursor: "pointer", fontWeight: 700, borderColor: "var(--danger-text)", color: "var(--danger-text)" }}>
-                <AlertTriangle size={14} /> Needs review ({conflictScores.length + missingScores.length})
+            {missingScores.length > 0 && (
+              <button onClick={() => setReviewOpen(true)} title="Past games no source has a score for" style={{ ...controlStyle, display: "flex", alignItems: "center", gap: 6, cursor: "pointer", fontWeight: 700, borderColor: "var(--danger-text)", color: "var(--danger-text)" }}>
+                <AlertTriangle size={14} /> Needs review ({missingScores.length})
               </button>
             )}
             <button onClick={() => setAddOpen(true)} style={{ ...controlStyle, display: "flex", alignItems: "center", gap: 6, cursor: "pointer", fontWeight: 700 }}><Plus size={14} /> Add player</button>
@@ -1963,7 +1908,6 @@ export default function HsGameUpdate({ onBack: toDashboard }) {
       })()}
       {reviewOpen && (
         <ReviewModal
-          conflicts={conflictScores}
           missing={missingScores}
           updateGame={hs.updateGame}
           onOpenGame={(player, game) => setGameSource({ id: player.id, key: game.date || game.opponent })}

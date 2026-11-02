@@ -1,7 +1,7 @@
 name: HS game results refresh
 
 # Pulls the latest high school football results for every school on the
-# HS Game Update tab from MaxPreps and ScoreStream, cross-references the two,
+# HS Game Update tab from MaxPreps
 # and stores them in the database (hsTeams) where the app picks them up
 # live -- nothing is committed to the repo, so no recruit information ever
 # lands in it.
@@ -19,7 +19,8 @@ name: HS game results refresh
 #   Sat 14:00  = Sat 10am Detroit  -- late score corrections
 #   Fri 03:00  = Thu 11pm Detroit  -- Thursday-night games
 #   Sun 14:00  = Sun 10am Detroit  -- anything reported late
-# It also finds MaxPreps / ScoreStream pages for any school that doesn't have them yet.
+# It also finds MaxPreps pages for any school that doesn't have one yet, and clears out any
+# leftover ScoreStream data (ScoreStream is no longer a source).
 # ("HS new player catch-up" does that, and scrapes just the new schools, every half hour.)
 # Also runnable by hand from the Actions tab.
 #
@@ -56,7 +57,6 @@ jobs:
       - name: Install scraper dependencies
         run: |
           pip install -r scraper/requirements-hs.txt
-          python -m playwright install --with-deps chromium
 
       - name: Scrape results and store them
         working-directory: scraper

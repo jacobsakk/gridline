@@ -1,9 +1,7 @@
 """High school game results for the HS Game Update tab.
 
 For every school the staff is tracking, pulls the football schedule/results
-from two independent sources -- MaxPreps (structured JSON embedded in the
-page) and ScoreStream (rendered by a headless browser) -- lines the games up
-by date and opponent, and flags any game where the two disagree on the score.
+from MaxPreps (structured JSON embedded in the page).
 
 Privacy: which recruits are being tracked never touches this repository. The
 list of team pages is read from the app's own database (hsPlayers) using a
@@ -11,12 +9,11 @@ service account held in a GitHub secret, and the results are written back to
 the database (hsTeams), keyed by school -- no player names, no contact info.
 
     python3 hs_games.py                       # Firestore in, Firestore out
-    python3 hs_games.py --urls urls.json      # local file of {maxpreps, scorestream} pairs
+    python3 hs_games.py --urls urls.json      # local file of {maxpreps} objects
     python3 hs_games.py --dump out.json       # also/instead write the results to a file
 """
 
 import argparse
-import asyncio
 import datetime as dt
 import json
 import os
@@ -41,10 +38,6 @@ def team_doc_id(sources):
     m = re.search(r"maxpreps\.com/([a-z]{2})/([^/]+)/([^/]+)/", mp)
     if m:
         return f"mp_{m.group(1)}_{m.group(2)}_{m.group(3)}"
-    ss = (sources or {}).get("scorestream") or ""
-    m = re.search(r"scorestream\.com/team/([^/?#]+)", ss)
-    if m:
-        return f"ss_{m.group(1)}"
     return ""
 
 
@@ -164,46 +157,6 @@ def find_maxpreps(school, state):
     return ""
 
 
-async def find_scorestream_many(schools):
-    """{(name, state): team games url or ""} using ScoreStream's own search page."""
-    from playwright.async_api import async_playwright
-
-    out = {}
-    async with async_playwright() as p:
-        browser = await p.chromium.launch()
-        context = await browser.new_context(user_agent=UA, locale="en-US")
-        for name, state in schools:
-            out[(name, state)] = ""
-            page = await context.new_page()
-            try:
-                await page.goto("https://scorestream.com/search?q=" + urllib.parse.quote_plus(name.lower()), wait_until="domcontentloaded", timeout=60000)
-                await page.wait_for_selector('a[href^="/team/"]', timeout=20000)
-                cards = await page.evaluate(
-                    """() => [...document.querySelectorAll('a[href^="/team/"]')].map(a => ({href: a.getAttribute('href'), text: a.innerText.split('\\n').map(t => t.trim()).filter(Boolean)}))"""
-                )
-                want = name_tokens(name)
-                best, best_key = "", (0.0, 0)
-                for c in cards:
-                    place = next((t for t in reversed(c["text"]) if re.search(r",\s*[A-Z]{2}$", t)), "")
-                    if state and not place.endswith(f", {state}"):
-                        continue
-                    slug = re.sub(r"-\d+$", "", c["href"].rsplit("/", 1)[-1]).replace("-", " ")
-                    have = name_tokens(slug)
-                    contained = len(want & have) / len(want) if want else 0.0
-                    key = (contained, -len(have - want))  # fully contained, fewest extra words
-                    if contained >= 0.8 and key > best_key:
-                        best, best_key = c["href"], key
-                if best:
-                    out[(name, state)] = "https://scorestream.com" + best.split("?")[0] + "/games"
-            except Exception:
-                pass
-            finally:
-                await page.close()
-            await asyncio.sleep(DELAY_SECONDS)
-        await browser.close()
-    return out
-
-
 # ---------------------------------------------------------------- MaxPreps
 
 def fetch_html(url):
@@ -256,188 +209,10 @@ def fetch_maxpreps(url):
     return games
 
 
-# -------------------------------------------------------------- ScoreStream
-
-_WEEKDAYS = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
-
-
-def parse_scorestream_date(text, today):
-    """'Aug 29 '25', 'Last Friday at 10:00 PM', 'Friday at 7:00 PM', 'Yesterday...' -> date."""
-    t = (text or "").strip().lstrip("-").strip()
-    m = re.match(r"([A-Za-z]{3})[a-z]* (\d{1,2}) '(\d{2})", t)
-    if m:
-        try:
-            return dt.datetime.strptime(f"{m.group(1)} {m.group(2)} 20{m.group(3)}", "%b %d %Y").date()
-        except ValueError:
-            return None
-    m = re.match(r"([A-Za-z]{3})[a-z]* (\d{1,2})\b", t)  # this year, no year shown
-    if m:
-        try:
-            return dt.datetime.strptime(f"{m.group(1)} {m.group(2)} {today.year}", "%b %d %Y").date()
-        except ValueError:
-            return None
-    low = t.lower()
-    if low.startswith("today"):
-        return today
-    if low.startswith("yesterday"):
-        return today - dt.timedelta(days=1)
-    if low.startswith("tomorrow"):
-        return today + dt.timedelta(days=1)
-    m = re.match(r"(last )?(monday|tuesday|wednesday|thursday|friday|saturday|sunday)", low)
-    if m:
-        target = _WEEKDAYS.index(m.group(2))
-        back = (today.weekday() - target) % 7
-        if m.group(1):
-            back = back or 7
-            return today - dt.timedelta(days=back)
-        return today + dt.timedelta(days=(target - today.weekday()) % 7)
-    return None
-
-
-def parse_scorestream_card(card, today):
-    """One rendered game card -> game dict, or None if it isn't a finished varsity football game.
-    card = {"teams": [first, second], "lines": the card's text lines}; lines run
-    "Team+Mascot", "City, ST", "Team+Mascot", "City, ST", score, score, status, sport, "- date"."""
-    teams, lines = card.get("teams") or [], [l.strip() for l in card.get("lines") or [] if l.strip()]
-    if len(teams) != 2 or len(lines) < 9 or not (lines[4].isdigit() and lines[5].isdigit()):
-        return None
-    sport = lines[7]
-    if not re.search(r"football", sport, re.I) or re.search(r"junior varsity|freshman|sophomore|\bJV\b|flag", sport, re.I):
-        return None
-    if not re.match(r"(final|forfeit)", lines[6], re.I):
-        return None
-    date = parse_scorestream_date(lines[8], today)
-    if not date or date < SEASON_START:
-        return None
-    return {
-        "first": teams[0], "second": teams[1], "firstPts": int(lines[4]), "secondPts": int(lines[5]),
-        "date": date.isoformat(), "status": lines[6], "href": card.get("href") or "",
-    }
-
-
-async def fetch_scorestream_many(urls):
-    """{url: [games]} for every ScoreStream team page, one shared browser."""
-    from playwright.async_api import async_playwright
-
-    out = {}
-    today = dt.datetime.now(dt.timezone(dt.timedelta(hours=-8))).date()  # Pacific, matches the browser below
-    async with async_playwright() as p:
-        browser = await p.chromium.launch()
-        # Pacific time so a late West Coast kickoff never shows up as the next day.
-        context = await browser.new_context(user_agent=UA, timezone_id="America/Los_Angeles", locale="en-US")
-        for url in urls:
-            page = await context.new_page()
-            try:
-                for attempt in (1, 2):  # the page occasionally renders empty on the first load
-                    await page.goto(url, wait_until="domcontentloaded", timeout=60000)
-                    try:
-                        await page.wait_for_selector('a[href^="/game/"]', timeout=40000)
-                        break
-                    except Exception:
-                        if attempt == 2:
-                            raise
-                # The summary boxes at the top render first; wait for the full game list under them.
-                await page.wait_for_selector('a[href^="/game/"] span[style*="letter-spacing: -1px"]', timeout=30000)
-                await page.wait_for_timeout(1500)
-                # The list is virtualised (scrolling swaps cards out), so collect after every step.
-                collected = {}
-                for step in range(14):
-                    batch = await page.evaluate(
-                        """() => [...document.querySelectorAll('a[href^="/game/"]')].map(a => ({
-                            href: a.getAttribute('href'),
-                            teams: [...a.querySelectorAll('span[style*="letter-spacing: -1px"]')].map(s => s.textContent),
-                            lines: a.innerText.split('\\n'),
-                        }))"""
-                    )
-                    # The small "recent games" boxes at the top reuse the same links; only the full cards carry team spans.
-                    collected.update({c["href"]: c for c in batch if c["teams"]})
-                    await page.mouse.wheel(0, 500)
-                    await page.wait_for_timeout(450)
-                title = await page.title()
-                cards = list(collected.values())
-                us = re.sub(r" - ScoreStream$", "", title).replace("The ", "", 1)
-                games, seen = [], set()
-                for raw in cards:
-                    card = parse_scorestream_card(raw, today)
-                    if not card:
-                        continue
-                    # Which side is ours: the team page's name (e.g. "Rancho Cucamonga Cougars").
-                    first_is_us = same_school(card["first"], us) and not same_school(card["second"], us)
-                    second_is_us = same_school(card["second"], us) and not same_school(card["first"], us)
-                    if not (first_is_us or second_is_us):
-                        continue
-                    ours, theirs = (card["firstPts"], card["secondPts"]) if first_is_us else (card["secondPts"], card["firstPts"])
-                    opp = card["second"] if first_is_us else card["first"]
-                    key = (card["date"], opp)
-                    if key in seen:
-                        continue
-                    seen.add(key)
-                    game = {
-                        "date": card["date"], "opponent": opp, "ours": ours, "theirs": theirs,
-                        "result": "W" if ours > theirs else "L" if ours < theirs else "T",
-                    }
-                    if card["href"]:
-                        game["links"] = {"scorestream": "https://scorestream.com" + card["href"].split("?")[0]}
-                    games.append(game)
-                out[url] = games
-            except Exception as err:  # one bad page must not sink the run
-                print(f"  ScoreStream failed for {url}: {err}", file=sys.stderr)
-                out[url] = None
-            finally:
-                await page.close()
-            await asyncio.sleep(DELAY_SECONDS)
-        await browser.close()
-    return out
-
-
-# ---------------------------------------------------------- cross-reference
+# ---------------------------------------------------------- tidy up
 
 def _days_apart(a, b):
     return abs((dt.date.fromisoformat(a) - dt.date.fromisoformat(b)).days)
-
-
-def cross_reference(mp_games, ss_games):
-    """Line the two sources up. Every game comes back once, with:
-       source   -- which sources reported a finished score
-       conflict -- both reported one and they disagree
-    MaxPreps is the primary; ScoreStream fills in games MaxPreps has no score for."""
-    mp_games, ss_games = mp_games or [], ss_games or []
-    # Best-scoring pairs claim each other first, so "Lapeer" and "Lapeer East" on the same
-    # night can't both grab one ScoreStream result.
-    pairs = sorted(
-        (
-            (name_similarity(g["opponent"], s["opponent"]), -_days_apart(g["date"], s["date"]), gi, si)
-            for gi, g in enumerate(mp_games)
-            for si, s in enumerate(ss_games)
-            if _days_apart(g["date"], s["date"]) <= 1 and same_school(g["opponent"], s["opponent"])
-        ),
-        reverse=True,
-    )
-    match_of, used = {}, set()
-    for _, _, gi, si in pairs:
-        if gi not in match_of and si not in used:
-            match_of[gi] = si
-            used.add(si)
-
-    merged = []
-    for gi, g in enumerate(mp_games):
-        entry = dict(g)
-        entry["source"] = ["maxpreps"] if "result" in g else []
-        if gi in match_of:
-            s = ss_games[match_of[gi]]
-            entry["source"].append("scorestream")
-            entry["links"] = {**g.get("links", {}), **s.get("links", {})}
-            if "result" not in g:
-                entry.update(result=s["result"], ours=s["ours"], theirs=s["theirs"])
-            elif (g["ours"], g["theirs"]) != (s["ours"], s["theirs"]):
-                entry["conflict"] = {"scorestream": {"ours": s["ours"], "theirs": s["theirs"], "result": s["result"]}}
-        merged.append(entry)
-    # Games only ScoreStream knows about (not on the MaxPreps schedule).
-    for i, s in enumerate(ss_games):
-        if i not in used:
-            merged.append({**s, "source": ["scorestream"], "homeAway": ""})
-    merged.sort(key=lambda g: g["date"])
-    return merged
 
 
 def collapse_games(games, today):
@@ -468,16 +243,13 @@ def collapse_games(games, today):
 # --------------------------------------------------------------------- run
 
 def scrape(pairs):
-    """pairs: {team_doc_id: {"maxpreps": url, "scorestream": url}} -> ({team_doc_id: doc}, dead_maxpreps).
+    """pairs: {team_doc_id: {"maxpreps": url}} -> ({team_doc_id: doc}, dead_maxpreps).
 
     dead_maxpreps: {url: team_doc_id} for a MaxPreps link that loaded fine but came back with zero games --
     the same page-loaded-but-empty signal find_maxpreps itself requires (it never accepts a candidate page
     unless it has games on it), so a link that no longer clears that bar almost certainly moved or was a
     wrong match to begin with. main() uses this to clear the link off every player who has it, so the next
     run searches fresh instead of carrying a dead page forward forever."""
-    ss_urls = sorted({p["scorestream"] for p in pairs.values() if p.get("scorestream")})
-    ss_results = asyncio.run(fetch_scorestream_many(ss_urls)) if ss_urls else {}
-
     docs = {}
     dead_maxpreps = {}
     for i, (doc_id, src) in enumerate(pairs.items(), 1):
@@ -490,15 +262,14 @@ def scrape(pairs):
             except Exception as err:
                 print(f"  MaxPreps failed for {src['maxpreps']}: {err}", file=sys.stderr)
             time.sleep(DELAY_SECONDS)
-        ss_games = ss_results.get(src.get("scorestream"))
-        if mp_games is None and ss_games is None:
-            continue  # both failed: keep whatever is already stored
-        games = collapse_games(cross_reference(mp_games, ss_games), dt.datetime.now(dt.timezone(dt.timedelta(hours=-8))).date().isoformat())
+        if mp_games is None:
+            continue  # the fetch failed: keep whatever is already stored
+        games = collapse_games([{**g, "source": ["maxpreps"] if "result" in g else []} for g in mp_games], dt.datetime.now(dt.timezone(dt.timedelta(hours=-8))).date().isoformat())
         docs[doc_id] = {
             "sources": {k: v for k, v in src.items() if v},
             "games": games,
-            "fetched": {"maxpreps": mp_games is not None, "scorestream": ss_games is not None},
-            "conflicts": sum(1 for g in games if g.get("conflict")),
+            "fetched": {"maxpreps": True},
+            "conflicts": 0,
             "updatedAt": dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds"),
         }
         print(f"[{i}/{len(pairs)}] {doc_id}: {len(games)} games, {docs[doc_id]['conflicts']} conflicts")
@@ -545,17 +316,17 @@ def _recently_tried(data):
 def players_needing_links(players):
     return [
         (ref, d) for ref, d in players
-        if school_key(d)[0] and not all((d.get("sources") or {}).get(k) for k in ("maxpreps", "scorestream")) and not _recently_tried(d)
+        if school_key(d)[0] and not all((d.get("sources") or {}).get(k) for k in ("maxpreps",)) and not _recently_tried(d)
     ]
 
 
 def resolve_sources(client, players, write=True):
-    """Give every player a MaxPreps and a ScoreStream link without anyone pasting them in:
-    borrow them from another player at the same school, else search both sites. Returns the
+    """Give every player a MaxPreps link without anyone pasting it in:
+    borrow it from another player at the same school, else search MaxPreps. Returns the
     players with their sources filled in (and saves that to the database)."""
     known = {}  # school -> links already on some player
     for _, d in players:
-        for kind in ("maxpreps", "scorestream"):
+        for kind in ("maxpreps",):
             url = (d.get("sources") or {}).get(kind)
             if url:
                 known.setdefault(school_key(d), {}).setdefault(kind, url)
@@ -569,7 +340,6 @@ def resolve_sources(client, players, write=True):
 
     print(f"looking up links for {len(schools)} schools ({len(todo)} players)")
     found = {}
-    need_ss = []
     for key, d in schools.items():
         have = known.get(key, {})
         # A borrowed MaxPreps link is only trusted once it's actually checked here -- if it's gone stale
@@ -586,16 +356,8 @@ def resolve_sources(client, players, write=True):
             url = find_maxpreps(d.get("highSchool"), d.get("state"))
             if url:
                 links["maxpreps"] = url
-        if not links.get("scorestream"):
-            need_ss.append((key[0], key[1]))
         found[key] = links
         print(f"  {d.get('highSchool')} ({key[1]}): MaxPreps {'found' if links.get('maxpreps') else 'no'}")
-    if need_ss:
-        ss = asyncio.run(find_scorestream_many(need_ss))
-        for key in found:
-            url = ss.get(key)
-            if url:
-                found[key]["scorestream"] = url
 
     now = dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds")
     updated = []
@@ -606,7 +368,7 @@ def resolve_sources(client, players, write=True):
         if ref.id in todo_ids:
             links = found.get(key, {})
             sources = dict(d.get("sources") or {})
-            for kind in ("maxpreps", "scorestream"):
+            for kind in ("maxpreps",):
                 if links.get(kind) and not sources.get(kind):
                     sources[kind] = links[kind]
             d = {**d, "sources": sources, "sourcesTriedAt": now}
@@ -630,10 +392,68 @@ def pairs_from_players(players):
         doc_id = team_doc_id(src)
         if doc_id:
             merged = pairs.setdefault(doc_id, {})
-            for k in ("maxpreps", "scorestream"):
+            for k in ("maxpreps",):
                 if src.get(k) and not merged.get(k):
                     merged[k] = src[k]
     return pairs
+
+
+def purge_scorestream(client, write=True):
+    """ScoreStream is no longer a source. Strip everything it ever left in the database: the saved
+    link on every player, the ss_ team documents, and any ScoreStream scores/links/conflicts on the
+    remaining team documents. Safe to run every time -- it does nothing once the data is gone."""
+    from google.cloud import firestore as _fs
+
+    def scrub_game(g):
+        g = dict(g)
+        src = [x for x in g.get("source", []) if x != "scorestream"]
+        links = {k: v for k, v in (g.get("links") or {}).items() if k != "scorestream"}
+        g.pop("conflict", None)
+        g["source"] = src
+        if links:
+            g["links"] = links
+        else:
+            g.pop("links", None)
+        return g
+
+    ops, players, teams, games = [], 0, 0, 0
+    for snap in client.collection("hsPlayers").stream():
+        if "scorestream" in ((snap.to_dict() or {}).get("sources") or {}):
+            ops.append(("update", snap.reference, {"sources.scorestream": _fs.DELETE_FIELD}))
+            players += 1
+    for snap in client.collection("hsTeams").stream():
+        d = snap.to_dict() or {}
+        if snap.id.startswith("ss_"):
+            ops.append(("delete", snap.reference, None))
+            teams += 1
+            continue
+        dirty = "scorestream" in (d.get("sources") or {}) or "scorestream" in (d.get("fetched") or {})
+        new_games = []
+        for g in d.get("games") or []:
+            touched = "scorestream" in (g.get("source") or []) or "scorestream" in (g.get("links") or {}) or g.get("conflict")
+            if touched:
+                dirty = True
+                if g.get("source") == ["scorestream"]:  # a game only ScoreStream knew about
+                    games += 1
+                    continue
+                g = scrub_game(g)
+            new_games.append(g)
+        if dirty:
+            fields = {"games": new_games, "conflicts": 0,
+                      "sources.scorestream": _fs.DELETE_FIELD, "fetched.scorestream": _fs.DELETE_FIELD}
+            ops.append(("update", snap.reference, fields))
+            teams += 1
+    print(f"ScoreStream purge: {players} players, {teams} team documents, {games} ScoreStream-only games")
+    if not write or not ops:
+        return
+    batch, n = client.batch(), 0
+    for kind, ref, fields in ops:
+        batch.update(ref, fields) if kind == "update" else batch.delete(ref)
+        n += 1
+        if n % 400 == 0:
+            batch.commit()
+            batch = client.batch()
+    batch.commit()
 
 
 def existing_team_ids(client):
@@ -642,7 +462,7 @@ def existing_team_ids(client):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--urls", help="JSON file: list of {maxpreps, scorestream} objects (skips Firestore input)")
+    ap.add_argument("--urls", help="JSON file: list of {maxpreps} objects (skips Firestore input)")
     ap.add_argument("--dump", help="write results to this JSON file")
     ap.add_argument("--limit", type=int, help="only the first N schools (testing)")
     ap.add_argument("--no-write", action="store_true", help="don't write to Firestore")
@@ -658,6 +478,7 @@ def main():
                 pairs.setdefault(team_doc_id(src), {}).update({k: v for k, v in src.items() if v})
     else:
         client = firestore_client()
+        purge_scorestream(client, write=not args.no_write)
         players = load_players(client)
         if args.plan:
             new_players = players_needing_links(players)
