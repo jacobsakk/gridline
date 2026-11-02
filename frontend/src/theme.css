@@ -205,7 +205,7 @@ tbody tr:hover { background: var(--row-hover) !important; }
 .bb-key > div:not(.bb-footh) { padding: 4px 6px; font-weight: 700; }
 .bb-emoji-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2px 10px; padding: 4px 6px; }
 .bb-emoji-grid span { display: inline-block; min-width: 20px; }
-.bb-cgpa-check { color: #05511f; font-weight: 900; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+.bb-cgpa-check { color: #087a32; font-weight: 900; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 .bb-elig { position: absolute; right: 4px; bottom: 3px; padding: 0 5px; border-radius: 3px; background: #1f2937; color: #fff; font-size: 9px; font-weight: 800; letter-spacing: 0.04em; line-height: 1.5; white-space: nowrap; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 .bb-has-elig .bb-card-text { padding-right: 40px; }
 .bb-counts { padding-bottom: 6px; }
