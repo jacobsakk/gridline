@@ -7,13 +7,15 @@ import { db } from "./firebase";
 // credit evaluation table. Read from the staff's own workbook (OFF / DEF / HS CREDIT EVAL sheets) so the
 // board can be laid out for print and edited afterward instead of living only in the spreadsheet.
 
-// A card's colour is the recruit's status on the sheet's key (the cell's fill colour in the workbook).
+// A card's colour is the recruit's status on the sheet's key. `color` is what the board shows (vibrant set);
+// `rgb` is the pastel fill the uploaded workbook uses, kept as-is so uploads are still recognised. The previous
+// pastel display colours were #FBAB18, #B6D7A8, #A4C2F4, #CCCCCC, #EA9999 (in that order).
 export const STATUSES = [
-  { key: "committed", label: "Committed", color: "#FBAB18", rgb: [0xfb, 0xab, 0x18] },
-  { key: "offered", label: "Offered", color: "#B6D7A8", rgb: [0xb6, 0xd7, 0xa8] },
-  { key: "offerStatus", label: "Offer status", color: "#A4C2F4", rgb: [0xa4, 0xc2, 0xf4] },
-  { key: "recruit", label: "Recruit status", color: "#CCCCCC", rgb: [0xcc, 0xcc, 0xcc] },
-  { key: "elsewhere", label: "Committed elsewhere", color: "#EA9999", rgb: [0xea, 0x99, 0x99] },
+  { key: "committed", label: "Committed", color: "#FFA000", rgb: [0xfb, 0xab, 0x18] },
+  { key: "offered", label: "Offered", color: "#3DD16F", rgb: [0xb6, 0xd7, 0xa8] },
+  { key: "offerStatus", label: "Offer status", color: "#4C9AFF", rgb: [0xa4, 0xc2, 0xf4] },
+  { key: "recruit", label: "Recruit status", color: "#B5B5B5", rgb: [0xcc, 0xcc, 0xcc] },
+  { key: "elsewhere", label: "Committed elsewhere", color: "#FF6B6B", rgb: [0xea, 0x99, 0x99] },
 ];
 export const STATUS_BY_KEY = Object.fromEntries(STATUSES.map((s) => [s.key, s]));
 
