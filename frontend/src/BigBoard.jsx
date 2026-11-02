@@ -177,7 +177,6 @@ function BoardFooter({ counts, side, classYear }) {
             <div key={v.marker}><span>{v.marker}</span> {v.label}</div>
           ))}
           {classYear === "JUCO" && <div><span className="bb-cgpa-check">✓</span> cGPA (transcript evaluated)</div>}
-          {classYear === "JUCO" && <div><span className="bb-elig">ELIG 3</span> Years of eligibility</div>}
         </div>
       </div>
       <div className="bb-counts">

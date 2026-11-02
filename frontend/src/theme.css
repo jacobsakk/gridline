@@ -208,7 +208,6 @@ tbody tr:hover { background: var(--row-hover) !important; }
 .bb-cgpa-check { color: #087a32; font-weight: 900; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 .bb-elig { position: absolute; right: 4px; bottom: 3px; padding: 0 5px; border-radius: 3px; background: #1f2937; color: #fff; font-size: 9px; font-weight: 800; letter-spacing: 0.04em; line-height: 1.5; white-space: nowrap; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 .bb-has-elig .bb-card-text { padding-right: 40px; }
-.bb-emoji-grid .bb-elig { position: static; display: inline-block; margin-right: 6px; }
 .bb-counts { padding-bottom: 6px; }
 .bb-counts > div:not(.bb-footh) { padding: 1px 8px; }
 @page bb { size: letter landscape; margin: 0.3in; }
