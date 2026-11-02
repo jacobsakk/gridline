@@ -90,10 +90,11 @@ function PlayerCard({ p, showCoach, hasRating, photo, onOpen, juco }) {
         <div className="bb-name">{p.name || "New player"}{marks && <span style={{ fontWeight: 500 }}> {marks}</span>}</div>
         {(p.school || p.state) && <div>{p.school}{p.state ? ` (${p.state})` : ""}</div>}
         {p.measurables && <div>{p.measurables}</div>}
-        {(p.gpa || p.visits) && (
+        {(p.gpa || p.visits || (juco && p.eligibility)) && (
           <div>
             {p.gpa ? `${juco ? (p.transcriptEval ? "cGPA" : "GPA") : p.gpaLabel || "cGPA"}: ${p.gpa}` : ""}
             {juco && p.gpa && p.transcriptEval && <span className="bb-cgpa-check" title="Transcript evaluated: this is the core GPA"> ✓</span>}
+            {juco && p.eligibility && <span className="bb-elig" title={`Years of eligibility: ${p.eligibility}`}>ELIG {p.eligibility}</span>}
             {" "}{p.visits}
           </div>
         )}
@@ -176,6 +177,7 @@ function BoardFooter({ counts, side, classYear }) {
             <div key={v.marker}><span>{v.marker}</span> {v.label}</div>
           ))}
           {classYear === "JUCO" && <div><span className="bb-cgpa-check">✓</span> cGPA (transcript evaluated)</div>}
+          {classYear === "JUCO" && <div><span className="bb-elig">ELIG 3</span> Years of eligibility</div>}
         </div>
       </div>
       <div className="bb-counts">
