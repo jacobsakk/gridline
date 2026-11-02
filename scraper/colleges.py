@@ -25,8 +25,9 @@ import sys
 import time
 import urllib.request
 from datetime import datetime, timezone
+import polite
 
-UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36"
+UA = polite.USER_AGENT
 ESPN_WEB = "https://site.web.api.espn.com/apis"
 ESPN_CORE = "https://sports.core.api.espn.com/v2/sports/football/leagues/college-football"
 SEASON = 2026
@@ -48,7 +49,7 @@ def get(url, as_json=True, retries=3):
     for attempt in range(retries):
         try:
             req = urllib.request.Request(url, headers={"User-Agent": UA, "Accept": "application/json,text/html"})
-            with urllib.request.urlopen(req, timeout=45) as resp:
+            with polite.urlopen(req, timeout=45) as resp:
                 body = resp.read().decode("utf-8", errors="replace")
             time.sleep(PAUSE)
             return json.loads(body) if as_json else body

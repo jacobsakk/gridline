@@ -25,6 +25,9 @@ import sys
 import urllib.parse
 import urllib.request
 from concurrent.futures import ThreadPoolExecutor
+import sys as _sys
+_sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
+import polite  # noqa: E402
 
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 DATA = os.path.join(REPO_ROOT, "frontend", "src", "data")
@@ -71,8 +74,8 @@ EXTRA_SPELLINGS = {
 
 
 def get_json(url):
-    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
-    with urllib.request.urlopen(req, timeout=30) as resp:
+    req = urllib.request.Request(url, headers={"User-Agent": polite.USER_AGENT})
+    with polite.urlopen(req, timeout=30) as resp:
         return json.load(resp)
 
 
@@ -175,7 +178,7 @@ def build():
         for h in hits:
             if h.get("league") == "college-football" and name_keys(h.get("displayName", "")) & name_keys(name):
                 try:
-                    urllib.request.urlopen(urllib.request.Request(IMAGE_URL.format(h["id"]), method="HEAD", headers={"User-Agent": "Mozilla/5.0"}), timeout=15)
+                    polite.urlopen(urllib.request.Request(IMAGE_URL.format(h["id"]), method="HEAD", headers={"User-Agent": polite.USER_AGENT}), timeout=15)
                 except Exception:
                     continue  # no picture for that athlete
                 return key, (name, h["id"], team)

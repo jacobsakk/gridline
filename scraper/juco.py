@@ -55,9 +55,10 @@ import re
 import time
 
 from ncaa_api import normalize_position as _normalize_position_base
+import polite
 
 SEASON = "2026-27"
-USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36"
+USER_AGENT = polite.USER_AGENT
 REQUEST_PAUSE_SECONDS = 0.4
 
 CONFERENCES = {
@@ -103,6 +104,8 @@ def _get(page, url):
     content = ""
     for attempt in range(4):
         try:
+            if not polite.allowed(url):
+                raise RuntimeError("robots.txt asks automated tools to stay off this page")
             page.goto(url, timeout=45000, wait_until="domcontentloaded")
             content = page.content()
             if len(content) > 3000:

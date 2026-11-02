@@ -27,6 +27,7 @@ import os
 import time
 import urllib.error
 import urllib.request
+import polite
 
 API_BASE = "https://ncaa-api.henrygd.me"
 USER_AGENT = "curl/8.0"  # the default urllib UA gets blocked; a plain curl UA does not
@@ -232,7 +233,7 @@ def _get(path, params=None):
         query = "&".join(f"{k}={v}" for k, v in params.items())
         url = f"{url}?{query}"
     req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
-    with urllib.request.urlopen(req, timeout=20) as resp:
+    with polite.urlopen(req, timeout=20) as resp:
         return json.load(resp)
 
 

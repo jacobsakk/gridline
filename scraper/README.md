@@ -268,3 +268,16 @@ they're gone it does nothing.
 - `python3 hs_games.py --urls urls.json --dump out.json --no-write` runs it locally against a list
   of `{"maxpreps": ...}` objects without touching the database.
 - `team_doc_id()` here and `teamDocId()` in `frontend/src/hsData.js` must produce the same id.
+
+## Scraping manners
+
+Every scraper goes through `polite.py`:
+
+- **Honest User-Agent.** Requests say `GridlineRecruitingHub/1.0 (internal football recruiting tool;
+  low-volume)` rather than posing as a browser. Set `SCRAPER_CONTACT` (a repo secret / env var) to add a
+  contact address to it.
+- **robots.txt is respected.** `polite.urlopen()` and `polite.allowed()` skip any page a site's
+  `robots.txt` asks automated tools to avoid. A site with no `robots.txt` has no restrictions to follow.
+- **Only fetch what could have changed.** `hs_games.py` re-fetches a school's MaxPreps page only when a
+  recent game has no final score, a game is today/tomorrow, or it's been ~6 days (`--all` forces everyone).
+- Short pauses between requests to the same site, and no attempt to get around a site that blocks us.

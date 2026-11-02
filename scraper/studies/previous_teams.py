@@ -19,6 +19,9 @@ import time
 import urllib.request
 from concurrent.futures import ThreadPoolExecutor
 from datetime import date
+import sys as _sys
+_sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
+import polite  # noqa: E402
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO_ROOT = os.path.dirname(os.path.dirname(HERE))
@@ -34,8 +37,8 @@ RECHECK_DAYS = 21
 def get_json(url):
     for attempt in range(3):
         try:
-            req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
-            with urllib.request.urlopen(req, timeout=25) as resp:
+            req = urllib.request.Request(url, headers={"User-Agent": polite.USER_AGENT})
+            with polite.urlopen(req, timeout=25) as resp:
                 return json.load(resp)
         except Exception:
             time.sleep(1 + attempt)

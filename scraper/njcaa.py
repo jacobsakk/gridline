@@ -18,6 +18,7 @@ import urllib.request
 
 from ncaa_api import normalize_position
 from naming import home_state_from
+import polite
 
 API_URL = "https://public-graphql-api.ardorsportshub.com/public/graphql"
 TENANT_ID = "404933495157163011"  # NJCAA
@@ -54,7 +55,7 @@ def _post(operation, query, variables):
         API_URL, data=body,
         headers={"Content-Type": "application/json", "User-Agent": "gridline-stats/1.0", "Origin": "https://www.njcaa.org"},
     )
-    with urllib.request.urlopen(req, timeout=90) as resp:
+    with polite.urlopen(req, timeout=90) as resp:
         payload = json.loads(resp.read())
     if payload.get("errors"):
         raise RuntimeError(f"NJCAA API error: {payload['errors'][0].get('message')}")

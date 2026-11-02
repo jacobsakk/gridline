@@ -70,6 +70,7 @@ import time
 import urllib.error
 import urllib.parse
 import urllib.request
+import polite
 
 PROJECT_ID = "gridline-6afe6"
 FIRESTORE_BASE = f"https://firestore.googleapis.com/v1/projects/{PROJECT_ID}/databases/(default)/documents/watchlist"
@@ -82,10 +83,7 @@ REQUEST_PAUSE_SECONDS = 0.3
 PAGE_FETCH_TIMEOUT = 15
 MAX_PAGE_BYTES = 300_000  # bio info is always near the top -- no need to read a whole page
 
-USER_AGENT = (
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
-    "(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-)
+USER_AGENT = polite.USER_AGENT
 
 # Covers "HT/WT: 6-2 / 210" (common Sidearm combined format) as well as
 # separate "Height: 6'2\"" / "Weight: 210 lbs" lines (PrestoSports,
@@ -100,7 +98,7 @@ HOMETOWN_RE = re.compile(r'Hometown\s*:?\s*([A-Za-z .\'-]+,\s*[A-Za-z.]{2,20})',
 
 
 def _get_json(url):
-    with urllib.request.urlopen(url, timeout=30) as resp:
+    with polite.urlopen(url, timeout=30) as resp:
         return json.loads(resp.read().decode("utf-8"))
 
 
@@ -156,7 +154,7 @@ def search_results(query, api_key):
         headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
     )
     try:
-        with urllib.request.urlopen(req, timeout=30) as resp:
+        with polite.urlopen(req, timeout=30) as resp:
             result = json.loads(resp.read().decode("utf-8"))
     except urllib.error.HTTPError as e:
         print(f"    search request failed ({e.code}): {e.reason}")
@@ -257,7 +255,7 @@ def _fetch_html(url):
     control."""
     try:
         req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
-        with urllib.request.urlopen(req, timeout=PAGE_FETCH_TIMEOUT) as resp:
+        with polite.urlopen(req, timeout=PAGE_FETCH_TIMEOUT) as resp:
             return resp.read(MAX_PAGE_BYTES).decode("utf-8", errors="replace")
     except Exception as e:
         # Logged rather than silently swallowed -- local testing kept
@@ -475,7 +473,7 @@ def patch_player(doc_id, updates):
         method="PATCH",
         headers={"Content-Type": "application/json"},
     )
-    with urllib.request.urlopen(req, timeout=30) as resp:
+    with polite.urlopen(req, timeout=30) as resp:
         resp.read()
 
 

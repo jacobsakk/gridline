@@ -25,6 +25,7 @@ link tag) and is used directly here.
 """
 
 from ncaa_api import normalize_position as _normalize_position_base
+import polite
 
 BASE_URL = "https://cccaa.prestosports.com"
 SEASON = "2026-27"
@@ -37,10 +38,7 @@ TABLE_IDS = [
     "stats-table-Season-d-overall",
 ]
 
-USER_AGENT = (
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
-    "(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-)
+USER_AGENT = polite.USER_AGENT
 
 
 def normalize_position(raw_position):
@@ -61,6 +59,8 @@ def fetch_all_players(page):
     ready = False
     for attempt in range(4):
         try:
+            if not polite.allowed(PLAYERS_URL):
+                raise RuntimeError("robots.txt asks automated tools to stay off this page")
             page.goto(PLAYERS_URL, timeout=45000, wait_until="domcontentloaded")
             page.wait_for_function(
                 "window.jQuery && window.jQuery.fn.DataTable && "

@@ -23,8 +23,9 @@ import time
 import urllib.error
 import urllib.parse
 import urllib.request
+import polite
 
-UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36"
+UA = polite.USER_AGENT
 SEASON_YEAR = 2026
 SEASON_START = dt.date(SEASON_YEAR, 6, 1)  # ignore last season's games still listed on a team page
 DELAY_SECONDS = 1.5  # between requests to the same site
@@ -163,7 +164,7 @@ def fetch_html(url):
     for _ in range(4):
         req = urllib.request.Request(url, headers={"User-Agent": UA, "Accept-Language": "en-US,en;q=0.9"})
         try:
-            with urllib.request.urlopen(req, timeout=40) as resp:
+            with polite.urlopen(req, timeout=40) as resp:
                 return resp.read().decode("utf-8", "replace")
         except urllib.error.HTTPError as err:
             if err.code == 308 and err.headers.get("Location"):  # older Pythons don't follow 308 themselves
@@ -456,6 +457,36 @@ def purge_scorestream(client, write=True):
     batch.commit()
 
 
+STALE_DAYS = 6  # a school with nothing in play is still re-checked this often, to pick up schedule changes
+
+
+def needs_refresh(doc, today):
+    """Only fetch a school's page when something could have changed: it has no stored results yet, a game
+    from the last few days has no final score, a game is coming up today or tomorrow, or it's been about a
+    week. Everything else (all recent games already final, next game days away) is left alone -- this is
+    what keeps the five weekly runs from re-downloading every school's page each time."""
+    if not doc:
+        return True
+    try:
+        age = dt.datetime.now(dt.timezone.utc) - dt.datetime.fromisoformat(str(doc.get("updatedAt", "")).replace("Z", "+00:00"))
+    except ValueError:
+        return True
+    if age > dt.timedelta(days=STALE_DAYS):
+        return True
+    for g in doc.get("games") or []:
+        date = g.get("date") or ""
+        if not date:
+            continue
+        gap = (dt.date.fromisoformat(today) - dt.date.fromisoformat(date)).days  # >0: in the past
+        if -1 <= gap <= 3 and "result" not in g:
+            return True
+    return False
+
+
+def existing_team_docs(client):
+    return {snap.id: (snap.to_dict() or {}) for snap in client.collection("hsTeams").stream()}
+
+
 def existing_team_ids(client):
     return {snap.id for snap in client.collection("hsTeams").select([]).stream()}
 
@@ -467,6 +498,7 @@ def main():
     ap.add_argument("--limit", type=int, help="only the first N schools (testing)")
     ap.add_argument("--no-write", action="store_true", help="don't write to Firestore")
     ap.add_argument("--new-only", action="store_true", help="only schools that have no results stored yet (quick catch-up for newly added players)")
+    ap.add_argument("--all", action="store_true", help="re-fetch every school, even ones with nothing in play")
     ap.add_argument("--plan", action="store_true", help="just report whether --new-only has anything to do (sets the GitHub output 'work')")
     args = ap.parse_args()
 
@@ -496,6 +528,12 @@ def main():
         if args.new_only:
             have = existing_team_ids(client)
             pairs = {k: v for k, v in pairs.items() if k not in have}
+        elif not args.all:
+            stored = existing_team_docs(client)
+            today = dt.datetime.now(dt.timezone(dt.timedelta(hours=-8))).date().isoformat()
+            total = len(pairs)
+            pairs = {k: v for k, v in pairs.items() if needs_refresh(stored.get(k), today)}
+            print(f"{len(pairs)} of {total} schools need a fresh look (the rest have nothing in play)")
     if args.limit:
         pairs = dict(list(pairs.items())[: args.limit])
     print(f"{len(pairs)} schools to check")

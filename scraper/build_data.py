@@ -241,10 +241,9 @@ def _run_with_browser(build_fn):
 
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
-        page = browser.new_page(user_agent=(
-            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
-            "(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-        ))
+        import polite
+
+        page = browser.new_page(user_agent=polite.USER_AGENT)
         try:
             return build_fn(page)
         finally:

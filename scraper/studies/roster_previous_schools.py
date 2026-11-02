@@ -15,10 +15,13 @@ import os
 import re
 import urllib.request
 from concurrent.futures import ThreadPoolExecutor
+import sys as _sys
+_sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
+import polite  # noqa: E402
 
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 OUT_PATH = os.path.join(REPO_ROOT, "frontend", "src", "data", "studies", "roster-previous.json")
-UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/124 Safari/537.36"
+UA = polite.USER_AGENT
 
 # Each MAC school's football roster page, and the team name the study uses for it.
 ROSTERS = {
@@ -46,7 +49,7 @@ def fetch(url):
     for _ in range(3):
         try:
             req = urllib.request.Request(url, headers={"User-Agent": UA})
-            with urllib.request.urlopen(req, timeout=40) as resp:
+            with polite.urlopen(req, timeout=40) as resp:
                 return resp.read().decode("utf-8", "ignore")
         except Exception:
             continue

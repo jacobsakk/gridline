@@ -32,8 +32,9 @@ from concurrent.futures import ThreadPoolExecutor
 
 from naming import compact_name, name_key, same_person_name, team_key
 from ncaa_api import _avg, _to_int, normalize_position, passing_efficiency
+import polite
 
-UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36"
+UA = polite.USER_AGENT
 ESPN_STATS = "https://site.web.api.espn.com/apis/common/v3/sports/football/college-football/statistics/byathlete"
 SEASON = 2026
 PAGE_SIZE = 1000
@@ -64,15 +65,12 @@ class NotFound(RuntimeError):
     """ESPN has no record at this URL (e.g. a player who never played)."""
 
 
-def _get_json(url, retries=3, spoof_ua=True):
-    """`spoof_ua=False` for site.api.espn.com's plain team-list endpoint, which (confirmed directly) 403s a
-    browser-style User-Agent but is happy with Python's own default one -- the opposite of every other ESPN
-    endpoint this module calls, all of which need the spoofed one."""
+def _get_json(url, retries=3):
     last = None
     for attempt in range(retries):
         try:
-            req = urllib.request.Request(url, headers={"User-Agent": UA, "Accept": "application/json"} if spoof_ua else {"Accept": "application/json"})
-            with urllib.request.urlopen(req, timeout=90) as resp:
+            req = urllib.request.Request(url, headers={"User-Agent": UA, "Accept": "application/json"})
+            with polite.urlopen(req, timeout=90) as resp:
                 return json.loads(resp.read().decode("utf-8"))
         except urllib.error.HTTPError as err:
             if err.code == 404:
@@ -204,7 +202,7 @@ def fetch_espn_team_ids():
     """Every school ESPN has a college-football team page for -- FBS through D3, one flat list with no
     division tag -- keyed by team_key() so a D2/D3 team (which gets its stats from the NCAA API, not ESPN)
     can still be matched to its ESPN roster feed by name."""
-    data = _get_json(ESPN_TEAMS_URL, spoof_ua=False)
+    data = _get_json(ESPN_TEAMS_URL)
     teams = data["sports"][0]["leagues"][0]["teams"]
     # "location" is the bare school name ("Grand Valley State"); "displayName" also carries the mascot
     # ("Grand Valley State Lakers"), which the NCAA API's team names never do.

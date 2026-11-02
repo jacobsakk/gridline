@@ -32,6 +32,7 @@ import datetime
 import re
 import time
 import urllib.request
+import polite
 
 REQUEST_PAUSE_SECONDS = 0.5
 
@@ -86,15 +87,12 @@ CATEGORY_SECTIONS = {
     "receiving": ("ind_rec", "WR"),
 }
 
-USER_AGENT = (
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
-    "(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-)
+USER_AGENT = polite.USER_AGENT
 
 
 def _get(url):
     req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
-    with urllib.request.urlopen(req, timeout=30) as resp:
+    with polite.urlopen(req, timeout=30) as resp:
         return resp.read().decode("utf-8", errors="replace")
 
 
