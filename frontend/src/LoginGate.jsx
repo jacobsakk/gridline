@@ -13,12 +13,12 @@ function prefersReducedMotion() {
 function useDevAuth() {
   const dev = import.meta.env.DEV ? new URLSearchParams(window.location.search).get("devLogin") : null;
   if (dev === "password") {
-    return { status: "needsPassword", profile: { name: "Jacob Sakk", email: "dev@example.com" }, createPassword: () => new Promise(() => {}), signOut: () => {} };
+    return { status: "needsPassword", profile: { name: "Jane Smith", email: "dev@example.com" }, createPassword: () => new Promise(() => {}), signOut: () => {} };
   }
   return dev
     ? {
         status: "ready",
-        profile: { name: "Jacob Sakk", email: "dev@example.com", admin: true },
+        profile: { name: "Jane Smith", email: "dev@example.com", admin: true },
         justSignedIn: dev === "welcome",
         signOut: () => {},
       }

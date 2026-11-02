@@ -338,7 +338,7 @@ export default function SettingsPage({ onBack: toDashboard, session }) {
               </div>
               <div>
                 <label htmlFor="invite-email" style={{ display: "block", fontSize: 10.5, color: "var(--text-faint)", marginBottom: 4 }}>Email</label>
-                <input id="invite-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="jane@cmich.edu" style={{ ...inputStyle, width: 230 }} />
+                <input id="invite-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="jane@example.com" style={{ ...inputStyle, width: 230 }} />
               </div>
               <div>
                 <label htmlFor="invite-role" style={{ display: "block", fontSize: 10.5, color: "var(--text-faint)", marginBottom: 4 }}>Role</label>

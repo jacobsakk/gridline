@@ -13,10 +13,6 @@ import {
 import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 import { auth, db } from "./firebase";
 
-// Always allowed in (and always an admin), even before any invite exists --
-// this is how the very first account gets bootstrapped. Mirrors firestore.rules.
-export const OWNER_EMAIL = "sakk1j@cmich.edu";
-
 // Shared with the Settings page's own invite form, so a self-requested role and an admin-typed one mean
 // the same thing.
 export const ROLES = ["Coach", "Student", "Admin"];
@@ -47,7 +43,7 @@ export const SITE_URL = `${window.location.origin}${window.location.pathname}`;
 
 export const normalizeEmail = (email) => (email || "").trim().toLowerCase();
 
-// "Jacob Sakk" -> "Coach Sakk"
+// "Jane Smith" -> "Coach Smith"
 export function coachTitle(name, email) {
   const words = (name || "").trim().split(/\s+/).filter(Boolean);
   if (words.length) {
@@ -76,9 +72,7 @@ function storeEmail(email) {
 
 async function findInvite(email) {
   const snap = await getDoc(doc(db, "accounts", email));
-  const data = snap.exists() ? { id: snap.id, ...snap.data() } : null;
-  if (email === OWNER_EMAIL) return { name: "Jacob Sakk", role: "Owner", ...(data || {}), email, admin: true, owner: true, missingDoc: !data };
-  return data;
+  return snap.exists() ? { id: snap.id, ...snap.data() } : null;
 }
 
 // Sign-in state for the whole app.
@@ -126,12 +120,7 @@ export function useAuth() {
             return;
           }
           const stamp = { lastLoginAt: new Date().toISOString() };
-          if (profile.owner && profile.missingDoc) {
-            // The owner isn't invited by anyone, so their account is created here -- it then shows in Settings.
-            setDoc(doc(db, "accounts", email), { name: profile.name, email, role: profile.role, admin: true, createdAt: new Date().toISOString(), invitedBy: "", passwordSet: true, ...stamp }, { merge: true }).catch(() => {});
-          } else {
-            updateDoc(doc(db, "accounts", email), { ...stamp, passwordSet: true }).catch(() => {});
-          }
+          updateDoc(doc(db, "accounts", email), { ...stamp, passwordSet: true }).catch(() => {});
           setState({ status: "ready", profile: { ...profile, email }, error: "" });
         } catch {
           setState({ status: "signedOut", profile: null, error: "We couldn't check your invitation just now. Try again in a moment." });
@@ -151,7 +140,7 @@ export function useAuth() {
     return unsubscribe;
   }, [completeLink]);
 
-  // Sends the sign-in link. Only invited emails get one (the owner always can).
+  // Sends the sign-in link. Only invited emails get one.
   const requestLink = useCallback(async (rawEmail) => {
     const email = normalizeEmail(rawEmail);
     if (!/^\S+@\S+\.\S+$/.test(email)) throw Object.assign(new Error("Enter a valid email address."), { code: "bad-email" });
@@ -173,11 +162,7 @@ export function useAuth() {
       if (err.code !== "auth/provider-already-linked") throw err;
     }
     const stamp = { lastLoginAt: new Date().toISOString(), passwordSet: true };
-    if (email === OWNER_EMAIL) {
-      await setDoc(doc(db, "accounts", email), { name: "Jacob Sakk", email, role: "Owner", admin: true, createdAt: new Date().toISOString(), invitedBy: "", ...stamp }, { merge: true });
-    } else {
-      await updateDoc(doc(db, "accounts", email), stamp);
-    }
+    await updateDoc(doc(db, "accounts", email), stamp);
     // Reload the profile (now with a password) so the app opens.
     const profile = await findInvite(email);
     setState({ status: "ready", profile: { ...profile, email }, error: "" });

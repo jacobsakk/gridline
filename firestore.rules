@@ -3,8 +3,10 @@ rules_version = '2';
 // Invite-only. A coach can read or write data only when they are signed in
 // (via the emailed sign-in link, which proves they own the address) AND there
 // is an "accounts" document whose id is their lowercased email -- that
-// document is the invitation. The owner below is always allowed, which is how
-// the first account gets bootstrapped.
+// document is the invitation. An admin is an account whose document has
+// admin == true. No email address is written into these rules or the app: the
+// very first account has to be created by hand in the Firebase console (an
+// accounts/<email> document with admin: true).
 service cloud.firestore {
   match /databases/{database}/documents {
 
@@ -14,14 +16,11 @@ service cloud.firestore {
     function myEmail() {
       return request.auth.token.email.lower();
     }
-    function isOwner() {
-      return signedIn() && myEmail() == 'sakk1j@cmich.edu';
-    }
     function invited() {
-      return isOwner() || (signedIn() && exists(/databases/$(database)/documents/accounts/$(myEmail())));
+      return signedIn() && exists(/databases/$(database)/documents/accounts/$(myEmail()));
     }
     function isAdmin() {
-      return isOwner() || (invited() && get(/databases/$(database)/documents/accounts/$(myEmail())).data.admin == true);
+      return invited() && get(/databases/$(database)/documents/accounts/$(myEmail())).data.get('admin', false) == true;
     }
 
     // The invite list. The sign-in page has to check "is this email invited?"
