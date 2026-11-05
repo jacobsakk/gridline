@@ -14,6 +14,7 @@ export const STATUSES = [
   { key: "offerStatus", label: "Offer status", color: "#A4C2F4", rgb: [0xa4, 0xc2, 0xf4] },
   { key: "recruit", label: "Recruit status", color: "#CCCCCC", rgb: [0xcc, 0xcc, 0xcc] },
   { key: "elsewhere", label: "Committed elsewhere", color: "#EA9999", rgb: [0xea, 0x99, 0x99] },
+  { key: "partial", label: "Partial", color: "#B4A7D6", rgb: [0xb4, 0xa7, 0xd6] },
 ];
 export const STATUS_BY_KEY = Object.fromEntries(STATUSES.map((s) => [s.key, s]));
 

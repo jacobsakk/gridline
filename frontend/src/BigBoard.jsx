@@ -150,12 +150,27 @@ export function BoardSheet({ board, side, classYear, photos, onOpen, onAdd }) {
           );
         })}
       </div>
-      <BoardFooter counts={counts} side={side} classYear={classYear} />
+      <BoardFooter counts={counts} side={side} classYear={classYear} board={board} />
     </div>
   );
 }
 
-function BoardFooter({ counts, side, classYear }) {
+// Only the emojis this board actually uses are listed in its key.
+function usedEmojis(board, classYear) {
+  const players = board.columns.flatMap((c) => c.players);
+  const juco = classYear === "JUCO";
+  const plain = (s) => String(s || "").replace(/\uFE0F/g, "");
+  return {
+    trends: TRENDS.filter((t) => players.some((p) => RATING_KEYS.some((k) => p.rating?.[k] === t.key))),
+    flags: [...FLAGS, ...(juco ? [VISIT_READY] : [])].filter((f) => players.some((p) => p.flags?.[f.key])),
+    visits: VISITS.filter((v) => players.some((p) => plain(p.visits).includes(plain(v.marker)))),
+    cgpa: juco && players.some((p) => p.gpa && p.transcriptEval),
+  };
+}
+
+function BoardFooter({ counts, side, classYear, board }) {
+  const used = usedEmojis(board, classYear);
+  const anyEmoji = used.trends.length + used.flags.length + used.visits.length > 0 || used.cgpa;
   return (
     <div className="bb-footer">
       <div className="bb-key">
@@ -164,21 +179,25 @@ function BoardFooter({ counts, side, classYear }) {
           <div key={s.key} style={{ background: s.color }}>{s.label.toUpperCase()}</div>
         ))}
       </div>
-      <div className="bb-emojis">
-        <div className="bb-footh">EMOJIS</div>
-        <div className="bb-emoji-grid">
-          {TRENDS.map((t) => (
-            <div key={t.key}><span>{t.emoji}</span> {t.label}</div>
-          ))}
-          {[...FLAGS, ...(classYear === "JUCO" ? [VISIT_READY] : [])].map((f) => (
-            <div key={f.key}><span>{f.marker === "$" ? "($)" : f.marker === "#" ? "(#)" : f.marker}</span> {f.label}</div>
-          ))}
-          {VISITS.map((v) => (
-            <div key={v.marker}><span>{v.marker}</span> {v.label}</div>
-          ))}
-          {classYear === "JUCO" && <div><span className="bb-cgpa-check">✓</span> cGPA (transcript evaluated)</div>}
+      {anyEmoji ? (
+        <div className="bb-emojis">
+          <div className="bb-footh">EMOJIS</div>
+          <div className="bb-emoji-grid">
+            {used.trends.map((t) => (
+              <div key={t.key}><span>{t.emoji}</span> {t.label}</div>
+            ))}
+            {used.flags.map((f) => (
+              <div key={f.key}><span>{f.marker === "$" ? "($)" : f.marker === "#" ? "(#)" : f.marker}</span> {f.label}</div>
+            ))}
+            {used.visits.map((v) => (
+              <div key={v.marker}><span>{v.marker}</span> {classYear === "JUCO" && v.marker === "🏠" ? "Home visit/School visit" : v.label}</div>
+            ))}
+            {used.cgpa && <div><span className="bb-cgpa-check">✓</span> cGPA (transcript evaluated)</div>}
+          </div>
         </div>
-      </div>
+      ) : (
+        <div className="bb-emojis" />
+      )}
       <div className="bb-counts">
         <div className="bb-footh">TOTAL {side === "def" ? "DEFENSIVE" : "OFFENSIVE"} COMMITS</div>
         {counts.rows.map((r) => (
@@ -283,7 +302,7 @@ export function PlayerModal({ board, classYear, colKey, player, isNew, photo, on
             <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
               <input aria-label="Visits" value={draft.visits} onChange={(e) => set({ visits: e.target.value })} placeholder="Visits" style={{ ...ctl, flex: 1 }} />
               {VISITS.map((v) => (
-                <button key={v.marker} onClick={() => addVisit(v.marker)} title={`Add: ${v.label}`} style={{ ...ghostBtn, padding: "6px 8px" }}>{v.marker}</button>
+                <button key={v.marker} onClick={() => addVisit(v.marker)} title={`Add: ${classYear === "JUCO" && v.marker === "🏠" ? "Home visit/School visit" : v.label}`} style={{ ...ghostBtn, padding: "6px 8px" }}>{v.marker}</button>
               ))}
               <button onClick={() => set({ visits: "" })} title="Clear visits" style={{ ...ghostBtn, padding: "6px 8px" }}><X size={13} /></button>
             </div>
