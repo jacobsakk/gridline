@@ -11,7 +11,7 @@ const when = (iso) => (iso ? new Date(iso).toLocaleString(undefined, { month: "s
 // The "Share link" button in a study's header, with the window that makes, copies and turns off its links.
 // `data` is the study as it stands right now (null while it's still loading); it is also what keeps every
 // link's saved copy current while this study is open.
-export function ShareLinkButton({ studyId, title, data, by }) {
+export function ShareLinkButton({ studyId, title, data, by, noun = "study" }) {
   const shares = useStudyShares(studyId);
   useShareSync(shares, data);
   const [open, setOpen] = useState(false);
@@ -47,18 +47,18 @@ export function ShareLinkButton({ studyId, title, data, by }) {
 
   return (
     <>
-      <button onClick={() => setOpen(true)} style={ghostBtn} title="A link anyone can open without signing in, for this study only">
+      <button onClick={() => setOpen(true)} style={ghostBtn} title={`A link anyone can open without signing in, for this ${noun} only`}>
         <Link2 size={14} /> Share link{shares.length ? ` (${shares.length})` : ""}
       </button>
       {open && (
         <div onClick={() => setOpen(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20, zIndex: 70 }}>
           <div onClick={(e) => e.stopPropagation()} style={{ background: "var(--bg-panel)", border: "1px solid var(--border)", borderRadius: 10, width: 560, maxWidth: "100%", maxHeight: "90vh", overflow: "auto", padding: 22, display: "grid", gap: 14 }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-              <h2 className="oswald" style={{ margin: 0, fontSize: 19 }}>Share this study</h2>
+              <h2 className="oswald" style={{ margin: 0, fontSize: 19 }}>Share this {noun}</h2>
               <button onClick={() => setOpen(false)} aria-label="Close" style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer", lineHeight: 0 }}><X size={20} /></button>
             </div>
             <p style={{ margin: 0, fontSize: 13, color: "var(--text-muted)", lineHeight: 1.55 }}>
-              Anyone with a link can read <b>{title}</b> without signing in, and nothing else on the site. It's read-only, and it follows your edits: the shared copy refreshes a few seconds after you change something here, and whenever a coach opens the study after new stats arrive.
+              Anyone with a link can read <b>{title}</b> without signing in, and nothing else on the site. It's read-only, and it follows your edits: the shared copy refreshes a few seconds after you change something {noun === "study" ? "here, and whenever a coach opens the study after new stats arrive." : "here, as long as a coach has this board open."}
             </p>
             {shares.length === 0 && <div style={{ fontSize: 13, color: "var(--text-faint)" }}>No links yet.</div>}
             {shares.map((s) => (

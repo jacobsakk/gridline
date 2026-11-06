@@ -3,6 +3,7 @@ import { Camera, ChevronDown, ChevronUp, ExternalLink, Image as ImageIcon, Plus,
 import { BackButton, HomeButton } from "./HomeButton.jsx";
 import { ThemeSwitcher, useTheme } from "./theme.jsx";
 import { confirmAction } from "./ConfirmDialog.jsx";
+import { ShareLinkButton } from "./StudyShare.jsx";
 import { initialSubRoute, setSubRoute, useBack } from "./route.js";
 import { matchPhotoFiles, mondayOf, photoFromFile, toIso } from "./hsData.js";
 import {
@@ -81,11 +82,11 @@ const markersFor = (p) => [p.flags?.snap ? "($)" : "", p.flags?.punt ? "(#)" : "
 
 // A card shows the A / P / C / R trend marks (🔥 🌤️ 🌨️ 🧊) but not ARMs' rating line ("2 - ALL MAC PLAYER"), and
 // the JUCO board shows no area coach. The rating text stays on the card's data; it's just not displayed.
-function PlayerCard({ p, showCoach, hasRating, photo, onOpen, juco }) {
+function PlayerCard({ p, showCoach, hasRating, photo, onOpen, juco, readOnly }) {
   const status = STATUS_BY_KEY[p.status] || STATUS_BY_KEY.recruit;
   const marks = markersFor(p);
   return (
-    <div className={`bb-card${juco && p.eligibility ? " bb-has-elig" : ""}`} style={{ background: status.color }} onClick={onOpen} role="button" tabIndex={0} onKeyDown={(e) => e.key === "Enter" && onOpen()} title="Click to edit">
+    <div className={`bb-card${juco && p.eligibility ? " bb-has-elig" : ""}`} style={readOnly ? { background: status.color, cursor: "default" } : { background: status.color }} onClick={readOnly ? undefined : onOpen} role={readOnly ? undefined : "button"} tabIndex={readOnly ? undefined : 0} onKeyDown={readOnly ? undefined : (e) => e.key === "Enter" && onOpen()} title={readOnly ? undefined : "Click to edit"}>
       {photo && <img className="bb-photo" src={photo} alt="" />}
       {juco && p.eligibility && <span className="bb-elig" title={`Year ${p.eligibility} of eligibility`}>YEAR {p.eligibility}</span>}
       <div className="bb-card-text">
@@ -128,7 +129,7 @@ function PlayerCard({ p, showCoach, hasRating, photo, onOpen, juco }) {
   );
 }
 
-export function BoardSheet({ board, side, classYear, photos, onOpen, onAdd }) {
+export function BoardSheet({ board, side, classYear, photos, onOpen, onAdd, readOnly = false }) {
   const counts = commitCounts(board);
   const title = board.title && /\d{4}/.test(board.title) ? board.title : classYear === "JUCO" ? JUCO_SIDE_TITLE[side] : `${SIDE_TITLE[side]} - ${classYear}`;
   return (
@@ -153,12 +154,12 @@ export function BoardSheet({ board, side, classYear, photos, onOpen, onAdd }) {
                   <Fragment key={tier}>
                     <div className="bb-tier">
                       <span>TIER {tier}</span>
-                      <button className="bb-add hs-no-print" onClick={() => onAdd(col.key, tier)} title={`Add a player to ${col.label} tier ${tier}`} aria-label={`Add a player to ${col.label} tier ${tier}`}>
+                      {!readOnly && <button className="bb-add hs-no-print" onClick={() => onAdd(col.key, tier)} title={`Add a player to ${col.label} tier ${tier}`} aria-label={`Add a player to ${col.label} tier ${tier}`}>
                         <Plus size={11} />
-                      </button>
+                      </button>}
                     </div>
                     {inTier.map((p) => (
-                      <PlayerCard key={p.id} p={p} juco={classYear === "JUCO"} showCoach={classYear !== "JUCO"} hasRating={col.hasRating} photo={photos[nameKey(p.name)]} onOpen={() => onOpen(col.key, p)} />
+                      <PlayerCard key={p.id} p={p} juco={classYear === "JUCO"} showCoach={classYear !== "JUCO"} hasRating={col.hasRating} photo={photos[nameKey(p.name)]} onOpen={() => onOpen(col.key, p)} readOnly={readOnly} />
                     ))}
                   </Fragment>
                 );
@@ -883,19 +884,51 @@ export function UploadPdfModal({ defaultYear, onImport, onClose }) {
 
 // ------------------------------------------------------------------ page
 
-export default function BigBoard({ onBack: toDashboard }) {
-  const [theme, setTheme] = useTheme();
-  const back = useBack(toDashboard);
-  const [initial] = useState(initialSubRoute);
-  const [classYear, setClassYear] = useState(initial[0] || "2027");
-  const [view, setView] = useState(VIEWS.some((v) => v.key === initial[1]) ? initial[1] : "off");
-  const bb = useBigBoards(classYear);
-  const [editing, setEditing] = useState(null); // { colKey, player, isNew }
-  const [uploading, setUploading] = useState(false);
-  const [pdfUpload, setPdfUpload] = useState(false);
-  const [note, setNote] = useState("");
-  const photoInput = useRef(null);
+export const JUCO_SHARE_ID = "bigboard-juco";
 
+// Each photo on the given boards, shrunk to about the size it's shown at, keyed by name. null until they're ready.
+function useSharePhotos(boards, photos) {
+  const [out, setOut] = useState(null);
+  const cache = useRef(new Map());
+  useEffect(() => {
+    let cancelled = false;
+    const keys = [...new Set(boards.flatMap((b) => (b?.columns || []).flatMap((c) => c.players.map((p) => nameKey(p.name)))))].filter((k) => photos[k]);
+    (async () => {
+      const map = {};
+      for (const k of keys) {
+        const src = photos[k];
+        if (!cache.current.has(src)) cache.current.set(src, await shrinkPhoto(src).catch(() => ""));
+        if (cache.current.get(src)) map[k] = cache.current.get(src);
+      }
+      if (!cancelled) setOut(map);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [boards[0], boards[1], photos]); // eslint-disable-line react-hooks/exhaustive-deps
+  return out;
+}
+
+function shrinkPhoto(src, max = 140) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      const scale = Math.min(1, max / Math.max(img.naturalWidth, img.naturalHeight));
+      const canvas = document.createElement("canvas");
+      canvas.width = Math.max(1, Math.round(img.naturalWidth * scale));
+      canvas.height = Math.max(1, Math.round(img.naturalHeight * scale));
+      const ctx = canvas.getContext("2d");
+      ctx.fillStyle = "#fff";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      resolve(canvas.toDataURL("image/jpeg", 0.7));
+    };
+    img.onerror = () => reject(new Error("photo"));
+    img.src = src;
+  });
+}
+
+export function useBoardPrintFit() {
   // Printing: a board plus its key and counts is shrunk to fit one landscape letter page. Nothing is allowed to wrap
   // onto a second line (a school, a measurables line, a column heading): each column is made as wide as its longest
   // line needs, every column with players the same width and every empty one the same narrower width, and then the
@@ -958,6 +991,22 @@ export default function BigBoard({ onBack: toDashboard }) {
       window.removeEventListener("afterprint", reset);
     };
   }, []);
+}
+
+export default function BigBoard({ onBack: toDashboard, session }) {
+  const [theme, setTheme] = useTheme();
+  const back = useBack(toDashboard);
+  const [initial] = useState(initialSubRoute);
+  const [classYear, setClassYear] = useState(initial[0] || "2027");
+  const [view, setView] = useState(VIEWS.some((v) => v.key === initial[1]) ? initial[1] : "off");
+  const bb = useBigBoards(classYear);
+  const [editing, setEditing] = useState(null); // { colKey, player, isNew }
+  const [uploading, setUploading] = useState(false);
+  const [pdfUpload, setPdfUpload] = useState(false);
+  const [note, setNote] = useState("");
+  const photoInput = useRef(null);
+
+  useBoardPrintFit();
 
   const board = view === "credit" || view === "activity" ? null : bb.board(classYear, view);
   const credit = bb.credit(classYear);
@@ -977,6 +1026,13 @@ export default function BigBoard({ onBack: toDashboard }) {
   const offBoard = bb.board(classYear, "off");
   const defBoard = bb.board(classYear, "def");
   const creditList = useMemo(() => buildCreditList([offBoard, defBoard], credit?.rows || []), [offBoard, defBoard, credit]);
+
+  // What the JUCO share link holds: both boards, with each player's photo shrunk to card size so the copy stays small.
+  const sharePhotos = useSharePhotos(classYear === "JUCO" ? [offBoard, defBoard] : [], bb.photos);
+  const shareData = useMemo(
+    () => (classYear === "JUCO" && bb.ready && sharePhotos ? { off: offBoard || null, def: defBoard || null, photos: sharePhotos } : null),
+    [classYear, bb.ready, offBoard, defBoard, sharePhotos]
+  );
 
   const jucoCredit = useMemo(() => buildJucoCreditList([offBoard, defBoard]), [offBoard, defBoard]);
 
@@ -1122,6 +1178,7 @@ export default function BigBoard({ onBack: toDashboard }) {
             <button onClick={() => setPdfUpload(true)} style={primaryBtn} title="Upload the board PDF exported from ARMs -- the whole board, photos included, is built from it"><Upload size={14} /> Upload board PDF</button>
             {view !== "credit" && view !== "activity" && <button onClick={() => photoInput.current?.click()} style={ghostBtn} title="Add or replace photos by hand (name each file after the player, e.g. Sam Rouleau.jpg)"><ImageIcon size={14} /> Add photos</button>}
             <button onClick={() => setUploading(true)} style={ghostBtn} title="Upload the staff workbook -- for the credit evaluation sheet"><Upload size={14} /> Upload workbook</button>
+            {classYear === "JUCO" && <ShareLinkButton studyId={JUCO_SHARE_ID} title="JUCO Big Board" noun="board" data={shareData} by={session?.profile?.email || ""} />}
             <button onClick={() => window.print()} style={ghostBtn}><Printer size={14} /> Print / PDF</button>
           </div>
         </div>

@@ -63,7 +63,7 @@ function Screens({ session }) {
   else if (view.name === "hs") screen = <HsGameUpdate onBack={toDashboard} />;
   else if (view.name === "roster") screen = <RosterPage onBack={toDashboard} session={session} />;
   else if (view.name === "studies") screen = <StudiesPage onBack={toDashboard} session={session} />;
-  else if (view.name === "bigboard") screen = <BigBoard onBack={toDashboard} />;
+  else if (view.name === "bigboard") screen = <BigBoard onBack={toDashboard} session={session} />;
   else if (view.name === "reports") screen = <ReportsPage onBack={toDashboard} session={session} />;
   else if (view.name === "settings") screen = <SettingsPage onBack={toDashboard} session={session} />;
   else {
