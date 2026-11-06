@@ -63,7 +63,7 @@ export default function SharedStudyPage({ token }) {
           {["off", "def"].map((side) =>
             share.data?.[side] ? (
               <div key={side} className="bb-print-page">
-                <BoardSheet board={share.data[side]} side={side} classYear="JUCO" photos={share.data.photos || {}} onOpen={() => {}} onAdd={() => {}} readOnly />
+                <BoardSheet board={share.data[side]} side={side} classYear="JUCO" photos={share.data.photos || {}} counts={share.data.counts?.[side] || undefined} onOpen={() => {}} onAdd={() => {}} readOnly />
               </div>
             ) : null
           )}

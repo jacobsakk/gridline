@@ -130,8 +130,8 @@ function PlayerCard({ p, showCoach, hasRating, photo, onOpen, juco, readOnly }) 
   );
 }
 
-export function BoardSheet({ board, side, classYear, photos, onOpen, onAdd, onRemoveColumn, readOnly = false }) {
-  const counts = commitCounts(board);
+export function BoardSheet({ board, side, classYear, photos, onOpen, onAdd, onRemoveColumn, readOnly = false, counts: countsOverride }) {
+  const counts = countsOverride || commitCounts(board);
   const title = board.title && /\d{4}/.test(board.title) ? board.title : classYear === "JUCO" ? JUCO_SIDE_TITLE[side] : `${SIDE_TITLE[side]} - ${classYear}`;
   return (
     <div className="bb-sheet bb-board">
@@ -1216,10 +1216,18 @@ export default function BigBoard({ onBack: toDashboard, session }) {
   const creditList = useMemo(() => buildCreditList([offBoard, defBoard], credit?.rows || []), [offBoard, defBoard, credit]);
 
   // What the JUCO share link holds: both boards, with each player's photo shrunk to card size so the copy stays small.
-  const sharePhotos = useSharePhotos(classYear === "JUCO" ? [offBoard, defBoard] : [], bb.photos);
+  // Only tier 1 goes into the link (the other tiers never leave the database); the commit counts are worked out
+  // from the whole board first so the totals on the shared copy still match the real one.
+  const tierOne = (b) => (b ? { ...b, columns: b.columns.map((c) => ({ ...c, players: c.players.filter((p) => (p.tier || 1) === 1) })) } : null);
+  const sharedOff = useMemo(() => tierOne(offBoard), [offBoard]);
+  const sharedDef = useMemo(() => tierOne(defBoard), [defBoard]);
+  const sharePhotos = useSharePhotos(classYear === "JUCO" ? [sharedOff, sharedDef] : [], bb.photos);
   const shareData = useMemo(
-    () => (classYear === "JUCO" && bb.ready && sharePhotos ? { off: offBoard || null, def: defBoard || null, photos: sharePhotos } : null),
-    [classYear, bb.ready, offBoard, defBoard, sharePhotos]
+    () =>
+      classYear === "JUCO" && bb.ready && sharePhotos
+        ? { off: sharedOff, def: sharedDef, photos: sharePhotos, counts: { off: offBoard ? commitCounts(offBoard) : null, def: defBoard ? commitCounts(defBoard) : null } }
+        : null,
+    [classYear, bb.ready, sharedOff, sharedDef, sharePhotos, offBoard, defBoard]
   );
 
   const jucoCredit = useMemo(() => buildJucoCreditList([offBoard, defBoard]), [offBoard, defBoard]);
