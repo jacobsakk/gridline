@@ -317,3 +317,26 @@ tbody tr:hover { background: var(--row-hover) !important; }
   .study-print-only .study-team { color: var(--tc-l) !important; }
   .study-print-only tr { break-inside: avoid; }
 }
+
+/* Phones: the sheet stops being a wide grid. Each position becomes a full-width block, one under the other, with
+   bigger type, and the key stacks -- nothing scrolls sideways. (Screen only; printing is unchanged.) */
+@media screen and (max-width: 720px) {
+  .bb-sheet { min-width: 0; }
+  .bb-board { min-height: 0; }
+  .bb-cols { display: block !important; }
+  .bb-col.bb-empty { display: none; }
+  .bb-col + .bb-col { border-left: none; border-top: 2px solid #510F1D; }
+  .bb-colhead { font-size: 14px; padding: 6px 10px; }
+  .bb-tier { font-size: 12px; padding: 4px 10px; }
+  .bb-card { font-size: 13px; padding: 7px 10px; gap: 9px; }
+  .bb-name { font-size: 15px; }
+  .bb-photo { width: 46px; height: 46px; }
+  .bb-extra, .bb-rating { font-size: 12px; }
+  .bb-elig { font-size: 11px; right: 8px; bottom: 6px; }
+  .bb-has-elig .bb-card-text { padding-right: 52px; }
+  .bb-footer { grid-template-columns: minmax(0, 1fr) !important; }
+  .bb-footer > div { border-right: none; border-bottom: 1px solid #bbb; }
+  .bb-footer .bb-key > div:not(.bb-footh) { font-size: 12px; padding: 6px 10px; }
+  .bb-emoji-grid { grid-template-columns: minmax(0, 1fr) !important; font-size: 13px; }
+  .bb-counts > div:not(.bb-footh) { font-size: 13px; padding: 3px 10px; }
+}
