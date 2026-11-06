@@ -5,6 +5,7 @@ import { ThemeSwitcher, useTheme } from "./theme.jsx";
 import { confirmAction } from "./ConfirmDialog.jsx";
 import { ShareLinkButton } from "./StudyShare.jsx";
 import { initialSubRoute, setSubRoute, useBack } from "./route.js";
+import { useIsPhone } from "./usePhone.js";
 import { matchPhotoFiles, mondayOf, photoFromFile, toIso } from "./hsData.js";
 import {
   FLAGS, RATING_KEYS, STATUSES, STATUS_BY_KEY, TRENDS, VISIT_READY, VISITS, blankPlayer, boardTitle, buildCreditList, classYearFromTitle,
@@ -456,6 +457,22 @@ const countPill = (color, label, n) => (
   </span>
 );
 
+// ---- phone: the credit and activity tables become one card per person (no sideways scrolling).
+const phoneCard = (color) => ({ border: "1px solid var(--border)", borderLeft: `4px solid ${color || "var(--border)"}`, borderRadius: 8, background: "var(--bg-panel)", padding: "10px 12px", display: "grid", gap: 8 });
+const phoneGroupHead = (color, title, n) => (
+  <div style={{ fontWeight: 800, fontSize: 12, letterSpacing: "0.04em", textTransform: "uppercase", color: "var(--text-primary)", margin: "6px 2px 0", display: "flex", alignItems: "center", gap: 8 }}>
+    <span style={{ width: 9, height: 9, borderRadius: "50%", background: color }} />
+    {title} <span className="tabular" style={{ color: "var(--text-faint)", fontWeight: 600 }}>· {n}</span>
+  </div>
+);
+const phoneField = (label, node) => (
+  <label style={{ display: "grid", gap: 3, fontSize: 11, color: "var(--text-faint)", textTransform: "uppercase", letterSpacing: "0.03em" }}>
+    {label}
+    {node}
+  </label>
+);
+const phoneInput = { width: "100%", color: "var(--text-primary)", fontFamily: "inherit", fontSize: 15, padding: "7px 9px", minWidth: 0, textTransform: "none", letterSpacing: 0 };
+
 export function CreditSheet({ list, onEdit, classYear }) {
   const groups = [
     { key: "committed", title: "Committed", color: STATUS_BY_KEY.committed.color, rows: list.committed },
@@ -465,6 +482,57 @@ export function CreditSheet({ list, onEdit, classYear }) {
   // The JUCO board has no area coach, so its credit table has no coach column either.
   const cols = classYear === "JUCO" ? CREDIT_COLS.filter((c) => c.key !== "coach") : CREDIT_COLS;
   const input = { width: "100%", color: "var(--text-primary)", fontFamily: "inherit", fontSize: 13.5, padding: "4px 7px", minWidth: 0 };
+  const phone = useIsPhone();
+  if (phone) {
+    const editable = cols.filter((c) => EDITABLE_CREDIT.has(c.key));
+    return (
+      <div className="bb-themed" style={{ display: "grid", gap: 10 }}>
+        <SheetHeading title="Credit evaluation" classYear={classYear}>
+          {countPill(STATUS_BY_KEY.committed.color, "Committed", list.committed.length)}
+          {countPill(STATUS_BY_KEY.offered.color, "Offered", list.offered.length)}
+        </SheetHeading>
+        {total === 0 && <div style={{ padding: 24, textAlign: "center", color: "var(--text-faint)", fontSize: 13.5 }}>No one is committed or offered on this class's boards yet. This list fills itself in from the board.</div>}
+        {groups.map((g) =>
+          g.rows.length ? (
+            <Fragment key={g.key}>
+              {phoneGroupHead(g.color, g.title, g.rows.length)}
+              {g.rows.map((r) => (
+                <div key={r.key} style={phoneCard(g.color)}>
+                  <div>
+                    <div style={{ fontWeight: 800, fontSize: 16, color: "var(--text-primary)" }}>{r.first} {r.last}</div>
+                    <div style={{ fontSize: 13, color: "var(--text-secondary)" }}>{[r.pos, [r.school, r.state && `(${r.state})`].filter(Boolean).join(" ")].filter(Boolean).join(" · ")}</div>
+                  </div>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                    {editable.map((c) =>
+                      phoneField(
+                        c.label,
+                        c.select ? (
+                          <select className="offer-cell-input" value={r.qualifier} onChange={(e) => onEdit(r, { qualifier: e.target.value })} style={{ ...phoneInput, cursor: "pointer" }}>
+                            {r.qualifier && !QUALIFIERS.includes(r.qualifier) && <option value={r.qualifier}>{r.qualifier}</option>}
+                            <option value="">—</option>
+                            {QUALIFIERS.map((q) => <option key={q} value={q}>{q}</option>)}
+                          </select>
+                        ) : (
+                          <input
+                            className="offer-cell-input"
+                            key={r[c.key]}
+                            defaultValue={r[c.key]}
+                            placeholder="—"
+                            onBlur={(e) => e.target.value.trim() !== r[c.key] && onEdit(r, { [c.key]: c.key === "coach" ? e.target.value.trim().toUpperCase() : e.target.value.trim() })}
+                            style={phoneInput}
+                          />
+                        )
+                      )
+                    )}
+                  </div>
+                </div>
+              ))}
+            </Fragment>
+          ) : null
+        )}
+      </div>
+    );
+  }
   return (
     <div className="bb-themed">
       <SheetHeading title="Credit evaluation" classYear={classYear}>
@@ -548,6 +616,45 @@ const JUCO_COLS = [
 
 export function JucoCreditSheet({ list, onEdit, classYear }) {
   const input = { width: "100%", color: "var(--text-primary)", fontFamily: "inherit", fontSize: 13.5, padding: "4px 7px", minWidth: 0, textAlign: "center" };
+  const phone = useIsPhone();
+  if (phone) {
+    return (
+      <div className="bb-themed" style={{ display: "grid", gap: 10 }}>
+        <SheetHeading title="Credit evaluation" classYear={classYear}>
+          {list.groups.map((g) => countPill(g.color, g.title, g.rows.length))}
+        </SheetHeading>
+        {list.total === 0 && <div style={{ padding: 24, textAlign: "center", color: "var(--text-faint)", fontSize: 13.5 }}>No one is on this class's boards yet. This list fills itself in from the board.</div>}
+        {list.groups.map((g) => (
+          <Fragment key={g.key}>
+            {phoneGroupHead(g.color, g.title, g.rows.length)}
+            {g.rows.map((r) => (
+              <div key={r.key} style={phoneCard(g.color)}>
+                <div>
+                  <div style={{ fontWeight: 800, fontSize: 16, color: "var(--text-primary)" }}>{r.first} {r.last}</div>
+                  <div style={{ fontSize: 13, color: "var(--text-secondary)" }}>{[r.pos, r.school].filter(Boolean).join(" · ")}</div>
+                </div>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                  {phoneField("Measurables", <input className="offer-cell-input" key={r.measurables} defaultValue={r.measurables} placeholder="—" onBlur={(e) => e.target.value.trim() !== r.measurables && onEdit(r, { measurables: e.target.value.trim() })} style={phoneInput} />)}
+                  {phoneField("JUCO GPA", <input className="offer-cell-input" key={r.gpa} defaultValue={r.gpa} placeholder="—" onBlur={(e) => e.target.value.trim() !== r.gpa && onEdit(r, { gpa: e.target.value.trim() })} style={phoneInput} />)}
+                  {phoneField(
+                    "Eligibility",
+                    <select className="offer-cell-input" value={r.eligibility} onChange={(e) => onEdit(r, { eligibility: e.target.value })} style={{ ...phoneInput, cursor: "pointer" }}>
+                      <option value="">—</option>
+                      {[1, 2, 3, 4, 5].map((n) => <option key={n} value={String(n)}>{n}</option>)}
+                    </select>
+                  )}
+                  <label style={{ display: "flex", alignItems: "center", gap: 9, fontSize: 14, color: "var(--text-primary)", alignSelf: "end", minHeight: 38 }}>
+                    <input type="checkbox" checked={r.transcriptEval} onChange={(e) => onEdit(r, { transcriptEval: e.target.checked, gpaLabel: e.target.checked ? "cGPA" : "GPA" })} style={{ width: 20, height: 20 }} />
+                    Transcript eval
+                  </label>
+                </div>
+              </div>
+            ))}
+          </Fragment>
+        ))}
+      </div>
+    );
+  }
   return (
     <div className="bb-themed">
       <SheetHeading title="Credit evaluation" classYear={classYear}>
@@ -644,6 +751,7 @@ export function ActivitySheet({ rows, classYear }) {
       {type === "added" ? "Added" : "Removed"}
     </span>
   );
+  const phone = useIsPhone();
   return (
     <div className="bb-themed">
       <SheetHeading title="Board activity" classYear={classYear}>
@@ -657,6 +765,31 @@ export function ActivitySheet({ rows, classYear }) {
         {groups.length === 0 ? (
           <div style={{ padding: 28, textAlign: "center", fontSize: 13.5, color: "var(--text-faint)", lineHeight: 1.6 }}>
             {rows.length === 0 ? "Nothing yet. Each time you upload a board, the people added to it and taken off it are listed here with the date. The first upload for a class has nothing to compare against." : "Nothing to show for this filter."}
+          </div>
+        ) : phone ? (
+          <div style={{ display: "grid", gap: 8, padding: 10 }}>
+            {groups.map((g) => (
+              <Fragment key={g.date}>
+                <div style={{ fontWeight: 800, fontSize: 12, letterSpacing: "0.04em", color: "var(--text-primary)", marginTop: 4 }}>
+                  {shortDate(g.date)} <span className="tabular" style={{ color: "var(--text-faint)", fontWeight: 600 }}>· {g.rows.length} change{g.rows.length === 1 ? "" : "s"}</span>
+                </div>
+                {g.rows.map((r) => (
+                  <div key={r.id} style={phoneCard(STATUS_BY_KEY[r.status]?.color)}>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+                      <span style={{ fontWeight: 800, fontSize: 16, color: "var(--text-primary)" }}>{r.name}</span>
+                      {changePill(r.type)}
+                    </div>
+                    <div style={{ fontSize: 13, color: "var(--text-secondary)" }}>
+                      {r.positions}{r.side ? ` · ${r.side === "def" ? "Defense" : "Offense"}` : ""}
+                      {r.school ? ` · ${r.school}${r.state ? ` (${r.state})` : ""}` : ""}
+                    </div>
+                    <div style={{ fontSize: 12, color: "var(--text-faint)" }}>
+                      {STATUS_BY_KEY[r.status] ? `${STATUS_BY_KEY[r.status].label} · ` : ""}{r.source === "by hand" ? "By hand" : "Upload"}
+                    </div>
+                  </div>
+                ))}
+              </Fragment>
+            ))}
           </div>
         ) : (
           <table style={{ width: "100%", borderCollapse: "collapse" }}>
