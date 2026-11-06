@@ -86,7 +86,7 @@ function PlayerCard({ p, showCoach, hasRating, photo, onOpen, juco }) {
   return (
     <div className={`bb-card${juco && p.eligibility ? " bb-has-elig" : ""}`} style={{ background: status.color }} onClick={onOpen} role="button" tabIndex={0} onKeyDown={(e) => e.key === "Enter" && onOpen()} title="Click to edit">
       {photo && <img className="bb-photo" src={photo} alt="" />}
-      {juco && p.eligibility && <span className="bb-elig" title={`Years of eligibility: ${p.eligibility}`}>ELIG {p.eligibility}</span>}
+      {juco && p.eligibility && <span className="bb-elig" title={`Year ${p.eligibility} of eligibility`}>YEAR {p.eligibility}</span>}
       <div className="bb-card-text">
         <div className="bb-name">{p.name || "New player"}{marks && <span style={{ fontWeight: 500 }}> {marks}</span>}</div>
         {(p.school || p.state) && <div>{p.school}{p.state ? ` (${p.state})` : ""}</div>}
