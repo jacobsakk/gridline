@@ -283,6 +283,35 @@ const CREDIT_POS_ORDER = ["QB", "RB", "WR", "TE", "OL", "DL", "LB", "CB", "SAF",
 const POS_FROM_COLUMN = { QB: "QB", RB: "RB", WR: "WR", TE: "TE", OT: "OL", "OG/OC": "OL", DE: "DL", DT: "DL", LB: "LB", CB: "CB", SAF: "SAF", LS: "LS", K: "K", P: "P" };
 const POS_FROM_TITLE = [[/quarter/i, "QB"], [/running|fullback/i, "RB"], [/receiv/i, "WR"], [/tight/i, "TE"], [/offensive/i, "OL"], [/defensive/i, "DL"], [/linebac/i, "LB"], [/corner/i, "CB"], [/safety/i, "SAF"], [/snapper/i, "LS"], [/kicker|punter/i, "K"]];
 
+// A column's position for the credit list: "RB" -> RB, and an extra category such as "RB X" -> RB too.
+export function posForColumn(label) {
+  const text = String(label || "").trim();
+  return POS_FROM_COLUMN[text] || POS_FROM_COLUMN[text.split(/\s+/)[0].toUpperCase()] || "";
+}
+
+// New categories go to the right of their position: "RB X" lands after the RB column (and after any RB extras
+// already there), "WR X" after WR. A name that matches no column goes at the end.
+export function addColumns(board, names) {
+  let columns = [...board.columns];
+  const added = [];
+  for (const raw of names) {
+    const label = raw.trim();
+    if (!label) continue;
+    const base = label.toUpperCase().replace(/[^A-Z0-9]+/g, "-") || "COL";
+    let key = base;
+    for (let i = 2; columns.some((c) => c.key === key); i++) key = `${base}-${i}`;
+    const token = label.split(/\s+/)[0].toUpperCase();
+    let at = -1;
+    columns.forEach((c, i) => {
+      if (c.label.trim().split(/\s+/)[0].toUpperCase() === token) at = i;
+    });
+    const col = { key, label, hasRating: false, players: [] };
+    columns = at >= 0 ? [...columns.slice(0, at + 1), col, ...columns.slice(at + 1)] : [...columns, col];
+    added.push(label);
+  }
+  return { board: { ...board, columns }, added };
+}
+
 export function positionAbbreviation(title) {
   return POS_FROM_TITLE.find(([re]) => re.test(title || ""))?.[1] || "";
 }
@@ -316,7 +345,7 @@ export function buildCreditList(boards, saved = []) {
         status: p.status,
         first: parts[0] || "",
         last: parts.slice(1).join(" "),
-        pos: p.pos || POS_FROM_COLUMN[c.label] || positionAbbreviation(p.positionTitle) || "ATH",
+        pos: p.pos || posForColumn(c.label) || positionAbbreviation(p.positionTitle) || "ATH",
         school: p.school || "",
         state: p.state || "",
         coach: own.coach || coachShort(p.coach),

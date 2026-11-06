@@ -8,7 +8,7 @@ import { initialSubRoute, setSubRoute, useBack } from "./route.js";
 import { useIsPhone } from "./usePhone.js";
 import { matchPhotoFiles, mondayOf, photoFromFile, toIso } from "./hsData.js";
 import {
-  FLAGS, RATING_KEYS, STATUSES, STATUS_BY_KEY, TRENDS, VISIT_READY, VISITS, blankPlayer, boardTitle, buildCreditList, classYearFromTitle,
+  FLAGS, RATING_KEYS, STATUSES, STATUS_BY_KEY, TRENDS, VISIT_READY, VISITS, addColumns, blankPlayer, boardTitle, buildCreditList, classYearFromTitle,
   buildJucoCreditList, commitCounts, creditKey, diffBoards, handChange, nameKey, parseBoardSheet, parseCreditSheet, readWorkbook, useBigBoards,
 } from "./bigBoardData.js";
 
@@ -130,7 +130,7 @@ function PlayerCard({ p, showCoach, hasRating, photo, onOpen, juco, readOnly }) 
   );
 }
 
-export function BoardSheet({ board, side, classYear, photos, onOpen, onAdd, readOnly = false }) {
+export function BoardSheet({ board, side, classYear, photos, onOpen, onAdd, onRemoveColumn, readOnly = false }) {
   const counts = commitCounts(board);
   const title = board.title && /\d{4}/.test(board.title) ? board.title : classYear === "JUCO" ? JUCO_SIDE_TITLE[side] : `${SIDE_TITLE[side]} - ${classYear}`;
   return (
@@ -145,7 +145,14 @@ export function BoardSheet({ board, side, classYear, photos, onOpen, onAdd, read
             <div key={col.key} className={col.players.length || side !== "def" ? "bb-col" : "bb-col bb-empty"}>
               <div className="bb-colhead">
                 <span>{col.label}</span>
-                <span style={{ color: "#B3261E" }}>({committed})</span>
+                <span style={{ color: "#B3261E" }}>
+                  ({committed})
+                  {onRemoveColumn && !readOnly && col.players.length === 0 && (
+                    <button className="bb-add hs-no-print" onClick={() => onRemoveColumn(col.key)} title={`Remove the empty ${col.label} category`} aria-label={`Remove the empty ${col.label} category`} style={{ marginLeft: 6, color: "#555", borderColor: "#999" }}>
+                      <X size={11} />
+                    </button>
+                  )}
+                </span>
               </div>
               {/* Tier 1 is always there (it carries the + to add a player; the card's form picks any tier); tiers 2 and
                   up only appear in a column while someone is in them. */}
@@ -939,6 +946,43 @@ export function UploadModal({ classYears, defaultYear, onClose, onImport }) {
   );
 }
 
+// Adds position categories (columns) to the board you're on. Several can go in at once, separated by commas or lines;
+// each lands to the right of its position, so "RB X" goes after RB and "WR X" after WR.
+function AddCategoryModal({ board, classYear, view, onAdd, onClose }) {
+  const suggest = classYear === "JUCO" && view === "off" ? ["RB X", "WR X"].filter((n) => !board.columns.some((c) => c.label.trim().toUpperCase() === n)).join(", ") : "";
+  const [text, setText] = useState(suggest);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  async function submit(e) {
+    e.preventDefault();
+    if (!text.trim()) return setError("Type at least one category name.");
+    setBusy(true);
+    try {
+      await onAdd(text);
+      onClose();
+    } catch {
+      setError("Couldn't add those. Try again.");
+      setBusy(false);
+    }
+  }
+  return (
+    <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20, zIndex: 80 }}>
+      <form onClick={(e) => e.stopPropagation()} onSubmit={submit} style={{ background: "var(--bg-panel)", border: "1px solid var(--border)", borderRadius: 10, width: 460, maxWidth: "100%", padding: 22, display: "grid", gap: 12 }}>
+        <h2 className="oswald" style={{ margin: 0, fontSize: 19 }}>Add categories</h2>
+        <p style={{ margin: 0, fontSize: 13, color: "var(--text-muted)", lineHeight: 1.5 }}>
+          Type one or more names, separated by commas. Each goes to the right of its position on the {view === "def" ? "defense" : "offense"} board: <b>RB X</b> after RB, <b>WR X</b> after WR. A name that matches no position goes at the end.
+        </p>
+        <textarea value={text} onChange={(e) => { setText(e.target.value); setError(""); }} rows={3} autoFocus placeholder="RB X, WR X" aria-label="Category names" style={{ ...ctl, width: "100%", resize: "vertical" }} />
+        {error && <div role="alert" style={{ fontSize: 13, color: "var(--danger-text)" }}>{error}</div>}
+        <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
+          <button type="button" onClick={onClose} style={ghostBtn}>Cancel</button>
+          <button type="submit" disabled={busy} style={primaryBtn}>{busy ? "Adding…" : "Add"}</button>
+        </div>
+      </form>
+    </div>
+  );
+}
+
 // ------------------------------------------------------------------ photos from the ARMs PDF
 
 // Choosing the ARMs board PDF is the whole job: the board, its tiers and colours, every card's details and the
@@ -1142,6 +1186,7 @@ export default function BigBoard({ onBack: toDashboard, session }) {
   useBoardPrintFit();
 
   const board = view === "credit" || view === "activity" ? null : bb.board(classYear, view);
+  const [addingCats, setAddingCats] = useState(false);
   const credit = bb.credit(classYear);
 
   function go(nextYear, nextView) {
@@ -1152,6 +1197,16 @@ export default function BigBoard({ onBack: toDashboard, session }) {
 
   async function persist(next) {
     await bb.saveBoard(classYear, view, next);
+  }
+
+  async function addCategories(text) {
+    const { board: next, added } = addColumns(board, text.split(/[,\n]/));
+    if (added.length) await persist(next);
+    return added.length;
+  }
+  async function removeCategory(colKey) {
+    const ok = await confirmAction({ title: "Remove this category?", message: "It's empty, so nobody is taken off the board." });
+    if (ok) await persist({ ...board, columns: board.columns.filter((c) => c.key !== colKey) });
   }
 
   // The credit list builds itself from the committed and offered players on the boards; what's typed into it is
@@ -1311,6 +1366,7 @@ export default function BigBoard({ onBack: toDashboard, session }) {
             <button onClick={() => setPdfUpload(true)} style={primaryBtn} title="Upload the board PDF exported from ARMs -- the whole board, photos included, is built from it"><Upload size={14} /> Upload board PDF</button>
             {view !== "credit" && view !== "activity" && <button onClick={() => photoInput.current?.click()} style={ghostBtn} title="Add or replace photos by hand (name each file after the player, e.g. Sam Rouleau.jpg)"><ImageIcon size={14} /> Add photos</button>}
             <button onClick={() => setUploading(true)} style={ghostBtn} title="Upload the staff workbook -- for the credit evaluation sheet"><Upload size={14} /> Upload workbook</button>
+            {board && <button onClick={() => setAddingCats(true)} style={ghostBtn} title="Add position categories to this board, e.g. RB X"><Plus size={14} /> Add category</button>}
             {classYear === "JUCO" && <ShareLinkButton studyId={JUCO_SHARE_ID} title="JUCO Big Board" noun="board" data={shareData} by={session?.profile?.email || ""} />}
             <button onClick={() => window.print()} style={ghostBtn}><Printer size={14} /> Print / PDF</button>
           </div>
@@ -1350,6 +1406,7 @@ export default function BigBoard({ onBack: toDashboard, session }) {
                     photos={bb.photos}
                     onOpen={active ? (colKey, player) => setEditing({ colKey, player, isNew: false }) : () => {}}
                     onAdd={active ? (colKey, tier) => setEditing({ colKey, player: blankPlayer(tier), isNew: true }) : () => {}}
+                    onRemoveColumn={active ? removeCategory : undefined}
                   />
                 </div>
               );
@@ -1376,6 +1433,7 @@ export default function BigBoard({ onBack: toDashboard, session }) {
           onClose={() => setEditing(null)}
         />
       )}
+      {addingCats && board && <AddCategoryModal board={board} classYear={classYear} view={view} onAdd={addCategories} onClose={() => setAddingCats(false)} />}
       {pdfUpload && <UploadPdfModal defaultYear={classYear} onImport={importBoardPdf} onClose={() => setPdfUpload(false)} />}
       {uploading && <UploadModal classYears={bb.classYears} defaultYear={classYear} onClose={() => setUploading(false)} onImport={importWorkbook} />}
     </div>
