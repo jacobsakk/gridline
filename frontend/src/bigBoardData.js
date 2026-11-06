@@ -378,6 +378,7 @@ export const blankPlayer = (tier = 1) => ({
   gpaLabel: "cGPA",
   gpa: "",
   visits: "",
+  hudl: "",
   status: "recruit",
   rating: { A: "", P: "", C: "", R: "" },
   tier,

@@ -26,6 +26,7 @@ const ctl = {
 const ghostBtn = { ...ctl, display: "inline-flex", alignItems: "center", gap: 6, cursor: "pointer", fontWeight: 600 };
 const primaryBtn = { ...ghostBtn, background: "var(--accent-bg)", border: "1px solid var(--accent)", color: "var(--accent)", fontWeight: 700 };
 
+const hudlHref = (url) => (/^https?:\/\//i.test(url.trim()) ? url.trim() : `https://${url.trim()}`);
 const trendEmoji = (key) => TRENDS.find((t) => t.key === key)?.emoji || "";
 
 // ------------------------------------------------------------------ board edits (pure)
@@ -88,7 +89,23 @@ function PlayerCard({ p, showCoach, hasRating, photo, onOpen, juco }) {
       {photo && <img className="bb-photo" src={photo} alt="" />}
       {juco && p.eligibility && <span className="bb-elig" title={`Year ${p.eligibility} of eligibility`}>YEAR {p.eligibility}</span>}
       <div className="bb-card-text">
-        <div className="bb-name">{p.name || "New player"}{marks && <span style={{ fontWeight: 500 }}> {marks}</span>}</div>
+        <div className="bb-name">
+          {p.hudl ? (
+            <span
+              className="bb-name-link"
+              title="Open Hudl"
+              onClick={(e) => {
+                e.stopPropagation();
+                window.open(hudlHref(p.hudl), "_blank", "noopener,noreferrer");
+              }}
+            >
+              {p.name || "New player"}
+            </span>
+          ) : (
+            p.name || "New player"
+          )}
+          {marks && <span style={{ fontWeight: 500 }}> {marks}</span>}
+        </div>
         {(p.school || p.state) && <div>{p.school}{p.state ? ` (${p.state})` : ""}</div>}
         {p.measurables && <div>{p.measurables}</div>}
         {(p.gpa || p.visits) && (
@@ -265,6 +282,10 @@ export function PlayerModal({ board, classYear, colKey, player, isNew, photo, on
           <div>
             <label style={label} htmlFor="bb-name">Name</label>
             <input id="bb-name" value={draft.name} onChange={(e) => set({ name: e.target.value })} style={{ ...ctl, width: "100%" }} autoFocus={isNew} />
+          </div>
+          <div>
+            <label style={label} htmlFor="bb-hudl">Hudl link (click his name on the board to open it)</label>
+            <input id="bb-hudl" value={draft.hudl || ""} onChange={(e) => set({ hudl: e.target.value })} placeholder="https://www.hudl.com/profile/..." style={{ ...ctl, width: "100%" }} />
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 80px", gap: 10 }}>
             <div>
@@ -986,9 +1007,10 @@ export default function BigBoard({ onBack: toDashboard }) {
     const player = { ...draft, name: draft.name.trim() };
     const next = upsertPlayer(board, colKey, player);
     await persist(next);
-    if (classYear === "JUCO" && player.name) {
+    if (player.name) {
       const other = view === "off" ? "def" : "off";
-      await patchPerson(player.name, Object.fromEntries(JUCO_FIELDS.map((f) => [f, player[f] ?? (f === "transcriptEval" ? false : "")])), [other]);
+      const fields = classYear === "JUCO" ? [...JUCO_FIELDS, "hudl"] : ["hudl"];
+      await patchPerson(player.name, Object.fromEntries(fields.map((f) => [f, player[f] ?? (f === "transcriptEval" ? false : "")])), [other]);
     }
     if (editing?.isNew) {
       const label = board.columns.find((c) => c.key === colKey)?.label || colKey;
@@ -1020,7 +1042,7 @@ export default function BigBoard({ onBack: toDashboard }) {
         compared = true;
         entries.push(...diffBoards(previous, parsed[side], side));
       }
-      await bb.saveBoard(year, side, { ...parsed[side], sourceFile: fileName });
+      await bb.saveBoard(year, side, { ...keepHudl(parsed[side], previous), sourceFile: fileName });
     }
     if (parsed.credit) await bb.saveCredit(year, parsed.credit.rows);
     await bb.logActivity(year, entries, fileName);
@@ -1172,6 +1194,13 @@ export default function BigBoard({ onBack: toDashboard }) {
 
 // What a card has that the PDF doesn't carry: the GPA, the A/P/C/R trend ratings, the visit icons and the marks
 // after a name. A fresh read of the PDF replaces the board, so those are carried over by person.
+function keepHudl(next, previous) {
+  const links = new Map();
+  (previous?.columns || []).forEach((c) => c.players.forEach((p) => p.hudl && links.set(nameKey(p.name), p.hudl)));
+  if (!links.size) return next;
+  return { ...next, columns: next.columns.map((c) => ({ ...c, players: c.players.map((p) => (links.has(nameKey(p.name)) && !p.hudl ? { ...p, hudl: links.get(nameKey(p.name)) } : p)) })) };
+}
+
 function carryOver(next, previous) {
   const before = new Map();
   (previous?.columns || []).forEach((c) => c.players.forEach((p) => before.has(nameKey(p.name)) || before.set(nameKey(p.name), p)));
@@ -1181,7 +1210,7 @@ function carryOver(next, previous) {
       ...c,
       players: c.players.map((p) => {
         const old = before.get(nameKey(p.name));
-        return old ? { ...p, gpa: old.gpa ?? p.gpa, gpaLabel: old.gpaLabel ?? p.gpaLabel, visits: old.visits ?? p.visits, flags: old.flags ?? p.flags, rating: old.rating ?? p.rating, eligibility: old.eligibility ?? p.eligibility, transcriptEval: old.transcriptEval ?? p.transcriptEval } : p;
+        return old ? { ...p, gpa: old.gpa ?? p.gpa, gpaLabel: old.gpaLabel ?? p.gpaLabel, visits: old.visits ?? p.visits, flags: old.flags ?? p.flags, rating: old.rating ?? p.rating, eligibility: old.eligibility ?? p.eligibility, transcriptEval: old.transcriptEval ?? p.transcriptEval, hudl: old.hudl ?? p.hudl } : p;
       }),
     })),
   };
