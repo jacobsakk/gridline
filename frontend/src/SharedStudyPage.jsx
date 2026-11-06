@@ -9,6 +9,9 @@ import { BoardSheet, JUCO_SHARE_ID, useBoardPrintFit } from "./BigBoard.jsx";
 // What a share link opens (#/shared/<code>): one study, read-only, with no sign-in -- and nothing else from the
 // site reachable from it. It reads the saved copy a coach's link points at and follows it live, so a copy that
 // is refreshed while this page is open updates in front of the viewer.
+// A shared board shows tier 1 only, whatever the saved copy holds (a link made before that rule still carries the others).
+const tierOneOnly = (b) => ({ ...b, columns: b.columns.map((c) => ({ ...c, players: c.players.filter((p) => (p.tier || 1) === 1) })) });
+
 export default function SharedStudyPage({ token }) {
   const [theme, setTheme] = useTheme();
   useBoardPrintFit();
@@ -63,7 +66,7 @@ export default function SharedStudyPage({ token }) {
           {["off", "def"].map((side) =>
             share.data?.[side] ? (
               <div key={side} className="bb-print-page">
-                <BoardSheet board={share.data[side]} side={side} classYear="JUCO" photos={share.data.photos || {}} counts={share.data.counts?.[side] || undefined} onOpen={() => {}} onAdd={() => {}} readOnly />
+                <BoardSheet board={tierOneOnly(share.data[side])} side={side} classYear="JUCO" photos={share.data.photos || {}} counts={share.data.counts?.[side] || undefined} onOpen={() => {}} onAdd={() => {}} readOnly />
               </div>
             ) : null
           )}
