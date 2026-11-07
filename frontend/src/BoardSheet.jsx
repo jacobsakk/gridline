@@ -1,6 +1,6 @@
 import { Fragment, useEffect } from "react";
 import { Plus, X } from "lucide-react";
-import { FLAGS, RATING_KEYS, STATUS_BY_KEY, TRENDS, VISIT_READY, VISITS, commitCounts, nameKey } from "./bigBoardConstants.js";
+import { FLAGS, RATING_KEYS, STATUSES, STATUS_BY_KEY, TRENDS, VISIT_READY, VISITS, commitCounts, nameKey } from "./bigBoardConstants.js";
 
 // Drawing a board (the cards, columns, key and counts) and fitting it to a printed page. Used by the Big Board
 // page and, on its own, by a shared link -- so this file stays free of the spreadsheet and database code.
