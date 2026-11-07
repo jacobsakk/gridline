@@ -1,0 +1,14 @@
+// The Firebase project's public identifiers (not secret credentials -- access is controlled by firestore.rules).
+// Plain data, so a page can read it without loading any Firebase code.
+export const firebaseConfig = {
+  apiKey: "AIzaSyAokApn-a75wF0zY3eXncmvgikdAFG0qlE",
+  // Custom domain (Firebase Hosting, verified via Cloudflare DNS) so sign-in emails and action links
+  // come from a domain this project controls instead of the generic *.firebaseapp.com one -- the
+  // default was getting flagged as spam. See auth.cmichrecruiting.com in Firebase Hosting's custom
+  // domains and Authentication > Settings > Authorized domains.
+  authDomain: "auth.cmichrecruiting.com",
+  projectId: "gridline-6afe6",
+  storageBucket: "gridline-6afe6.firebasestorage.app",
+  messagingSenderId: "634127081395",
+  appId: "1:634127081395:web:703f5b4de6cf9238b835c6",
+};

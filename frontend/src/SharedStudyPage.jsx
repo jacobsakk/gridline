@@ -1,10 +1,13 @@
-import { useEffect, useState } from "react";
-import { doc, onSnapshot } from "firebase/firestore";
+import { Suspense, lazy, useEffect, useState } from "react";
 import { Loader2, Printer } from "lucide-react";
-import { db } from "./firebase";
+import { firebaseConfig } from "./firebaseConfig.js";
 import { ThemeSwitcher, useTheme } from "./theme.jsx";
-import { ALL_STUDIES, StudyDetail } from "./StudiesPage.jsx";
-import { BoardSheet, JUCO_SHARE_ID, useBoardPrintFit } from "./BigBoard.jsx";
+import { BoardSheet, useBoardPrintFit } from "./BoardSheet.jsx";
+
+const JUCO_SHARE_ID = "bigboard-juco";
+
+// A shared study needs the whole study code; a shared board does not, so that is only fetched when a study is shown.
+const SharedStudyBody = lazy(() => import("./SharedStudyBody.jsx"));
 
 // What a share link opens (#/shared/<code>): one study, read-only, with no sign-in -- and nothing else from the
 // site reachable from it. It reads the saved copy a coach's link points at and follows it live, so a copy that
@@ -16,28 +19,41 @@ export default function SharedStudyPage({ token }) {
   const [theme, setTheme] = useTheme();
   useBoardPrintFit();
   const [share, setShare] = useState(undefined); // undefined = loading, null = no such link
+  // The saved copy is fetched with one plain request to Firestore's web address (the rules let anyone read this one
+  // document) instead of loading the whole database library, which is most of what a phone would otherwise download.
+  // It is checked again every half minute while the page is open, so a refreshed copy shows up on its own.
   useEffect(() => {
     if (!token) {
       setShare(null);
       return undefined;
     }
-    return onSnapshot(
-      doc(db, "studyShares", token),
-      (snap) => {
-        if (!snap.exists()) return setShare(null);
-        const d = snap.data();
-        try {
-          setShare({ studyId: d.studyId, title: d.title, updatedAt: d.updatedAt, data: JSON.parse(d.payload) });
-        } catch {
-          setShare(null);
-        }
-      },
-      () => setShare(null)
-    );
+    let stopped = false;
+    let last = "";
+    const url = `https://firestore.googleapis.com/v1/projects/${firebaseConfig.projectId}/databases/(default)/documents/studyShares/${encodeURIComponent(token)}?key=${firebaseConfig.apiKey}`;
+    async function load() {
+      try {
+        const res = await fetch(url);
+        if (stopped) return;
+        if (res.status === 404 || res.status === 403) return setShare(null);
+        if (!res.ok) return; // a hiccup: keep showing what's there
+        const f = (await res.json()).fields || {};
+        const updatedAt = f.updatedAt?.stringValue || "";
+        if (updatedAt && updatedAt === last) return;
+        last = updatedAt;
+        setShare({ studyId: f.studyId?.stringValue || "", title: f.title?.stringValue || "", updatedAt, data: JSON.parse(f.payload?.stringValue || "null") });
+      } catch {
+        if (!stopped) setShare((s) => (s === undefined ? null : s));
+      }
+    }
+    load();
+    const timer = setInterval(load, 30000);
+    return () => {
+      stopped = true;
+      clearInterval(timer);
+    };
   }, [token]);
 
   const isBoard = share?.studyId === JUCO_SHARE_ID;
-  const meta = share && !isBoard ? ALL_STUDIES.find((s) => s.id === share.studyId) : null;
   return (
     <div className={`app-shell hs-shell${isBoard ? " bb-shell" : ""}`} data-theme={theme} style={{ display: "flex", flexDirection: "column", overflow: "hidden", background: "var(--bg-page)", color: "var(--text-primary)", fontFamily: "'Century Gothic', 'Jost', 'Helvetica Neue', Arial, sans-serif" }}>
       <div className="app-header compact-header hs-no-print" style={{ flexShrink: 0, position: "relative", padding: "20px var(--gutter) 16px" }}>
@@ -71,12 +87,12 @@ export default function SharedStudyPage({ token }) {
             ) : null
           )}
         </div>
-      ) : !share || !meta ? (
+      ) : !share ? (
         <div style={{ padding: 40, textAlign: "center", color: "var(--text-muted)", fontSize: 14 }}>This link isn't active. Ask whoever sent it for a new one.</div>
-      ) : meta.detail ? (
-        <meta.detail canEdit={false} meta={meta} snapshot={share.data} shareToken={token} />
       ) : (
-        <StudyDetail studyId={share.studyId} canEdit={false} snapshot={share.data} shareToken={token} />
+        <Suspense fallback={<div style={{ padding: 40, textAlign: "center", color: "var(--text-faint)" }}>Loading…</div>}>
+          <SharedStudyBody share={share} token={token} />
+        </Suspense>
       )}
     </div>
   );

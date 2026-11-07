@@ -2,25 +2,12 @@
 // credentials) -- access control comes entirely from the Firestore security
 // rules deployed alongside this app (see firestore.rules): only signed-in,
 // invited coaches can read or write anything.
-import { initializeApp } from "firebase/app";
-import { getFirestore } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 import { getStorage } from "firebase/storage";
+import { app, db } from "./firebaseApp.js";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyAokApn-a75wF0zY3eXncmvgikdAFG0qlE",
-  // Custom domain (Firebase Hosting, verified via Cloudflare DNS) so sign-in emails and action links
-  // come from a domain this project controls instead of the generic *.firebaseapp.com one -- the
-  // default was getting flagged as spam. See auth.cmichrecruiting.com in Firebase Hosting's custom
-  // domains and Authentication > Settings > Authorized domains.
-  authDomain: "auth.cmichrecruiting.com",
-  projectId: "gridline-6afe6",
-  storageBucket: "gridline-6afe6.firebasestorage.app",
-  messagingSenderId: "634127081395",
-  appId: "1:634127081395:web:703f5b4de6cf9238b835c6",
-};
-
-const app = initializeApp(firebaseConfig);
-export const db = getFirestore(app);
+// The custom auth domain (auth.cmichrecruiting.com, so sign-in emails come from a domain this project controls) is
+// set in firebaseApp.js with the rest of the config.
+export { db };
 export const auth = getAuth(app);
 export const storage = getStorage(app);
