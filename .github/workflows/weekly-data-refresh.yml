@@ -46,7 +46,7 @@ permissions:
 
 jobs:
   refresh:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04   # pinned: Playwright can't install its browser on the newer ubuntu-latest image
     timeout-minutes: 90
     steps:
       - uses: actions/checkout@v4
