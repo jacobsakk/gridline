@@ -235,7 +235,7 @@ export function useStudy(studyId, snapshot = null) {
             (g.stats || []).forEach((s) => {
               totals[s.key] = r[s.key] ?? 0;
             });
-            const row = { id: r.id, ...(r.previousTeam !== undefined ? { previousTeam: r.previousTeam } : null), transferFilm: r.transferFilm || "", player: r.player || "", team: r.team || "", state: r.state || "", hudlLink: r.hudlLink || "", pffLink: r.pffLink || "", totals, allMac: allMacTier(g.key, seasonKey, r.player) };
+            const row = { id: r.id, ...(r.transfersOnly ? { transfersOnly: true } : null), ...(r.previousTeam !== undefined ? { previousTeam: r.previousTeam } : null), transferFilm: r.transferFilm || "", player: r.player || "", team: r.team || "", state: r.state || "", hudlLink: r.hudlLink || "", pffLink: r.pffLink || "", totals, allMac: allMacTier(g.key, seasonKey, r.player) };
             if (g.scoreFormula) row.score = Math.round(g.scoreFormula.reduce((sum, t) => sum + (totals[t.key] ?? 0) * t.coef, 0) * 10) / 10;
             return row;
           });
@@ -283,7 +283,7 @@ export function useStudy(studyId, snapshot = null) {
     // (games/pffGrade for OL, games/att/yards/td/int/rushYards/rushTd for QB, and so on) so its columns
     // line up with whatever the rest of that group's table already shows. id is studyId-prefixed so the
     // subscription above picks it up; otherwise opaque.
-    async addManualRow(group, season) {
+    async addManualRow(group, season, extra = {}) {
       const groupMeta = meta.groups.find((g) => g.key === group);
       const id = `${studyId}__${group}__${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`;
       const statDefaults = {};
@@ -293,6 +293,7 @@ export function useStudy(studyId, snapshot = null) {
       await setDoc(doc(db, "studyManualRows", id), {
         group, season: Number(season), player: "", team: "", state: "", hudlLink: "", pffLink: "",
         ...statDefaults,
+        ...extra,
         createdAt: new Date().toISOString(),
       });
       return id;

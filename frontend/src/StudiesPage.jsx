@@ -538,16 +538,17 @@ export function StudyDetail({ studyId, canEdit, onBack, snapshot = null, shareTo
   const unique = (list) => [...list].sort((a, b) => Number(!!b.id) - Number(!!a.id)).filter((r, i, all) => all.findIndex((o) => memberKey(o) === memberKey(r)) === i);
   const topTransfers = (list, g) => list.filter((r) => prevTeamOf(photos, r, activeSeason)).sort(byRank(g)).slice(0, 10);
   const keep = (list, g = activeGroup) => {
-    if (view !== "transfers") return list.filter((r) => !r.pool && !r.excluded);
+    // A player added by hand on the MAC Transfers study (transfersOnly) belongs to that study alone.
+    if (view !== "transfers") return list.filter((r) => !r.pool && !r.excluded && !r.transfersOnly);
     // Off the Transfers tab: removed from it, or taken off the whole study -- unless he was put back by hand after that
     // (transfer-additions.json), which only applies to a removal made before that was done.
     const back = (r) => (TRANSFER_ADDITIONS[g.key] || []).includes(memberKey(r)) && (!r.excludedAt || r.excludedAt < TRANSFER_ADDITIONS.asOf);
     list = list.filter((r) => !r.transferRemoved && (!r.excluded || back(r)));
     const fixed = study.transferRoster;
     const added = TRANSFER_ADDITIONS[g.key] || [];
-    if (!fixed) return unique([...list.filter((r) => added.includes(memberKey(r))), ...topTransfers([...list], g)]).sort(byRank(g));
+    if (!fixed) return unique([...list.filter((r) => r.transfersOnly || added.includes(memberKey(r))), ...topTransfers([...list], g)]).sort(byRank(g));
     const members = new Set([...(fixed[g.key] || []), ...added]);
-    return unique(list.filter((r) => members.has(memberKey(r)) || (r.id && prevTeamOf(photos, r, activeSeason)))).sort(byRank(g));
+    return unique(list.filter((r) => members.has(memberKey(r)) || (r.id && (r.transfersOnly || prevTeamOf(photos, r, activeSeason))))).sort(byRank(g));
   };
   useEffect(() => {
     // Fix the list the first time a coach opens the tab (not on a shared copy, and not before previous teams have loaded).
@@ -606,7 +607,8 @@ export function StudyDetail({ studyId, canEdit, onBack, snapshot = null, shareTo
     setSort(g.scoreFormula ? { key: "score", dir: "desc" } : { key: g.stats[g.stats.length - 1]?.key || "player", dir: "desc" });
   }
   async function addPlayer() {
-    await study.addManualRow(group, activeSeason);
+    // On the MAC Transfers study the new player stays on that study (not the Most Productive lists), and shows right away.
+    await study.addManualRow(group, activeSeason, view === "transfers" ? { transfersOnly: true } : {});
   }
   async function removePlayer(r) {
     const isManualRow = !!r.id;
