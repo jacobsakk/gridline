@@ -172,11 +172,15 @@ function BoardFooter({ counts, side, classYear, board }) {
 
 
 export function useBoardPrintFit() {
-  // Printing: a board plus its key and counts is shrunk to fit one landscape letter page. Nothing is allowed to wrap
-  // onto a second line (a school, a measurables line, a column heading): each column is made as wide as its longest
-  // line needs, every column with players the same width and every empty one the same narrower width, and then the
-  // whole board is scaled to the page. The size is measured just before printing, so the key always prints with the
-  // prospects instead of spilling onto a second sheet.
+  // Printing: a board plus its key and counts is fitted to one landscape letter page, measured just before printing
+  // so the key always prints with the prospects instead of spilling onto a second sheet.
+  //  - A board with room to spare (few players, like a shared tier 1 board) is laid out in equal columns at the full
+  //    page width, and the type is made as large as it can be while the board still fits the sheet. A player's name
+  //    may wrap (first name over last) to make room; the school, measurables and GPA stay on one line. The boxes keep
+  //    their normal shape and spacing; they just get bigger letters.
+  //  - A full board can't do that, so nothing is allowed to wrap onto a second line (a school, a measurables line, a
+  //    column heading): each column is made as wide as its longest line needs, every column with players the same
+  //    width and every empty one the same narrower width, and then the whole board is scaled down to the page.
   useEffect(() => {
     const PAGE_W = 990; // 10.4in of printable width, in CSS pixels, with a little to spare
     const PAGE_H = 735; // 7.9in of printable height
@@ -190,59 +194,69 @@ export function useBoardPrintFit() {
         el.style.minHeight = "0px";
         if (!cols || !columns.length) return;
         cols.dataset.screenTemplate = cols.style.gridTemplateColumns;
+        const full = columns.map((c) => !!c.querySelector(".bb-card"));
+
+        // 1. Nothing wraps, and the whole board is scaled down to the page.
+        el.classList.remove("bb-wrapfit");
+        el.style.removeProperty("--bb-s");
         el.classList.add("bb-nowrap");
-        // Lays the board out with its cards scaled by `s` and returns the page zoom that then fits it.
-        const measure = (scale) => {
+        el.style.width = "max-content";
+        cols.style.gridTemplateColumns = columns.map(() => "max-content").join(" ");
+        const natural = columns.map((c) => c.offsetWidth);
+        const wFull = Math.max(0, ...natural.filter((_, i) => full[i]));
+        const wEmpty = Math.max(0, ...natural.filter((_, i) => !full[i]));
+        const total = natural.reduce((sum, _, i) => sum + (full[i] ? wFull : wEmpty), 0) + 2;
+        // Any extra width the page allows is shared out in proportion, so equal columns stay equal.
+        const ratio = wFull ? wEmpty / wFull : 1;
+        cols.style.gridTemplateColumns = columns.map((_, i) => (full[i] ? `minmax(${wFull}px, 1fr)` : `minmax(${wEmpty}px, ${ratio}fr)`)).join(" ");
+        el.style.width = `${total}px`;
+        let z = Math.min(1.6, PAGE_W / total, PAGE_H / el.scrollHeight);
+        for (let i = 0; i < 4; i++) {
+          el.style.width = `${PAGE_W / z}px`;
+          z = Math.min(z, PAGE_H / el.scrollHeight);
+        }
+        z = Math.max(0.3, z);
+
+        // 2. The same board at the full page width with the names allowed to wrap: if the type can be larger that way
+        //    than the scaled-down version's, use it.
+        if (!full.some(Boolean)) {
+          el.style.width = `${PAGE_W / z}px`;
+          el.style.zoom = String(z);
+          el.style.minHeight = `${PAGE_H / z - 2}px`;
+          return;
+        }
+        el.classList.remove("bb-nowrap");
+        el.classList.add("bb-wrapfit");
+        el.style.zoom = "";
+        el.style.minHeight = "0px";
+        el.style.width = `${PAGE_W}px`;
+        // Columns nobody is in take no room on the sheet (the totals at the bottom still list them), so the rest are wider.
+        columns.forEach((c, i) => {
+          if (!full[i]) c.style.display = "none";
+        });
+        cols.style.gridTemplateColumns = columns.filter((_, i) => full[i]).map(() => "minmax(0, 1fr)").join(" ");
+        const fits = (scale) => {
           el.style.setProperty("--bb-s", String(scale));
-          el.style.removeProperty("--bb-v");
-          el.style.zoom = "";
-          el.style.minHeight = "0px";
-          // Each column's natural width with nothing wrapping.
-          el.style.width = "max-content";
-          cols.style.gridTemplateColumns = columns.map(() => "max-content").join(" ");
-          const natural = columns.map((c) => c.offsetWidth);
-          const full = columns.map((c) => !!c.querySelector(".bb-card"));
-          const wFull = Math.max(0, ...natural.filter((_, i) => full[i]));
-          const wEmpty = Math.max(0, ...natural.filter((_, i) => !full[i]));
-          const total = natural.reduce((sum, _, i) => sum + (full[i] ? wFull : wEmpty), 0) + 2;
-          // Any extra width the page allows is shared out in proportion, so equal columns stay equal.
-          const ratio = wFull ? wEmpty / wFull : 1;
-          cols.style.gridTemplateColumns = columns.map((_, i) => (full[i] ? `minmax(${wFull}px, 1fr)` : `minmax(${wEmpty}px, ${ratio}fr)`)).join(" ");
-          el.style.width = `${total}px`;
-          let z = Math.min(1.6, PAGE_W / total, PAGE_H / el.scrollHeight);
-          for (let i = 0; i < 4; i++) {
-            el.style.width = `${PAGE_W / z}px`;
-            z = Math.min(z, PAGE_H / el.scrollHeight);
-          }
-          return Math.max(0.3, z);
+          if (el.scrollHeight > PAGE_H) return false;
+          // Only a player's name may wrap (first name over last); the school, measurables and GPA lines stay on one line.
+          const cut = [...el.querySelectorAll(".bb-card-text > div, .bb-colhead > span, .bb-tier > span")].some((t) => t.scrollWidth > t.clientWidth + 1);
+          return !cut;
         };
-        // A board with few players leaves the page mostly empty at normal card size, so the cards (type, photo,
-        // spacing) are made bigger until the board fills the sheet; the size that prints largest wins. A full board
-        // gains nothing from it and stays at normal size.
-        // The headings and the key shrink with the page, so the page zoom may only give up a little for it.
-        const baseZoom = measure(1);
-        let bestScale = 1;
-        let bestPrint = baseZoom;
-        for (let scale = 1.1; scale <= 2.6; scale += 0.1) {
-          const zoom = measure(scale);
-          if (zoom < baseZoom * 0.88) break;
-          if (scale * zoom > bestPrint * 1.01) {
-            bestPrint = scale * zoom;
-            bestScale = scale;
+        for (let scale = 3; scale >= Math.max(0.6, z * 1.05); scale -= 0.05) {
+          if (fits(scale)) {
+            el.style.minHeight = `${PAGE_H - 2}px`;
+            return;
           }
         }
-        const z = measure(bestScale);
+
+        // Back to the scaled-down version.
+        columns.forEach((c) => (c.style.display = ""));
+        el.classList.remove("bb-wrapfit");
+        el.style.removeProperty("--bb-s");
+        el.classList.add("bb-nowrap");
+        cols.style.gridTemplateColumns = columns.map((_, i) => (full[i] ? `minmax(${wFull}px, 1fr)` : `minmax(${wEmpty}px, ${ratio}fr)`)).join(" ");
         el.style.width = `${PAGE_W / z}px`;
         el.style.zoom = String(z);
-        // Cards can't get wider (the page width is used up), so what height is left over goes into taller boxes:
-        // more room around the text, as far as the board still fits the sheet.
-        let bestSpread = 1;
-        for (let spread = 1.1; spread <= 6; spread += 0.1) {
-          el.style.setProperty("--bb-v", String(spread));
-          if (el.scrollHeight * z > PAGE_H) break;
-          bestSpread = spread;
-        }
-        el.style.setProperty("--bb-v", String(bestSpread));
         // The board is stretched to the full page, its key at the bottom, instead of ending halfway down the sheet.
         el.style.minHeight = `${PAGE_H / z - 2}px`;
       });
@@ -252,7 +266,8 @@ export function useBoardPrintFit() {
       document.querySelectorAll(".bb-board").forEach((el) => {
         const cols = el.querySelector(".bb-cols");
         if (cols && cols.dataset.screenTemplate !== undefined) cols.style.gridTemplateColumns = cols.dataset.screenTemplate;
-        el.classList.remove("bb-nowrap");
+        el.querySelectorAll(".bb-col").forEach((c) => (c.style.display = ""));
+        el.classList.remove("bb-nowrap", "bb-wrapfit");
         el.style.removeProperty("--bb-s");
         el.style.removeProperty("--bb-v");
         el.style.zoom = "";

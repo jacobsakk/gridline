@@ -192,7 +192,7 @@ tbody tr:hover { background: var(--row-hover) !important; }
 .bb-colhead { background: #BFBFBF; font-weight: 800; font-size: 12px; padding: 4px 6px; display: flex; justify-content: space-between; gap: 6px; }
 .bb-tier { background: #510F1D; color: #FBAB18; font-weight: 800; font-size: 10.5px; padding: 3px 6px; display: flex; justify-content: space-between; align-items: center; }
 .bb-add { background: none; border: 1px solid rgba(251, 171, 24, 0.6); color: #FBAB18; border-radius: 3px; padding: 1px 3px; line-height: 0; cursor: pointer; }
-.bb-card { position: relative; display: flex; gap: calc(5px * var(--bb-s, 1)); padding: calc(4px * var(--bb-s, 1) * var(--bb-v, 1)) calc(5px * var(--bb-s, 1)); border-bottom: 1px solid #fff; cursor: pointer; font-size: calc(10.5px * var(--bb-s, 1)); line-height: calc(1.28 + (var(--bb-v, 1) - 1) * 0.5); color: #111; break-inside: avoid; }
+.bb-card { position: relative; display: flex; gap: calc(5px * var(--bb-s, 1)); padding: calc(4px * var(--bb-s, 1)) calc(5px * var(--bb-s, 1)); border-bottom: 1px solid #fff; cursor: pointer; font-size: calc(10.5px * var(--bb-s, 1)); line-height: 1.28; color: #111; break-inside: avoid; }
 .bb-card:hover { filter: brightness(0.95); }
 .bb-card-text { flex: 1; min-width: 0; overflow-wrap: anywhere; }
 .bb-name { font-weight: 800; font-size: calc(11.5px * var(--bb-s, 1)); }
@@ -210,7 +210,10 @@ tbody tr:hover { background: var(--row-hover) !important; }
 .bb-emoji-grid span { display: inline-block; min-width: 26px; font-size: 15px; line-height: 1.2; vertical-align: middle; }
 .bb-cgpa-check { color: #087a32; font-weight: 900; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 .bb-elig { position: absolute; right: 4px; bottom: 3px; padding: 0 5px; border-radius: 3px; background: #1f2937; color: #fff; font-size: calc(9px * var(--bb-s, 1)); font-weight: 800; letter-spacing: 0.04em; line-height: 1.5; white-space: nowrap; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-.bb-has-elig .bb-card-text { padding-right: calc(40px * var(--bb-s, 1)); }
+.bb-has-elig .bb-card-text > div:last-child { padding-right: calc(40px * var(--bb-s, 1)); }
+/* Printed with bigger type, the badge gets its own line under the text (still bottom right) instead of taking width. */
+.bb-wrapfit .bb-has-elig { padding-bottom: calc(18px * var(--bb-s, 1)); }
+.bb-wrapfit .bb-has-elig .bb-card-text > div:last-child { padding-right: 0; }
 .bb-counts { padding-bottom: 6px; }
 .bb-counts > div:not(.bb-footh) { padding: 1px 8px; }
 @page bb { size: letter landscape; margin: 0.3in; }
@@ -301,7 +304,8 @@ tbody tr:hover { background: var(--row-hover) !important; }
 
 /* While a board is being fitted to the page nothing on it wraps: a school or measurables line runs on one line and the
    column is made wide enough for it instead. */
-.bb-nowrap .bb-card-text { align-self: center; }
+.bb-wrapfit .bb-card-text { overflow-wrap: normal; }
+.bb-wrapfit .bb-card-text > div:not(.bb-name) { white-space: nowrap; }
 .bb-nowrap .bb-card-text, .bb-nowrap .bb-card-text > div { white-space: nowrap; overflow-wrap: normal; }
 .bb-nowrap .bb-colhead span, .bb-nowrap .bb-tier span { white-space: nowrap; }
 .bb-nowrap .bb-colhead { flex-wrap: nowrap; gap: 10px; }
