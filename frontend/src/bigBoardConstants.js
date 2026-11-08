@@ -30,7 +30,7 @@ export const FLAGS = [
   { key: "injured", marker: "⛑️", label: "Injured / injury history" },
 ];
 // JUCO board only: a prospect cleared to be brought in on a visit.
-export const VISIT_READY = { key: "visitReady", marker: "✅", label: "Visit ready" };
+export const VISIT_READY = { key: "visitReady", marker: "✅", label: "Points of Contact" };
 export const VISITS = [
   { marker: "✈️", label: "Coming on official visit" },
   { marker: "🚗", label: "Has been on unofficial visit" },
