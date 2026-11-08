@@ -191,28 +191,59 @@ export function useBoardPrintFit() {
         if (!cols || !columns.length) return;
         cols.dataset.screenTemplate = cols.style.gridTemplateColumns;
         el.classList.add("bb-nowrap");
-        // Each column's natural width with nothing wrapping.
-        el.style.width = "max-content";
-        cols.style.gridTemplateColumns = columns.map(() => "max-content").join(" ");
-        const natural = columns.map((c) => c.offsetWidth);
-        const full = columns.map((c) => !!c.querySelector(".bb-card"));
-        const wFull = Math.max(0, ...natural.filter((_, i) => full[i]));
-        const wEmpty = Math.max(0, ...natural.filter((_, i) => !full[i]));
-        const total = natural.reduce((sum, _, i) => sum + (full[i] ? wFull : wEmpty), 0) + 2;
-        // Any extra width the page allows is shared out in proportion, so equal columns stay equal.
-        const ratio = wFull ? wEmpty / wFull : 1;
-        cols.style.gridTemplateColumns = columns.map((_, i) => (full[i] ? `minmax(${wFull}px, 1fr)` : `minmax(${wEmpty}px, ${ratio}fr)`)).join(" ");
-        el.style.width = `${total}px`;
-        let z = Math.min(1.6, PAGE_W / total, PAGE_H / el.scrollHeight);
-        for (let i = 0; i < 4; i++) {
-          el.style.width = `${PAGE_W / z}px`;
-          z = Math.min(z, PAGE_H / el.scrollHeight);
+        // Lays the board out with its cards scaled by `s` and returns the page zoom that then fits it.
+        const measure = (scale) => {
+          el.style.setProperty("--bb-s", String(scale));
+          el.style.removeProperty("--bb-v");
+          el.style.zoom = "";
+          el.style.minHeight = "0px";
+          // Each column's natural width with nothing wrapping.
+          el.style.width = "max-content";
+          cols.style.gridTemplateColumns = columns.map(() => "max-content").join(" ");
+          const natural = columns.map((c) => c.offsetWidth);
+          const full = columns.map((c) => !!c.querySelector(".bb-card"));
+          const wFull = Math.max(0, ...natural.filter((_, i) => full[i]));
+          const wEmpty = Math.max(0, ...natural.filter((_, i) => !full[i]));
+          const total = natural.reduce((sum, _, i) => sum + (full[i] ? wFull : wEmpty), 0) + 2;
+          // Any extra width the page allows is shared out in proportion, so equal columns stay equal.
+          const ratio = wFull ? wEmpty / wFull : 1;
+          cols.style.gridTemplateColumns = columns.map((_, i) => (full[i] ? `minmax(${wFull}px, 1fr)` : `minmax(${wEmpty}px, ${ratio}fr)`)).join(" ");
+          el.style.width = `${total}px`;
+          let z = Math.min(1.6, PAGE_W / total, PAGE_H / el.scrollHeight);
+          for (let i = 0; i < 4; i++) {
+            el.style.width = `${PAGE_W / z}px`;
+            z = Math.min(z, PAGE_H / el.scrollHeight);
+          }
+          return Math.max(0.3, z);
+        };
+        // A board with few players leaves the page mostly empty at normal card size, so the cards (type, photo,
+        // spacing) are made bigger until the board fills the sheet; the size that prints largest wins. A full board
+        // gains nothing from it and stays at normal size.
+        // The headings and the key shrink with the page, so the page zoom may only give up a little for it.
+        const baseZoom = measure(1);
+        let bestScale = 1;
+        let bestPrint = baseZoom;
+        for (let scale = 1.1; scale <= 2.6; scale += 0.1) {
+          const zoom = measure(scale);
+          if (zoom < baseZoom * 0.88) break;
+          if (scale * zoom > bestPrint * 1.01) {
+            bestPrint = scale * zoom;
+            bestScale = scale;
+          }
         }
-        z = Math.max(0.3, z);
+        const z = measure(bestScale);
         el.style.width = `${PAGE_W / z}px`;
         el.style.zoom = String(z);
-        // A short board (the JUCO one) is stretched to the full page, its key at the bottom, instead of ending
-        // halfway down the sheet.
+        // Cards can't get wider (the page width is used up), so what height is left over goes into taller boxes:
+        // more room around the text, as far as the board still fits the sheet.
+        let bestSpread = 1;
+        for (let spread = 1.1; spread <= 6; spread += 0.1) {
+          el.style.setProperty("--bb-v", String(spread));
+          if (el.scrollHeight * z > PAGE_H) break;
+          bestSpread = spread;
+        }
+        el.style.setProperty("--bb-v", String(bestSpread));
+        // The board is stretched to the full page, its key at the bottom, instead of ending halfway down the sheet.
         el.style.minHeight = `${PAGE_H / z - 2}px`;
       });
     };
@@ -222,6 +253,8 @@ export function useBoardPrintFit() {
         const cols = el.querySelector(".bb-cols");
         if (cols && cols.dataset.screenTemplate !== undefined) cols.style.gridTemplateColumns = cols.dataset.screenTemplate;
         el.classList.remove("bb-nowrap");
+        el.style.removeProperty("--bb-s");
+        el.style.removeProperty("--bb-v");
         el.style.zoom = "";
         el.style.width = "";
         el.style.minHeight = "";
