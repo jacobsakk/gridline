@@ -20,6 +20,7 @@ import {
   lazyDepthCharts,
   linkDepthChart,
   logoFor,
+  pollName,
   rankFor,
   refreshDepthCharts,
   statLinesFor,
@@ -117,7 +118,7 @@ function ProfileHeader({ college, onOpenTeam }) {
           <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
             <h2 className="oswald" style={{ margin: 0, fontSize: 34, fontWeight: 700, letterSpacing: "0.01em" }}>{college.name}</h2>
             {rank && (
-              <span style={{ background: "var(--gold)", color: "#1A1206", borderRadius: 5, padding: "2px 8px", fontSize: 13, fontWeight: 800 }} title={`${college.division === "FBS" ? "AP" : "Coaches"} poll`}>
+              <span style={{ background: "var(--gold)", color: "#1A1206", borderRadius: 5, padding: "2px 8px", fontSize: 13, fontWeight: 800 }} title={pollName(college.division)}>
                 #{rank}
               </span>
             )}

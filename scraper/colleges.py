@@ -177,11 +177,15 @@ def build_standings():
         result["divisions"][division] = conferences
 
     rankings = get(f"{ESPN_WEB}/site/v2/sports/football/college-football/rankings")
-    wanted = {"AP Top 25": "FBS", "FCS Coaches Poll": "FCS"}
+    # ESPN sometimes drops the AP poll from this feed; fall back to the AFCA
+    # Coaches Poll so FBS never shows "No poll yet".
+    wanted = {"AP Top 25": "FBS", "AFCA Coaches Poll": "FBS", "FCS Coaches Poll": "FCS"}
     for poll in rankings["rankings"]:
         division = wanted.get(poll["name"])
         if not division:
             continue
+        if division in result["polls"] and poll["name"] != "AP Top 25":
+            continue  # keep AP when it is present
         result["polls"][division] = {
             "name": poll["name"],
             "headline": poll.get("headline", ""),

@@ -95,14 +95,27 @@ function opponentOf(event, teamId) {
   };
 }
 
+// Read from the schedule feed, not /teams/{id}: ESPN stopped sending CORS
+// headers on the team endpoint, so browsers can no longer call it (every team
+// then showed "No game scheduled"). The schedule feed still allows it and
+// carries the record, standing and every game, so the next game is simply the
+// first one that hasn't finished.
 export async function fetchTeamSummary(id) {
-  const data = await cached(`${ESPN}/teams/${id}`);
-  const team = data.team;
-  const nextEvent = team.nextEvent?.[0];
+  const season = standings.season;
+  const data = await cached(`${ESPN}/teams/${id}/schedule?season=${season}`);
+  const team = data.team || {};
+  const events = (data.events || []).filter((e) => e.date).sort((a, b) => new Date(a.date) - new Date(b.date));
+  // A game that kicked off a few hours ago may not be marked final yet; keep
+  // showing it as "next" until it is.
+  const upcoming = events.find((e) => {
+    const comp = e.competitions?.[0];
+    const done = !!comp?.status?.type?.completed || !!e.status?.type?.completed;
+    return !done;
+  });
   return {
-    record: team.record?.items?.find((i) => i.type === "total")?.summary || "",
+    record: team.recordSummary || "",
     standingSummary: team.standingSummary || "",
-    next: nextEvent ? { ...opponentOf(nextEvent, id), date: nextEvent.date } : null,
+    next: upcoming ? { ...opponentOf(upcoming, id), date: upcoming.date } : null,
   };
 }
 
