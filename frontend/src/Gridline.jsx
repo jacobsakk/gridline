@@ -254,7 +254,8 @@ export function useWatchlist() {
         division: division || archived.division || "",
         position: position || archived.position || "",
         homeState: homeState || archived.homeState || "",
-        ...extra,
+        // Only what was actually filled in -- blanks must not wipe the old entry's saved info.
+        ...Object.fromEntries(Object.entries(extra).filter(([, v]) => v !== "" && v != null)),
       });
       return;
     }
@@ -499,6 +500,11 @@ function WatchListRow({
   const [height, setHeight] = useState(p.height || "");
   const [weight, setWeight] = useState(p.weight || "");
   const notesRef = useRef(null);
+  // Edits made elsewhere (the player's profile, another coach) arrive as a changed
+  // doc -- pull them into the cells so Ht/Wt/Notes always match the profile.
+  useEffect(() => setHeight(p.height || ""), [p.height]);
+  useEffect(() => setWeight(p.weight || ""), [p.weight]);
+  useEffect(() => { setNotes(p.notes || ""); requestAnimationFrame(autoResizeNotes); }, [p.notes]);
   // The ESPN picture, for a player the Pre-Portal data carries from ESPN (FBS / FCS); anyone else uses a photo added by hand.
   const espnId = useMemo(() => espnIdFromRow(DATA.find((r) => r.player === p.player && r.team === p.team)), [p.player, p.team]);
 
@@ -1225,6 +1231,12 @@ export function PlayerDetailModal({ sel, onClose, watchlist, portalStatus, espn 
   };
   useEffect(autoResizeWlNotes, []);
   useEffect(autoResizeWlEvaluation, []);
+  // Same two-way link as the grid: a change made in the Watch List table (or by another
+  // coach) shows up here, instead of the profile keeping the value it opened with.
+  useEffect(() => setWlHeight(watched?.height || ""), [watched?.height]);
+  useEffect(() => setWlWeight(watched?.weight || ""), [watched?.weight]);
+  useEffect(() => { setWlNotes(watched?.notes || ""); requestAnimationFrame(autoResizeWlNotes); }, [watched?.notes]);
+  useEffect(() => { setWlEvaluation(watched?.evaluation || ""); requestAnimationFrame(autoResizeWlEvaluation); }, [watched?.evaluation]);
 
   const byCategory = useMemo(() => {
     const grouped = {};
@@ -1287,7 +1299,7 @@ export function PlayerDetailModal({ sel, onClose, watchlist, portalStatus, espn 
               )}
               <button
                 className="watch-toggle"
-                onClick={() => (watched ? confirmRemoveFromWatchlist(watchlist, watched.id, sel.player) : watchlist.addPlayer({ ...sel, homeState: first?.homeState || "" }))}
+                onClick={() => (watched ? confirmRemoveFromWatchlist(watchlist, watched.id, sel.player) : watchlist.addPlayer({ ...sel, homeState: first?.homeState || "", height: first?.height || "", weight: first?.weight ? String(first.weight) : "" }))}
                 title={watched ? "Remove from watch list" : "Add to watch list"}
                 style={watchToggleButtonStyle}
               >
