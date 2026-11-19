@@ -274,6 +274,7 @@ export function useWatchlist() {
       eligibility: "",
       xLink: "",
       filmLink: "",
+      collegeLink: "",
       lastSeenSnapshot: "",
       sortOrder: Date.now(),
       removed: false,
@@ -622,6 +623,9 @@ function WatchListRow({
       <td style={tdStyle}>
         <LinkCell row={p} field="filmLink" label="Film" placeholder="Paste a film link…" editable onSave={(url) => onUpdate("filmLink", url)} />
       </td>
+      <td style={tdStyle}>
+        <LinkCell row={p} field="collegeLink" label="College" placeholder="Paste a college page link…" editable onSave={(url) => onUpdate("collegeLink", url)} />
+      </td>
       <td style={{ ...tdStyle, verticalAlign: "top" }}>
         <textarea
           ref={notesRef}
@@ -649,7 +653,7 @@ function WatchListRow({
   );
 }
 
-const WATCHLIST_COLUMNS = ["", "", "Player", "Team", "Division", "Pos", "Home State", "Ht", "Wt", "Eligibility", "X", "Film Link", "Notes", ""];
+const WATCHLIST_COLUMNS = ["", "", "Player", "Team", "Division", "Pos", "Home State", "Ht", "Wt", "Eligibility", "X", "Film Link", "College Page", "Notes", ""];
 // Which of the columns above can be clicked to sort the watch list --
 // keyed by the doc field each one reads. Only active on the "All"
 // position tab (see positionTab check in WatchListPanel) -- sorting by
@@ -676,7 +680,7 @@ function heightToInches(height) {
 // table (sticky header, gridlines) instead of a narrow sidebar, so editing
 // a dozen watched players' notes/homeState/eligibility doesn't feel cramped.
 function exportWatchListCsv(players) {
-  const headers = ["Player", "Team", "Division", "Position", "Height", "Weight", "Eligibility", "Questionnaire", "Pipelined", "Home State", "X", "Film Link", "Evaluation", "Notes"];
+  const headers = ["Player", "Team", "Division", "Position", "Height", "Weight", "Eligibility", "Questionnaire", "Pipelined", "Home State", "X", "Film Link", "College Page", "Evaluation", "Notes"];
   const escape = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`;
   const lines = [headers.map(escape).join(",")];
   for (const p of players) {
@@ -694,6 +698,7 @@ function exportWatchListCsv(players) {
         p.homeState,
         p.xLink,
         p.filmLink,
+        p.collegeLink,
         p.evaluation,
         p.notes,
       ]
@@ -717,7 +722,7 @@ function exportWatchListCsv(players) {
 function NewWatchPlayerModal({ watchlist, onClose }) {
   const [draft, setDraft] = useState({
     player: "", team: "", division: "", position: WATCH_POSITIONS[0], height: "", weight: "", eligibility: "",
-    questionnaire: false, pipelined: false, xLink: "", filmLink: "", homeState: "", evaluation: "", notes: "",
+    questionnaire: false, pipelined: false, xLink: "", filmLink: "", collegeLink: "", homeState: "", evaluation: "", notes: "",
   });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -825,6 +830,10 @@ function NewWatchPlayerModal({ watchlist, onClose }) {
               <div>
                 <label style={fieldLabelStyle}>Film Link</label>
                 <LinkCell row={draft} field="filmLink" label="Film" placeholder="Paste a film link…" editable onSave={(url) => set("filmLink", url)} />
+              </div>
+              <div>
+                <label style={fieldLabelStyle}>College Page</label>
+                <LinkCell row={draft} field="collegeLink" label="College" placeholder="Paste a college page link…" editable onSave={(url) => set("collegeLink", url)} />
               </div>
               <div>
                 <label style={fieldLabelStyle}>Home State</label>
@@ -1465,6 +1474,10 @@ export function PlayerDetailModal({ sel, onClose, watchlist, portalStatus, espn 
                 <div>
                   <label style={fieldLabelStyle}>Film Link</label>
                   <LinkCell row={watched} field="filmLink" label="Film" placeholder="Paste a film link…" editable onSave={(url) => watchlist.updateField(watched.id, "filmLink", url)} />
+                </div>
+                <div>
+                  <label style={fieldLabelStyle}>College Page</label>
+                  <LinkCell row={watched} field="collegeLink" label="College" placeholder="Paste a college page link…" editable onSave={(url) => watchlist.updateField(watched.id, "collegeLink", url)} />
                 </div>
                 <div>
                   <label style={fieldLabelStyle}>Home State</label>
