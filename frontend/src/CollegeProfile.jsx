@@ -26,6 +26,8 @@ import {
   statLinesFor,
   saveGithubToken,
   rosterFor,
+  fetchRoster,
+  jerseyFor,
   standingFor,
   teamKey,
 } from "./collegeData.js";
@@ -451,7 +453,13 @@ function statDisplay(row, key) {
 }
 
 function RosterTab({ college }) {
-  const lines = useMemo(() => statLinesFor(college), [college]);
+  const statLines = useMemo(() => statLinesFor(college), [college]);
+  // Jersey numbers come from ESPN's roster, matched by ESPN id then name; a row stays blank if there's no sure match.
+  const espnRoster = useAsync(() => fetchRoster(college.id), [college.id]);
+  const lines = useMemo(
+    () => Object.fromEntries(Object.entries(statLines).map(([cat, list]) => [cat, list.map((r) => ({ ...r, jersey: jerseyFor(espnRoster.data, { espnId: espnIdFromRow(r), name: r.player }) }))])),
+    [statLines, espnRoster.data]
+  );
   const populated = Object.keys(STAT_TABLES).filter((c) => lines[c].length > 0);
   const [category, setCategory] = useState(null);
   const active = category && lines[category]?.length ? category : populated.includes("passing") ? "passing" : populated[0] || "passing";
@@ -473,6 +481,7 @@ function RosterTab({ college }) {
     return [...filtered].sort((a, b) => {
       let cmp;
       if (valueKey === "player" || valueKey === "position" || valueKey === "homeState") cmp = String(a[valueKey] || "").localeCompare(String(b[valueKey] || ""));
+      else if (valueKey === "jersey") cmp = (a.jersey ? Number(a.jersey) : 999) - (b.jersey ? Number(b.jersey) : 999);
       else cmp = statValue(a, valueKey) - statValue(b, valueKey);
       if (cmp === 0) cmp = String(a.player).localeCompare(String(b.player));
       return dir === "desc" ? -cmp : cmp;
@@ -480,9 +489,9 @@ function RosterTab({ college }) {
   }, [lines, active, sortKey, sort, homeState]);
 
   function sortBy(key) {
-    const alpha = key === "player" || key === "position" || key === "homeState";
+    const ascending = key === "player" || key === "position" || key === "homeState" || key === "jersey";
     if (sortKey === key) setSort({ key, dir: sort.dir === "desc" ? "asc" : "desc" });
-    else setSort({ key, dir: alpha ? "asc" : "desc" });
+    else setSort({ key, dir: ascending ? "asc" : "desc" });
   }
 
   const total = new Set(Object.values(lines).flatMap((list) => list.map((r) => compactKey(r.player)))).size;
@@ -541,6 +550,7 @@ function RosterTab({ college }) {
           <thead>
             <tr>
               <th style={th} onClick={() => sortBy("player")}>Player {arrow("player")}</th>
+              <th style={{ ...th, textAlign: "right" }} onClick={() => sortBy("jersey")} title="Jersey number">No. {arrow("jersey")}</th>
               <th style={th} onClick={() => sortBy("position")}>Pos {arrow("position")}</th>
               <th style={th} onClick={() => sortBy("homeState")}>Home State {arrow("homeState")}</th>
               <th style={{ ...th, textAlign: "right" }} onClick={() => sortBy("height")}>Ht {arrow("height")}</th>
@@ -566,6 +576,7 @@ function RosterTab({ college }) {
                     </span>
                   </span>
                 </td>
+                <td className="tabular" style={{ ...tdStyle, textAlign: "right", fontWeight: 700 }}>{r.jersey ? `#${r.jersey}` : "—"}</td>
                 <td style={{ ...tdStyle, color: "var(--accent)", fontWeight: 700 }}>{r.position || "—"}</td>
                 <td style={{ ...tdStyle, color: "var(--text-muted)" }}>{r.homeState || "—"}</td>
                 <td className="tabular" style={{ ...tdStyle, textAlign: "right", color: "var(--text-muted)" }}>{r.height || "—"}</td>
@@ -636,7 +647,7 @@ function DepthChip({ player, linked, onOpen }) {
       onMouseEnter={(e) => linked && (e.currentTarget.style.transform = "translateY(-1px)")}
       onMouseLeave={(e) => (e.currentTarget.style.transform = "none")}
     >
-      #{player.no} {player.name}
+      {player.no ? `#${player.no} ` : ""}{player.name}
       {player.rs && <span style={{ color: "#D62828", marginLeft: 3 }}>*</span>}
     </div>
   );
@@ -702,6 +713,7 @@ function DepthChartTab({ college }) {
   const watchlist = useWatchlist();
   const portalStatus = usePortalStatus();
   const roster = useMemo(() => rosterFor(college), [college]);
+  const espnRoster = useAsync(() => fetchRoster(college.id), [college.id]);
 
   // The daily scrape commits to the repo before the site is redeployed, so
   // quietly check whether GitHub already has something newer.
@@ -808,7 +820,7 @@ function DepthChartTab({ college }) {
                         return (
                           <DepthChip
                             key={j}
-                            player={pl}
+                            player={pl.no ? pl : { ...pl, no: jerseyFor(espnRoster.data, { name: pl.name }) }}
                             linked={!!match}
                             onOpen={() => setSelected({ player: match.player, team: match.team, division: match.division, position: match.position, variants: match.variants })}
                           />

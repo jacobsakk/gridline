@@ -13,6 +13,7 @@ import { loadUploads } from "./statsUpload.js";
 import { canonicalSchool } from "./schoolNames.js";
 import HeadshotFace from "./HeadshotFace.jsx";
 import { colorForTeam, espnIdFromRow, espnProfileUrl, espnSearchUrl } from "./espnPlayer.js";
+import { collegeForLabel, fetchRoster, jerseyFor } from "./collegeData.js";
 import { photoFromFile } from "./hsData.js";
 import { nameKey } from "./bigBoardConstants.js";
 
@@ -329,6 +330,7 @@ export function useWatchlist() {
       xLink: "",
       filmLink: "",
       collegeLink: "",
+      jersey: "",
       lastSeenSnapshot: "",
       sortOrder: Date.now(),
       removed: false,
@@ -554,11 +556,13 @@ function WatchListRow({
   const [notes, setNotes] = useState(p.notes || "");
   const [height, setHeight] = useState(p.height || "");
   const [weight, setWeight] = useState(p.weight || "");
+  const [jersey, setJersey] = useState(p.jersey || "");
   const notesRef = useRef(null);
   // Edits made elsewhere (the player's profile, another coach) arrive as a changed
   // doc -- pull them into the cells so Ht/Wt/Notes always match the profile.
   useEffect(() => setHeight(p.height || ""), [p.height]);
   useEffect(() => setWeight(p.weight || ""), [p.weight]);
+  useEffect(() => setJersey(p.jersey || ""), [p.jersey]);
   useEffect(() => { setNotes(p.notes || ""); requestAnimationFrame(autoResizeNotes); }, [p.notes]);
   // The ESPN picture, for a player the Pre-Portal data carries from ESPN (FBS / FCS); anyone else uses a photo added by hand.
   const espnId = useMemo(() => espnIdFromRow(DATA.find((r) => r.player === p.player && r.team === p.team)), [p.player, p.team]);
@@ -644,6 +648,17 @@ function WatchListRow({
         </select>
       </td>
       <td style={tdStyle}>
+        <input
+          value={jersey}
+          onChange={(e) => setJersey(e.target.value.replace(/[^0-9]/g, "").slice(0, 3))}
+          onBlur={() => onUpdate("jersey", jersey)}
+          placeholder="#"
+          inputMode="numeric"
+          aria-label="Jersey number"
+          style={{ ...cellInputStyle, width: 44 }}
+        />
+      </td>
+      <td style={tdStyle}>
         <StateCell row={p} field="homeState" editable onSave={(state) => onUpdate("homeState", state)} />
       </td>
       <td style={tdStyle}>
@@ -726,7 +741,7 @@ function WatchListRow({
   );
 }
 
-const WATCHLIST_COLUMNS = ["", "", "Player", "Team", "Division", "Pos", "Home State", "Ht", "Wt", "Eligibility", "X", "Film Link", "College Page", "Notes", ""];
+const WATCHLIST_COLUMNS = ["", "", "Player", "Team", "Division", "Pos", "No.", "Home State", "Ht", "Wt", "Eligibility", "X", "Film Link", "College Page", "Notes", ""];
 // Which of the columns above can be clicked to sort the watch list --
 // keyed by the doc field each one reads. Only active on the "All"
 // position tab (see positionTab check in WatchListPanel) -- sorting by
@@ -735,6 +750,7 @@ const WATCHLIST_SORTABLE = {
   Team: "team",
   Division: "division",
   Pos: "position",
+  "No.": "jersey",
   Ht: "height",
   Wt: "weight",
   Eligibility: "eligibility",
@@ -753,7 +769,7 @@ function heightToInches(height) {
 // table (sticky header, gridlines) instead of a narrow sidebar, so editing
 // a dozen watched players' notes/homeState/eligibility doesn't feel cramped.
 function exportWatchListCsv(players) {
-  const headers = ["Player", "Team", "Division", "Position", "Height", "Weight", "Eligibility", "Questionnaire", "Pipelined", "Home State", "X", "Film Link", "College Page", "Evaluation", "Notes"];
+  const headers = ["Player", "Team", "Division", "Position", "Jersey #", "Height", "Weight", "Eligibility", "Questionnaire", "Pipelined", "Home State", "X", "Film Link", "College Page", "Evaluation", "Notes"];
   const escape = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`;
   const lines = [headers.map(escape).join(",")];
   for (const p of players) {
@@ -763,6 +779,7 @@ function exportWatchListCsv(players) {
         p.team,
         p.division,
         p.position,
+        p.jersey,
         p.height,
         p.weight,
         p.eligibility ? `${p.eligibility} year${p.eligibility === "1" ? "" : "s"}` : "",
@@ -795,7 +812,7 @@ function exportWatchListCsv(players) {
 function NewWatchPlayerModal({ watchlist, onClose }) {
   const [draft, setDraft] = useState({
     player: "", team: "", division: "", position: WATCH_POSITIONS[0], height: "", weight: "", eligibility: "",
-    questionnaire: false, pipelined: false, xLink: "", filmLink: "", collegeLink: "", homeState: "", evaluation: "", notes: "",
+    questionnaire: false, pipelined: false, xLink: "", filmLink: "", collegeLink: "", jersey: "", homeState: "", evaluation: "", notes: "",
   });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -864,6 +881,10 @@ function NewWatchPlayerModal({ watchlist, onClose }) {
                     <option key={pos} value={pos}>{pos}</option>
                   ))}
                 </select>
+              </div>
+              <div>
+                <label htmlFor="nwp-no" style={fieldLabelStyle}>Jersey #</label>
+                <input id="nwp-no" value={draft.jersey} onChange={(e) => set("jersey", e.target.value.replace(/[^0-9]/g, "").slice(0, 3))} placeholder="e.g. 12" inputMode="numeric" style={fieldInputStyle} />
               </div>
               <div>
                 <label htmlFor="nwp-ht" style={fieldLabelStyle}>Height</label>
@@ -1293,6 +1314,22 @@ export function PlayerDetailModal({ sel, onClose, watchlist, portalStatus, espn 
   const [wlEvaluation, setWlEvaluation] = useState(watched?.evaluation || "");
   const [wlHeight, setWlHeight] = useState(watched?.height || "");
   const [wlWeight, setWlWeight] = useState(watched?.weight || "");
+  const [wlJersey, setWlJersey] = useState(watched?.jersey || "");
+  // FBS/FCS numbers come from ESPN's roster for the player's school; D2 and others are typed in on the watch list.
+  const [espnJersey, setEspnJersey] = useState("");
+  useEffect(() => {
+    const college = collegeForLabel(sel.team);
+    setEspnJersey("");
+    if (!college) return undefined;
+    let live = true;
+    fetchRoster(college.id)
+      .then((roster) => live && setEspnJersey(jerseyFor(roster, { espnId, name: sel.player })))
+      .catch(() => {});
+    return () => {
+      live = false;
+    };
+  }, [sel.team, sel.player, espnId]);
+  const jerseyNumber = watched?.jersey || espnJersey;
   const wlNotesRef = useRef(null);
   const wlEvaluationRef = useRef(null);
   const autoResizeWlNotes = () => {
@@ -1313,6 +1350,7 @@ export function PlayerDetailModal({ sel, onClose, watchlist, portalStatus, espn 
   // coach) shows up here, instead of the profile keeping the value it opened with.
   useEffect(() => setWlHeight(watched?.height || ""), [watched?.height]);
   useEffect(() => setWlWeight(watched?.weight || ""), [watched?.weight]);
+  useEffect(() => setWlJersey(watched?.jersey || ""), [watched?.jersey]);
   useEffect(() => { setWlNotes(watched?.notes || ""); requestAnimationFrame(autoResizeWlNotes); }, [watched?.notes]);
   useEffect(() => { setWlEvaluation(watched?.evaluation || ""); requestAnimationFrame(autoResizeWlEvaluation); }, [watched?.evaluation]);
 
@@ -1369,6 +1407,7 @@ export function PlayerDetailModal({ sel, onClose, watchlist, portalStatus, espn 
           <div>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <h2 className="oswald" style={{ fontSize: 20, margin: 0, fontWeight: 700 }}>
+                {jerseyNumber && <span style={{ color: "var(--accent)", marginRight: 8 }} title="Jersey number">#{jerseyNumber}</span>}
                 {sel.player}
               </h2>
               {portalStatus.isInPortal(sel.player, sel.team) && (
@@ -1532,6 +1571,17 @@ export function PlayerDetailModal({ sel, onClose, watchlist, portalStatus, espn 
                     onChange={(e) => setWlWeight(e.target.value)}
                     onBlur={() => watchlist.updateField(watched.id, "weight", wlWeight)}
                     placeholder="e.g. 210"
+                    style={fieldInputStyle}
+                  />
+                </div>
+                <div>
+                  <label style={fieldLabelStyle}>Jersey #</label>
+                  <input
+                    value={wlJersey}
+                    onChange={(e) => setWlJersey(e.target.value.replace(/[^0-9]/g, "").slice(0, 3))}
+                    onBlur={() => watchlist.updateField(watched.id, "jersey", wlJersey)}
+                    placeholder={espnJersey || "e.g. 12"}
+                    inputMode="numeric"
                     style={fieldInputStyle}
                   />
                 </div>

@@ -150,6 +150,42 @@ export async function fetchTeamStats(id) {
   };
 }
 
+// Jersey numbers. The stat feeds the Roster tab is built from carry no number, but ESPN's team roster lists one
+// for nearly every FBS/FCS player (and sends CORS headers), so it is read live and matched to a player by ESPN id,
+// falling back to the name. D2 has no ESPN roster -- those numbers are typed in on the watch list.
+export async function fetchRoster(id) {
+  const data = await cached(`${ESPN}/teams/${id}/roster`);
+  const list = (data.athletes || [])
+    .flatMap((group) => group.items || [])
+    .map((a) => ({ id: String(a.id), name: a.fullName || a.displayName || "", jersey: a.jersey ? String(a.jersey) : "" }))
+    .filter((a) => a.name);
+  const byId = new Map();
+  const byName = new Map();
+  list.forEach((a) => {
+    if (!a.jersey) return;
+    byId.set(a.id, a.jersey);
+    byName.set(compact(a.name), a.jersey);
+  });
+  return { list, byId, byName };
+}
+
+// The number for one player from a fetchRoster() result: exact ESPN id, then exact name, then last name plus a
+// compatible first name when that leaves exactly one candidate (a wrong number is worse than none).
+export function jerseyFor(roster, { espnId, name }) {
+  if (!roster) return "";
+  if (espnId && roster.byId.has(espnId)) return roster.byId.get(espnId);
+  const exact = roster.byName.get(compact(name));
+  if (exact) return exact;
+  const words = nameKey(name).split(" ");
+  const last = words[words.length - 1];
+  const hits = roster.list.filter((a) => {
+    if (!a.jersey) return false;
+    const w = nameKey(a.name).split(" ");
+    return w[w.length - 1] === last && firstNamesMatch(words[0], w[0]);
+  });
+  return hits.length === 1 ? hits[0].jersey : "";
+}
+
 // ---------------------------------------------------- on-demand Ourlads refresh
 //
 // Ourlads can't be read from the browser (no CORS), so "refresh" asks GitHub
