@@ -12,7 +12,7 @@ import { useIsPhone } from "./usePhone.js";
 import { matchPhotoFiles, mondayOf, photoFromFile, toIso } from "./hsData.js";
 import {
   FLAGS, RATING_KEYS, STATUSES, STATUS_BY_KEY, TRENDS, VISIT_READY, VISITS, addColumns, blankPlayer, boardTitle, buildCreditList, classYearFromTitle,
-  buildJucoCreditList, commitCounts, creditKey, diffBoards, handChange, nameKey, parseBoardSheet, parseCreditSheet, readWorkbook, useBigBoards,
+  buildJucoCreditList, commitCounts, creditKey, blankBoard, diffBoards, handChange, nameKey, parseBoardSheet, parseCreditSheet, readWorkbook, upsertPlayer, useBigBoards,
 } from "./bigBoardData.js";
 
 const VIEWS = [
@@ -31,32 +31,6 @@ const primaryBtn = { ...ghostBtn, background: "var(--accent-bg)", border: "1px s
 
 
 // ------------------------------------------------------------------ board edits (pure)
-
-const withColumn = (board, colKey, fn) => ({ ...board, columns: board.columns.map((c) => (c.key === colKey ? fn(c) : c)) });
-
-// Saves a card into a column and tier. A card keeps its place when only its details changed; if it was moved
-// (another column or tier) it lands at the end of its new tier.
-function upsertPlayer(board, colKey, player) {
-  let stays = false;
-  const cleared = {
-    ...board,
-    columns: board.columns.map((c) => {
-      const hit = c.players.find((p) => p.id === player.id);
-      if (!hit) return c;
-      if (c.key === colKey && hit.tier === player.tier) {
-        stays = true;
-        return { ...c, players: c.players.map((p) => (p.id === player.id ? player : p)) };
-      }
-      return { ...c, players: c.players.filter((p) => p.id !== player.id) };
-    }),
-  };
-  if (stays) return cleared;
-  return withColumn(cleared, colKey, (c) => {
-    const lastSame = c.players.map((p) => p.tier).lastIndexOf(player.tier);
-    const at = lastSame >= 0 ? lastSame + 1 : c.players.findLastIndex((p) => p.tier < player.tier) + 1;
-    return { ...c, players: [...c.players.slice(0, at), player, ...c.players.slice(at)] };
-  });
-}
 
 const removePlayer = (board, id) => ({ ...board, columns: board.columns.map((c) => ({ ...c, players: c.players.filter((p) => p.id !== id) })) });
 
@@ -149,7 +123,7 @@ export function PlayerModal({ board, classYear, colKey, player, isNew, photo, on
             <label style={label} htmlFor="bb-meas">Measurables (as shown on the card)</label>
             <input id="bb-meas" value={draft.measurables} onChange={(e) => set({ measurables: e.target.value })} placeholder={`6'2" ✅ 187 ✅ 6'3" ✅`} style={{ ...ctl, width: "100%" }} />
           </div>
-          {classYear !== "JUCO" && (
+          {classYear !== "JUCO" && classYear !== "TRANSFER" && (
             <div>
               <label style={label} htmlFor="bb-coach">Assigned coach</label>
               <input id="bb-coach" value={draft.coach || ""} onChange={(e) => set({ coach: e.target.value })} style={{ ...ctl, width: "100%" }} />
@@ -177,7 +151,7 @@ export function PlayerModal({ board, classYear, colKey, player, isNew, photo, on
             </div>
           </div>
 
-          {classYear === "JUCO" && (
+          {(classYear === "JUCO" || classYear === "TRANSFER") && (
             <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, fontWeight: 600 }}>
               Eligibility
               <select value={draft.eligibility || ""} onChange={(e) => set({ eligibility: e.target.value })} style={{ ...ctl, padding: "5px 8px" }}>
@@ -973,6 +947,11 @@ export default function BigBoard({ onBack: toDashboard, session }) {
     await bb.saveBoard(classYear, view, next);
   }
 
+  // A class with no board yet (the Transfer board starts this way): lay out empty offense and defense boards to fill in.
+  async function startBlank() {
+    for (const side of ["off", "def"]) if (!bb.board(classYear, side)) await bb.saveBoard(classYear, side, blankBoard(side));
+  }
+
   async function addCategories(text) {
     const { board: next, added } = addColumns(board, text.split(/[,\n]/));
     if (added.length) await persist(next);
@@ -1035,7 +1014,7 @@ export default function BigBoard({ onBack: toDashboard, session }) {
     await persist(next);
     if (player.name) {
       const other = view === "off" ? "def" : "off";
-      const fields = classYear === "JUCO" ? [...JUCO_FIELDS, "hudl"] : ["hudl"];
+      const fields = classYear === "JUCO" ? [...JUCO_FIELDS, "hudl"] : classYear === "TRANSFER" ? ["hudl", "eligibility"] : ["hudl"];
       await patchPerson(player.name, Object.fromEntries(fields.map((f) => [f, player[f] ?? (f === "transcriptEval" ? false : "")])), [other]);
     }
     if (editing?.isNew) {
@@ -1140,7 +1119,7 @@ export default function BigBoard({ onBack: toDashboard, session }) {
         <div className="hs-no-print" style={{ display: "flex", gap: 10, alignItems: "center", justifyContent: "space-between", flexWrap: "wrap" }}>
           <div style={{ display: "flex", gap: 4, background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 8, padding: 3 }}>
             {bb.classYears.map((y) => (
-              <button key={y} onClick={() => go(y, view)} className="tabular" style={{ border: "none", borderRadius: 6, padding: "6px 14px", fontSize: 13, fontWeight: 700, fontFamily: "inherit", cursor: "pointer", background: y === classYear ? "var(--accent)" : "transparent", color: y === classYear ? "var(--bg-page)" : "var(--text-muted)" }}>{y}</button>
+              <button key={y} onClick={() => go(y, view)} className="tabular" style={{ border: "none", borderRadius: 6, padding: "6px 14px", fontSize: 13, fontWeight: 700, fontFamily: "inherit", cursor: "pointer", background: y === classYear ? "var(--accent)" : "transparent", color: y === classYear ? "var(--bg-page)" : "var(--text-muted)" }}>{y === "TRANSFER" ? "Transfer" : y}</button>
             ))}
           </div>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
@@ -1195,7 +1174,7 @@ export default function BigBoard({ onBack: toDashboard, session }) {
             })}
           </>
         ) : (
-          <Empty what={view === "off" ? "offensive board" : "defensive board"} year={classYear} onUpload={() => setPdfUpload(true)} uploadLabel="Upload board PDF" />
+          <Empty what={view === "off" ? "offensive board" : "defensive board"} year={classYear} onUpload={() => setPdfUpload(true)} uploadLabel="Upload board PDF" onStart={startBlank} />
         )}
       </div>
 

@@ -1,7 +1,7 @@
 import { confirmAction } from "./ConfirmDialog.jsx";
 import { BackButton, HomeButton } from "./HomeButton.jsx";
-import { useState, useMemo, useEffect, useRef, useCallback, useDeferredValue, Fragment } from "react";
-import { ChevronUp, ChevronDown, ChevronsUpDown, Crown, BadgeCheck, FlaskConical, Star, X, Plus, ExternalLink, Search, Download, Columns3, TrendingUp, GripVertical, CheckCircle2, AlertTriangle, Upload } from "lucide-react";
+import { useState, useMemo, useEffect, useRef, useCallback, useDeferredValue, Fragment, lazy, Suspense } from "react";
+import { ChevronUp, ChevronDown, ChevronsUpDown, Crown, BadgeCheck, FlaskConical, Star, X, Plus, ExternalLink, Search, Download, Columns3, TrendingUp, GripVertical, CheckCircle2, AlertTriangle, Upload, ClipboardList } from "lucide-react";
 import { collection, doc, addDoc, updateDoc, onSnapshot, query, orderBy } from "firebase/firestore";
 import { db } from "./firebase";
 import { REAL_STATS, loadRealStats } from "./statsData.js";
@@ -14,6 +14,9 @@ import { canonicalSchool } from "./schoolNames.js";
 import HeadshotFace from "./HeadshotFace.jsx";
 import { colorForTeam, espnIdFromRow, espnProfileUrl, espnSearchUrl } from "./espnPlayer.js";
 import { photoFromFile } from "./hsData.js";
+
+// Loaded only when a coach adds a watch-list player to a Big Board (it brings the board code with it).
+const AddToBigBoardModal = lazy(() => import("./AddToBigBoardModal.jsx"));
 
 const WATCH_PAGE = "watch-list";
 let watchOpenedFromTracker = false; // true once the page was opened from the tracker, so Back can pop the history entry
@@ -495,6 +498,7 @@ function WatchListRow({
   onDragHandlePointerDown,
   rowRef,
   portalStatus,
+  onAddToBoard,
 }) {
   const [notes, setNotes] = useState(p.notes || "");
   const [height, setHeight] = useState(p.height || "");
@@ -646,7 +650,15 @@ function WatchListRow({
           style={notesInputStyle}
         />
       </td>
-      <td style={{ ...tdStyle, textAlign: "center" }}>
+      <td style={{ ...tdStyle, textAlign: "center", whiteSpace: "nowrap" }}>
+        <button
+          onClick={onAddToBoard}
+          title="Add to Big Board"
+          aria-label={`Add ${p.player} to the Big Board`}
+          style={{ background: "none", border: "none", color: "var(--accent)", cursor: "pointer", padding: 2, marginRight: 6, lineHeight: 0 }}
+        >
+          <ClipboardList size={16} />
+        </button>
         <button
           onClick={onRemove}
           title="Remove from watch list"
@@ -870,6 +882,7 @@ function NewWatchPlayerModal({ watchlist, onClose }) {
 
 function WatchListPanel({ watchlist, onClose, onHome, onSelectPlayer, portalStatus }) {
   const [adding, setAdding] = useState(false);
+  const [boardPlayer, setBoardPlayer] = useState(null);
   const [positionTab, setPositionTab] = useState("All");
   const [wlSortKey, setWlSortKey] = useState(null);
   const [wlSortDir, setWlSortDir] = useState("desc");
@@ -1028,6 +1041,11 @@ function WatchListPanel({ watchlist, onClose, onHome, onSelectPlayer, portalStat
       }}
     >
       {adding && <NewWatchPlayerModal watchlist={watchlist} onClose={() => setAdding(false)} />}
+      {boardPlayer && (
+        <Suspense fallback={null}>
+          <AddToBigBoardModal player={boardPlayer} onClose={() => setBoardPlayer(null)} />
+        </Suspense>
+      )}
       <div
         style={{
           flexShrink: 0,
@@ -1163,6 +1181,7 @@ function WatchListPanel({ watchlist, onClose, onHome, onSelectPlayer, portalStat
                       p={p}
                       style={{ background: i % 2 === 0 ? "var(--bg-panel)" : "var(--bg-page)", borderTop: "1px solid var(--border-subtle)" }}
                       onRemove={() => confirmRemoveFromWatchlist(watchlist, p.id, p.player)}
+                      onAddToBoard={() => setBoardPlayer(p)}
                       onUpdate={(field, value) => watchlist.updateField(p.id, field, value)}
                       onSelect={onSelectPlayer}
                       compareSelected={compareIds.has(p.id)}
@@ -1205,6 +1224,7 @@ export function PlayerDetailModal({ sel, onClose, watchlist, portalStatus, espn 
   const [photoLink, setPhotoLink] = useState("");
   const photoInput = useRef(null);
   const watched = watchlist.players.find((p) => p.player === sel.player && p.team === sel.team);
+  const [toBoard, setToBoard] = useState(false);
 
   // Local echo of the free-text fields, same as WatchListRow -- commit
   // on blur instead of round-tripping to the db on every keystroke.
@@ -1247,6 +1267,7 @@ export function PlayerDetailModal({ sel, onClose, watchlist, portalStatus, espn 
   }, [rows]);
 
   return (
+    <>
     <div
       onClick={onClose}
       style={{
@@ -1402,11 +1423,19 @@ export function PlayerDetailModal({ sel, onClose, watchlist, portalStatus, espn 
         <div style={{ padding: 20, display: "flex", flexDirection: "column", gap: 20 }}>
           {watched && (
             <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 6, padding: 14 }}>
-              <div
-                className="oswald"
-                style={{ fontSize: 12.5, fontWeight: 600, color: "var(--success)", marginBottom: 10, textTransform: "uppercase", letterSpacing: "0.04em" }}
-              >
-                Your Watch List Info
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, marginBottom: 10 }}>
+                <div
+                  className="oswald"
+                  style={{ fontSize: 12.5, fontWeight: 600, color: "var(--success)", textTransform: "uppercase", letterSpacing: "0.04em" }}
+                >
+                  Your Watch List Info
+                </div>
+                <button
+                  onClick={() => setToBoard(true)}
+                  style={{ display: "flex", alignItems: "center", gap: 6, background: "var(--accent-bg)", border: "1px solid var(--accent)", color: "var(--accent)", borderRadius: 4, padding: "4px 10px", fontSize: 12.5, fontWeight: 600, cursor: "pointer" }}
+                >
+                  <ClipboardList size={13} /> Add to Big Board
+                </button>
               </div>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 12, marginBottom: 12 }}>
                 <div>
@@ -1577,6 +1606,12 @@ export function PlayerDetailModal({ sel, onClose, watchlist, portalStatus, espn 
         </div>
       </div>
     </div>
+    {toBoard && watched && (
+      <Suspense fallback={null}>
+        <AddToBigBoardModal player={watched} onClose={() => setToBoard(false)} />
+      </Suspense>
+    )}
+    </>
   );
 }
 

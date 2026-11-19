@@ -444,7 +444,7 @@ export function useBigBoards(classYear) {
   }, [classYear]);
 
   const classYears = useMemo(() => {
-    const years = new Set(["2027", "2028", "JUCO"]);
+    const years = new Set(["2027", "2028", "JUCO", "TRANSFER"]);
     Object.values(boards).forEach((b) => b.classYear && years.add(b.classYear));
     Object.values(credits).forEach((c) => c.classYear && years.add(c.classYear));
     return [...years].sort();
@@ -486,3 +486,48 @@ export function useBigBoards(classYear) {
     },
   };
 }
+
+// ---------------------------------------------------------------- board edits shared with the watch list
+
+export const withColumn = (board, colKey, fn) => ({ ...board, columns: board.columns.map((c) => (c.key === colKey ? fn(c) : c)) });
+
+// Saves a card into a column and tier. A card keeps its place when only its details changed; if it was moved
+// (another column or tier) it lands at the end of its new tier.
+export function upsertPlayer(board, colKey, player) {
+  let stays = false;
+  const cleared = {
+    ...board,
+    columns: board.columns.map((c) => {
+      const hit = c.players.find((p) => p.id === player.id);
+      if (!hit) return c;
+      if (c.key === colKey && hit.tier === player.tier) {
+        stays = true;
+        return { ...c, players: c.players.map((p) => (p.id === player.id ? player : p)) };
+      }
+      return { ...c, players: c.players.filter((p) => p.id !== player.id) };
+    }),
+  };
+  if (stays) return cleared;
+  return withColumn(cleared, colKey, (c) => {
+    const lastSame = c.players.map((p) => p.tier).lastIndexOf(player.tier);
+    const at = lastSame >= 0 ? lastSame + 1 : c.players.findLastIndex((p) => p.tier < player.tier) + 1;
+    return { ...c, players: [...c.players.slice(0, at), player, ...c.players.slice(at)] };
+  });
+}
+
+// An empty board with the standard columns, for a class that has no board yet (the Transfer board starts this way).
+const BLANK_COLUMNS = {
+  off: ["QB", "RB", "WR", "TE", "OT", "OG/OC", "FLEX BIG", "FLEX SKILL"],
+  def: ["DE", "DT", "LB", "CB", "SAF", "FLEX BIG", "FLEX SKILL", "LS", "K", "P"],
+};
+export const blankBoard = (side) => ({
+  columns: BLANK_COLUMNS[side].map((label) => ({ key: label.replace(/[^A-Z0-9]+/g, "-"), label, hasRating: !["LS", "K", "P"].includes(label), players: [] })),
+  source: "blank",
+});
+
+// Where a watch-list position belongs on a board: the side and the column to start from (the coach can change both).
+const WATCH_TO_BOARD = {
+  QB: ["off", "QB"], RB: ["off", "RB"], WR: ["off", "WR"], TE: ["off", "TE"], OL: ["off", "OT"], ATH: ["off", "FLEX SKILL"],
+  DL: ["def", "DE"], LB: ["def", "LB"], CB: ["def", "CB"], SAF: ["def", "SAF"], K: ["def", "K"], P: ["def", "P"], LS: ["def", "LS"],
+};
+export const boardSpotFor = (position) => WATCH_TO_BOARD[position] || ["off", "QB"];

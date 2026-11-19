@@ -6,6 +6,7 @@ import { FLAGS, RATING_KEYS, STATUSES, STATUS_BY_KEY, TRENDS, VISIT_READY, VISIT
 // page and, on its own, by a shared link -- so this file stays free of the spreadsheet and database code.
 
 const SIDE_TITLE = { off: "HIGH SCHOOL OFFENSIVE BIG BOARD", def: "HIGH SCHOOL DEFENSIVE/SPEC BIG BOARD" };
+const TRANSFER_SIDE_TITLE = { off: "TRANSFER OFFENSIVE BIG BOARD", def: "TRANSFER DEFENSIVE/SPEC BIG BOARD" };
 const JUCO_SIDE_TITLE = { off: "JUCO OFFENSIVE BIG BOARD", def: "JUCO DEFENSIVE/SPEC BIG BOARD" };
 const hudlHref = (url) => (/^https?:\/\//i.test(url.trim()) ? url.trim() : `https://${url.trim()}`);
 const trendEmoji = (key) => TRENDS.find((t) => t.key === key)?.emoji || "";
@@ -16,13 +17,13 @@ const markersFor = (p) => [p.flags?.snap ? "($)" : "", p.flags?.punt ? "(#)" : "
 
 // A card shows the A / P / C / R trend marks (🔥 🌤️ 🌨️ 🧊) but not ARMs' rating line ("2 - ALL MAC PLAYER"), and
 // the JUCO board shows no area coach. The rating text stays on the card's data; it's just not displayed.
-function PlayerCard({ p, showCoach, hasRating, photo, onOpen, juco, readOnly }) {
+function PlayerCard({ p, showCoach, hasRating, photo, onOpen, juco, elig, readOnly }) {
   const status = STATUS_BY_KEY[p.status] || STATUS_BY_KEY.recruit;
   const marks = markersFor(p);
   return (
-    <div className={`bb-card${juco && p.eligibility ? " bb-has-elig" : ""}`} style={readOnly ? { background: status.color, cursor: "default" } : { background: status.color }} onClick={readOnly ? undefined : onOpen} role={readOnly ? undefined : "button"} tabIndex={readOnly ? undefined : 0} onKeyDown={readOnly ? undefined : (e) => e.key === "Enter" && onOpen()} title={readOnly ? undefined : "Click to edit"}>
+    <div className={`bb-card${elig && p.eligibility ? " bb-has-elig" : ""}`} style={readOnly ? { background: status.color, cursor: "default" } : { background: status.color }} onClick={readOnly ? undefined : onOpen} role={readOnly ? undefined : "button"} tabIndex={readOnly ? undefined : 0} onKeyDown={readOnly ? undefined : (e) => e.key === "Enter" && onOpen()} title={readOnly ? undefined : "Click to edit"}>
       {photo && <img className="bb-photo" src={photo} alt="" />}
-      {juco && p.eligibility && <span className="bb-elig" title={`Year ${p.eligibility} of eligibility`}>YEAR {p.eligibility}</span>}
+      {elig && p.eligibility && <span className="bb-elig" title={`Year ${p.eligibility} of eligibility`}>YEAR {p.eligibility}</span>}
       <div className="bb-card-text">
         <div className="bb-name">
           {p.hudl ? (
@@ -65,7 +66,7 @@ function PlayerCard({ p, showCoach, hasRating, photo, onOpen, juco, readOnly }) 
 
 export function BoardSheet({ board, side, classYear, photos, onOpen, onAdd, onRemoveColumn, readOnly = false, counts: countsOverride }) {
   const counts = countsOverride || commitCounts(board);
-  const title = board.title && /\d{4}/.test(board.title) ? board.title : classYear === "JUCO" ? JUCO_SIDE_TITLE[side] : `${SIDE_TITLE[side]} - ${classYear}`;
+  const title = board.title && /\d{4}/.test(board.title) ? board.title : classYear === "JUCO" ? JUCO_SIDE_TITLE[side] : classYear === "TRANSFER" ? TRANSFER_SIDE_TITLE[side] : `${SIDE_TITLE[side]} - ${classYear}`;
   return (
     <div className="bb-sheet bb-board">
       <div className="bb-title">{title}</div>
@@ -100,7 +101,7 @@ export function BoardSheet({ board, side, classYear, photos, onOpen, onAdd, onRe
                       </button>}
                     </div>
                     {inTier.map((p) => (
-                      <PlayerCard key={p.id} p={p} juco={classYear === "JUCO"} showCoach={classYear !== "JUCO"} hasRating={col.hasRating} photo={photos[nameKey(p.name)]} onOpen={() => onOpen(col.key, p)} readOnly={readOnly} />
+                      <PlayerCard key={p.id} p={p} juco={classYear === "JUCO"} elig={classYear === "JUCO" || classYear === "TRANSFER"} showCoach={classYear !== "JUCO" && classYear !== "TRANSFER"} hasRating={col.hasRating} photo={photos[nameKey(p.name)]} onOpen={() => onOpen(col.key, p)} readOnly={readOnly} />
                     ))}
                   </Fragment>
                 );
