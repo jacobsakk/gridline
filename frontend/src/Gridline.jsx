@@ -239,7 +239,7 @@ export function useWatchlist() {
 
   const players = useMemo(() => allDocs.filter((p) => !p.removed), [allDocs]);
 
-  async function addPlayer({ player, team, division, position, homeState }) {
+  async function addPlayer({ player, team, division, position, homeState, ...extra }) {
     const trimmedPlayer = player.trim();
     if (!trimmedPlayer) return;
     const trimmedTeam = (team || "").trim();
@@ -253,7 +253,8 @@ export function useWatchlist() {
         removed: false,
         division: division || archived.division || "",
         position: position || archived.position || "",
-        homeState: archived.homeState || homeState || "",
+        homeState: homeState || archived.homeState || "",
+        ...extra,
       });
       return;
     }
@@ -277,6 +278,7 @@ export function useWatchlist() {
       sortOrder: Date.now(),
       removed: false,
       addedAt: new Date().toISOString(),
+      ...extra,
     });
   }
 
@@ -710,29 +712,154 @@ function exportWatchListCsv(players) {
   URL.revokeObjectURL(url);
 }
 
+// "Add player" -- the same fields as a player's profile (Your Watch List Info),
+// filled in up front and saved together when the coach hits Add.
+function NewWatchPlayerModal({ watchlist, onClose }) {
+  const [draft, setDraft] = useState({
+    player: "", team: "", division: "", position: WATCH_POSITIONS[0], height: "", weight: "", eligibility: "",
+    questionnaire: false, pipelined: false, xLink: "", filmLink: "", homeState: "", evaluation: "", notes: "",
+  });
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+  const set = (field, value) => setDraft((d) => ({ ...d, [field]: value }));
+  const nameRef = useRef(null);
+  useEffect(() => nameRef.current?.focus(), []);
+
+  async function submit(e) {
+    e.preventDefault();
+    if (!draft.player.trim()) return setError("Enter the player's name.");
+    setSaving(true);
+    setError("");
+    try {
+      await watchlist.addPlayer({ ...draft, player: draft.player.trim(), team: draft.team.trim() });
+      onClose();
+    } catch (err) {
+      setError(err?.code === "permission-denied" ? "No permission to save." : "Couldn't save -- try again.");
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(8,10,12,0.65)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20, zIndex: 70 }}>
+      <form
+        onClick={(e) => e.stopPropagation()}
+        onSubmit={submit}
+        style={{ background: "var(--bg-panel)", border: "1px solid var(--border)", borderRadius: 8, width: 640, maxWidth: "100%", maxHeight: "88vh", overflowY: "auto", boxShadow: "0 24px 64px rgba(0,0,0,0.5)" }}
+      >
+        <div style={{ padding: "16px 20px", borderBottom: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "space-between", position: "sticky", top: 0, background: "var(--bg-panel)", zIndex: 1 }}>
+          <h2 className="oswald" style={{ fontSize: 20, margin: 0, fontWeight: 700 }}>Add to Watch List</h2>
+          <button type="button" onClick={onClose} aria-label="Close" style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer", padding: 4, lineHeight: 0 }}>
+            <X size={18} />
+          </button>
+        </div>
+        <div style={{ padding: 20, display: "flex", flexDirection: "column", gap: 14 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 12 }}>
+            <div>
+              <label htmlFor="nwp-name" style={fieldLabelStyle}>Player name</label>
+              <input id="nwp-name" ref={nameRef} value={draft.player} onChange={(e) => set("player", e.target.value)} placeholder="Player name" style={fieldInputStyle} />
+            </div>
+            <div>
+              <label htmlFor="nwp-team" style={fieldLabelStyle}>Team</label>
+              <input id="nwp-team" value={draft.team} onChange={(e) => set("team", e.target.value)} placeholder="Team (optional)" style={fieldInputStyle} />
+            </div>
+            <div>
+              <label htmlFor="nwp-division" style={fieldLabelStyle}>Division</label>
+              <select id="nwp-division" value={draft.division} onChange={(e) => set("division", e.target.value)} style={{ ...fieldInputStyle, cursor: "pointer" }}>
+                <option value="">—</option>
+                {[...DIVISIONS].reverse().map((d) => (
+                  <option key={d} value={d}>{DIVISION_LABEL[d] || d}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 6, padding: 14 }}>
+            <div className="oswald" style={{ fontSize: 12.5, fontWeight: 600, color: "var(--success)", marginBottom: 10, textTransform: "uppercase", letterSpacing: "0.04em" }}>
+              Your Watch List Info
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 12, marginBottom: 12 }}>
+              <div>
+                <label htmlFor="nwp-pos" style={fieldLabelStyle}>Position</label>
+                <select id="nwp-pos" value={draft.position} onChange={(e) => set("position", e.target.value)} style={{ ...fieldInputStyle, cursor: "pointer" }}>
+                  <option value="">—</option>
+                  {WATCH_POSITIONS.map((pos) => (
+                    <option key={pos} value={pos}>{pos}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label htmlFor="nwp-ht" style={fieldLabelStyle}>Height</label>
+                <input id="nwp-ht" value={draft.height} onChange={(e) => set("height", e.target.value)} placeholder={`e.g. 6'2"`} style={fieldInputStyle} />
+              </div>
+              <div>
+                <label htmlFor="nwp-wt" style={fieldLabelStyle}>Weight</label>
+                <input id="nwp-wt" value={draft.weight} onChange={(e) => set("weight", e.target.value)} placeholder="e.g. 210" style={fieldInputStyle} />
+              </div>
+              <div>
+                <label htmlFor="nwp-elig" style={fieldLabelStyle}>Eligibility</label>
+                <select id="nwp-elig" value={draft.eligibility} onChange={(e) => set("eligibility", e.target.value)} style={{ ...fieldInputStyle, cursor: "pointer" }}>
+                  <option value="">—</option>
+                  {[1, 2, 3, 4, 5].map((n) => (
+                    <option key={n} value={n}>{n} {n === 1 ? "year" : "years"}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label style={fieldLabelStyle}>Questionnaire?</label>
+                <div style={{ display: "flex", gap: 6 }}>
+                  <button type="button" style={pillStyle(draft.questionnaire === true)} onClick={() => set("questionnaire", true)}>Yes</button>
+                  <button type="button" style={pillStyle(draft.questionnaire === false)} onClick={() => set("questionnaire", false)}>No</button>
+                </div>
+              </div>
+              <div>
+                <label style={fieldLabelStyle}>Pipelined?</label>
+                <div style={{ display: "flex", gap: 6 }}>
+                  <button type="button" style={pillStyle(draft.pipelined === true)} onClick={() => set("pipelined", true)}>Yes</button>
+                  <button type="button" style={pillStyle(draft.pipelined === false)} onClick={() => set("pipelined", false)}>No</button>
+                </div>
+              </div>
+              <div>
+                <label style={fieldLabelStyle}>X</label>
+                <LinkCell row={draft} field="xLink" label="X" placeholder="Paste an X profile link…" editable onSave={(url) => set("xLink", url)} />
+              </div>
+              <div>
+                <label style={fieldLabelStyle}>Film Link</label>
+                <LinkCell row={draft} field="filmLink" label="Film" placeholder="Paste a film link…" editable onSave={(url) => set("filmLink", url)} />
+              </div>
+              <div>
+                <label style={fieldLabelStyle}>Home State</label>
+                <StateCell row={draft} field="homeState" editable onSave={(state) => set("homeState", state)} />
+              </div>
+            </div>
+            <div style={{ borderTop: "1px solid var(--border-subtle)", paddingTop: 12, marginBottom: 14 }}>
+              <label htmlFor="nwp-eval" className="oswald" style={{ display: "block", fontSize: 11.5, fontWeight: 600, color: "var(--accent)", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.04em" }}>
+                Evaluation
+              </label>
+              <textarea id="nwp-eval" value={draft.evaluation} onChange={(e) => set("evaluation", e.target.value)} placeholder="Write-up, grade, projection…" rows={3} style={{ ...notesInputStyle, padding: "6px 8px", overflow: "auto", resize: "vertical" }} />
+            </div>
+            <label htmlFor="nwp-notes" style={fieldLabelStyle}>Notes</label>
+            <textarea id="nwp-notes" value={draft.notes} onChange={(e) => set("notes", e.target.value)} placeholder="Notes…" rows={2} style={{ ...notesInputStyle, padding: "6px 8px", overflow: "auto", resize: "vertical" }} />
+          </div>
+          {error && <div style={{ color: "var(--danger, #c0392b)", fontSize: 13 }}>{error}</div>}
+        </div>
+        <div style={{ padding: "12px 20px", borderTop: "1px solid var(--border)", display: "flex", justifyContent: "flex-end", gap: 8, position: "sticky", bottom: 0, background: "var(--bg-panel)" }}>
+          <button type="button" onClick={onClose} style={{ background: "none", border: "1px solid var(--border)", color: "var(--text-muted)", borderRadius: 4, padding: "8px 16px", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>Cancel</button>
+          <button type="submit" disabled={saving} style={{ display: "flex", alignItems: "center", gap: 6, background: "var(--accent-bg)", border: "1px solid var(--accent)", color: "var(--accent)", borderRadius: 4, padding: "8px 18px", fontSize: 13, fontWeight: 700, cursor: saving ? "default" : "pointer", opacity: saving ? 0.6 : 1 }}>
+            <Plus size={14} /> {saving ? "Adding…" : "Add to watch list"}
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+}
+
 function WatchListPanel({ watchlist, onClose, onHome, onSelectPlayer, portalStatus }) {
-  const [name, setName] = useState("");
-  const [team, setTeam] = useState("");
-  const [position, setPosition] = useState(WATCH_POSITIONS[0]);
+  const [adding, setAdding] = useState(false);
   const [positionTab, setPositionTab] = useState("All");
   const [wlSortKey, setWlSortKey] = useState(null);
   const [wlSortDir, setWlSortDir] = useState("desc");
   const [compareIds, setCompareIds] = useState(() => new Set());
   const [showCompare, setShowCompare] = useState(false);
-  const nameInputRef = useRef(null);
-
-  useEffect(() => {
-    nameInputRef.current?.focus();
-  }, []);
-
-  function handleAdd(e) {
-    e.preventDefault();
-    if (!name.trim()) return;
-    watchlist.addPlayer({ player: name, team, division: "", position });
-    setName("");
-    setTeam("");
-  }
-
   const byPosition = positionTab === "All" ? watchlist.players : watchlist.players.filter((p) => p.position === positionTab);
   const countFor = (pos) => (pos === "All" ? watchlist.players.length : watchlist.players.filter((p) => p.position === pos).length);
 
@@ -885,6 +1012,7 @@ function WatchListPanel({ watchlist, onClose, onHome, onSelectPlayer, portalStat
         flexDirection: "column",
       }}
     >
+      {adding && <NewWatchPlayerModal watchlist={watchlist} onClose={() => setAdding(false)} />}
       <div
         style={{
           flexShrink: 0,
@@ -906,38 +1034,16 @@ function WatchListPanel({ watchlist, onClose, onHome, onSelectPlayer, portalStat
         </div>
 
         {watchlist.available && (
-          <form onSubmit={handleAdd} style={{ display: "flex", alignItems: "center", gap: 8, flex: 1, maxWidth: 520 }}>
-            <input
-              ref={nameInputRef}
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Player name"
-              style={{ ...fieldInputStyle, width: "auto", flex: 2 }}
-            />
-            <input
-              value={team}
-              onChange={(e) => setTeam(e.target.value)}
-              placeholder="Team (optional)"
-              style={{ ...fieldInputStyle, width: "auto", flex: 1 }}
-            />
-            <select value={position} onChange={(e) => setPosition(e.target.value)} style={{ ...selectStyle, minWidth: 0, flexShrink: 0 }}>
-              {WATCH_POSITIONS.map((p) => (
-                <option key={p} value={p}>
-                  {p}
-                </option>
-              ))}
-            </select>
-            <button
-              type="submit"
-              style={{
-                display: "flex", alignItems: "center", justifyContent: "center", gap: 6, flexShrink: 0,
-                background: "var(--accent-bg)", border: "1px solid var(--accent)", color: "var(--accent)",
-                borderRadius: 4, padding: "7px 12px", fontSize: 13, fontWeight: 600, cursor: "pointer",
-              }}
-            >
-              <Plus size={14} /> Add
-            </button>
-          </form>
+          <button
+            onClick={() => setAdding(true)}
+            style={{
+              display: "flex", alignItems: "center", justifyContent: "center", gap: 6, flexShrink: 0,
+              background: "var(--accent-bg)", border: "1px solid var(--accent)", color: "var(--accent)",
+              borderRadius: 4, padding: "7px 14px", fontSize: 13, fontWeight: 600, cursor: "pointer",
+            }}
+          >
+            <Plus size={14} /> Add player
+          </button>
         )}
 
         {watchlist.available && watchlist.players.length > 0 && (
