@@ -1,7 +1,7 @@
 import { confirmAction } from "./ConfirmDialog.jsx";
 import { BackButton, HomeButton } from "./HomeButton.jsx";
 import { useState, useMemo, useEffect, useRef, useCallback, useDeferredValue, Fragment, lazy, Suspense } from "react";
-import { ChevronUp, ChevronDown, ChevronsUpDown, Crown, BadgeCheck, FlaskConical, Star, X, Plus, ExternalLink, Search, Download, Columns3, TrendingUp, GripVertical, CheckCircle2, AlertTriangle, Upload, ClipboardList } from "lucide-react";
+import { ChevronUp, ChevronDown, ChevronsUpDown, Crown, BadgeCheck, FlaskConical, Star, X, Plus, ExternalLink, Search, Download, Columns3, TrendingUp, GripVertical, CheckCircle2, AlertTriangle, Upload, ClipboardList, LayoutGrid } from "lucide-react";
 import { collection, doc, addDoc, updateDoc, onSnapshot, query, orderBy } from "firebase/firestore";
 import { db } from "./firebase";
 import { REAL_STATS, loadRealStats } from "./statsData.js";
@@ -14,6 +14,7 @@ import { canonicalSchool } from "./schoolNames.js";
 import HeadshotFace from "./HeadshotFace.jsx";
 import { colorForTeam, espnIdFromRow, espnProfileUrl, espnSearchUrl } from "./espnPlayer.js";
 import { photoFromFile } from "./hsData.js";
+import { nameKey } from "./bigBoardConstants.js";
 
 // Loaded only when a coach adds a watch-list player to a Big Board (it brings the board code with it).
 const AddToBigBoardModal = lazy(() => import("./AddToBigBoardModal.jsx"));
@@ -199,6 +200,55 @@ function weeksFor(division) {
   const real = [...new Set(DATA.filter((r) => r.division === division && r.week !== "total").map((r) => r.week))];
   real.sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
   return ["total", ...real];
+}
+
+// Where each person already sits on the Big Boards (by name, so it survives a spelling of the school): a map of
+// name -> [{ year, side, column }], Transfer first. Read live from the same bigBoards documents the Big Board edits.
+const BOARD_SIDE_LABEL = { off: "offense", def: "defense" };
+function useBoardLocations(enabled = true) {
+  const [map, setMap] = useState(() => new Map());
+  useEffect(() => {
+    if (!enabled) return undefined;
+    return onSnapshot(
+      collection(db, "bigBoards"),
+      (snap) => {
+        const next = new Map();
+        snap.docs.forEach((d) => {
+          const b = d.data() || {};
+          (b.columns || []).forEach((c) =>
+            (c.players || []).forEach((p) => {
+              const key = nameKey(p.name);
+              if (!key) return;
+              const spots = next.get(key) || [];
+              if (!spots.some((x) => x.year === b.classYear && x.side === b.side && x.column === c.label)) spots.push({ year: b.classYear, side: b.side, column: c.label });
+              next.set(key, spots);
+            })
+          );
+        });
+        next.forEach((spots) => spots.sort((a, b) => (b.year === "TRANSFER") - (a.year === "TRANSFER") || String(a.year).localeCompare(String(b.year))));
+        setMap(next);
+      },
+      () => {}
+    );
+  }, [enabled]);
+  return (name) => map.get(nameKey(name)) || null;
+}
+
+// The link that replaces the "add" icon once a player is on a board: it opens that board.
+function BoardLink({ spots, size = 16, children, style }) {
+  const first = spots[0];
+  const label = (s) => `${s.year === "TRANSFER" ? "Transfer" : s.year} ${BOARD_SIDE_LABEL[s.side] || s.side} (${s.column})`;
+  return (
+    <a
+      href={`#/bigboard/${encodeURIComponent(first.year)}/${first.side}`}
+      title={`On the Big Board: ${spots.map(label).join(", ")}. Click to open.`}
+      aria-label={`Open ${label(first)} on the Big Board`}
+      style={{ color: "var(--success)", lineHeight: 0, display: "inline-flex", alignItems: "center", gap: 6, textDecoration: "none", ...style }}
+    >
+      <LayoutGrid size={size} />
+      {children}
+    </a>
+  );
 }
 
 // ---------- Watch list ----------
@@ -499,6 +549,7 @@ function WatchListRow({
   rowRef,
   portalStatus,
   onAddToBoard,
+  boardSpots,
 }) {
   const [notes, setNotes] = useState(p.notes || "");
   const [height, setHeight] = useState(p.height || "");
@@ -651,14 +702,18 @@ function WatchListRow({
         />
       </td>
       <td style={{ ...tdStyle, textAlign: "center", whiteSpace: "nowrap" }}>
-        <button
-          onClick={onAddToBoard}
-          title="Add to Big Board"
-          aria-label={`Add ${p.player} to the Big Board`}
-          style={{ background: "none", border: "none", color: "var(--accent)", cursor: "pointer", padding: 2, marginRight: 6, lineHeight: 0 }}
-        >
-          <ClipboardList size={16} />
-        </button>
+        {boardSpots ? (
+          <BoardLink spots={boardSpots} style={{ padding: 2, marginRight: 6 }} />
+        ) : (
+          <button
+            onClick={onAddToBoard}
+            title="Add to Big Board"
+            aria-label={`Add ${p.player} to the Big Board`}
+            style={{ background: "none", border: "none", color: "var(--accent)", cursor: "pointer", padding: 2, marginRight: 6, lineHeight: 0 }}
+          >
+            <ClipboardList size={16} />
+          </button>
+        )}
         <button
           onClick={onRemove}
           title="Remove from watch list"
@@ -883,6 +938,7 @@ function NewWatchPlayerModal({ watchlist, onClose }) {
 function WatchListPanel({ watchlist, onClose, onHome, onSelectPlayer, portalStatus }) {
   const [adding, setAdding] = useState(false);
   const [boardPlayer, setBoardPlayer] = useState(null);
+  const boardSpotsFor = useBoardLocations();
   const [positionTab, setPositionTab] = useState("All");
   const [wlSortKey, setWlSortKey] = useState(null);
   const [wlSortDir, setWlSortDir] = useState("desc");
@@ -1182,6 +1238,7 @@ function WatchListPanel({ watchlist, onClose, onHome, onSelectPlayer, portalStat
                       style={{ background: i % 2 === 0 ? "var(--bg-panel)" : "var(--bg-page)", borderTop: "1px solid var(--border-subtle)" }}
                       onRemove={() => confirmRemoveFromWatchlist(watchlist, p.id, p.player)}
                       onAddToBoard={() => setBoardPlayer(p)}
+                      boardSpots={boardSpotsFor(p.player)}
                       onUpdate={(field, value) => watchlist.updateField(p.id, field, value)}
                       onSelect={onSelectPlayer}
                       compareSelected={compareIds.has(p.id)}
@@ -1225,6 +1282,7 @@ export function PlayerDetailModal({ sel, onClose, watchlist, portalStatus, espn 
   const photoInput = useRef(null);
   const watched = watchlist.players.find((p) => p.player === sel.player && p.team === sel.team);
   const [toBoard, setToBoard] = useState(false);
+  const boardSpots = useBoardLocations(!!watched)(sel.player);
 
   // Local echo of the free-text fields, same as WatchListRow -- commit
   // on blur instead of round-tripping to the db on every keystroke.
@@ -1430,12 +1488,18 @@ export function PlayerDetailModal({ sel, onClose, watchlist, portalStatus, espn 
                 >
                   Your Watch List Info
                 </div>
-                <button
-                  onClick={() => setToBoard(true)}
-                  style={{ display: "flex", alignItems: "center", gap: 6, background: "var(--accent-bg)", border: "1px solid var(--accent)", color: "var(--accent)", borderRadius: 4, padding: "4px 10px", fontSize: 12.5, fontWeight: 600, cursor: "pointer" }}
-                >
-                  <ClipboardList size={13} /> Add to Big Board
-                </button>
+                {boardSpots ? (
+                  <BoardLink spots={boardSpots} size={14} style={{ border: "1px solid var(--success)", borderRadius: 4, padding: "4px 10px", fontSize: 12.5, fontWeight: 600 }}>
+                    On the Big Board
+                  </BoardLink>
+                ) : (
+                  <button
+                    onClick={() => setToBoard(true)}
+                    style={{ display: "flex", alignItems: "center", gap: 6, background: "var(--accent-bg)", border: "1px solid var(--accent)", color: "var(--accent)", borderRadius: 4, padding: "4px 10px", fontSize: 12.5, fontWeight: 600, cursor: "pointer" }}
+                  >
+                    <ClipboardList size={13} /> Add to Big Board
+                  </button>
+                )}
               </div>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 12, marginBottom: 12 }}>
                 <div>
