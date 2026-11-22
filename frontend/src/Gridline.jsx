@@ -260,6 +260,26 @@ function BoardLink({ spots, size = 16, children, style }) {
 // isn't present there, so this degrades to "feature hidden" rather than
 // erroring.
 
+// What a coach typed on the watch list (profile or grid) for a player's home state, height and weight, by
+// "player|team". The stat tables show these in place of the scraped values, so an edit in a profile also
+// changes the player's row in the tracker and on the college roster.
+const OVERRIDE_FIELDS = ["homeState", "height", "weight"];
+export function watchOverridesFor(players) {
+  const map = new Map();
+  players.forEach((w) => {
+    const o = {};
+    OVERRIDE_FIELDS.forEach((f) => {
+      if (w[f]) o[f] = w[f];
+    });
+    if (Object.keys(o).length) map.set(`${w.player}|${w.team}`, o);
+  });
+  return map;
+}
+export function withWatchOverrides(row, overrides) {
+  const o = overrides.get(`${row.player}|${row.team}`);
+  return o ? { ...row, ...o } : row;
+}
+
 export function useWatchlist() {
   // Every doc ever added, including ones the owner has since "removed" --
   // those just get removed:true rather than actually deleted, so their
@@ -1491,7 +1511,7 @@ export function PlayerDetailModal({ sel, onClose, watchlist, portalStatus, espn 
             </div>
             <div style={{ fontSize: 13, color: "var(--text-muted)", marginTop: 3 }}>
               {canonicalSchool(sel.team)}
-              {first ? ` · ${first.conference} · ${first.position} · ${DIVISION_LABEL[sel.division] || sel.division}${first.homeState ? ` · Home: ${first.homeState}` : ""}` : ""}
+              {first ? ` · ${first.conference} · ${first.position} · ${DIVISION_LABEL[sel.division] || sel.division}${(watched?.homeState || first.homeState) ? ` · Home: ${watched?.homeState || first.homeState}` : ""}` : ""}
             </div>
             {espn && watched && (
               <div style={{ fontSize: 12.5, marginTop: 4, display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
@@ -1949,8 +1969,11 @@ function GridlineMain({ onBack: toDashboard, initialSearch, onUploadStats }) {
   const conferences = useMemo(() => ["All", ...conferencesFor(division)], [division]);
   const homeStates = useMemo(() => ["All", ...homeStatesFor(division, category)], [division, category]);
 
+  const watchOverrides = useMemo(() => watchOverridesFor(watchlist.players), [watchlist.players]);
+
   const rows = useMemo(() => {
     let filtered = DATA.filter((r) => r.division === division && r.category === category && r.week === week);
+    if (watchOverrides.size) filtered = filtered.map((r) => withWatchOverrides(r, watchOverrides));
     if (position !== "All") filtered = filtered.filter((r) => r.position === position);
     if (conference !== "All") filtered = filtered.filter((r) => r.conference === conference);
     if (homeState !== "All") filtered = filtered.filter((r) => r.homeState === homeState);
@@ -1981,7 +2004,7 @@ function GridlineMain({ onBack: toDashboard, initialSearch, onUploadStats }) {
       return sortDir === "desc" ? bv - av : av - bv;
     });
     return filtered;
-  }, [division, category, week, position, conference, homeState, deferredSearch, sortKey, sortDir]);
+  }, [division, category, week, position, conference, homeState, deferredSearch, sortKey, sortDir, watchOverrides]);
 
   // A division can list thousands of players (tackling alone is over 4,000), and drawing every row is what made
   // clicks and typing lag. Only the first screens of rows are drawn; more are added as the table is scrolled

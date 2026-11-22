@@ -4,7 +4,7 @@ import { useRealStatsReady } from "./statsData.js";
 import { initialSubRoute, setSubRoute } from "./route.js";
 import { useContext, useEffect, useMemo, useState } from "react";
 import { ExternalLink, RefreshCw, Trophy } from "lucide-react";
-import { PlayerDetailModal, useWatchlist, usePortalStatus } from "./Gridline.jsx";
+import { PlayerDetailModal, useWatchlist, usePortalStatus, watchOverridesFor, withWatchOverrides } from "./Gridline.jsx";
 import { PlayerProfileModal, ThemeContext, statusStyle, toTitleCase } from "./OfferTracker.jsx";
 import { TEAM_CONFERENCE, isCommitment, normalizePlayerKey, useOfferTracker } from "./offerData.js";
 import {
@@ -453,12 +453,14 @@ function statDisplay(row, key) {
 }
 
 function RosterTab({ college }) {
+  const watchlist = useWatchlist();
+  const watchOverrides = useMemo(() => watchOverridesFor(watchlist.players), [watchlist.players]);
   const statLines = useMemo(() => statLinesFor(college), [college]);
   // Jersey numbers come from ESPN's roster, matched by ESPN id then name; a row stays blank if there's no sure match.
   const espnRoster = useAsync(() => fetchRoster(college.id), [college.id]);
   const lines = useMemo(
-    () => Object.fromEntries(Object.entries(statLines).map(([cat, list]) => [cat, list.map((r) => ({ ...r, jersey: jerseyFor(espnRoster.data, { espnId: espnIdFromRow(r), name: r.player }) }))])),
-    [statLines, espnRoster.data]
+    () => Object.fromEntries(Object.entries(statLines).map(([cat, list]) => [cat, list.map((r) => ({ ...withWatchOverrides(r, watchOverrides), jersey: jerseyFor(espnRoster.data, { espnId: espnIdFromRow(r), name: r.player }) }))])),
+    [statLines, espnRoster.data, watchOverrides]
   );
   const populated = Object.keys(STAT_TABLES).filter((c) => lines[c].length > 0);
   const [category, setCategory] = useState(null);
@@ -468,7 +470,6 @@ function RosterTab({ college }) {
   const sortKey = sort.key || table.defaultSort;
   const [homeState, setHomeState] = useState("All");
   const [selected, setSelected] = useState(null);
-  const watchlist = useWatchlist();
   const portalStatus = usePortalStatus();
 
   const homeStates = useMemo(() => ["All", ...new Set(lines[active].filter((r) => r.homeState).map((r) => r.homeState))].sort(), [lines, active]);
