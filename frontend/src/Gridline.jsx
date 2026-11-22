@@ -1529,6 +1529,15 @@ export function PlayerDetailModal({ sel, onClose, watchlist, portalStatus, espn 
                   const url = photoLink.trim();
                   if (!/^https?:\/\//i.test(url)) return setPhotoError("Paste a full image address (it starts with https://).");
                   setPhotoError("");
+                  // Only keep a link the browser can actually show -- a web page's address (or a site that blocks
+                  // other pages from using its pictures) saves fine but then never appears.
+                  const shows = await new Promise((resolve) => {
+                    const probe = new Image();
+                    probe.onload = () => resolve(true);
+                    probe.onerror = () => resolve(false);
+                    probe.src = url;
+                  });
+                  if (!shows) return setPhotoError("That link isn't a picture this page can show. Right-click the photo and choose Copy Image Address (not the page's link), or save the image and use Add photo.");
                   await watchlist.updateField(watched.id, "photo", url);
                   setPhotoLink("");
                   setLinkingPhoto(false);
