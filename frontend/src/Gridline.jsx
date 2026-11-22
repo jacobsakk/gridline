@@ -726,6 +726,7 @@ function WatchListRow({
           <AddedCell p={p} open={showWho} onToggle={() => setShowWho((v) => !v)} />
         </td>
       )}
+      {!showAdded && (
       <td style={{ ...tdStyle, verticalAlign: "top" }}>
         <textarea
           ref={notesRef}
@@ -740,6 +741,7 @@ function WatchListRow({
           style={notesInputStyle}
         />
       </td>
+      )}
       <td style={{ ...tdStyle, textAlign: "center", whiteSpace: "nowrap" }}>
         {boardSpots ? (
           <BoardLink spots={boardSpots} style={{ padding: 2, marginRight: 6 }} />
@@ -798,8 +800,8 @@ function AddedCell({ p, open, onToggle }) {
 }
 
 const WATCHLIST_COLUMNS = ["", "", "Player", "Team", "Division", "Pos", "No.", "Home State", "Ht", "Wt", "Eligibility", "X", "Film Link", "College Page", "Notes", ""];
-// The "Added" column (when, and who by) only appears on the All tab, just before Notes.
-const columnsFor = (showAdded) => (showAdded ? WATCHLIST_COLUMNS.flatMap((c) => (c === "Notes" ? ["Added", c] : [c])) : WATCHLIST_COLUMNS);
+// On the All tab the Notes column is swapped for "Added" (when, and who by); position tabs keep Notes.
+const columnsFor = (isAll) => (isAll ? WATCHLIST_COLUMNS.map((c) => (c === "Notes" ? "Added" : c)) : WATCHLIST_COLUMNS);
 // Which of the columns above can be clicked to sort the watch list --
 // keyed by the doc field each one reads. Only active on the "All"
 // position tab (see positionTab check in WatchListPanel) -- sorting by
