@@ -1493,7 +1493,7 @@ export function PlayerDetailModal({ sel, onClose, watchlist, portalStatus, espn 
               {canonicalSchool(sel.team)}
               {first ? ` · ${first.conference} · ${first.position} · ${DIVISION_LABEL[sel.division] || sel.division}${first.homeState ? ` · Home: ${first.homeState}` : ""}` : ""}
             </div>
-            {espn && watched && (watched.photo || !espnId) && (
+            {espn && watched && (
               <div style={{ fontSize: 12.5, marginTop: 4, display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
                 <button onClick={() => photoInput.current?.click()} style={{ background: "none", border: "none", padding: 0, color: "var(--accent)", cursor: "pointer", fontSize: 12.5, fontFamily: "inherit" }}>
                   {watched.photo ? "Replace photo" : "Add photo"}
