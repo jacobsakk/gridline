@@ -2,8 +2,8 @@ import { confirmAction } from "./ConfirmDialog.jsx";
 import { BackButton, HomeButton } from "./HomeButton.jsx";
 import { useState, useMemo, useEffect, useRef, useCallback, useDeferredValue, Fragment, lazy, Suspense } from "react";
 import { ChevronUp, ChevronDown, ChevronsUpDown, Crown, BadgeCheck, FlaskConical, Star, X, Plus, ExternalLink, Search, Download, Columns3, TrendingUp, GripVertical, CheckCircle2, AlertTriangle, Upload, ClipboardList, LayoutGrid } from "lucide-react";
-import { collection, doc, addDoc, updateDoc, onSnapshot, query, orderBy } from "firebase/firestore";
-import { db } from "./firebase";
+import { collection, doc, addDoc, getDoc, updateDoc, onSnapshot, query, orderBy } from "firebase/firestore";
+import { auth, db } from "./firebase";
 import { REAL_STATS, loadRealStats } from "./statsData.js";
 import { LinkCell, StateCell } from "./EditableCells.jsx";
 import { ThemeSwitcher, useTheme } from "./theme.jsx";
@@ -293,10 +293,24 @@ export function useWatchlist() {
 
   const players = useMemo(() => allDocs.filter((p) => !p.removed), [allDocs]);
 
+  // Who is adding: the signed-in coach's email and the name on their account, kept on the doc so the
+  // watch list can show who put a player there.
+  async function currentAdder() {
+    const email = (auth.currentUser?.email || "").toLowerCase();
+    let name = "";
+    try {
+      if (email) name = (await getDoc(doc(db, "accounts", email))).data()?.name || "";
+    } catch {
+      // the email alone is still enough to say who
+    }
+    return { addedBy: email, addedByName: name };
+  }
+
   async function addPlayer({ player, team, division, position, homeState, ...extra }) {
     const trimmedPlayer = player.trim();
     if (!trimmedPlayer) return;
     const trimmedTeam = (team || "").trim();
+    const adder = await currentAdder();
 
     // If this exact player was removed before, bring their doc back
     // instead of creating a fresh blank one -- their old notes etc. are
@@ -305,6 +319,8 @@ export function useWatchlist() {
     if (archived) {
       await updateDoc(doc(db, "watchlist", archived.id), {
         removed: false,
+        addedAt: new Date().toISOString(),
+        ...adder,
         division: division || archived.division || "",
         position: position || archived.position || "",
         homeState: homeState || archived.homeState || "",
@@ -335,6 +351,7 @@ export function useWatchlist() {
       sortOrder: Date.now(),
       removed: false,
       addedAt: new Date().toISOString(),
+      ...adder,
       ...extra,
     });
   }
@@ -552,7 +569,9 @@ function WatchListRow({
   portalStatus,
   onAddToBoard,
   boardSpots,
+  showAdded,
 }) {
+  const [showWho, setShowWho] = useState(false);
   const [notes, setNotes] = useState(p.notes || "");
   const [height, setHeight] = useState(p.height || "");
   const [weight, setWeight] = useState(p.weight || "");
@@ -702,6 +721,11 @@ function WatchListRow({
       <td style={tdStyle}>
         <LinkCell row={p} field="collegeLink" label="College" placeholder="Paste a college page link…" editable onSave={(url) => onUpdate("collegeLink", url)} />
       </td>
+      {showAdded && (
+        <td style={{ ...tdStyle, verticalAlign: "top", whiteSpace: "nowrap" }}>
+          <AddedCell p={p} open={showWho} onToggle={() => setShowWho((v) => !v)} />
+        </td>
+      )}
       <td style={{ ...tdStyle, verticalAlign: "top" }}>
         <textarea
           ref={notesRef}
@@ -741,7 +765,41 @@ function WatchListRow({
   );
 }
 
+// When a player went on the watch list; click it to see who added them. Players added before this was
+// tracked have neither, and say so.
+function AddedCell({ p, open, onToggle }) {
+  const at = p.addedAt ? new Date(p.addedAt) : null;
+  if (!at || Number.isNaN(at.getTime())) return <span style={{ color: "var(--text-faint)", fontSize: 12.5 }} title="Added before dates were tracked">—</span>;
+  const day = at.toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" });
+  const time = at.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+  const who = p.addedByName || p.addedBy;
+  return (
+    <div style={{ fontSize: 12.5, lineHeight: 1.4 }}>
+      <button
+        onClick={onToggle}
+        aria-expanded={open}
+        title="Click to see who added them"
+        className="tabular"
+        style={{ background: "none", border: "none", padding: 0, cursor: "pointer", color: "var(--accent)", fontFamily: "inherit", fontSize: 12.5, textAlign: "left" }}
+      >
+        {day}
+        <br />
+        <span style={{ color: "var(--text-muted)" }}>{time}</span>
+      </button>
+      {open && (
+        <div style={{ marginTop: 4, color: "var(--text-secondary)", whiteSpace: "normal", maxWidth: 170 }}>
+          Added by <strong>{who || "unknown"}</strong>
+          {p.addedByName && p.addedBy ? <div style={{ color: "var(--text-faint)", wordBreak: "break-all" }}>{p.addedBy}</div> : null}
+          {!who && <div style={{ color: "var(--text-faint)" }}>(added before names were tracked)</div>}
+        </div>
+      )}
+    </div>
+  );
+}
+
 const WATCHLIST_COLUMNS = ["", "", "Player", "Team", "Division", "Pos", "No.", "Home State", "Ht", "Wt", "Eligibility", "X", "Film Link", "College Page", "Notes", ""];
+// The "Added" column (when, and who by) only appears on the All tab, just before Notes.
+const columnsFor = (showAdded) => (showAdded ? WATCHLIST_COLUMNS.flatMap((c) => (c === "Notes" ? ["Added", c] : [c])) : WATCHLIST_COLUMNS);
 // Which of the columns above can be clicked to sort the watch list --
 // keyed by the doc field each one reads. Only active on the "All"
 // position tab (see positionTab check in WatchListPanel) -- sorting by
@@ -751,6 +809,7 @@ const WATCHLIST_SORTABLE = {
   Division: "division",
   Pos: "position",
   "No.": "jersey",
+  Added: "addedAt",
   Ht: "height",
   Wt: "weight",
   Eligibility: "eligibility",
@@ -992,6 +1051,9 @@ function WatchListPanel({ watchlist, onClose, onHome, onSelectPlayer, portalStat
       if (wlSortActive === "height") {
         av = heightToInches(a.height);
         bv = heightToInches(b.height);
+      } else if (wlSortActive === "addedAt") {
+        av = Date.parse(a.addedAt) || 0; // newest first on the first click; players added before this was tracked go last
+        bv = Date.parse(b.addedAt) || 0;
       } else if (wlSortActive === "questionnaire") {
         av = a.questionnaire === true ? 1 : a.questionnaire === false ? -1 : 0;
         bv = b.questionnaire === true ? 1 : b.questionnaire === false ? -1 : 0;
@@ -1235,7 +1297,7 @@ function WatchListPanel({ watchlist, onClose, onHome, onSelectPlayer, portalStat
               <table style={{ width: "100%", minWidth: 1280, borderCollapse: "collapse" }}>
                 <thead>
                   <tr style={{ background: "var(--bg-surface)" }}>
-                    {WATCHLIST_COLUMNS.map((label, i) => {
+                    {columnsFor(positionTab === "All").map((label, i) => {
                       const sortField = positionTab === "All" ? WATCHLIST_SORTABLE[label] : null;
                       return (
                         <Th
@@ -1260,6 +1322,7 @@ function WatchListPanel({ watchlist, onClose, onHome, onSelectPlayer, portalStat
                       onRemove={() => confirmRemoveFromWatchlist(watchlist, p.id, p.player)}
                       onAddToBoard={() => setBoardPlayer(p)}
                       boardSpots={boardSpotsFor(p.player)}
+                      showAdded={positionTab === "All"}
                       onUpdate={(field, value) => watchlist.updateField(p.id, field, value)}
                       onSelect={onSelectPlayer}
                       compareSelected={compareIds.has(p.id)}
