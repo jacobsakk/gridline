@@ -550,8 +550,8 @@ function RosterTab({ college }) {
           <thead>
             <tr>
               <th style={th} onClick={() => sortBy("player")}>Player {arrow("player")}</th>
-              <th style={{ ...th, textAlign: "right" }} onClick={() => sortBy("jersey")} title="Jersey number">No. {arrow("jersey")}</th>
               <th style={th} onClick={() => sortBy("position")}>Pos {arrow("position")}</th>
+              <th style={{ ...th, textAlign: "right" }} onClick={() => sortBy("jersey")} title="Jersey number">No. {arrow("jersey")}</th>
               <th style={th} onClick={() => sortBy("homeState")}>Home State {arrow("homeState")}</th>
               <th style={{ ...th, textAlign: "right" }} onClick={() => sortBy("height")}>Ht {arrow("height")}</th>
               <th style={{ ...th, textAlign: "right" }} onClick={() => sortBy("weight")}>Wt {arrow("weight")}</th>
@@ -576,8 +576,8 @@ function RosterTab({ college }) {
                     </span>
                   </span>
                 </td>
-                <td className="tabular" style={{ ...tdStyle, textAlign: "right", fontWeight: 700 }}>{r.jersey ? `#${r.jersey}` : "—"}</td>
                 <td style={{ ...tdStyle, color: "var(--accent)", fontWeight: 700 }}>{r.position || "—"}</td>
+                <td className="tabular" style={{ ...tdStyle, textAlign: "right", fontWeight: 700 }}>{r.jersey ? `#${r.jersey}` : "—"}</td>
                 <td style={{ ...tdStyle, color: "var(--text-muted)" }}>{r.homeState || "—"}</td>
                 <td className="tabular" style={{ ...tdStyle, textAlign: "right", color: "var(--text-muted)" }}>{r.height || "—"}</td>
                 <td className="tabular" style={{ ...tdStyle, textAlign: "right", color: "var(--text-muted)" }}>{r.weight || "—"}</td>
