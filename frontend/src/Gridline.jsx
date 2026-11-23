@@ -651,6 +651,11 @@ function WatchListRow({
         />
       </td>
       )}
+      {showAdded && (
+        <td style={{ ...tdStyle, verticalAlign: "top", whiteSpace: "nowrap" }}>
+          <AddedCell p={p} open={showWho} onToggle={() => setShowWho((v) => !v)} />
+        </td>
+      )}
       <td style={{ ...tdStyle, fontWeight: 600, color: "var(--text-primary)" }}>
         <span style={{ display: "inline-flex", alignItems: "center", gap: 14 }}>
           <HeadshotFace espnId={espnId} photo={p.photo} name={p.player} color={colorForTeam(p.team)} size={64} />
@@ -741,11 +746,6 @@ function WatchListRow({
       <td style={tdStyle}>
         <RatingSelect value={p.rating} onChange={(v) => onUpdate("rating", v)} />
       </td>
-      {showAdded && (
-        <td style={{ ...tdStyle, verticalAlign: "top", whiteSpace: "nowrap" }}>
-          <AddedCell p={p} open={showWho} onToggle={() => setShowWho((v) => !v)} />
-        </td>
-      )}
       <td style={{ ...tdStyle, textAlign: "center", whiteSpace: "nowrap" }}>
         {boardSpots ? (
           <BoardLink spots={boardSpots} style={{ padding: 2, marginRight: 6 }} />
@@ -804,9 +804,9 @@ function AddedCell({ p, open, onToggle }) {
 }
 
 const WATCHLIST_COLUMNS = ["", "", "Player", "Team", "Division", "Pos", "#", "Home State", "Ht", "Wt", "Eligibility", "X", "Film Link", "College Page", "Rating", ""];
-// The All tab adds an "Added" column after Rating (when, and who by). Notes live in the player's profile.
+// The All tab adds an "Added" column as the first column (when, and who by). Notes live in the player's profile.
 // The All tab is a fixed list, newest first: no drag handle and no compare checkbox (the first two columns).
-const columnsFor = (isAll) => (isAll ? [...WATCHLIST_COLUMNS.slice(2, -1), "Added", ""] : WATCHLIST_COLUMNS);
+const columnsFor = (isAll) => (isAll ? ["Added", ...WATCHLIST_COLUMNS.slice(2)] : WATCHLIST_COLUMNS);
 // Which of the columns above can be clicked to sort the watch list --
 // keyed by the doc field each one reads. Only active on the "All"
 // position tab (see positionTab check in WatchListPanel) -- sorting by
