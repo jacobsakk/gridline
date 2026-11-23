@@ -77,8 +77,17 @@ async function findInvite(email) {
 
 // Sign-in state for the whole app.
 //   status: "loading" | "signedOut" | "needsEmail" | "needsPassword" | "denied" | "ready"
+// The coach who is signed in right now (their account's name and email), for anything that stamps "who did this"
+// on a record. Read from here rather than from Firebase's own user object so it is the same name the app greets
+// them with.
+let signedInProfile = null;
+export const currentProfile = () => signedInProfile;
+
 export function useAuth() {
   const [state, setState] = useState({ status: "loading", profile: null, error: "" });
+  useEffect(() => {
+    signedInProfile = state.status === "ready" ? state.profile : null;
+  }, [state]);
   const [justSignedIn, setJustSignedIn] = useState(false);
   const linkAttempted = useRef(false);
 

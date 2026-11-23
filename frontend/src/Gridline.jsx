@@ -4,6 +4,7 @@ import { useState, useMemo, useEffect, useRef, useCallback, useDeferredValue, Fr
 import { ChevronUp, ChevronDown, ChevronsUpDown, Crown, BadgeCheck, FlaskConical, Star, X, Plus, ExternalLink, Search, Download, Columns3, TrendingUp, GripVertical, CheckCircle2, AlertTriangle, Upload, ClipboardList, LayoutGrid } from "lucide-react";
 import { collection, doc, addDoc, getDoc, updateDoc, onSnapshot, query, orderBy } from "firebase/firestore";
 import { auth, db } from "./firebase";
+import { currentProfile } from "./auth.js";
 import { REAL_STATS, loadRealStats } from "./statsData.js";
 import { LinkCell, StateCell } from "./EditableCells.jsx";
 import { ThemeSwitcher, useTheme } from "./theme.jsx";
@@ -316,10 +317,11 @@ export function useWatchlist() {
   // Who is adding: the signed-in coach's email and the name on their account, kept on the doc so the
   // watch list can show who put a player there.
   async function currentAdder() {
-    const email = (auth.currentUser?.email || "").toLowerCase();
-    let name = "";
+    const profile = currentProfile();
+    const email = (profile?.email || auth.currentUser?.email || "").toLowerCase();
+    let name = profile?.name || "";
     try {
-      if (email) name = (await getDoc(doc(db, "accounts", email))).data()?.name || "";
+      if (email && !name) name = (await getDoc(doc(db, "accounts", email))).data()?.name || "";
     } catch {
       // the email alone is still enough to say who
     }
@@ -747,7 +749,7 @@ function WatchListRow({
       </td>
       {showAdded && (
         <td style={{ ...tdStyle, verticalAlign: "top", whiteSpace: "nowrap" }}>
-          <AddedCell p={p} open={showWho} onToggle={() => setShowWho((v) => !v)} />
+          <AddedCell p={p} open={showWho} onToggle={() => setShowWho((v) => !v)} onSetWho={(name) => onUpdate("addedByName", name)} />
         </td>
       )}
       {!showAdded && (
@@ -793,7 +795,8 @@ function WatchListRow({
 
 // When a player went on the watch list; click it to see who added them. Players added before this was
 // tracked have neither, and say so.
-function AddedCell({ p, open, onToggle }) {
+function AddedCell({ p, open, onToggle, onSetWho }) {
+  const [typed, setTyped] = useState("");
   const at = p.addedAt ? new Date(p.addedAt) : null;
   if (!at || Number.isNaN(at.getTime())) return <span style={{ color: "var(--text-faint)", fontSize: 12.5 }} title="Added before dates were tracked">—</span>;
   const day = at.toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" });
@@ -816,7 +819,18 @@ function AddedCell({ p, open, onToggle }) {
         <div style={{ marginTop: 4, color: "var(--text-secondary)", whiteSpace: "normal", maxWidth: 170 }}>
           Added by <strong>{who || "unknown"}</strong>
           {p.addedByName && p.addedBy ? <div style={{ color: "var(--text-faint)", wordBreak: "break-all" }}>{p.addedBy}</div> : null}
-          {!who && <div style={{ color: "var(--text-faint)" }}>(added before names were tracked)</div>}
+          {!who && (
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (typed.trim()) onSetWho(typed.trim());
+              }}
+              style={{ display: "flex", gap: 4, marginTop: 4 }}
+            >
+              <input value={typed} onChange={(e) => setTyped(e.target.value)} placeholder="Who added them?" aria-label="Who added this player" style={{ ...cellInputStyle, width: 110 }} />
+              <button type="submit" style={{ background: "var(--accent-bg)", border: "1px solid var(--accent)", color: "var(--accent)", borderRadius: 4, padding: "2px 8px", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>Save</button>
+            </form>
+          )}
         </div>
       )}
     </div>
