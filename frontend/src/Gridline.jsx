@@ -1304,9 +1304,10 @@ function WatchListPanel({ watchlist, onClose, onHome, onSelectPlayer, portalStat
                   borderBottom: positionTab === pos ? "2px solid var(--accent)" : "2px solid transparent",
                   marginBottom: -1,
                   ...(pos === "OC" ? { marginLeft: "auto" } : null),
+                  ...(pos === "All" ? { marginRight: 36 } : null),
                 }}
               >
-                {COORDINATOR_BY_KEY[pos]?.label || pos}
+                {COORDINATOR_BY_KEY[pos]?.label || (pos === "All" ? "Master" : pos)}
                 <span
                   className="tabular"
                   style={{
