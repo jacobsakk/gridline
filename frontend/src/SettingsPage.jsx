@@ -395,7 +395,7 @@ export default function SettingsPage({ onBack: toDashboard, session }) {
                           <select
                             value={ROLES.includes(a.role) ? a.role : ""}
                             onChange={(e) => changeRole(a, e.target.value)}
-                            style={{ ...inputStyle, padding: "4px 7px", fontSize: 13, color: "var(--text-secondary)", cursor: "pointer" }}
+                            style={{ ...inputStyle, padding: "4px 7px", paddingLeft: 0, fontSize: 13, color: "var(--text-muted)", cursor: "pointer", background: "transparent", borderColor: "transparent" }}
                           >
                             {!ROLES.includes(a.role) && <option value="">{a.role || "—"}</option>}
                             {ROLES.map((r) => (
