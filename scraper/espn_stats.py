@@ -258,6 +258,22 @@ def attach_espn_bio(rows, team_ids_by_key):
     return out, unmatched
 
 
+def fill_missing_bio(rows, team_ids_by_key):
+    """FBS/FCS rows that came from the NCAA or a conference site (no ESPN athlete id) have no home state, height
+    or weight; this matches those -- and any ESPN row ESPN's roster left a gap on -- to the team's ESPN roster
+    by name and fills only the blanks. Changes `rows` in place and returns it."""
+    fields = ("homeState", "hometown", "height", "weight")
+    need = [r for r in rows if not (r.get("homeState") and r.get("height") and r.get("weight"))]
+    if not need:
+        return rows
+    stamped, _ = attach_espn_bio(need, team_ids_by_key)
+    for orig, new in zip(need, stamped):
+        for f in fields:
+            if new.get(f) and not orig.get(f):
+                orig[f] = new[f]
+    return rows
+
+
 def _num(value):
     return 0 if value is None else value
 

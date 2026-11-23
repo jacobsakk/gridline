@@ -34,7 +34,7 @@ from ncaa_api import (
     save_snapshot,
 )
 from conference_sites import fetch_supplemental_rows
-from espn_stats import attach_espn_bio, build_espn_rows, fetch_athlete_lines, fetch_espn_athletes, fetch_espn_team_ids, fetch_roster_athletes, load_colleges, merge_division, scrub_duplicates
+from espn_stats import attach_espn_bio, build_espn_rows, fetch_athlete_lines, fetch_espn_athletes, fetch_espn_team_ids, fetch_roster_athletes, fill_missing_bio, load_colleges, merge_division, scrub_duplicates
 
 OFFENSE_AND_SPECIAL_TEAMS_POSITIONS = {"QB", "RB", "FB", "WR", "TE", "OL", "K", "PK", "P", "LS"}
 
@@ -152,6 +152,10 @@ def build_fbs_fcs(run_date):
         fallback_sets.append(("conference", conf_rows))
 
         merged, stats = merge_division(label, espn_rows, fallback_sets, colleges)
+        try:
+            merged = fill_missing_bio(merged, fetch_espn_team_ids())
+        except Exception as err:  # noqa: BLE001 -- bio is a bonus; never let it block the stats
+            print(f"  !! couldn't fill missing bio from ESPN rosters ({err})")
         for source, counts in stats.items():
             print(f"    {source}: {counts['matched_into_espn']} matched an ESPN row, {counts['added']} added as extra players")
         results[label] = build_division(slug, label, run_date, lambda m=merged: m)
