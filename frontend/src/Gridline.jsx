@@ -598,6 +598,9 @@ function WatchListRow({
   const [height, setHeight] = useState(p.height || "");
   const [weight, setWeight] = useState(p.weight || "");
   const [jersey, setJersey] = useState(p.jersey || "");
+  const shownTeam = canonicalSchool(p.team) || p.team || "";
+  const [team, setTeam] = useState(shownTeam);
+  useEffect(() => setTeam(shownTeam), [shownTeam]);
   const notesRef = useRef(null);
   // Edits made elsewhere (the player's profile, another coach) arrive as a changed
   // doc -- pull them into the cells so Ht/Wt/Notes always match the profile.
@@ -677,8 +680,34 @@ function WatchListRow({
           )}
         </span>
       </td>
-      <td style={{ ...tdStyle, color: "var(--text-muted)" }}>{canonicalSchool(p.team) || "—"}</td>
-      <td style={{ ...tdStyle, color: "var(--text-muted)", fontSize: 12.5 }}>{p.division || "—"}</td>
+      <td style={tdStyle}>
+        <input
+          value={team}
+          onChange={(e) => setTeam(e.target.value)}
+          onBlur={() => {
+            // Untouched, it keeps the stored spelling; only a real edit is saved.
+            const next = team.trim();
+            if (next !== shownTeam) onUpdate("team", next);
+          }}
+          onKeyDown={(e) => e.key === "Enter" && e.currentTarget.blur()}
+          placeholder="Team"
+          aria-label="Team"
+          style={{ ...cellInputStyle, width: "100%", minWidth: 130 }}
+        />
+      </td>
+      <td style={tdStyle}>
+        <select
+          value={p.division || ""}
+          onChange={(e) => onUpdate("division", e.target.value)}
+          aria-label="Division"
+          style={{ ...cellInputStyle, minWidth: 68, cursor: "pointer" }}
+        >
+          <option value="">—</option>
+          {[...DIVISIONS].reverse().map((d) => (
+            <option key={d} value={d}>{d}</option>
+          ))}
+        </select>
+      </td>
       <td style={{ ...tdStyle, minWidth: 84 }}>
         <select
           value={p.position || ""}
