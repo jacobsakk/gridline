@@ -16,7 +16,7 @@ import HeadshotFace from "./HeadshotFace.jsx";
 import { colorForTeam, espnIdFromRow, espnProfileUrl, espnSearchUrl } from "./espnPlayer.js";
 import { collegeForLabel, fetchRoster, jerseyFor } from "./collegeData.js";
 import { photoFromFile } from "./hsData.js";
-import { nameKey } from "./bigBoardConstants.js";
+import { STATUSES, STATUS_BY_KEY, nameKey } from "./bigBoardConstants.js";
 
 // Loaded only when a coach adds a watch-list player to a Big Board (it brings the board code with it).
 const AddToBigBoardModal = lazy(() => import("./AddToBigBoardModal.jsx"));
@@ -549,6 +549,36 @@ const fieldInputStyle = {
   color: "var(--text-primary)",
   fontFamily: "inherit",
 };
+// A watch-list rating is the colour the player's card would be on the Big Board (the same list, same colours).
+// Stored as the board's status key, so adding the player to a board starts them on this colour.
+function RatingSelect({ value, onChange, label = "Rating", wide }) {
+  const current = STATUS_BY_KEY[value];
+  return (
+    <select
+      value={current ? value : ""}
+      onChange={(e) => onChange(e.target.value)}
+      aria-label={label}
+      title={current ? current.label : "No rating yet"}
+      style={{
+        ...cellInputStyle,
+        minWidth: wide ? 0 : 120,
+        width: wide ? "100%" : undefined,
+        cursor: "pointer",
+        fontWeight: current ? 700 : 400,
+        background: current ? current.color : "transparent",
+        borderColor: current ? current.color : "transparent",
+        color: current ? "#111" : "var(--text-muted)",
+        paddingLeft: current ? 8 : 0,
+      }}
+    >
+      <option value="">—</option>
+      {STATUSES.map((s) => (
+        <option key={s.key} value={s.key} style={{ background: s.color, color: "#111" }}>{s.label}</option>
+      ))}
+    </select>
+  );
+}
+
 const fieldLabelStyle = { display: "block", fontSize: 10.5, color: "var(--text-faint)", letterSpacing: "0.03em", margin: "0 0 4px" };
 // Compact variant for an input sitting inside a table cell (watch list grid).
 const cellInputStyle = { ...fieldInputStyle, padding: "4px 6px", fontSize: 12.5, background: "var(--bg-page)" };
@@ -595,25 +625,9 @@ function WatchListRow({
   showAdded,
 }) {
   const [showWho, setShowWho] = useState(false);
-  const [notes, setNotes] = useState(p.notes || "");
   const shownTeam = canonicalSchool(p.team) || p.team || "";
-  const notesRef = useRef(null);
-  // Edits made elsewhere (the player's profile, another coach) arrive as a changed
-  // doc -- pull them into the cells so Ht/Wt/Notes always match the profile.
-  useEffect(() => { setNotes(p.notes || ""); requestAnimationFrame(autoResizeNotes); }, [p.notes]);
   // The ESPN picture, for a player the Pre-Portal data carries from ESPN (FBS / FCS); anyone else uses a photo added by hand.
   const espnId = useMemo(() => espnIdFromRow(DATA.find((r) => r.player === p.player && r.team === p.team)), [p.player, p.team]);
-
-  // Grows the textarea to fit its content (capped by CSS max-height, which
-  // switches to a scrollbar past that) instead of clipping a long note --
-  // runs on mount too, so a saved long note is already expanded on load.
-  const autoResizeNotes = () => {
-    const el = notesRef.current;
-    if (!el) return;
-    el.style.height = "auto";
-    el.style.height = `${el.scrollHeight}px`;
-  };
-  useEffect(autoResizeNotes, []);
 
   const currentSignature = useMemo(() => playerStatsSignature(p.player, p.team), [p.player, p.team]);
   const hasUpdate = p.lastSeenSnapshot && currentSignature && p.lastSeenSnapshot !== currentSignature;
@@ -738,26 +752,13 @@ function WatchListRow({
       <td style={tdStyle}>
         <LinkCell row={p} field="collegeLink" label="College" placeholder="Paste a college page link…" editable onSave={(url) => onUpdate("collegeLink", url)} />
       </td>
+      <td style={tdStyle}>
+        <RatingSelect value={p.rating} onChange={(v) => onUpdate("rating", v)} />
+      </td>
       {showAdded && (
         <td style={{ ...tdStyle, verticalAlign: "top", whiteSpace: "nowrap" }}>
           <AddedCell p={p} open={showWho} onToggle={() => setShowWho((v) => !v)} />
         </td>
-      )}
-      {!showAdded && (
-      <td style={{ ...tdStyle, verticalAlign: "top" }}>
-        <textarea
-          ref={notesRef}
-          value={notes}
-          onChange={(e) => {
-            setNotes(e.target.value);
-            autoResizeNotes();
-          }}
-          onBlur={() => onUpdate("notes", notes)}
-          placeholder="Notes…"
-          rows={1}
-          style={notesInputStyle}
-        />
-      </td>
       )}
       <td style={{ ...tdStyle, textAlign: "center", whiteSpace: "nowrap" }}>
         {boardSpots ? (
@@ -816,10 +817,10 @@ function AddedCell({ p, open, onToggle }) {
   );
 }
 
-const WATCHLIST_COLUMNS = ["", "", "Player", "Team", "Division", "Pos", "#", "Home State", "Ht", "Wt", "Eligibility", "X", "Film Link", "College Page", "Notes", ""];
-// On the All tab the Notes column is swapped for "Added" (when, and who by); position tabs keep Notes.
+const WATCHLIST_COLUMNS = ["", "", "Player", "Team", "Division", "Pos", "#", "Home State", "Ht", "Wt", "Eligibility", "X", "Film Link", "College Page", "Rating", ""];
+// The All tab adds an "Added" column after Rating (when, and who by). Notes live in the player's profile.
 // The All tab is a fixed list, newest first: no drag handle and no compare checkbox (the first two columns).
-const columnsFor = (isAll) => (isAll ? WATCHLIST_COLUMNS.slice(2).map((c) => (c === "Notes" ? "Added" : c)) : WATCHLIST_COLUMNS);
+const columnsFor = (isAll) => (isAll ? [...WATCHLIST_COLUMNS.slice(2, -1), "Added", ""] : WATCHLIST_COLUMNS);
 // Which of the columns above can be clicked to sort the watch list --
 // keyed by the doc field each one reads. Only active on the "All"
 // position tab (see positionTab check in WatchListPanel) -- sorting by
@@ -829,6 +830,7 @@ const WATCHLIST_SORTABLE = {
   Division: "division",
   Pos: "position",
   "#": "jersey",
+  Rating: "rating",
   Added: "addedAt",
   Ht: "height",
   Wt: "weight",
@@ -848,7 +850,7 @@ function heightToInches(height) {
 // table (sticky header, gridlines) instead of a narrow sidebar, so editing
 // a dozen watched players' notes/homeState/eligibility doesn't feel cramped.
 function exportWatchListCsv(players) {
-  const headers = ["Player", "Team", "Division", "Position", "Jersey #", "Height", "Weight", "Eligibility", "Questionnaire", "Pipelined", "Home State", "X", "Film Link", "College Page", "Evaluation", "Notes"];
+  const headers = ["Player", "Team", "Division", "Position", "Jersey #", "Height", "Weight", "Eligibility", "Questionnaire", "Pipelined", "Home State", "X", "Film Link", "College Page", "Rating", "Evaluation", "Notes"];
   const escape = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`;
   const lines = [headers.map(escape).join(",")];
   for (const p of players) {
@@ -868,6 +870,7 @@ function exportWatchListCsv(players) {
         p.xLink,
         p.filmLink,
         p.collegeLink,
+        STATUS_BY_KEY[p.rating]?.label || "",
         p.evaluation,
         p.notes,
       ]
@@ -891,7 +894,7 @@ function exportWatchListCsv(players) {
 function NewWatchPlayerModal({ watchlist, onClose }) {
   const [draft, setDraft] = useState({
     player: "", team: "", division: "", position: "", height: "", weight: "", eligibility: "",
-    questionnaire: false, pipelined: false, xLink: "", filmLink: "", collegeLink: "", jersey: "", homeState: "", evaluation: "", notes: "",
+    questionnaire: false, pipelined: false, xLink: "", filmLink: "", collegeLink: "", jersey: "", homeState: "", evaluation: "", notes: "", rating: "",
   });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -1020,6 +1023,10 @@ function NewWatchPlayerModal({ watchlist, onClose }) {
               </label>
               <textarea id="nwp-eval" value={draft.evaluation} onChange={(e) => set("evaluation", e.target.value)} placeholder="Write-up, grade, projection…" rows={3} style={{ ...notesInputStyle, padding: "6px 8px", overflow: "auto", resize: "vertical" }} />
             </div>
+            <div style={{ marginBottom: 14, maxWidth: 240 }}>
+              <label style={fieldLabelStyle}>Rating (Big Board card colour)</label>
+              <RatingSelect wide label="Rating" value={draft.rating} onChange={(v) => set("rating", v)} />
+            </div>
             <label htmlFor="nwp-notes" style={fieldLabelStyle}>Notes</label>
             <textarea id="nwp-notes" value={draft.notes} onChange={(e) => set("notes", e.target.value)} placeholder="Notes…" rows={2} style={{ ...notesInputStyle, padding: "6px 8px", overflow: "auto", resize: "vertical" }} />
           </div>
@@ -1076,6 +1083,12 @@ function WatchListPanel({ watchlist, onClose, onHome, onSelectPlayer, portalStat
       } else if (wlSortActive === "addedAt") {
         av = Date.parse(a.addedAt) || 0; // newest first on the first click; players added before this was tracked go last
         bv = Date.parse(b.addedAt) || 0;
+      } else if (wlSortActive === "rating") {
+        // In the board's colour order (Committed first ... Partial last); unrated players go last either way.
+        const rank = (r) => { const i = STATUSES.findIndex((x) => x.key === r.rating); return i < 0 ? STATUSES.length : i; };
+        av = rank(a);
+        bv = rank(b);
+        return wlSortDir === "desc" ? av - bv : bv - av;
       } else if (wlSortActive === "questionnaire") {
         av = a.questionnaire === true ? 1 : a.questionnaire === false ? -1 : 0;
         bv = b.questionnaire === true ? 1 : b.questionnaire === false ? -1 : 0;
@@ -1752,6 +1765,10 @@ export function PlayerDetailModal({ sel, onClose, watchlist, portalStatus, espn 
                   rows={2}
                   style={{ ...notesInputStyle, padding: "6px 8px" }}
                 />
+              </div>
+              <div style={{ marginBottom: 14, maxWidth: 240 }}>
+                <label style={fieldLabelStyle}>Rating (Big Board card colour)</label>
+                <RatingSelect wide label="Rating" value={watched.rating} onChange={(v) => watchlist.updateField(watched.id, "rating", v)} />
               </div>
               <label style={fieldLabelStyle}>Notes</label>
               <textarea
