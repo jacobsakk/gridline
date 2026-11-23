@@ -738,7 +738,7 @@ function WatchListRow({
       </td>
       {showAdded && (
         <td style={{ ...tdStyle, verticalAlign: "top", whiteSpace: "nowrap" }}>
-          <AddedCell p={p} open={showWho} onToggle={() => setShowWho((v) => !v)} onSetWho={(name) => onUpdate("addedByName", name)} />
+          <AddedCell p={p} open={showWho} onToggle={() => setShowWho((v) => !v)} />
         </td>
       )}
       {!showAdded && (
@@ -784,8 +784,7 @@ function WatchListRow({
 
 // When a player went on the watch list; click it to see who added them. Players added before this was
 // tracked have neither, and say so.
-function AddedCell({ p, open, onToggle, onSetWho }) {
-  const [typed, setTyped] = useState("");
+function AddedCell({ p, open, onToggle }) {
   const at = p.addedAt ? new Date(p.addedAt) : null;
   if (!at || Number.isNaN(at.getTime())) return <span style={{ color: "var(--text-faint)", fontSize: 12.5 }} title="Added before dates were tracked">—</span>;
   const day = at.toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" });
@@ -808,18 +807,7 @@ function AddedCell({ p, open, onToggle, onSetWho }) {
         <div style={{ marginTop: 4, color: "var(--text-secondary)", whiteSpace: "normal", maxWidth: 170 }}>
           Added by <strong>{who || "unknown"}</strong>
           {p.addedByName && p.addedBy ? <div style={{ color: "var(--text-faint)", wordBreak: "break-all" }}>{p.addedBy}</div> : null}
-          {!who && (
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                if (typed.trim()) onSetWho(typed.trim());
-              }}
-              style={{ display: "flex", gap: 4, marginTop: 4 }}
-            >
-              <input value={typed} onChange={(e) => setTyped(e.target.value)} placeholder="Who added them?" aria-label="Who added this player" style={{ ...cellInputStyle, width: 110 }} />
-              <button type="submit" style={{ background: "var(--accent-bg)", border: "1px solid var(--accent)", color: "var(--accent)", borderRadius: 4, padding: "2px 8px", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>Save</button>
-            </form>
-          )}
+          {!who && <div style={{ color: "var(--text-faint)" }}>(added before names were tracked)</div>}
         </div>
       )}
     </div>
