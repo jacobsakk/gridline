@@ -28,7 +28,8 @@ const ROW_PAGE = 120; // rows drawn at first, and added each time the table is s
 
 // Same canonical set every scraper normalizes to (see POSITION_MAP in
 // scraper/ncaa_api.py) -- the watch list groups by these.
-const WATCH_POSITIONS = ["ATH", "QB", "RB", "WR", "TE", "OL", "DL", "LB", "CB", "SAF", "K", "P", "LS"];
+// No "ATH": every watch-list player has to be put at a real position.
+const WATCH_POSITIONS = ["QB", "RB", "WR", "TE", "OL", "DL", "LB", "CB", "SAF", "K", "P", "LS"];
 
 // "total" = season-to-date. Single-week rows (if any exist yet) are keyed
 // by the ISO date the snapshot was taken -- see scraper/build_data.py. A
@@ -344,7 +345,7 @@ export function useWatchlist() {
         addedAt: new Date().toISOString(),
         ...adder,
         division: division || archived.division || "",
-        position: position || archived.position || "",
+        position: WATCH_POSITIONS.includes(position) ? position : WATCH_POSITIONS.includes(archived.position) ? archived.position : "",
         homeState: homeState || archived.homeState || "",
         // Only what was actually filled in -- blanks must not wipe the old entry's saved info.
         ...Object.fromEntries(Object.entries(extra).filter(([, v]) => v !== "" && v != null)),
@@ -356,7 +357,7 @@ export function useWatchlist() {
       player: trimmedPlayer,
       team: trimmedTeam,
       division: division || "",
-      position: position || "",
+      position: WATCH_POSITIONS.includes(position) ? position : "",
       questionnaire: false,
       pipelined: false,
       notes: "",
@@ -690,7 +691,7 @@ function WatchListRow({
       </td>
       <td style={{ ...tdStyle, minWidth: 84 }}>
         <select
-          value={p.position || ""}
+          value={WATCH_POSITIONS.includes(p.position) ? p.position : ""}
           onChange={(e) => onUpdate("position", e.target.value)}
           aria-label="Position"
           style={{ ...cellInputStyle, minWidth: 68, cursor: "pointer", background: "transparent", borderColor: "transparent", color: "var(--text-muted)", paddingLeft: 0 }}
@@ -889,7 +890,7 @@ function exportWatchListCsv(players) {
 // filled in up front and saved together when the coach hits Add.
 function NewWatchPlayerModal({ watchlist, onClose }) {
   const [draft, setDraft] = useState({
-    player: "", team: "", division: "", position: WATCH_POSITIONS[0], height: "", weight: "", eligibility: "",
+    player: "", team: "", division: "", position: "", height: "", weight: "", eligibility: "",
     questionnaire: false, pipelined: false, xLink: "", filmLink: "", collegeLink: "", jersey: "", homeState: "", evaluation: "", notes: "",
   });
   const [saving, setSaving] = useState(false);
@@ -901,6 +902,7 @@ function NewWatchPlayerModal({ watchlist, onClose }) {
   async function submit(e) {
     e.preventDefault();
     if (!draft.player.trim()) return setError("Enter the player's name.");
+    if (!WATCH_POSITIONS.includes(draft.position)) return setError("Choose a position.");
     setSaving(true);
     setError("");
     try {
@@ -1636,7 +1638,7 @@ export function PlayerDetailModal({ sel, onClose, watchlist, portalStatus, espn 
                 <div>
                   <label style={fieldLabelStyle}>Position</label>
                   <select
-                    value={watched.position || ""}
+                    value={WATCH_POSITIONS.includes(watched.position) ? watched.position : ""}
                     onChange={(e) => watchlist.updateField(watched.id, "position", e.target.value)}
                     style={{ ...fieldInputStyle, cursor: "pointer" }}
                   >
