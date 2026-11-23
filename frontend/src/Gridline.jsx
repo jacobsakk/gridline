@@ -789,7 +789,8 @@ function AddedCell({ p, open, onToggle }) {
   if (!at || Number.isNaN(at.getTime())) return <span style={{ color: "var(--text-faint)", fontSize: 12.5 }} title="Added before dates were tracked">—</span>;
   const day = at.toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" });
   const time = at.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
-  const who = p.addedByName || p.addedBy;
+  // Just the name. An account with no name on file falls back to the part of its email before the @, tidied up.
+  const who = p.addedByName || (p.addedBy || "").split("@")[0].replace(/[._-]+/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
   return (
     <div style={{ fontSize: 12.5, lineHeight: 1.4 }}>
       <button
@@ -806,7 +807,6 @@ function AddedCell({ p, open, onToggle }) {
       {open && (
         <div style={{ marginTop: 4, color: "var(--text-secondary)", whiteSpace: "normal", maxWidth: 170 }}>
           Added by <strong>{who || "unknown"}</strong>
-          {p.addedByName && p.addedBy ? <div style={{ color: "var(--text-faint)", wordBreak: "break-all" }}>{p.addedBy}</div> : null}
           {!who && <div style={{ color: "var(--text-faint)" }}>(added before names were tracked)</div>}
         </div>
       )}
