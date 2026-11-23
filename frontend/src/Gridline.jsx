@@ -629,6 +629,7 @@ function WatchListRow({
 
   return (
     <tr ref={rowRef} style={{ ...style, ...dropLineStyle, opacity: isDragging ? 0.4 : 1 }}>
+      {!showAdded && (
       <td style={{ ...tdStyle, textAlign: "center" }}>
         {draggable && (
           <span
@@ -640,6 +641,8 @@ function WatchListRow({
           </span>
         )}
       </td>
+      )}
+      {!showAdded && (
       <td style={{ ...tdStyle, textAlign: "center" }}>
         <input
           type="checkbox"
@@ -649,6 +652,7 @@ function WatchListRow({
           style={{ cursor: "pointer" }}
         />
       </td>
+      )}
       <td style={{ ...tdStyle, fontWeight: 600, color: "var(--text-primary)" }}>
         <span style={{ display: "inline-flex", alignItems: "center", gap: 14 }}>
           <HeadshotFace espnId={espnId} photo={p.photo} name={p.player} color={colorForTeam(p.team)} size={64} />
@@ -821,7 +825,8 @@ function AddedCell({ p, open, onToggle }) {
 
 const WATCHLIST_COLUMNS = ["", "", "Player", "Team", "Division", "Pos", "No.", "Home State", "Ht", "Wt", "Eligibility", "X", "Film Link", "College Page", "Notes", ""];
 // On the All tab the Notes column is swapped for "Added" (when, and who by); position tabs keep Notes.
-const columnsFor = (isAll) => (isAll ? WATCHLIST_COLUMNS.map((c) => (c === "Notes" ? "Added" : c)) : WATCHLIST_COLUMNS);
+// The All tab is a fixed list, newest first: no drag handle and no compare checkbox (the first two columns).
+const columnsFor = (isAll) => (isAll ? WATCHLIST_COLUMNS.slice(2).map((c) => (c === "Notes" ? "Added" : c)) : WATCHLIST_COLUMNS);
 // Which of the columns above can be clicked to sort the watch list --
 // keyed by the doc field each one reads. Only active on the "All"
 // position tab (see positionTab check in WatchListPanel) -- sorting by
@@ -1042,7 +1047,8 @@ function WatchListPanel({ watchlist, onClose, onHome, onSelectPlayer, portalStat
   const [boardPlayer, setBoardPlayer] = useState(null);
   const boardSpotsFor = useBoardLocations();
   const [positionTab, setPositionTab] = useState("All");
-  const [wlSortKey, setWlSortKey] = useState(null);
+  // The All tab opens (and stays) sorted newest-added first; any column header can re-sort it.
+  const [wlSortKey, setWlSortKey] = useState("addedAt");
   const [wlSortDir, setWlSortDir] = useState("desc");
   const [compareIds, setCompareIds] = useState(() => new Set());
   const [showCompare, setShowCompare] = useState(false);
@@ -1254,7 +1260,7 @@ function WatchListPanel({ watchlist, onClose, onHome, onSelectPlayer, portalStat
           </button>
         )}
 
-        {compareIds.size >= 2 && (
+        {compareIds.size >= 2 && positionTab !== "All" && (
           <button
             onClick={() => setShowCompare(true)}
             style={{
