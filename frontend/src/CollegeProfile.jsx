@@ -552,7 +552,7 @@ function RosterTab({ college }) {
             <tr>
               <th style={th} onClick={() => sortBy("player")}>Player {arrow("player")}</th>
               <th style={th} onClick={() => sortBy("position")}>Pos {arrow("position")}</th>
-              <th style={{ ...th, textAlign: "right" }} onClick={() => sortBy("jersey")} title="Jersey number">No. {arrow("jersey")}</th>
+              <th style={{ ...th, textAlign: "right" }} onClick={() => sortBy("jersey")} title="Jersey number"># {arrow("jersey")}</th>
               <th style={th} onClick={() => sortBy("homeState")}>Home State {arrow("homeState")}</th>
               <th style={{ ...th, textAlign: "right" }} onClick={() => sortBy("height")}>Ht {arrow("height")}</th>
               <th style={{ ...th, textAlign: "right" }} onClick={() => sortBy("weight")}>Wt {arrow("weight")}</th>

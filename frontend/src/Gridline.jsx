@@ -816,7 +816,7 @@ function AddedCell({ p, open, onToggle }) {
   );
 }
 
-const WATCHLIST_COLUMNS = ["", "", "Player", "Team", "Division", "Pos", "No.", "Home State", "Ht", "Wt", "Eligibility", "X", "Film Link", "College Page", "Notes", ""];
+const WATCHLIST_COLUMNS = ["", "", "Player", "Team", "Division", "Pos", "#", "Home State", "Ht", "Wt", "Eligibility", "X", "Film Link", "College Page", "Notes", ""];
 // On the All tab the Notes column is swapped for "Added" (when, and who by); position tabs keep Notes.
 // The All tab is a fixed list, newest first: no drag handle and no compare checkbox (the first two columns).
 const columnsFor = (isAll) => (isAll ? WATCHLIST_COLUMNS.slice(2).map((c) => (c === "Notes" ? "Added" : c)) : WATCHLIST_COLUMNS);
@@ -828,7 +828,7 @@ const WATCHLIST_SORTABLE = {
   Team: "team",
   Division: "division",
   Pos: "position",
-  "No.": "jersey",
+  "#": "jersey",
   Added: "addedAt",
   Ht: "height",
   Wt: "weight",
