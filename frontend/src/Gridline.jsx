@@ -23,7 +23,7 @@ const AddToBigBoardModal = lazy(() => import("./AddToBigBoardModal.jsx"));
 
 const WATCH_PAGE = "watch-list";
 let watchOpenedFromTracker = false; // true once the page was opened from the tracker, so Back can pop the history entry
-const DIVISIONS = ["NAIA", "JUCO", "D3", "D2", "FCS", "FBS"];
+const DIVISIONS = ["FBS", "FCS", "D2", "D3", "JUCO", "NAIA"]; // tab order, left to right
 const ROW_PAGE = 120; // rows drawn at first, and added each time the table is scrolled to its end
 
 // Same canonical set every scraper normalizes to (see POSITION_MAP in
@@ -683,7 +683,7 @@ function WatchListRow({
           style={{ ...cellInputStyle, minWidth: 68, cursor: "pointer", background: "transparent", borderColor: "transparent", color: "var(--text-muted)", paddingLeft: 0 }}
         >
           <option value="">—</option>
-          {[...DIVISIONS].reverse().map((d) => (
+          {DIVISIONS.map((d) => (
             <option key={d} value={d}>{d}</option>
           ))}
         </select>
@@ -938,7 +938,7 @@ function NewWatchPlayerModal({ watchlist, onClose }) {
               <label htmlFor="nwp-division" style={fieldLabelStyle}>Division</label>
               <select id="nwp-division" value={draft.division} onChange={(e) => set("division", e.target.value)} style={{ ...fieldInputStyle, cursor: "pointer" }}>
                 <option value="">—</option>
-                {[...DIVISIONS].reverse().map((d) => (
+                {DIVISIONS.map((d) => (
                   <option key={d} value={d}>{DIVISION_LABEL[d] || d}</option>
                 ))}
               </select>
@@ -1925,7 +1925,7 @@ function GridlineMain({ onBack: toDashboard, initialSearch, onUploadStats }) {
   const back = useBack(toDashboard);
   // #/tracker/FBS/Some Player opens that division with the player searched (the Roster page links here)
   const [linked] = useState(() => initialSubRoute());
-  const [division, setDivision] = useState(() => (DIVISIONS.includes(linked[0]) ? linked[0] : "NAIA"));
+  const [division, setDivision] = useState(() => (DIVISIONS.includes(linked[0]) ? linked[0] : "FBS"));
   const [category, setCategory] = useState("passing");
   const week = "total"; // the tracker shows season totals only -- no week-by-week view
   const [position, setPosition] = useState("All");
