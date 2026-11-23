@@ -692,8 +692,8 @@ function WatchListRow({
         <select
           value={p.position || ""}
           onChange={(e) => onUpdate("position", e.target.value)}
-          className="oswald"
-          style={{ ...cellInputStyle, minWidth: 76, cursor: "pointer", color: "var(--accent)", fontWeight: 600 }}
+          aria-label="Position"
+          style={{ ...cellInputStyle, minWidth: 68, cursor: "pointer", background: "transparent", borderColor: "transparent", color: "var(--text-muted)", paddingLeft: 0 }}
         >
           <option value="">—</option>
           {WATCH_POSITIONS.map((pos) => (
@@ -717,7 +717,8 @@ function WatchListRow({
         <select
           value={p.eligibility || ""}
           onChange={(e) => onUpdate("eligibility", e.target.value)}
-          style={{ ...cellInputStyle, cursor: "pointer" }}
+          aria-label="Eligibility"
+          style={{ ...cellInputStyle, minWidth: 68, cursor: "pointer", background: "transparent", borderColor: "transparent", color: "var(--text-muted)", paddingLeft: 0 }}
         >
           <option value="">—</option>
           {[1, 2, 3, 4, 5].map((n) => (
