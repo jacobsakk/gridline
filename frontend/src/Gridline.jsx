@@ -1004,14 +1004,14 @@ function NewWatchPlayerModal({ watchlist, onClose }) {
               </div>
             </div>
             <div style={{ borderTop: "1px solid var(--border-subtle)", paddingTop: 12, marginBottom: 14 }}>
+              <div style={{ marginBottom: 14, maxWidth: 240 }}>
+                <label style={fieldLabelStyle}>Rating</label>
+                <RatingSelect wide label="Rating" value={draft.rating} onChange={(v) => set("rating", v)} />
+              </div>
               <label htmlFor="nwp-eval" className="oswald" style={{ display: "block", fontSize: 11.5, fontWeight: 600, color: "var(--accent)", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.04em" }}>
                 Evaluation
               </label>
               <textarea id="nwp-eval" value={draft.evaluation} onChange={(e) => set("evaluation", e.target.value)} placeholder="Write-up, grade, projection…" rows={3} style={{ ...notesInputStyle, padding: "6px 8px", overflow: "auto", resize: "vertical" }} />
-            </div>
-            <div style={{ marginBottom: 14, maxWidth: 240 }}>
-              <label style={fieldLabelStyle}>Rating</label>
-              <RatingSelect wide label="Rating" value={draft.rating} onChange={(v) => set("rating", v)} />
             </div>
             <label htmlFor="nwp-notes" style={fieldLabelStyle}>Notes</label>
             <textarea id="nwp-notes" value={draft.notes} onChange={(e) => set("notes", e.target.value)} placeholder="Notes…" rows={2} style={{ ...notesInputStyle, padding: "6px 8px", overflow: "auto", resize: "vertical" }} />
@@ -1733,6 +1733,10 @@ export function PlayerDetailModal({ sel, onClose, watchlist, portalStatus, espn 
                 </div>
               </div>
               <div style={{ borderTop: "1px solid var(--border-subtle)", paddingTop: 12, marginBottom: 14 }}>
+                <div style={{ marginBottom: 14, maxWidth: 240 }}>
+                  <label style={fieldLabelStyle}>Rating</label>
+                  <RatingSelect wide label="Rating" value={watched.rating} onChange={(v) => watchlist.updateField(watched.id, "rating", v)} />
+                </div>
                 <div
                   className="oswald"
                   style={{ fontSize: 11.5, fontWeight: 600, color: "var(--accent)", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.04em" }}
@@ -1751,10 +1755,6 @@ export function PlayerDetailModal({ sel, onClose, watchlist, portalStatus, espn 
                   rows={2}
                   style={{ ...notesInputStyle, padding: "6px 8px" }}
                 />
-              </div>
-              <div style={{ marginBottom: 14, maxWidth: 240 }}>
-                <label style={fieldLabelStyle}>Rating</label>
-                <RatingSelect wide label="Rating" value={watched.rating} onChange={(v) => watchlist.updateField(watched.id, "rating", v)} />
               </div>
               <label style={fieldLabelStyle}>Notes</label>
               <textarea
