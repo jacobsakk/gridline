@@ -551,6 +551,20 @@ const fieldInputStyle = {
 };
 // A watch-list rating: where the staff stands on the player.
 const RATINGS = ["Offer", "Recruit", "Reject"];
+// The two coordinator tabs hold everyone rated Offer on that side of the ball -- nobody is added by hand. Kickers,
+// punters and long snappers count as defense, the same way the Big Board files them.
+const COORDINATOR_TABS = [
+  { key: "OC", label: "Offensive Coordinator", side: "off" },
+  { key: "DC", label: "Defensive Coordinator", side: "def" },
+];
+const OFFENSE_POSITIONS = new Set(["QB", "RB", "WR", "TE", "OL"]);
+const COORDINATOR_BY_KEY = Object.fromEntries(COORDINATOR_TABS.map((t) => [t.key, t]));
+const inCoordinatorTab = (p, tab) => p.rating === "Offer" && WATCH_POSITIONS.includes(p.position) && (OFFENSE_POSITIONS.has(p.position) ? "off" : "def") === tab.side;
+function playersForTab(players, tab) {
+  if (tab === "All") return players;
+  const coordinator = COORDINATOR_BY_KEY[tab];
+  return coordinator ? players.filter((p) => inCoordinatorTab(p, coordinator)) : players.filter((p) => p.position === tab);
+}
 function RatingSelect({ value, onChange, label = "Rating", wide }) {
   return (
     <select
@@ -1039,8 +1053,8 @@ function WatchListPanel({ watchlist, onClose, onHome, onSelectPlayer, portalStat
   const [wlSortDir, setWlSortDir] = useState("desc");
   const [compareIds, setCompareIds] = useState(() => new Set());
   const [showCompare, setShowCompare] = useState(false);
-  const byPosition = positionTab === "All" ? watchlist.players : watchlist.players.filter((p) => p.position === positionTab);
-  const countFor = (pos) => (pos === "All" ? watchlist.players.length : watchlist.players.filter((p) => p.position === pos).length);
+  const byPosition = playersForTab(watchlist.players, positionTab);
+  const countFor = (pos) => playersForTab(watchlist.players, pos).length;
 
   // Falls back to when they were added for any doc from before sortOrder
   // existed, rather than an undefined value that'd sort unpredictably.
@@ -1277,7 +1291,7 @@ function WatchListPanel({ watchlist, onClose, onHome, onSelectPlayer, portalStat
       ) : (
         <div style={{ flex: 1, minHeight: 0, padding: "16px var(--gutter) var(--gutter)", display: "flex", flexDirection: "column" }}>
           <div style={{ display: "flex", gap: 4, borderBottom: "1px solid var(--border)", marginBottom: 16, flexWrap: "wrap", flexShrink: 0 }}>
-            {["All", ...WATCH_POSITIONS].map((pos) => (
+            {["All", ...WATCH_POSITIONS, ...COORDINATOR_TABS.map((t) => t.key)].map((pos) => (
               <button
                 key={pos}
                 onClick={() => setPositionTab(pos)}
@@ -1289,9 +1303,10 @@ function WatchListPanel({ watchlist, onClose, onHome, onSelectPlayer, portalStat
                   color: positionTab === pos ? "var(--accent)" : "var(--text-muted)",
                   borderBottom: positionTab === pos ? "2px solid var(--accent)" : "2px solid transparent",
                   marginBottom: -1,
+                  ...(pos === "OC" ? { marginLeft: "auto" } : null),
                 }}
               >
-                {pos}
+                {COORDINATOR_BY_KEY[pos]?.label || pos}
                 <span
                   className="tabular"
                   style={{
@@ -1310,6 +1325,8 @@ function WatchListPanel({ watchlist, onClose, onHome, onSelectPlayer, portalStat
             <div style={{ color: "var(--text-faint)", fontSize: 13 }}>
               {watchlist.players.length === 0
                 ? "No players on the watch list yet."
+                : COORDINATOR_BY_KEY[positionTab]
+                ? `No ${COORDINATOR_BY_KEY[positionTab].side === "off" ? "offensive" : "defensive"} players are rated Offer yet. Rate a player Offer and they show up here automatically.`
                 : `No ${positionTab} players on the watch list yet.`}
             </div>
           ) : (
