@@ -18,7 +18,7 @@ export default function AddToBigBoardModal({ player, onClose }) {
   const [side, setSide] = useState(startSide);
   const [colLabel, setColLabel] = useState(startCol);
   const [tier, setTier] = useState(1);
-  const [status, setStatus] = useState(STATUS_BY_KEY[player.rating] ? player.rating : "recruit"); // starts on the watch-list rating
+  const [status, setStatus] = useState("recruit");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [done, setDone] = useState("");

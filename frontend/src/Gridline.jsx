@@ -16,7 +16,7 @@ import HeadshotFace from "./HeadshotFace.jsx";
 import { colorForTeam, espnIdFromRow, espnProfileUrl, espnSearchUrl } from "./espnPlayer.js";
 import { collegeForLabel, fetchRoster, jerseyFor } from "./collegeData.js";
 import { photoFromFile } from "./hsData.js";
-import { STATUSES, STATUS_BY_KEY, nameKey } from "./bigBoardConstants.js";
+import { nameKey } from "./bigBoardConstants.js";
 
 // Loaded only when a coach adds a watch-list player to a Big Board (it brings the board code with it).
 const AddToBigBoardModal = lazy(() => import("./AddToBigBoardModal.jsx"));
@@ -549,32 +549,18 @@ const fieldInputStyle = {
   color: "var(--text-primary)",
   fontFamily: "inherit",
 };
-// A watch-list rating is the colour the player's card would be on the Big Board (the same list, same colours).
-// Stored as the board's status key, so adding the player to a board starts them on this colour.
+// A watch-list rating: where the staff stands on the player.
+const RATINGS = ["Offer", "Recruit", "Reject"];
 function RatingSelect({ value, onChange, label = "Rating", wide }) {
-  const current = STATUS_BY_KEY[value];
   return (
     <select
-      value={current ? value : ""}
+      value={RATINGS.includes(value) ? value : ""}
       onChange={(e) => onChange(e.target.value)}
       aria-label={label}
-      title={current ? current.label : "No rating yet"}
-      style={{
-        ...cellInputStyle,
-        minWidth: wide ? 0 : 120,
-        width: wide ? "100%" : undefined,
-        cursor: "pointer",
-        fontWeight: current ? 700 : 400,
-        background: current ? current.color : "transparent",
-        borderColor: current ? current.color : "transparent",
-        color: current ? "#111" : "var(--text-muted)",
-        paddingLeft: current ? 8 : 0,
-      }}
+      style={{ ...cellInputStyle, minWidth: wide ? 0 : 84, width: wide ? "100%" : undefined, cursor: "pointer", background: "transparent", borderColor: wide ? undefined : "transparent", color: "var(--text-muted)", paddingLeft: wide ? undefined : 0 }}
     >
       <option value="">—</option>
-      {STATUSES.map((s) => (
-        <option key={s.key} value={s.key} style={{ background: s.color, color: "#111" }}>{s.label}</option>
-      ))}
+      {RATINGS.map((r) => <option key={r} value={r}>{r}</option>)}
     </select>
   );
 }
@@ -870,7 +856,7 @@ function exportWatchListCsv(players) {
         p.xLink,
         p.filmLink,
         p.collegeLink,
-        STATUS_BY_KEY[p.rating]?.label || "",
+        p.rating || "",
         p.evaluation,
         p.notes,
       ]
@@ -1024,7 +1010,7 @@ function NewWatchPlayerModal({ watchlist, onClose }) {
               <textarea id="nwp-eval" value={draft.evaluation} onChange={(e) => set("evaluation", e.target.value)} placeholder="Write-up, grade, projection…" rows={3} style={{ ...notesInputStyle, padding: "6px 8px", overflow: "auto", resize: "vertical" }} />
             </div>
             <div style={{ marginBottom: 14, maxWidth: 240 }}>
-              <label style={fieldLabelStyle}>Rating (Big Board card colour)</label>
+              <label style={fieldLabelStyle}>Rating</label>
               <RatingSelect wide label="Rating" value={draft.rating} onChange={(v) => set("rating", v)} />
             </div>
             <label htmlFor="nwp-notes" style={fieldLabelStyle}>Notes</label>
@@ -1084,8 +1070,8 @@ function WatchListPanel({ watchlist, onClose, onHome, onSelectPlayer, portalStat
         av = Date.parse(a.addedAt) || 0; // newest first on the first click; players added before this was tracked go last
         bv = Date.parse(b.addedAt) || 0;
       } else if (wlSortActive === "rating") {
-        // In the board's colour order (Committed first ... Partial last); unrated players go last either way.
-        const rank = (r) => { const i = STATUSES.findIndex((x) => x.key === r.rating); return i < 0 ? STATUSES.length : i; };
+        // Offer, Recruit, Reject; unrated players go last either way.
+        const rank = (r) => { const i = RATINGS.indexOf(r.rating); return i < 0 ? RATINGS.length : i; };
         av = rank(a);
         bv = rank(b);
         return wlSortDir === "desc" ? av - bv : bv - av;
@@ -1767,7 +1753,7 @@ export function PlayerDetailModal({ sel, onClose, watchlist, portalStatus, espn 
                 />
               </div>
               <div style={{ marginBottom: 14, maxWidth: 240 }}>
-                <label style={fieldLabelStyle}>Rating (Big Board card colour)</label>
+                <label style={fieldLabelStyle}>Rating</label>
                 <RatingSelect wide label="Rating" value={watched.rating} onChange={(v) => watchlist.updateField(watched.id, "rating", v)} />
               </div>
               <label style={fieldLabelStyle}>Notes</label>
