@@ -6,7 +6,7 @@ import { collection, doc, addDoc, getDoc, updateDoc, onSnapshot, query, orderBy 
 import { auth, db } from "./firebase";
 import { currentProfile } from "./auth.js";
 import { REAL_STATS, loadRealStats } from "./statsData.js";
-import { LinkCell, StateCell } from "./EditableCells.jsx";
+import { ClickText, LinkCell, StateCell } from "./EditableCells.jsx";
 import { ThemeSwitcher, useTheme } from "./theme.jsx";
 import { initialSubRoute, navigate, parseHash, setSubRoute, useBack, useRoute } from "./route.js";
 import StatsUploadModal from "./StatsUploadModal.jsx";
@@ -595,18 +595,10 @@ function WatchListRow({
 }) {
   const [showWho, setShowWho] = useState(false);
   const [notes, setNotes] = useState(p.notes || "");
-  const [height, setHeight] = useState(p.height || "");
-  const [weight, setWeight] = useState(p.weight || "");
-  const [jersey, setJersey] = useState(p.jersey || "");
   const shownTeam = canonicalSchool(p.team) || p.team || "";
-  const [team, setTeam] = useState(shownTeam);
-  useEffect(() => setTeam(shownTeam), [shownTeam]);
   const notesRef = useRef(null);
   // Edits made elsewhere (the player's profile, another coach) arrive as a changed
   // doc -- pull them into the cells so Ht/Wt/Notes always match the profile.
-  useEffect(() => setHeight(p.height || ""), [p.height]);
-  useEffect(() => setWeight(p.weight || ""), [p.weight]);
-  useEffect(() => setJersey(p.jersey || ""), [p.jersey]);
   useEffect(() => { setNotes(p.notes || ""); requestAnimationFrame(autoResizeNotes); }, [p.notes]);
   // The ESPN picture, for a player the Pre-Portal data carries from ESPN (FBS / FCS); anyone else uses a photo added by hand.
   const espnId = useMemo(() => espnIdFromRow(DATA.find((r) => r.player === p.player && r.team === p.team)), [p.player, p.team]);
@@ -680,27 +672,15 @@ function WatchListRow({
           )}
         </span>
       </td>
-      <td style={tdStyle}>
-        <input
-          value={team}
-          onChange={(e) => setTeam(e.target.value)}
-          onBlur={() => {
-            // Untouched, it keeps the stored spelling; only a real edit is saved.
-            const next = team.trim();
-            if (next !== shownTeam) onUpdate("team", next);
-          }}
-          onKeyDown={(e) => e.key === "Enter" && e.currentTarget.blur()}
-          placeholder="Team"
-          aria-label="Team"
-          style={{ ...cellInputStyle, width: "100%", minWidth: 130 }}
-        />
+      <td style={{ ...tdStyle, color: "var(--text-muted)" }}>
+        <ClickText label="team" value={shownTeam} width={150} onSave={(v) => onUpdate("team", v)} />
       </td>
       <td style={tdStyle}>
         <select
           value={p.division || ""}
           onChange={(e) => onUpdate("division", e.target.value)}
           aria-label="Division"
-          style={{ ...cellInputStyle, minWidth: 68, cursor: "pointer" }}
+          style={{ ...cellInputStyle, minWidth: 68, cursor: "pointer", background: "transparent", borderColor: "transparent", color: "var(--text-muted)", paddingLeft: 0 }}
         >
           <option value="">—</option>
           {[...DIVISIONS].reverse().map((d) => (
@@ -722,36 +702,16 @@ function WatchListRow({
         </select>
       </td>
       <td style={tdStyle}>
-        <input
-          value={jersey}
-          onChange={(e) => setJersey(e.target.value.replace(/[^0-9]/g, "").slice(0, 3))}
-          onBlur={() => onUpdate("jersey", jersey)}
-          placeholder="#"
-          inputMode="numeric"
-          aria-label="Jersey number"
-          style={{ ...cellInputStyle, width: 44 }}
-        />
+        <ClickText label="jersey number" value={p.jersey} width={50} clean={(v) => v.replace(/[^0-9]/g, "").slice(0, 3)} onSave={(v) => onUpdate("jersey", v)} />
       </td>
       <td style={tdStyle}>
         <StateCell row={p} field="homeState" editable onSave={(state) => onUpdate("homeState", state)} />
       </td>
       <td style={tdStyle}>
-        <input
-          value={height}
-          onChange={(e) => setHeight(e.target.value)}
-          onBlur={() => onUpdate("height", height)}
-          placeholder={`e.g. 6'2"`}
-          style={{ ...cellInputStyle, width: 64 }}
-        />
+        <ClickText label="height" value={p.height} placeholder={`e.g. 6'2"`} width={70} onSave={(v) => onUpdate("height", v)} />
       </td>
       <td style={tdStyle}>
-        <input
-          value={weight}
-          onChange={(e) => setWeight(e.target.value)}
-          onBlur={() => onUpdate("weight", weight)}
-          placeholder="e.g. 210"
-          style={{ ...cellInputStyle, width: 64 }}
-        />
+        <ClickText label="weight" value={p.weight} placeholder="e.g. 210" width={70} onSave={(v) => onUpdate("weight", v)} />
       </td>
       <td style={tdStyle}>
         <select

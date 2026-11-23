@@ -214,3 +214,69 @@ export function TextCell({ row, field, placeholder, editable, onSave }) {
     <span style={{ color: "var(--text-faint)" }}>—</span>
   );
 }
+
+// Plain text for any short field (team, jersey number, height, weight): click to edit, Enter or clicking away
+// saves, Escape cancels. `clean` tidies what is typed (digits only, upper case...). A blank value shows an
+// "Add" prompt, like StateCell.
+export function ClickText({ value, onSave, placeholder = "", clean = (v) => v, width = 90, label }) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState("");
+  const [error, setError] = useState("");
+  const shown = value || "";
+
+  async function commit() {
+    const next = draft.trim();
+    if (next === shown) {
+      setEditing(false);
+      return;
+    }
+    try {
+      await onSave(next);
+      setEditing(false);
+      setError("");
+    } catch (err) {
+      setError(err?.code === "permission-denied" ? "No permission to save." : "Failed");
+    }
+  }
+
+  if (editing) {
+    return (
+      <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+        <input
+          autoFocus
+          value={draft}
+          aria-label={label}
+          placeholder={placeholder}
+          onChange={(e) => setDraft(clean(e.target.value))}
+          onFocus={(e) => e.target.select()}
+          style={{ ...control, padding: "4px 7px", fontSize: 12.5, width }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") commit();
+            if (e.key === "Escape") {
+              setError("");
+              setEditing(false);
+            }
+          }}
+          onBlur={commit}
+        />
+        {error && <span style={{ fontSize: 11, color: "var(--danger, #c0392b)", whiteSpace: "nowrap" }}>{error}</span>}
+      </div>
+    );
+  }
+  const open = () => {
+    setDraft(shown);
+    setEditing(true);
+  };
+  if (shown) {
+    return (
+      <span onClick={open} title="Click to change" style={{ cursor: "pointer" }}>
+        {shown}
+      </span>
+    );
+  }
+  return (
+    <button onClick={open} aria-label={label ? `Add ${label}` : undefined} style={{ background: "none", border: "none", color: "var(--text-faint)", cursor: "pointer", fontSize: 12.5, textDecoration: "underline", padding: 0 }}>
+      Add
+    </button>
+  );
+}
