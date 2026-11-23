@@ -154,7 +154,7 @@ export async function fetchTeamStats(id) {
 // for nearly every FBS/FCS player (and sends CORS headers), so it is read live and matched to a player by ESPN id,
 // falling back to the name. D2 has no ESPN roster -- those numbers are typed in on the watch list.
 export async function fetchRoster(id) {
-  const data = await cached(`${ESPN}/teams/${id}/roster`);
+  const data = await cached(`${ESPN}/teams/${id}/roster?limit=500`);
   const list = (data.athletes || [])
     .flatMap((group) => group.items || [])
     .map((a) => ({ id: String(a.id), name: a.fullName || a.displayName || "", jersey: a.jersey ? String(a.jersey) : "" }))

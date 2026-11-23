@@ -154,7 +154,7 @@ def fetch_roster_athletes(colleges, division, skip_ids=()):
 
     def one(college):
         try:
-            data = _get_json(f"https://site.web.api.espn.com/apis/site/v2/sports/football/college-football/teams/{college['id']}/roster", retries=3)
+            data = _get_json(f"https://site.web.api.espn.com/apis/site/v2/sports/football/college-football/teams/{college['id']}/roster?limit=500", retries=3)
         except RuntimeError:
             return college, None
         return college, data
@@ -214,7 +214,7 @@ def fetch_bio_for_teams(team_ids):
     {team_id: {name_key: {"state", "hometown", "height", "weight"}}}."""
     def one(team_id):
         try:
-            return team_id, _get_json(f"https://site.web.api.espn.com/apis/site/v2/sports/football/college-football/teams/{team_id}/roster", retries=3)
+            return team_id, _get_json(f"https://site.web.api.espn.com/apis/site/v2/sports/football/college-football/teams/{team_id}/roster?limit=500", retries=3)
         except RuntimeError:
             return team_id, None
 
