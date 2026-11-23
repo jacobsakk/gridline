@@ -941,7 +941,7 @@ function NewWatchPlayerModal({ watchlist, onClose }) {
             <div className="oswald" style={{ fontSize: 12.5, fontWeight: 600, color: "var(--success)", marginBottom: 10, textTransform: "uppercase", letterSpacing: "0.04em" }}>
               Your Watch List Info
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 12, marginBottom: 12 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 12, marginBottom: 12, fontSize: 13, fontFamily: "inherit" }}>
               <div>
                 <label htmlFor="nwp-pos" style={fieldLabelStyle}>Position</label>
                 <select id="nwp-pos" value={draft.position} onChange={(e) => set("position", e.target.value)} style={{ ...fieldInputStyle, cursor: "pointer" }}>
@@ -1633,7 +1633,7 @@ export function PlayerDetailModal({ sel, onClose, watchlist, portalStatus, espn 
                   </button>
                 )}
               </div>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 12, marginBottom: 12 }}>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 12, marginBottom: 12, fontSize: 13, fontFamily: "inherit" }}>
                 <div>
                   <label style={fieldLabelStyle}>Position</label>
                   <select

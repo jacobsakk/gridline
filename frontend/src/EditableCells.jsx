@@ -75,7 +75,7 @@ export function LinkCell({ row, field, label, placeholder, editable, onSave }) {
     );
   }
   return editable ? (
-    <button onClick={() => setEditing(true)} style={{ background: "none", border: "none", color: "var(--text-faint)", cursor: "pointer", fontSize: 12.5, textDecoration: "underline", padding: 0 }}>
+    <button onClick={() => setEditing(true)} style={{ background: "none", border: "none", color: "var(--text-faint)", cursor: "pointer", fontSize: 12.5, fontFamily: "inherit", textDecoration: "underline", padding: 0 }}>
       Add link
     </button>
   ) : (
@@ -141,7 +141,7 @@ export function StateCell({ row, field = "state", editable, onSave }) {
     );
   }
   return editable ? (
-    <button onClick={() => setEditing(true)} style={{ background: "none", border: "none", color: "var(--text-faint)", cursor: "pointer", fontSize: 12.5, textDecoration: "underline", padding: 0 }}>
+    <button onClick={() => setEditing(true)} style={{ background: "none", border: "none", color: "var(--text-faint)", cursor: "pointer", fontSize: 12.5, fontFamily: "inherit", textDecoration: "underline", padding: 0 }}>
       Add
     </button>
   ) : (
@@ -207,7 +207,7 @@ export function TextCell({ row, field, placeholder, editable, onSave }) {
     );
   }
   return editable ? (
-    <button onClick={() => setEditing(true)} style={{ background: "none", border: "none", color: "var(--text-faint)", cursor: "pointer", fontSize: 12.5, textDecoration: "underline", padding: 0 }}>
+    <button onClick={() => setEditing(true)} style={{ background: "none", border: "none", color: "var(--text-faint)", cursor: "pointer", fontSize: 12.5, fontFamily: "inherit", textDecoration: "underline", padding: 0 }}>
       Add
     </button>
   ) : (
@@ -275,7 +275,7 @@ export function ClickText({ value, onSave, placeholder = "", clean = (v) => v, w
     );
   }
   return (
-    <button onClick={open} aria-label={label ? `Add ${label}` : undefined} style={{ background: "none", border: "none", color: "var(--text-faint)", cursor: "pointer", fontSize: 12.5, textDecoration: "underline", padding: 0 }}>
+    <button onClick={open} aria-label={label ? `Add ${label}` : undefined} style={{ background: "none", border: "none", color: "var(--text-faint)", cursor: "pointer", fontSize: 12.5, fontFamily: "inherit", textDecoration: "underline", padding: 0 }}>
       Add
     </button>
   );
