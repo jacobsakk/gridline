@@ -4,11 +4,13 @@ import {
   isSignInWithEmailLink,
   linkWithCredential,
   onAuthStateChanged,
+  reauthenticateWithCredential,
   sendPasswordResetEmail,
   sendSignInLinkToEmail,
   signInWithEmailAndPassword,
   signInWithEmailLink,
   signOut as firebaseSignOut,
+  updatePassword,
 } from "firebase/auth";
 import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 import { auth, db } from "./firebase";
@@ -68,6 +70,14 @@ function storeEmail(email) {
   } catch {
     /* storage unavailable -- the coach just re-types their email on another device */
   }
+}
+
+// Change the signed-in coach's password. Firebase wants the current one again first, so a borrowed screen can't do it.
+export async function changePassword(currentPassword, newPassword) {
+  const user = auth.currentUser;
+  if (!user?.email) throw Object.assign(new Error("Not signed in."), { code: "auth/requires-recent-login" });
+  await reauthenticateWithCredential(user, EmailAuthProvider.credential(user.email, currentPassword));
+  await updatePassword(user, newPassword);
 }
 
 async function findInvite(email) {

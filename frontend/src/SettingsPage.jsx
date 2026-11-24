@@ -4,7 +4,7 @@ import { collection, deleteDoc, doc, onSnapshot, orderBy, query, setDoc } from "
 import { db } from "./firebase";
 import { ArrowDown, ArrowUp, Check, Mail, RotateCcw, Send, Trash2 } from "lucide-react";
 import { useBack } from "./route.js";
-import { ROLES, normalizeEmail, sendInviteEmail } from "./auth.js";
+import { ROLES, changePassword, normalizeEmail, sendInviteEmail } from "./auth.js";
 import { ThemeSwitcher, useTheme } from "./theme.jsx";
 import { CARDS } from "./dashboardCards.js";
 import { applyOrder, useDashboardOrder } from "./dashboardOrder.js";
@@ -142,6 +142,83 @@ function DashboardOrder({ email }) {
   );
 }
 
+// Change your own password: needs the current one, then the new one twice.
+function ChangePassword() {
+  const [current, setCurrent] = useState("");
+  const [next, setNext] = useState("");
+  const [again, setAgain] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [notice, setNotice] = useState({ kind: "", text: "" });
+  const field = { background: "var(--bg-page)", border: "1px solid var(--border)", borderRadius: 5, padding: "8px 10px", fontSize: 13.5, color: "var(--text-primary)", fontFamily: "inherit", width: 220 };
+  const label = { display: "block", fontSize: 10.5, color: "var(--text-faint)", marginBottom: 4 };
+
+  async function submit(e) {
+    e.preventDefault();
+    if (next.length < 8) return setNotice({ kind: "error", text: "Use at least 8 characters for the new password." });
+    if (next !== again) return setNotice({ kind: "error", text: "The new password doesn't match what you typed the second time." });
+    if (next === current) return setNotice({ kind: "error", text: "Pick a password that's different from your current one." });
+    setBusy(true);
+    setNotice({ kind: "", text: "" });
+    try {
+      await changePassword(current, next);
+      setCurrent("");
+      setNext("");
+      setAgain("");
+      setNotice({ kind: "ok", text: "Password changed. Use the new one next time you sign in." });
+    } catch (err) {
+      const code = err?.code || "";
+      setNotice({
+        kind: "error",
+        text: ["auth/invalid-credential", "auth/wrong-password", "auth/invalid-login-credentials"].includes(code)
+          ? "Your current password isn't right."
+          : code === "auth/weak-password"
+          ? "That password is too weak. Try a longer one."
+          : code === "auth/too-many-requests"
+          ? "Too many attempts. Wait a few minutes and try again."
+          : code === "auth/network-request-failed"
+          ? "No connection. Check your internet and try again."
+          : "Couldn't change your password. Sign out, sign back in, and try again.",
+      });
+    }
+    setBusy(false);
+  }
+
+  return (
+    <div style={{ background: "var(--bg-panel)", border: "1px solid var(--border)", borderRadius: 8, padding: 20, marginBottom: 22 }}>
+      <h2 className="oswald" style={{ fontSize: 18, fontWeight: 700, margin: "0 0 6px" }}>Change password</h2>
+      <p style={{ margin: "0 0 14px", fontSize: 13, color: "var(--text-muted)", lineHeight: 1.5 }}>
+        Enter your current password, then the new one you want to use. Forgot the current one? Sign out and use "Forgot password" on the sign-in page.
+      </p>
+      <form onSubmit={submit} style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "flex-end" }}>
+        <div>
+          <label htmlFor="pw-current" style={label}>Current password</label>
+          <input id="pw-current" type="password" autoComplete="current-password" value={current} onChange={(e) => setCurrent(e.target.value)} style={field} />
+        </div>
+        <div>
+          <label htmlFor="pw-new" style={label}>New password</label>
+          <input id="pw-new" type="password" autoComplete="new-password" value={next} onChange={(e) => setNext(e.target.value)} style={field} />
+        </div>
+        <div>
+          <label htmlFor="pw-again" style={label}>New password again</label>
+          <input id="pw-again" type="password" autoComplete="new-password" value={again} onChange={(e) => setAgain(e.target.value)} style={field} />
+        </div>
+        <button
+          type="submit"
+          disabled={busy || !current || !next || !again}
+          style={{ background: "var(--accent-bg)", border: "1px solid var(--accent)", color: "var(--accent)", borderRadius: 5, padding: "8px 16px", fontSize: 13, fontWeight: 700, cursor: busy ? "default" : "pointer", opacity: busy || !current || !next || !again ? 0.55 : 1 }}
+        >
+          {busy ? "Changing…" : "Change password"}
+        </button>
+      </form>
+      {notice.text && (
+        <div role={notice.kind === "error" ? "alert" : "status"} style={{ marginTop: 10, fontSize: 13, color: notice.kind === "error" ? "var(--danger-text)" : "var(--success)" }}>
+          {notice.text}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function SettingsPage({ onBack: toDashboard, session }) {
   const back = useBack(toDashboard);
   const [theme, setTheme] = useTheme();
@@ -271,6 +348,10 @@ export default function SettingsPage({ onBack: toDashboard, session }) {
 
       <div style={{ flex: 1, minHeight: 0, overflow: "auto", padding: "16px var(--gutter) var(--gutter)" }}>
         <div style={{ maxWidth: 900, margin: "0 auto" }}>
+          <div style={{ marginBottom: 10, fontSize: 11, color: "var(--text-faint)", letterSpacing: "0.03em", textTransform: "uppercase" }}>
+            Your account
+          </div>
+          <ChangePassword />
           <div style={{ marginBottom: 10, fontSize: 11, color: "var(--text-faint)", letterSpacing: "0.03em", textTransform: "uppercase" }}>
             Dashboard
           </div>
