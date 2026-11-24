@@ -70,7 +70,11 @@ function useAccounts() {
     await setDoc(doc(db, "accounts", id), { role }, { merge: true });
   }
 
-  return { accounts, ready, inviteAccount, removeAccount, updateAccountRole };
+  async function updateAccountAdmin(id, admin) {
+    await setDoc(doc(db, "accounts", id), { admin: !!admin }, { merge: true });
+  }
+
+  return { accounts, ready, inviteAccount, removeAccount, updateAccountRole, updateAccountAdmin };
 }
 
 function inviteError(err) {
@@ -222,7 +226,7 @@ function ChangePassword() {
 export default function SettingsPage({ onBack: toDashboard, session }) {
   const back = useBack(toDashboard);
   const [theme, setTheme] = useTheme();
-  const { accounts, inviteAccount, removeAccount, updateAccountRole } = useAccounts();
+  const { accounts, inviteAccount, removeAccount, updateAccountRole, updateAccountAdmin } = useAccounts();
   const { requests, denyRequest } = useAccountRequests();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -284,6 +288,36 @@ export default function SettingsPage({ onBack: toDashboard, session }) {
       await updateAccountRole(a.id, role);
     } catch (err) {
       setNotice({ kind: "error", text: err?.code === "permission-denied" ? "You don't have permission to manage accounts." : "Couldn't change that role. Try again." });
+    }
+  }
+
+  const adminCount = accounts.filter((a) => a.admin).length;
+  const myEmail = normalizeEmail(session?.profile?.email);
+  const isMe = (a) => normalizeEmail(a.email) === myEmail;
+
+  // Admin ("owner") access: can invite and remove people and see admin-only pages. At least one admin must always remain.
+  async function changeAccess(a, makeAdmin) {
+    if (!makeAdmin && a.admin && adminCount <= 1) return setNotice({ kind: "error", text: "There has to be at least one admin. Make someone else an admin first." });
+    if (!makeAdmin && isMe(a) && !window.confirm("Remove your own admin access? You won't be able to manage accounts afterwards.")) return;
+    setNotice({ kind: "", text: "" });
+    try {
+      await updateAccountAdmin(a.id, makeAdmin);
+      setNotice({ kind: "ok", text: `${a.name || a.email} is now ${makeAdmin ? "an admin" : "a regular coach"}.` });
+    } catch (err) {
+      setNotice({ kind: "error", text: err?.code === "permission-denied" ? "You don't have permission to manage accounts." : "Couldn't change that access. Try again." });
+    }
+  }
+
+  async function removeWithChecks(a) {
+    if (isMe(a)) return setNotice({ kind: "error", text: "You can't remove the account you're signed in with. Sign in as someone else to do that." });
+    if (a.admin && adminCount <= 1) return setNotice({ kind: "error", text: "That's the only admin. Make someone else an admin first." });
+    if (!window.confirm(`Remove ${a.name || a.email}? They will no longer be able to sign in.`)) return;
+    setNotice({ kind: "", text: "" });
+    try {
+      await removeAccount(a.id);
+      setNotice({ kind: "ok", text: `${a.name || a.email} was removed.` });
+    } catch (err) {
+      setNotice({ kind: "error", text: err?.code === "permission-denied" ? "You don't have permission to manage accounts." : "Couldn't remove that account. Try again." });
     }
   }
 
@@ -484,7 +518,17 @@ export default function SettingsPage({ onBack: toDashboard, session }) {
                             ))}
                           </select>
                         </td>
-                        <td style={{ padding: "9px 8px", fontSize: 13, color: "var(--text-secondary)" }}>{a.admin ? "Admin" : "Coach"}</td>
+                        <td style={{ padding: "9px 8px", fontSize: 13 }}>
+                          <select
+                            value={a.admin ? "admin" : "coach"}
+                            onChange={(e) => changeAccess(a, e.target.value === "admin")}
+                            aria-label={`Access for ${a.name || a.email}`}
+                            style={{ ...inputStyle, padding: "4px 7px", paddingLeft: 0, fontSize: 13, color: "var(--text-secondary)", cursor: "pointer", background: "transparent", borderColor: "transparent" }}
+                          >
+                            <option value="admin">Admin</option>
+                            <option value="coach">Coach</option>
+                          </select>
+                        </td>
                         <td className="tabular" style={{ padding: "9px 8px", fontSize: 12.5, color: "var(--text-muted)", whiteSpace: "nowrap" }}>
                           {a.createdAt ? new Date(a.createdAt).toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" }) : "—"}
                         </td>
@@ -506,7 +550,7 @@ export default function SettingsPage({ onBack: toDashboard, session }) {
                             </button>
                           )}
                           <button
-                            onClick={() => removeAccount(a.id)}
+                            onClick={() => removeWithChecks(a)}
                             title="Remove — they can no longer sign in"
                             style={{ background: "none", border: "none", color: "var(--danger)", cursor: "pointer", padding: 4, lineHeight: 0 }}
                           >
